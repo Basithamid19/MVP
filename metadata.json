@@ -1,0 +1,5 @@
+{
+  "name": "Vilnius Pro Marketplace",
+  "description": "The premier two-sided services marketplace for local professionals in Vilnius, Lithuania.",
+  "requestFramePermissions": ["geolocation"]
+}

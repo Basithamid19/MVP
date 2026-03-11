@@ -1,0 +1,234 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum VerificationTier {
+  TIER0_BASIC
+  TIER1_ID_VERIFIED
+  TIER2_TRADE_VERIFIED
+  TIER3_ENHANCED
+}
+
+enum ServiceRequestStatus {
+  NEW
+  CHATTING
+  QUOTED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum BookingStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  image         String?
+  role          UserRole  @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customerProfile CustomerProfile?
+  providerProfile ProviderProfile?
+  chatThreads     ChatThread[]
+}
+
+model CustomerProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   String?
+  phone     String?
+  
+  requests  ServiceRequest[]
+  bookings  Booking[]
+  reviews   Review[]
+}
+
+model ProviderProfile {
+  id                String           @id @default(cuid())
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio               String?
+  serviceArea       String?          // e.g., "Vilnius Center, Antakalnis, Žirmūnai"
+  languages         String[]         // ["Lithuanian", "English", "Russian"]
+  ratingAvg         Float            @default(0)
+  completedJobs     Int              @default(0)
+  isVerified        Boolean          @default(false)
+  verificationTier  VerificationTier @default(TIER0_BASIC)
+  responseTime      String?          // e.g., "Usually responds in 1 hour"
+  
+  categories        ServiceCategory[]
+  offerings         ServiceOffering[]
+  availability      AvailabilitySlot[]
+  verifications     ProviderVerification[]
+  quotes            Quote[]
+  bookings          Booking[]
+  reviews           Review[]
+}
+
+model ProviderVerification {
+  id                String           @id @default(cuid())
+  providerProfileId String
+  provider          ProviderProfile  @relation(fields: [providerProfileId], references: [id])
+  docType           String           // "ID", "CERTIFICATE", "INSURANCE"
+  docUrl            String
+  status            String           // "PENDING", "APPROVED", "REJECTED"
+  createdAt         DateTime         @default(now())
+}
+
+model ServiceCategory {
+  id          String            @id @default(cuid())
+  name        String            @unique // "Plumber", "Electrician", etc.
+  slug        String            @unique
+  description String?
+  icon        String?
+  providers   ProviderProfile[]
+  requests    ServiceRequest[]
+}
+
+model ServiceOffering {
+  id                String          @id @default(cuid())
+  providerProfileId String
+  provider          ProviderProfile @relation(fields: [providerProfileId], references: [id])
+  name              String
+  description       String?
+  price             Float
+  priceType         String          // "FIXED", "HOURLY"
+}
+
+model AvailabilitySlot {
+  id                String          @id @default(cuid())
+  providerProfileId String
+  provider          ProviderProfile @relation(fields: [providerProfileId], references: [id])
+  dayOfWeek         Int             // 0-6
+  startTime         String          // "09:00"
+  endTime           String          // "17:00"
+}
+
+model ServiceRequest {
+  id                String               @id @default(cuid())
+  customerId        String
+  customer          CustomerProfile      @relation(fields: [customerId], references: [id])
+  categoryId        String
+  category          ServiceCategory      @relation(fields: [categoryId], references: [id])
+  address           String
+  description       String
+  dateWindow        DateTime
+  budget            Float?
+  isUrgent          Boolean              @default(false)
+  status            ServiceRequestStatus @default(NEW)
+  createdAt         DateTime             @default(now())
+  
+  quotes            Quote[]
+  chatThreads       ChatThread[]
+}
+
+model Quote {
+  id                String          @id @default(cuid())
+  requestId         String
+  request           ServiceRequest  @relation(fields: [requestId], references: [id])
+  providerId        String
+  provider          ProviderProfile @relation(fields: [providerId], references: [id])
+  price             Float
+  estimatedHours    Float?
+  notes             String?
+  status            String          // "PENDING", "ACCEPTED", "DECLINED"
+  createdAt         DateTime        @default(now())
+  
+  booking           Booking?
+}
+
+model Booking {
+  id                String          @id @default(cuid())
+  customerId        String
+  customer          CustomerProfile @relation(fields: [customerId], references: [id])
+  providerId        String
+  provider          ProviderProfile @relation(fields: [providerId], references: [id])
+  quoteId           String?         @unique
+  quote             Quote?          @relation(fields: [quoteId], references: [id])
+  status            BookingStatus   @default(SCHEDULED)
+  scheduledAt       DateTime
+  totalAmount       Float
+  createdAt         DateTime        @default(now())
+  
+  payment           Payment?
+  review            Review?
+}
+
+model Payment {
+  id                String   @id @default(cuid())
+  bookingId         String   @unique
+  booking           Booking  @relation(fields: [bookingId], references: [id])
+  amount            Float
+  status            String   // "PENDING", "PAID", "REFUNDED"
+  stripeSessionId   String?
+  createdAt         DateTime @default(now())
+}
+
+model Review {
+  id                String          @id @default(cuid())
+  bookingId         String          @unique
+  booking           Booking         @relation(fields: [bookingId], references: [id])
+  customerId        String
+  customer          CustomerProfile @relation(fields: [customerId], references: [id])
+  providerId        String
+  provider          ProviderProfile @relation(fields: [providerId], references: [id])
+  rating            Int
+  comment           String?
+  isHidden          Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+}
+
+model ChatThread {
+  id                String          @id @default(cuid())
+  requestId         String
+  request           ServiceRequest  @relation(fields: [requestId], references: [id])
+  participants      User[]
+  messages          ChatMessage[]
+  createdAt         DateTime        @default(now())
+}
+
+model ChatMessage {
+  id            String     @id @default(cuid())
+  threadId      String
+  thread        ChatThread @relation(fields: [threadId], references: [id])
+  senderId      String
+  content       String
+  createdAt     DateTime   @default(now())
+}
+
+model AdminTicket {
+  id          String   @id @default(cuid())
+  reporterId  String
+  subject     String
+  description String
+  status      String   // "OPEN", "RESOLVED", "CLOSED"
+  createdAt   DateTime @default(now())
+}
+
+model UploadedFile {
+  id        String   @id @default(cuid())
+  url       String
+  fileName  String
+  fileType  String
+  createdAt DateTime @default(now())
+}
