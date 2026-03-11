@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   ArrowLeft, 
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function NewRequestPage() {
+function NewRequestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const providerId = searchParams.get('providerId');
@@ -209,5 +209,24 @@ export default function NewRequestPage() {
         </form>
       </main>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex flex-col items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
+        <p className="text-gray-500 font-medium">Loading...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function NewRequestPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <NewRequestContent />
+    </Suspense>
   );
 }
