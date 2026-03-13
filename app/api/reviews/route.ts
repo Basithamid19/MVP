@@ -4,6 +4,21 @@ import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const providerId = searchParams.get('providerId');
+  if (!providerId) return NextResponse.json([]);
+
+  const reviews = await prisma.review.findMany({
+    where: { providerId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      customer: { include: { user: { select: { name: true } } } },
+    },
+  });
+  return NextResponse.json(reviews);
+}
+
 export async function POST(request: Request) {
   const session = await auth();
   if (!session || !session.user) {

@@ -10,6 +10,23 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (id) {
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        customer: { include: { user: true } },
+        provider: { include: { user: true, categories: true } },
+        payment: true,
+        review: true,
+        quote: { include: { request: { include: { category: true } } } },
+      },
+    });
+    return NextResponse.json(booking);
+  }
+
   const role = (session.user as any).role;
   const userId = (session.user as any).id;
 

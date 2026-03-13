@@ -43,6 +43,26 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+
+  if (id) {
+    const req = await prisma.serviceRequest.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        customer: { include: { user: true } },
+        quotes: {
+          include: {
+            provider: { include: { user: true, categories: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+    return NextResponse.json(req);
+  }
+
   const role = (session.user as any).role;
   const userId = (session.user as any).id;
 

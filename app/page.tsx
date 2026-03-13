@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
+import { useSession } from 'next-auth/react';
 import { 
   Search, 
   MapPin, 
@@ -14,7 +16,10 @@ import {
   Sparkles, 
   Box, 
   Truck,
-  ArrowRight
+  ArrowRight,
+  AlertCircle,
+  Clock,
+  ChevronRight,
 } from 'lucide-react';
 
 const categories = [
@@ -48,16 +53,56 @@ const heroVariants = {
 };
 
 export default function LandingPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [activeVariant, setActiveVariant] = useState<'speed' | 'trust' | 'value'>('speed');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [savedAddress, setSavedAddress] = useState('');
+  const [recentBookings, setRecentBookings] = useState<any[]>([]);
 
   useEffect(() => {
     const variantParam = new URLSearchParams(window.location.search).get('hero');
     if (variantParam === 'trust' || variantParam === 'value' || variantParam === 'speed') {
       setActiveVariant(variantParam);
     }
+    // Load saved address from localStorage
+    const addr = localStorage.getItem('vp_saved_address');
+    if (addr) setSavedAddress(addr);
   }, []);
 
+  useEffect(() => {
+    if (session) {
+      fetch('/api/bookings')
+        .then(r => r.json())
+        .then(d => { if (Array.isArray(d)) setRecentBookings(d.slice(0, 3)); })
+        .catch(() => {});
+    }
+  }, [session]);
+
   const heroContent = heroVariants[activeVariant];
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/browse?q=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push('/browse');
+    }
+  };
+
+  const handleCategoryRequest = (slug: string) => {
+    const params = new URLSearchParams({ category: slug });
+    if (isUrgent) params.set('urgent', '1');
+    router.push(`/requests/new?${params.toString()}`);
+  };
+
+  const BOOKING_STATUS_STYLES: Record<string, string> = {
+    SCHEDULED:   'bg-blue-100 text-blue-700',
+    IN_PROGRESS: 'bg-orange-100 text-orange-700',
+    COMPLETED:   'bg-green-100 text-green-700',
+    CANCELED:    'bg-red-100 text-red-600',
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -71,8 +116,17 @@ export default function LandingPage() {
             <span className="font-bold text-xl tracking-tight">VilniusPro</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2 rounded-md">Log in</Link>
-            <Link href="/register" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2">Join as Pro</Link>
+            {session ? (
+              <>
+                <Link href="/account" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">My Account</Link>
+                <Link href="/requests/new" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">Book a Pro</Link>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2 rounded-md">Log in</Link>
+                <Link href="/register" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2">Join as Pro</Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -92,38 +146,72 @@ export default function LandingPage() {
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter leading-[0.95] mb-4 sm:mb-6">
                 {heroContent.title}
               </h1>
-              <p className="text-base sm:text-lg lg:text-xl text-gray-500 mb-8 sm:mb-10 leading-relaxed max-w-xl">
+              <p className="text-base sm:text-lg lg:text-xl text-gray-500 mb-6 sm:mb-8 leading-relaxed max-w-xl">
                 {heroContent.description}
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-3 mb-5 sm:mb-6">
-                <Link href="/browse" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2">
-                  Browse Services
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
-                <Link href="/browse?sort=rating" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 border border-gray-200 rounded-2xl font-semibold text-gray-700 hover:border-gray-400 hover:text-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2">
-                  Top Rated Pros
-                </Link>
-              </div>
 
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-5 sm:mb-6 text-sm text-gray-600">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                  <MapPin className="w-5 h-5 text-gray-400" />
-                  <span className="font-medium">Vilnius, Lithuania</span>
+              {/* Search bar */}
+              <form onSubmit={handleSearch} className="mb-5">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={e => setSearchQuery(e.target.value)}
+                      placeholder="Search for a service, e.g. 'plumber'..."
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-black outline-none transition-all"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-black text-white px-6 py-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all flex items-center gap-2 shrink-0"
+                  >
+                    Search
+                  </button>
                 </div>
-                <span className="font-medium">4.9 average rating</span>
-                <span className="font-medium">ID-verified professionals</span>
+              </form>
+
+              {/* Saved address + urgency toggle */}
+              <div className="flex flex-wrap items-center gap-3 mb-6">
+                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    value={savedAddress}
+                    onChange={e => {
+                      setSavedAddress(e.target.value);
+                      localStorage.setItem('vp_saved_address', e.target.value);
+                    }}
+                    placeholder="Your address in Vilnius"
+                    className="bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400 w-48"
+                  />
+                </div>
+                <button
+                  onClick={() => setIsUrgent(!isUrgent)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+                    isUrgent ? 'bg-orange-50 border-orange-300 text-orange-700' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-400'
+                  }`}
+                >
+                  <AlertCircle className={`w-4 h-4 ${isUrgent ? 'text-orange-500' : 'text-gray-400'}`} />
+                  {isUrgent ? 'Urgent — on' : 'Mark as urgent'}
+                  <div className={`w-8 h-5 rounded-full relative transition-colors ${isUrgent ? 'bg-orange-500' : 'bg-gray-200'}`}>
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isUrgent ? 'left-3.5' : 'left-0.5'}`} />
+                  </div>
+                </button>
               </div>
 
+              {/* Quick category links */}
               <div className="flex flex-wrap gap-2 sm:gap-3">
                 {categories.slice(0, 4).map((cat) => (
-                  <Link
+                  <button
                     key={cat.slug}
-                    href={`/browse?category=${cat.slug}`}
-                    className="px-3 sm:px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2"
+                    onClick={() => handleCategoryRequest(cat.slug)}
+                    className="px-3 sm:px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-colors"
                   >
                     {cat.name}
-                  </Link>
+                    {isUrgent && <span className="ml-1 text-orange-500">⚡</span>}
+                  </button>
                 ))}
               </div>
             </motion.div>
@@ -171,11 +259,54 @@ export default function LandingPage() {
           </div>
         </div>
         
-        {/* Decorative background element */}
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gray-50 -z-10 rounded-l-[100px] hidden lg:block">
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]"></div>
         </div>
       </section>
+
+      {/* Recent Bookings — only shown for logged-in users */}
+      {session && recentBookings.length > 0 && (
+        <section className="py-12 border-b border-gray-100">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">Recent bookings</h2>
+                <p className="text-sm text-gray-500">Pick up where you left off.</p>
+              </div>
+              <Link href="/account" className="text-sm font-bold text-black border-b-2 border-black pb-0.5 hover:opacity-70 transition-opacity">View all</Link>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentBookings.map(b => (
+                <Link
+                  key={b.id}
+                  href={`/bookings/${b.id}`}
+                  className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:border-black transition-all"
+                >
+                  <img
+                    src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+                    alt={b.provider?.user?.name}
+                    className="w-10 h-10 rounded-xl object-cover grayscale shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm truncate">{b.provider?.user?.name}</p>
+                    <p className="text-xs text-gray-400">{b.quote?.request?.category?.name ?? 'Service'}</p>
+                    <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                      <Clock className="w-3 h-3" />
+                      {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </p>
+                  </div>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                      {b.status.replace('_', ' ')}
+                    </span>
+                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories Grid */}
       <section className="py-24 bg-gray-50">
@@ -197,15 +328,16 @@ export default function LandingPage() {
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Link 
-                  href={`/browse?category=${cat.slug}`}
-                  className="group block p-6 bg-white rounded-3xl border border-gray-100 hover:border-black transition-all hover:shadow-xl hover:-translate-y-1"
+                <button 
+                  onClick={() => handleCategoryRequest(cat.slug)}
+                  className="group block w-full p-6 bg-white rounded-3xl border border-gray-100 hover:border-black transition-all hover:shadow-xl hover:-translate-y-1 text-left"
                 >
                   <div className={`w-12 h-12 ${cat.bg} ${cat.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                     <cat.icon className="w-6 h-6" />
                   </div>
                   <h3 className="font-bold text-sm">{cat.name}</h3>
-                </Link>
+                  {isUrgent && <p className="text-[10px] text-orange-500 font-bold mt-1">⚡ Urgent</p>}
+                </button>
               </motion.div>
             ))}
           </div>

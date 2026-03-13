@@ -69,7 +69,7 @@ export async function PATCH(request: Request) {
       data: { status: 'ACCEPTED' },
     });
 
-    await prisma.booking.create({
+    const booking = await prisma.booking.create({
       data: {
         customerId: quote.request.customerId,
         providerId: quote.providerId,
@@ -79,6 +79,8 @@ export async function PATCH(request: Request) {
         status: 'SCHEDULED',
       },
     });
+
+    return NextResponse.json({ ...updatedQuote, bookingId: booking.id });
   }
 
   return NextResponse.json(updatedQuote);
