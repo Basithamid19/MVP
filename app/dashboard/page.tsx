@@ -35,6 +35,11 @@ export default function DashboardPage() {
       return;
     }
     if (status === 'authenticated') {
+      const role = (session?.user as any)?.role;
+      if (role === 'ADMIN') {
+        router.push('/admin/dashboard');
+        return;
+      }
       const fetchData = async () => {
         try {
           const [reqRes, bookRes] = await Promise.all([
