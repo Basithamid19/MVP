@@ -6,29 +6,49 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
-  BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck,
+  BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
 } from 'lucide-react';
 
-const NAV = [
-  { href: '/provider/dashboard',   label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/provider/leads',        label: 'Leads',        icon: Inbox },
-  { href: '/provider/jobs',         label: 'Jobs',         icon: Briefcase },
-  { href: '/provider/earnings',     label: 'Earnings',     icon: DollarSign },
-  { href: '/provider/performance',  label: 'Performance',  icon: BarChart2 },
-  { href: '/provider/settings',     label: 'Settings',     icon: Settings },
-  { href: '/provider/disputes',     label: 'Support',      icon: LifeBuoy },
+const NAV_GROUPS = [
+  {
+    label: 'Overview',
+    items: [
+      { href: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    label: 'Work',
+    items: [
+      { href: '/provider/leads',  label: 'Leads', icon: Inbox },
+      { href: '/provider/jobs',   label: 'Jobs',  icon: Briefcase },
+    ],
+  },
+  {
+    label: 'Business',
+    items: [
+      { href: '/provider/earnings',     label: 'Earnings',     icon: DollarSign },
+      { href: '/provider/performance',  label: 'Performance',  icon: BarChart2 },
+    ],
+  },
+  {
+    label: 'Account',
+    items: [
+      { href: '/provider/settings', label: 'Settings', icon: Settings },
+      { href: '/provider/disputes', label: 'Support',  icon: LifeBuoy },
+    ],
+  },
 ];
 
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
-  // Don't show sidebar on onboarding
   if (pathname?.startsWith('/provider/onboarding')) return <>{children}</>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-16 lg:w-60 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen shrink-0">
+        {/* Logo */}
         <div className="p-4 lg:p-5 border-b border-gray-100">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
@@ -38,31 +58,38 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           </Link>
         </div>
 
-        <div className="px-2 lg:px-3 pt-4 pb-2">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-2">Pro Portal</p>
-        </div>
-
-        <nav className="flex-1 px-2 lg:px-3 space-y-1 overflow-y-auto">
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = pathname === href || pathname?.startsWith(href + '/');
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                  active
-                    ? 'bg-black text-white'
-                    : 'text-gray-500 hover:text-black hover:bg-gray-50'
-                }`}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                <span className="hidden lg:block">{label}</span>
-              </Link>
-            );
-          })}
+        {/* Nav groups */}
+        <nav className="flex-1 px-2 lg:px-3 py-4 space-y-5 overflow-y-auto">
+          {NAV_GROUPS.map(group => (
+            <div key={group.label}>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-1.5">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map(({ href, label, icon: Icon }) => {
+                  const active = pathname === href || pathname?.startsWith(href + '/');
+                  return (
+                    <Link
+                      key={href}
+                      href={href}
+                      className={`flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
+                        active
+                          ? 'bg-black text-white'
+                          : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5 shrink-0" />
+                      <span className="hidden lg:block">{label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
-        <div className="p-2 lg:p-3 border-t border-gray-100 space-y-1">
+        {/* Bottom: Verification + Logout */}
+        <div className="p-2 lg:p-3 border-t border-gray-100 space-y-0.5">
           <Link
             href="/provider/onboarding"
             className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-all"
@@ -81,9 +108,20 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0 overflow-y-auto">
-        {children}
-      </main>
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top bar */}
+        <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-3 sticky top-0 z-10">
+          <button className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
+            <Bell className="w-5 h-5" />
+            {/* Notification dot — shown when there are unread events */}
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white" />
+          </button>
+        </header>
+
+        <main className="flex-1 overflow-y-auto">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
