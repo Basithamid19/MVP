@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { 
   Calendar, 
   Clock, 
@@ -23,11 +24,16 @@ import { signOut } from 'next-auth/react';
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [requests, setRequests] = useState<any[]>([]);
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
     if (status === 'authenticated') {
       const fetchData = async () => {
         try {
@@ -35,8 +41,10 @@ export default function DashboardPage() {
             fetch('/api/requests'),
             fetch('/api/bookings')
           ]);
-          setRequests(await reqRes.json());
-          setBookings(await bookRes.json());
+          const reqData = await reqRes.json();
+          const bookData = await bookRes.json();
+          setRequests(Array.isArray(reqData) ? reqData : []);
+          setBookings(Array.isArray(bookData) ? bookData : []);
         } catch (error) {
           console.error('Failed to fetch dashboard data', error);
         } finally {
@@ -45,14 +53,18 @@ export default function DashboardPage() {
       };
       fetchData();
     }
-  }, [status]);
+  }, [status, router]);
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
       </div>
     );
+  }
+
+  if (!session) {
+    return null;
   }
 
   const role = (session?.user as any)?.role;

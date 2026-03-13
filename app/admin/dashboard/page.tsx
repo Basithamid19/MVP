@@ -39,11 +39,20 @@ const data = [
 export default function AdminDashboard() {
   const [adminData, setAdminData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [forbidden, setForbidden] = useState(false);
 
   useEffect(() => {
     const fetchAdminData = async () => {
       try {
         const res = await fetch('/api/admin');
+        if (res.status === 403 || res.status === 401) {
+          setForbidden(true);
+          return;
+        }
+        if (!res.ok) {
+          console.error('Failed to fetch admin data', res.status);
+          return;
+        }
         const data = await res.json();
         setAdminData(data);
       } catch (error) {
@@ -54,6 +63,18 @@ export default function AdminDashboard() {
     };
     fetchAdminData();
   }, []);
+
+  if (forbidden) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
+        <p className="text-2xl font-bold">Access Denied</p>
+        <p className="text-gray-500">You must be logged in as an admin to view this page.</p>
+        <a href="/login" className="bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all">
+          Log in
+        </a>
+      </div>
+    );
+  }
 
   const handleVerification = async (id: string, status: string, tier: string) => {
     try {
@@ -70,7 +91,7 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) {
+  if (loading || !adminData) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
