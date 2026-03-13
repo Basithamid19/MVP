@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
+import { useSearchParams } from 'next/navigation';
 import { 
   Search, 
   MapPin, 
@@ -26,7 +27,36 @@ const categories = [
   { name: 'Moving', slug: 'moving-help', icon: Truck, color: 'text-red-500', bg: 'bg-red-50' },
 ];
 
+const heroVariants = {
+  speed: {
+    badge: 'Trusted local pros in Vilnius',
+    title: 'Book verified home service pros in minutes.',
+    description:
+      'Compare plumbers, electricians, and cleaners with transparent pricing, real reviews, and fast local response.',
+  },
+  trust: {
+    badge: 'Handpicked professionals in Vilnius',
+    title: 'Hire trusted experts backed by real customer reviews.',
+    description:
+      'Every pro is ID-verified and reviewed by completed customers, so you can book with confidence from day one.',
+  },
+  value: {
+    badge: 'Transparent pricing, no surprises',
+    title: 'Get quality home services at clear, upfront prices.',
+    description:
+      'Compare offers from top local pros, check ratings, and choose the right fit for your budget and timeline.',
+  },
+};
+
 export default function LandingPage() {
+  const searchParams = useSearchParams();
+  const variantParam = searchParams.get('hero');
+  const activeVariant =
+    variantParam === 'trust' || variantParam === 'value' || variantParam === 'speed'
+      ? variantParam
+      : 'speed';
+  const heroContent = heroVariants[activeVariant];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Navigation */}
@@ -39,39 +69,100 @@ export default function LandingPage() {
             <span className="font-bold text-xl tracking-tight">VilniusPro</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">Log in</Link>
-            <Link href="/register" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">Join as Pro</Link>
+            <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2 rounded-md">Log in</Link>
+            <Link href="/register" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2">Join as Pro</Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
+      <section className="relative pt-12 pb-16 sm:pt-16 sm:pb-24 lg:pt-20 lg:pb-28 overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="max-w-3xl">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-xs font-bold uppercase tracking-widest rounded-full mb-6">
-                Launching in Vilnius 🇱🇹
+              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-[11px] sm:text-xs font-bold uppercase tracking-widest rounded-full mb-4 sm:mb-6">
+                {heroContent.badge}
               </span>
-              <h1 className="text-6xl sm:text-7xl font-bold tracking-tighter leading-[0.9] mb-8">
-                Find trusted local pros for your home.
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter leading-[0.95] mb-4 sm:mb-6">
+                {heroContent.title}
               </h1>
-              <p className="text-xl text-gray-500 mb-10 leading-relaxed max-w-xl">
-                The easiest way to book plumbers, electricians, and cleaners in Vilnius. Verified experts, transparent pricing.
+              <p className="text-base sm:text-lg lg:text-xl text-gray-500 mb-8 sm:mb-10 leading-relaxed max-w-xl">
+                {heroContent.description}
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/browse" className="flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all group">
+              <div className="flex flex-col sm:flex-row gap-3 mb-5 sm:mb-6">
+                <Link href="/browse" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/50 focus-visible:ring-offset-2">
                   Browse Services
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <Link href="/browse?sort=rating" className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 border border-gray-200 rounded-2xl font-semibold text-gray-700 hover:border-gray-400 hover:text-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2">
+                  Top Rated Pros
+                </Link>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-5 sm:mb-6 text-sm text-gray-600">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
                   <MapPin className="w-5 h-5 text-gray-400" />
-                  <span className="text-gray-600 font-medium">Vilnius, Lithuania</span>
+                  <span className="font-medium">Vilnius, Lithuania</span>
+                </div>
+                <span className="font-medium">4.9 average rating</span>
+                <span className="font-medium">ID-verified professionals</span>
+              </div>
+
+              <div className="flex flex-wrap gap-2 sm:gap-3">
+                {categories.slice(0, 4).map((cat) => (
+                  <Link
+                    key={cat.slug}
+                    href={`/browse?category=${cat.slug}`}
+                    className="px-3 sm:px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/30 focus-visible:ring-offset-2"
+                  >
+                    {cat.name}
+                  </Link>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.1 }}
+              className="hidden lg:block"
+            >
+              <div className="bg-gray-50 rounded-[40px] border border-gray-100 p-8 shadow-sm">
+                <div className="grid grid-cols-3 gap-4 mb-8">
+                  <div className="bg-white rounded-2xl p-4 border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1">Avg. Rating</p>
+                    <p className="text-2xl font-bold tracking-tight">4.9</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-4 border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1">Response</p>
+                    <p className="text-2xl font-bold tracking-tight">&lt;1h</p>
+                  </div>
+                  <div className="bg-white rounded-2xl p-4 border border-gray-100">
+                    <p className="text-xs text-gray-500 mb-1">Verified</p>
+                    <p className="text-2xl font-bold tracking-tight">100%</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-semibold">Emergency plumber</p>
+                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">Available now</span>
+                    </div>
+                    <p className="text-sm text-gray-500">From €35 • 4.9 rating • 220+ jobs</p>
+                  </div>
+                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="font-semibold">Licensed electrician</p>
+                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Fast reply</span>
+                    </div>
+                    <p className="text-sm text-gray-500">From €40 • 4.8 rating • 180+ jobs</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
