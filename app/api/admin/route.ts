@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         verifications: { orderBy: { createdAt: 'desc' }, take: 3 },
         _count: { select: { bookings: true, reviews: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { ratingAvg: 'desc' },
     });
     return NextResponse.json(providers);
   }
