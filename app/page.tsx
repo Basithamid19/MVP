@@ -1,9 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'motion/react';
-import { useSearchParams } from 'next/navigation';
 import { 
   Search, 
   MapPin, 
@@ -49,12 +48,15 @@ const heroVariants = {
 };
 
 export default function LandingPage() {
-  const searchParams = useSearchParams();
-  const variantParam = searchParams.get('hero');
-  const activeVariant =
-    variantParam === 'trust' || variantParam === 'value' || variantParam === 'speed'
-      ? variantParam
-      : 'speed';
+  const [activeVariant, setActiveVariant] = useState<'speed' | 'trust' | 'value'>('speed');
+
+  useEffect(() => {
+    const variantParam = new URLSearchParams(window.location.search).get('hero');
+    if (variantParam === 'trust' || variantParam === 'value' || variantParam === 'speed') {
+      setActiveVariant(variantParam);
+    }
+  }, []);
+
   const heroContent = heroVariants[activeVariant];
 
   return (
