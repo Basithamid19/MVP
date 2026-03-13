@@ -40,6 +40,10 @@ export default function DashboardPage() {
         router.push('/admin/dashboard');
         return;
       }
+      if (role === 'PROVIDER') {
+        router.push('/provider/dashboard');
+        return;
+      }
       const fetchData = async () => {
         try {
           const [reqRes, bookRes] = await Promise.all([

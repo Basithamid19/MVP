@@ -1,0 +1,84 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { auth } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const profile = await prisma.providerProfile.findUnique({
+    where: { userId: (session.user as any).id },
+    include: {
+      user: { select: { name: true, email: true, image: true } },
+      categories: true,
+      offerings: true,
+      availability: true,
+      verifications: true,
+      _count: { select: { bookings: true, reviews: true } },
+    },
+  });
+  return NextResponse.json(profile ?? {});
+}
+
+export async function PATCH(request: Request) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const body = await request.json();
+  const {
+    bio, serviceArea, languages, responseTime,
+    categoryIds, offerings, availability,
+  } = body;
+
+  const profile = await prisma.providerProfile.upsert({
+    where: { userId: (session.user as any).id },
+    update: {
+      ...(bio !== undefined && { bio }),
+      ...(serviceArea !== undefined && { serviceArea }),
+      ...(languages !== undefined && { languages }),
+      ...(responseTime !== undefined && { responseTime }),
+      ...(categoryIds && {
+        categories: { set: categoryIds.map((id: string) => ({ id })) },
+      }),
+    },
+    create: {
+      userId: (session.user as any).id,
+      bio: bio ?? '',
+      serviceArea: serviceArea ?? 'Vilnius',
+      languages: languages ?? ['Lithuanian'],
+    },
+  });
+
+  if (offerings) {
+    await prisma.serviceOffering.deleteMany({ where: { providerProfileId: profile.id } });
+    for (const o of offerings) {
+      await prisma.serviceOffering.create({
+        data: {
+          providerProfileId: profile.id,
+          name: o.name,
+          description: o.description ?? null,
+          price: parseFloat(o.price),
+          priceType: o.priceType ?? 'HOURLY',
+        },
+      });
+    }
+  }
+
+  if (availability) {
+    await prisma.availabilitySlot.deleteMany({ where: { providerProfileId: profile.id } });
+    for (const slot of availability) {
+      await prisma.availabilitySlot.create({
+        data: {
+          providerProfileId: profile.id,
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        },
+      });
+    }
+  }
+
+  return NextResponse.json(profile);
+}
