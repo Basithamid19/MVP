@@ -4,10 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
-  Calendar, Clock, MessageSquare, CheckCircle2,
+  Calendar, Clock, CheckCircle2, Briefcase,
   ChevronRight, Star, Loader2, LayoutDashboard,
   Search, LogOut, MapPin, ShieldCheck, Bell,
-  Inbox, Plus, Users, Zap, ArrowRight, Wrench, X,
+  Inbox, Plus, Users, Zap, Wrench, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -174,9 +174,60 @@ export default function DashboardPage() {
   const upcoming    = bookings.filter(b => b.status === 'SCHEDULED');
   const completed   = bookings.filter(b => b.status === 'COMPLETED');
   const activeReqs  = requests.filter(r => r.status === 'NEW' || r.status === 'QUOTED' || r.status === 'CHATTING');
+  const waitingForQuotes = requests.filter(r => r.status === 'NEW').length;
   const totalQuotes = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
   const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
   const unreadCount = visibleNotifs.length;
+  const latestRequest = requests[0] ?? null;
+  const latestQuotedRequest = requests.find((r: any) => (r.quotes?.length ?? 0) > 0) ?? null;
+
+  const customerStats = [
+    {
+      label: 'Active Requests',
+      value: activeReqs.length,
+      sub: activeReqs.length > 0 ? `${waitingForQuotes} awaiting first quote` : 'Nothing open',
+      icon: Inbox,
+      color: 'bg-blue-50 text-blue-600',
+      href: latestRequest ? `/requests/${latestRequest.id}` : '/requests/new',
+    },
+    {
+      label: 'Quotes Received',
+      value: totalQuotes,
+      sub: totalQuotes > 0 ? 'Ready to review' : 'No quotes yet',
+      icon: Users,
+      color: 'bg-green-50 text-green-600',
+      href: latestQuotedRequest ? `/requests/${latestQuotedRequest.id}` : '/requests/new',
+    },
+    {
+      label: 'Upcoming Bookings',
+      value: upcoming.length,
+      sub: upcoming.length > 0 ? 'Scheduled with pros' : 'Nothing booked',
+      icon: Calendar,
+      color: 'bg-purple-50 text-purple-600',
+      href: upcoming[0] ? `/bookings/${upcoming[0].id}` : '/browse',
+    },
+    {
+      label: 'Completed Jobs',
+      value: completed.length,
+      sub: completed.length > 0 ? 'All time' : 'No completed jobs',
+      icon: Briefcase,
+      color: 'bg-orange-50 text-orange-600',
+      href: completed[0] ? `/bookings/${completed[0].id}` : '/browse',
+    },
+  ];
+
+  const getRequestAction = (request: any) => {
+    if (request.status === 'QUOTED' && (request.quotes?.length ?? 0) > 0) {
+      return { label: 'Review Quotes', href: `/requests/${request.id}` };
+    }
+    if (request.status === 'ACCEPTED') {
+      return { label: 'View Details', href: `/requests/${request.id}` };
+    }
+    if (request.status === 'CHATTING') {
+      return { label: 'Open Request', href: `/requests/${request.id}` };
+    }
+    return { label: 'View Request', href: `/requests/${request.id}` };
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -215,9 +266,13 @@ export default function DashboardPage() {
           {/* Activity */}
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-1.5">Activity</p>
-            <Link href="/requests/new" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-all">
-              <Plus className="w-5 h-5 shrink-0" />
-              <span className="hidden lg:block">New Request</span>
+            <Link href={latestRequest ? `/requests/${latestRequest.id}` : '/requests/new'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-all">
+              <Inbox className="w-5 h-5 shrink-0" />
+              <span className="hidden lg:block">My Requests</span>
+            </Link>
+            <Link href={upcoming[0] ? `/bookings/${upcoming[0].id}` : '/browse'} className="mt-1 flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-all">
+              <Calendar className="w-5 h-5 shrink-0" />
+              <span className="hidden lg:block">Bookings</span>
             </Link>
           </div>
         </nav>
@@ -324,27 +379,54 @@ export default function DashboardPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* ── Hero ── */}
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center text-base font-bold shrink-0 select-none">
-                  {getInitials(session.user?.name)}
+            <div className="bg-white border border-gray-100 rounded-[32px] p-6 lg:p-8 shadow-sm mb-6">
+              <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center text-base font-bold shrink-0 select-none">
+                    {getInitials(session.user?.name)}
+                  </div>
+                  <div>
+                    <h1 className="text-2xl font-bold tracking-tight">Sveiki, {firstName}!</h1>
+                    <p className="text-sm text-gray-500 mt-1">Manage requests, compare quotes, and keep your upcoming jobs organized in one place.</p>
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Sveiki, {firstName}!</h1>
-                  <p className="text-sm text-gray-500 mt-0.5">Find, book, and manage trusted home service professionals.</p>
-                </div>
+                <Link
+                  href="/requests/new"
+                  className="inline-flex items-center justify-center gap-2 bg-black text-white px-5 py-3 rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  Post a Job
+                </Link>
               </div>
-              <Link
-                href="/requests/new"
-                className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                Request a Service
-              </Link>
+              <div className="flex flex-wrap gap-2 mt-6">
+                <span className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+                  {activeReqs.length} active request{activeReqs.length !== 1 ? 's' : ''}
+                </span>
+                <span className="px-3 py-1.5 rounded-full bg-green-50 text-green-700 text-xs font-bold">
+                  {totalQuotes} quote{totalQuotes !== 1 ? 's' : ''} received
+                </span>
+                <span className="px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 text-xs font-bold">
+                  {upcoming.length} booking{upcoming.length !== 1 ? 's' : ''} scheduled
+                </span>
+              </div>
+            </div>
+
+            {/* ── KPI strip ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {customerStats.map(({ label, value, sub, icon: Icon, color, href }) => (
+                <Link key={label} href={href} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-black transition-all shadow-sm">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <p className="text-2xl font-bold tracking-tight">{value}</p>
+                  <p className="text-xs text-gray-400 font-medium mt-0.5">{label}</p>
+                  <p className="text-[11px] text-gray-400 mt-1 font-medium">{sub}</p>
+                </Link>
+              ))}
             </div>
 
             {/* ── Activity banner ── */}
-            {totalQuotes > 0 && (
+            {totalQuotes > 0 && latestQuotedRequest && (
               <div className="mb-6 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-3">
                 <div className="w-8 h-8 bg-green-100 rounded-xl flex items-center justify-center shrink-0">
                   <Users className="w-4 h-4 text-green-600" />
@@ -353,9 +435,9 @@ export default function DashboardPage() {
                   <p className="text-sm font-bold text-green-800">
                     {totalQuotes} professional{totalQuotes > 1 ? 's have' : ' has'} responded to your requests
                   </p>
-                  <p className="text-xs text-green-600 mt-0.5">Review their quotes and book the best match.</p>
+                  <p className="text-xs text-green-600 mt-0.5">Compare your latest quotes and book the best match.</p>
                 </div>
-                <Link href={`/requests/${requests.find((r: any) => r.quotes?.length > 0)?.id}`} className="shrink-0 bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-700 transition-colors">
+                <Link href={`/requests/${latestQuotedRequest.id}`} className="shrink-0 bg-green-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-green-700 transition-colors">
                   Review Quotes
                 </Link>
               </div>
@@ -365,60 +447,12 @@ export default function DashboardPage() {
               {/* ── Left / centre column ── */}
               <div className="lg:col-span-2 space-y-6">
 
-                {/* Upcoming Bookings */}
-                <section>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-bold text-lg">Upcoming Bookings</h2>
-                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{upcoming.length} scheduled</span>
-                  </div>
-
-                  {upcoming.length > 0 ? (
-                    <div className="space-y-3">
-                      {upcoming.map(b => (
-                        <div key={b.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between hover:border-black transition-all group">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-gray-100 rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all shrink-0">
-                              <img
-                                src={b.provider?.user?.image || `https://i.pravatar.cc/150?u=${b.id}`}
-                                alt="Provider"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div>
-                              <p className="font-bold text-sm">{b.provider?.user?.name ?? 'Professional'}</p>
-                              <div className="flex items-center gap-3 text-xs text-gray-400 font-medium mt-0.5">
-                                <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
-                                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(b.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</p>
-                            <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full uppercase tracking-wider mt-1 inline-block">Scheduled</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
-                      <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                        <Calendar className="w-6 h-6 text-gray-300" />
-                      </div>
-                      <p className="font-bold text-sm mb-1">No upcoming bookings yet</p>
-                      <p className="text-xs text-gray-400 mb-4">Find trusted professionals and book your first service.</p>
-                      <Link href="/browse" className="inline-flex items-center gap-1.5 bg-black text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-800 transition-all">
-                        <Search className="w-3.5 h-3.5" /> Find a Pro
-                      </Link>
-                    </div>
-                  )}
-                </section>
-
                 {/* Recent Requests */}
                 <section>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="font-bold text-lg">Recent Requests</h2>
-                    {requests.length > 0 && (
-                      <Link href="/requests" className="text-xs font-bold text-black border-b border-black pb-0.5 hover:opacity-70">View all</Link>
+                    {latestRequest && (
+                      <Link href={`/requests/${latestRequest.id}`} className="text-xs font-bold text-black border-b border-black pb-0.5 hover:opacity-70">Open newest</Link>
                     )}
                   </div>
 
@@ -438,6 +472,7 @@ export default function DashboardPage() {
                       {requests.slice(0, 4).map(req => {
                         const meta = STATUS_META[req.status] ?? { label: req.status, color: 'bg-gray-50 text-gray-400' };
                         const quoteCount = req.quotes?.length ?? 0;
+                        const action = getRequestAction(req);
                         return (
                           <div key={req.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:border-black transition-all">
                             <div className="flex items-start justify-between gap-3 mb-3">
@@ -462,30 +497,29 @@ export default function DashboardPage() {
                               </span>
                             </div>
 
-                            {/* Activity row */}
-                            {quoteCount > 0 ? (
-                              <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex -space-x-1.5">
-                                    {req.quotes.slice(0, 3).map((_: any, i: number) => (
-                                      <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" />
-                                    ))}
-                                  </div>
-                                  <span className="text-xs font-semibold text-gray-700">
-                                    {quoteCount} professional{quoteCount > 1 ? 's' : ''} responded
-                                  </span>
-                                </div>
-                                <Link href={`/requests/${req.id}`} className="flex items-center gap-1 text-xs font-bold text-black hover:gap-2 transition-all">
-                                  Review Quotes <ChevronRight className="w-3.5 h-3.5" />
-                                </Link>
+                            <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                              <div className="flex items-center gap-2 min-w-0">
+                                {quoteCount > 0 ? (
+                                  <>
+                                    <div className="flex -space-x-1.5">
+                                      {req.quotes.slice(0, 3).map((_: any, i: number) => (
+                                        <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs font-semibold text-gray-700 truncate">
+                                      {quoteCount} professional{quoteCount > 1 ? 's' : ''} responded
+                                    </span>
+                                  </>
+                                ) : (
+                                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> Waiting for professionals to respond…
+                                  </p>
+                                )}
                               </div>
-                            ) : (
-                              <div className="pt-3 border-t border-gray-50">
-                                <p className="text-xs text-gray-400 flex items-center gap-1">
-                                  <Clock className="w-3 h-3" /> Waiting for professionals to respond…
-                                </p>
-                              </div>
-                            )}
+                              <Link href={action.href} className="flex items-center gap-1 text-xs font-bold text-black hover:gap-2 transition-all shrink-0">
+                                {action.label} <ChevronRight className="w-3.5 h-3.5" />
+                              </Link>
+                            </div>
                           </div>
                         );
                       })}
@@ -513,6 +547,60 @@ export default function DashboardPage() {
 
               {/* ── Right column ── */}
               <div className="space-y-5">
+                <div className="bg-black text-white rounded-3xl p-6 shadow-xl">
+                  <h3 className="font-bold mb-4">Quick Actions</h3>
+                  <div className="space-y-2">
+                    <Link href="/requests/new" className="flex items-center justify-between gap-3 px-3 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all">
+                      <span className="flex items-center gap-2"><Plus className="w-4 h-4" /> Post a Job</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                    <Link href="/browse" className="flex items-center justify-between gap-3 px-3 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all">
+                      <span className="flex items-center gap-2"><Search className="w-4 h-4" /> Find Pros</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                    {latestQuotedRequest && (
+                      <Link href={`/requests/${latestQuotedRequest.id}`} className="flex items-center justify-between gap-3 px-3 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all">
+                        <span className="flex items-center gap-2"><Users className="w-4 h-4" /> Review Quotes</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </Link>
+                    )}
+                  </div>
+                </div>
+
+                {/* Upcoming Bookings */}
+                <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-sm">Upcoming Bookings</h3>
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{upcoming.length} scheduled</span>
+                  </div>
+                  {upcoming.length === 0 ? (
+                    <div className="text-center py-4">
+                      <Calendar className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                      <p className="text-xs text-gray-400">Nothing scheduled yet.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {upcoming.slice(0, 3).map(b => (
+                        <Link key={b.id} href={`/bookings/${b.id}`} className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-all group">
+                          <div className="w-10 h-10 rounded-xl bg-gray-100 overflow-hidden shrink-0 grayscale group-hover:grayscale-0 transition-all">
+                            <img
+                              src={b.provider?.user?.image || `https://i.pravatar.cc/100?u=${b.id}`}
+                              alt={b.provider?.user?.name ?? 'Professional'}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold truncate">{b.provider?.user?.name ?? 'Professional'}</p>
+                            <p className="text-[11px] text-gray-400 mt-0.5">
+                              {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · {new Date(b.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-gray-700">€{b.totalAmount?.toFixed(0)}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 {/* Recommended Pros */}
                 <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
@@ -564,56 +652,6 @@ export default function DashboardPage() {
                     </div>
                   )}
 
-                  <Link
-                    href="/requests/new"
-                    className="mt-4 w-full flex items-center justify-center gap-2 bg-black text-white py-2.5 rounded-xl text-xs font-bold hover:bg-gray-800 transition-all"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Post a Job
-                  </Link>
-                </div>
-
-                {/* Your Stats */}
-                <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
-                  <h3 className="font-bold text-sm mb-4">Your Stats</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 font-medium">Completed Jobs</span>
-                      <span className="font-bold">{completed.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 font-medium">Active Requests</span>
-                      <span className="font-bold">{activeReqs.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-500 font-medium">Quotes Received</span>
-                      <span className="font-bold text-green-600">{totalQuotes}</span>
-                    </div>
-                    {completed.length > 0 && (
-                      <div className="flex items-center justify-between pt-3 border-t border-gray-50">
-                        <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" /> Avg Rating Given
-                        </span>
-                        <span className="font-bold">4.9</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Trusted Professionals */}
-                <div className="bg-black text-white rounded-3xl p-5 shadow-xl">
-                  <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-4">
-                    <ShieldCheck className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="font-bold text-sm mb-1.5">Trusted Professionals</h3>
-                  <p className="text-gray-400 text-xs leading-relaxed mb-4">
-                    Every professional on VilniusPro is identity-verified and background-checked so you can book with confidence.
-                  </p>
-                  <Link
-                    href="/browse"
-                    className="w-full flex items-center justify-center gap-2 bg-white text-black py-2.5 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all"
-                  >
-                    Browse Verified Pros <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
                 </div>
               </div>
             </div>
