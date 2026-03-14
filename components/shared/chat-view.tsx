@@ -152,8 +152,6 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
   const handleCall = () => {
     if (providerPhone) {
       window.location.href = `tel:${providerPhone}`;
-    } else {
-      alert('Call masking active. The pro will receive your call securely through VilniusPro.');
     }
   };
 
@@ -184,13 +182,15 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
               <Clock className="w-4 h-4" />
             </button>
           )}
-          <button
-            onClick={handleCall}
-            className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-full transition-colors"
-            title="Call pro"
-          >
-            <Phone className="w-5 h-5" />
-          </button>
+          {providerPhone && (
+            <button
+              onClick={handleCall}
+              className="p-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-full transition-colors"
+              title="Call pro"
+            >
+              <Phone className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
 
