@@ -467,13 +467,29 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-200 text-center">
-              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="font-bold text-lg mb-2">No professionals listed yet</h3>
-              <p className="text-gray-500 text-sm mb-6">Be one of the first to join our growing community of verified pros.</p>
-              <Link href="/browse" className="inline-flex items-center gap-2 text-sm font-bold text-black border-b-2 border-black pb-1 hover:opacity-70">
-                Browse categories <ArrowRight className="w-4 h-4" />
-              </Link>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { name: 'Electricians', slug: 'electrician', emoji: '⚡', desc: 'Wiring, repairs & installations', color: 'bg-blue-50' },
+                { name: 'Plumbers',     slug: 'plumber',     emoji: '🔧', desc: 'Leaks, pipes & fixtures',        color: 'bg-green-50' },
+                { name: 'Cleaners',     slug: 'cleaning',    emoji: '🧹', desc: 'Deep cleaning & maintenance',    color: 'bg-purple-50' },
+                { name: 'Handymen',     slug: 'handyman',    emoji: '🔨', desc: 'Furniture, odd jobs & more',     color: 'bg-orange-50' },
+              ].map((cat, idx) => (
+                <motion.div key={cat.slug} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }}>
+                  <Link href={`/browse?category=${cat.slug}`} className="group block bg-white rounded-3xl border border-gray-100 p-6 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all">
+                    <div className={`w-14 h-14 ${cat.color} rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
+                      {cat.emoji}
+                    </div>
+                    <p className="font-bold text-sm mb-1">{cat.name}</p>
+                    <p className="text-xs text-gray-400 mb-4">{cat.desc}</p>
+                    <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Browse pros</span>
+                      <span className="text-xs font-bold text-black flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
+                        View <ChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
             </div>
           )}
         </div>

@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar, Clock, MessageSquare, CheckCircle2,
   ChevronRight, Star, Loader2, LayoutDashboard,
   Search, LogOut, MapPin, ShieldCheck, Bell,
-  Inbox, Plus, Users, Zap, ArrowRight, Wrench,
+  Inbox, Plus, Users, Zap, ArrowRight, Wrench, X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -40,6 +40,37 @@ function getInitials(name?: string | null) {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 }
 
+interface Notification {
+  id: string;
+  type: 'quote' | 'booking' | 'status';
+  title: string;
+  body: string;
+  time: string;
+  href: string;
+}
+
+function timeAgo(date: string) {
+  const ms = Date.now() - new Date(date).getTime();
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+const NOTIF_ICON: Record<string, React.ElementType> = {
+  quote: Users,
+  booking: Calendar,
+  status: CheckCircle2,
+};
+
+const NOTIF_COLOR: Record<string, string> = {
+  quote: 'bg-green-50 text-green-600',
+  booking: 'bg-blue-50 text-blue-600',
+  status: 'bg-orange-50 text-orange-600',
+};
+
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -47,6 +78,10 @@ export default function DashboardPage() {
   const [bookings, setBookings]   = useState<any[]>([]);
   const [topPros, setTopPros]     = useState<any[]>([]);
   const [loading, setLoading]     = useState(true);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -60,12 +95,71 @@ export default function DashboardPage() {
         fetch('/api/bookings').then(r => r.json()),
         fetch('/api/providers').then(r => r.json()),
       ]).then(([reqData, bookData, prosData]) => {
-        setRequests(Array.isArray(reqData)  ? reqData  : []);
-        setBookings(Array.isArray(bookData) ? bookData : []);
-        setTopPros(Array.isArray(prosData)  ? prosData.slice(0, 3) : []);
+        const reqs = Array.isArray(reqData) ? reqData : [];
+        const books = Array.isArray(bookData) ? bookData : [];
+        setRequests(reqs);
+        setBookings(books);
+        setTopPros(Array.isArray(prosData) ? prosData.slice(0, 3) : []);
+
+        const notifs: Notification[] = [];
+        for (const req of reqs) {
+          const quoteCount = req.quotes?.length ?? 0;
+          if (quoteCount > 0) {
+            notifs.push({
+              id: `quote-${req.id}`,
+              type: 'quote',
+              title: `${quoteCount} quote${quoteCount > 1 ? 's' : ''} received`,
+              body: `${req.category?.name ?? 'Service'}: ${req.description?.slice(0, 50)}${(req.description?.length ?? 0) > 50 ? '…' : ''}`,
+              time: req.quotes[req.quotes.length - 1]?.createdAt ?? req.createdAt,
+              href: `/requests/${req.id}`,
+            });
+          }
+        }
+        for (const b of books) {
+          if (b.status === 'SCHEDULED') {
+            notifs.push({
+              id: `book-${b.id}`,
+              type: 'booking',
+              title: 'Upcoming booking',
+              body: `Scheduled for ${new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · €${b.totalAmount?.toFixed(0)}`,
+              time: b.createdAt,
+              href: `/bookings/${b.id}`,
+            });
+          } else if (b.status === 'IN_PROGRESS') {
+            notifs.push({
+              id: `prog-${b.id}`,
+              type: 'status',
+              title: 'Job in progress',
+              body: `Your booking is currently being worked on`,
+              time: b.createdAt,
+              href: `/bookings/${b.id}`,
+            });
+          } else if (b.status === 'COMPLETED') {
+            notifs.push({
+              id: `done-${b.id}`,
+              type: 'status',
+              title: 'Job completed',
+              body: `Your booking has been completed · €${b.totalAmount?.toFixed(0)}`,
+              time: b.createdAt,
+              href: `/bookings/${b.id}`,
+            });
+          }
+        }
+        notifs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+        setNotifications(notifs);
       }).catch(console.error).finally(() => setLoading(false));
     }
   }, [status, session, router]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setShowNotifs(false);
+      }
+    };
+    if (showNotifs) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [showNotifs]);
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
@@ -81,6 +175,8 @@ export default function DashboardPage() {
   const completed   = bookings.filter(b => b.status === 'COMPLETED');
   const activeReqs  = requests.filter(r => r.status === 'NEW' || r.status === 'QUOTED' || r.status === 'CHATTING');
   const totalQuotes = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
+  const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
+  const unreadCount = visibleNotifs.length;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -116,12 +212,12 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          {/* Account */}
+          {/* Activity */}
           <div>
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-1.5">Account</p>
-            <Link href="/messages" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-all">
-              <MessageSquare className="w-5 h-5 shrink-0" />
-              <span className="hidden lg:block">Messages</span>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-1.5">Activity</p>
+            <Link href="/requests/new" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-black hover:bg-gray-50 transition-all">
+              <Plus className="w-5 h-5 shrink-0" />
+              <span className="hidden lg:block">New Request</span>
             </Link>
           </div>
         </nav>
@@ -142,15 +238,85 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar */}
         <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-2 sticky top-0 z-10">
-          <Link href="/messages" className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
-            <MessageSquare className="w-5 h-5" />
-          </Link>
-          <button className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
-            <Bell className="w-5 h-5" />
-            {totalQuotes > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white" />
+          <div className="relative" ref={notifRef}>
+            <button
+              onClick={() => setShowNotifs(!showNotifs)}
+              className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black"
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
+            {showNotifs && (
+              <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-50">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                  <h3 className="font-bold text-sm">Notifications</h3>
+                  {visibleNotifs.length > 0 && (
+                    <button
+                      onClick={() => setDismissed(new Set(notifications.map(n => n.id)))}
+                      className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors"
+                    >
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                <div className="max-h-80 overflow-y-auto">
+                  {visibleNotifs.length === 0 ? (
+                    <div className="py-10 text-center">
+                      <Bell className="w-6 h-6 text-gray-200 mx-auto mb-2" />
+                      <p className="text-xs text-gray-400">You&apos;re all caught up</p>
+                    </div>
+                  ) : (
+                    visibleNotifs.slice(0, 10).map(n => {
+                      const Icon = NOTIF_ICON[n.type];
+                      const color = NOTIF_COLOR[n.type];
+                      return (
+                        <Link
+                          key={n.id}
+                          href={n.href}
+                          onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
+                          className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                        >
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold">{n.title}</p>
+                            <p className="text-xs text-gray-500 truncate mt-0.5">{n.body}</p>
+                            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                              <Clock className="w-3 h-3" /> {timeAgo(n.time)}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDismissed(prev => new Set(prev).add(n.id)); }}
+                            className="shrink-0 p-1 text-gray-300 hover:text-gray-500 transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </Link>
+                      );
+                    })
+                  )}
+                </div>
+
+                {visibleNotifs.length > 0 && (
+                  <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
+                    <button
+                      onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }}
+                      className="text-xs font-bold text-black hover:underline"
+                    >
+                      Dismiss all
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
-          </button>
+          </div>
         </header>
 
         {/* Page content */}

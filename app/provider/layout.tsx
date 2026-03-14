@@ -22,7 +22,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/provider/leads',    label: 'Leads',    icon: Inbox },
       { href: '/provider/jobs',     label: 'Jobs',     icon: Briefcase },
-      { href: '/provider/messages', label: 'Messages', icon: MessageSquare },
+      { href: '/provider/leads',    label: 'Messages', icon: MessageSquare },
     ],
   },
   {
@@ -88,26 +88,10 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       const notifs: Notification[] = [];
 
       try {
-        const [threadsRes, leadsRes, bookingsRes] = await Promise.all([
-          fetch('/api/chat/threads').then(r => r.ok ? r.json() : []).catch(() => []),
+        const [leadsRes, bookingsRes] = await Promise.all([
           fetch('/api/provider/leads').then(r => r.ok ? r.json() : []).catch(() => []),
           fetch('/api/bookings').then(r => r.ok ? r.json() : []).catch(() => []),
         ]);
-
-        if (Array.isArray(threadsRes)) {
-          for (const t of threadsRes) {
-            if (t.lastMessage && !t.lastMessage.isMe) {
-              notifs.push({
-                id: `msg-${t.id}`,
-                type: 'message',
-                title: `Message from ${t.otherUser?.name ?? 'Customer'}`,
-                body: t.lastMessage.content,
-                time: t.lastMessage.createdAt,
-                href: `/chat/${t.id}`,
-              });
-            }
-          }
-        }
 
         if (Array.isArray(leadsRes)) {
           for (const l of leadsRes.slice(0, 5)) {
@@ -223,7 +207,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar */}
         <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-2 sticky top-0 z-20">
-          <Link href="/provider/messages" className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
+          <Link href="/provider/leads" className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
             <MessageSquare className="w-5 h-5" />
           </Link>
 
@@ -300,11 +284,11 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 {visibleNotifs.length > 0 && (
                   <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
                     <Link
-                      href="/provider/messages"
+                      href="/provider/leads"
                       onClick={() => setShowNotifs(false)}
                       className="text-xs font-bold text-black hover:underline"
                     >
-                      View all messages
+                      View all leads
                     </Link>
                   </div>
                 )}
