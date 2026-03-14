@@ -45,15 +45,20 @@ export default function ProviderProfilePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!id) return;
     const fetchProvider = async () => {
       try {
         const [provRes, revRes] = await Promise.all([
           fetch(`/api/providers?id=${id}`),
           fetch(`/api/reviews?providerId=${id}`).catch(() => null),
         ]);
+
+        if (!provRes.ok) { setLoading(false); return; }
+
         const provData = await provRes.json();
-        // API returns a single object when queried by id
-        setProvider(provData?.id ? provData : null);
+        // API returns a single object (not an array) when queried by id
+        setProvider(provData && provData.id ? provData : null);
+
         if (revRes?.ok) {
           const revData = await revRes.json();
           if (Array.isArray(revData)) setReviews(revData);
