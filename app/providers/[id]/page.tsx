@@ -43,6 +43,7 @@ export default function ProviderProfilePage() {
   const [provider, setProvider] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [startingChat, setStartingChat] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -356,8 +357,31 @@ export default function ProviderProfilePage() {
                 Send Service Request
               </Link>
               
-              <button className="w-full bg-white/10 text-white text-center py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2">
-                <MessageSquare className="w-4 h-4" />
+              <button
+                disabled={startingChat}
+                onClick={async () => {
+                  setStartingChat(true);
+                  try {
+                    const res = await fetch('/api/chat/start', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ providerId: provider.id }),
+                    });
+                    if (res.status === 401) { router.push('/login'); return; }
+                    if (res.ok) {
+                      const { threadId } = await res.json();
+                      router.push(`/chat/${threadId}`);
+                    }
+                  } catch {
+                  } finally {
+                    setStartingChat(false);
+                  }
+                }}
+                className="w-full bg-white/10 text-white text-center py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {startingChat
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <MessageSquare className="w-4 h-4" />}
                 Chat with Pro
               </button>
 
