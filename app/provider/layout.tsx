@@ -7,6 +7,7 @@ import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
+  MessageSquare,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -19,8 +20,9 @@ const NAV_GROUPS = [
   {
     label: 'Work',
     items: [
-      { href: '/provider/leads',  label: 'Leads', icon: Inbox },
-      { href: '/provider/jobs',   label: 'Jobs',  icon: Briefcase },
+      { href: '/provider/leads',    label: 'Leads',    icon: Inbox },
+      { href: '/provider/jobs',     label: 'Jobs',     icon: Briefcase },
+      { href: '/provider/messages', label: 'Messages', icon: MessageSquare },
     ],
   },
   {
@@ -110,10 +112,12 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       {/* Main */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-3 sticky top-0 z-10">
+        <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-2 sticky top-0 z-10">
+          <Link href="/provider/messages" className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
+            <MessageSquare className="w-5 h-5" />
+          </Link>
           <button className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black">
             <Bell className="w-5 h-5" />
-            {/* Notification dot — shown when there are unread events */}
             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-orange-500 rounded-full ring-2 ring-white" />
           </button>
         </header>
