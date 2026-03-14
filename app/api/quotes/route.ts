@@ -15,10 +15,28 @@ export async function POST(request: Request) {
 
   const provider = await prisma.providerProfile.findUnique({
     where: { userId: (session.user as any).id },
+    include: { categories: { select: { id: true } } },
   });
 
   if (!provider) {
     return NextResponse.json({ error: 'Provider profile not found' }, { status: 404 });
+  }
+
+  const serviceRequest = await prisma.serviceRequest.findUnique({
+    where: { id: requestId },
+    select: { categoryId: true },
+  });
+
+  if (!serviceRequest) {
+    return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
+  }
+
+  const providerCategoryIds = provider.categories.map(c => c.id);
+  if (!providerCategoryIds.includes(serviceRequest.categoryId)) {
+    return NextResponse.json(
+      { error: 'You can only quote on requests that match your service categories' },
+      { status: 403 },
+    );
   }
 
   const quote = await prisma.quote.create({

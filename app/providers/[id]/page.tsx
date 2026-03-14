@@ -43,19 +43,17 @@ export default function ProviderProfilePage() {
   const [provider, setProvider] = useState<any>(null);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [startingChat, setStartingChat] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
     const fetchProvider = async () => {
       try {
-        const provRes = await fetch(`/api/providers?id=${id}`);
-        if (provRes.ok) {
-          const provData = await provRes.json();
-          setProvider(provData?.id ? provData : null);
-        }
-
-        const revRes = await fetch(`/api/reviews?providerId=${id}`).catch(() => null);
+        const [provRes, revRes] = await Promise.all([
+          fetch(`/api/providers?id=${id}`),
+          fetch(`/api/reviews?providerId=${id}`).catch(() => null),
+        ]);
+        const provData = await provRes.json();
+        // API returns a single object when queried by id
+        setProvider(provData?.id ? provData : null);
         if (revRes?.ok) {
           const revData = await revRes.json();
           if (Array.isArray(revData)) setReviews(revData);
@@ -79,15 +77,9 @@ export default function ProviderProfilePage() {
 
   if (!provider) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center gap-4">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
-          <ShieldCheck className="w-8 h-8 text-gray-300" />
-        </div>
-        <h1 className="text-2xl font-bold">Professional not found</h1>
-        <p className="text-gray-400 text-sm max-w-xs">This profile may have been removed or the link is incorrect.</p>
-        <Link href="/browse" className="mt-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all text-sm">
-          Browse all professionals
-        </Link>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+        <h1 className="text-2xl font-bold mb-4">Provider not found</h1>
+        <Link href="/browse" className="text-black font-bold underline">Back to browse</Link>
       </div>
     );
   }
@@ -357,31 +349,8 @@ export default function ProviderProfilePage() {
                 Send Service Request
               </Link>
               
-              <button
-                disabled={startingChat}
-                onClick={async () => {
-                  setStartingChat(true);
-                  try {
-                    const res = await fetch('/api/chat/start', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ providerId: provider.id }),
-                    });
-                    if (res.status === 401) { router.push('/login'); return; }
-                    if (res.ok) {
-                      const { threadId } = await res.json();
-                      router.push(`/chat/${threadId}`);
-                    }
-                  } catch {
-                  } finally {
-                    setStartingChat(false);
-                  }
-                }}
-                className="w-full bg-white/10 text-white text-center py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {startingChat
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <MessageSquare className="w-4 h-4" />}
+              <button className="w-full bg-white/10 text-white text-center py-4 rounded-2xl font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+                <MessageSquare className="w-4 h-4" />
                 Chat with Pro
               </button>
 

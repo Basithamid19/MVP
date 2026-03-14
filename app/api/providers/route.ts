@@ -10,30 +10,23 @@ export async function GET(request: Request) {
   const verified = searchParams.get('verified');
 
   if (id) {
-    try {
-      const provider = await prisma.providerProfile.findFirst({
-        where: { id },
-        include: {
-          user: true,
-          categories: true,
-          offerings: true,
-          availability: true,
-          reviews: {
-            where: { isHidden: false },
-            include: { customer: { include: { user: { select: { name: true, image: true } } } } },
-            orderBy: { createdAt: 'desc' },
-            take: 20,
-          },
+    const provider = await prisma.providerProfile.findUnique({
+      where: { id },
+      include: {
+        user: true,
+        categories: true,
+        offerings: true,
+        availability: true,
+        reviews: {
+          where: { isHidden: false },
+          include: { customer: { include: { user: true } } },
+          orderBy: { createdAt: 'desc' },
+          take: 20,
         },
-      });
-      if (!provider) {
-        return NextResponse.json({ error: 'Provider not found' }, { status: 404 });
-      }
-      return NextResponse.json(provider);
-    } catch (err) {
-      console.error('[/api/providers] single fetch error:', err);
-      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+        _count: { select: { bookings: true, reviews: true } },
+      },
+    });
+    return NextResponse.json(provider);
   }
 
   const where: any = {};

@@ -17,12 +17,12 @@ export async function GET() {
 
   const categoryIds = profile.categories.map(c => c.id);
 
-  // Requests in provider's categories that are still open (NEW or QUOTED)
+  if (categoryIds.length === 0) return NextResponse.json([]);
+
   const requests = await prisma.serviceRequest.findMany({
     where: {
-      categoryId: { in: categoryIds.length > 0 ? categoryIds : undefined },
+      categoryId: { in: categoryIds },
       status: { in: ['NEW', 'QUOTED'] },
-      // Exclude requests this provider already quoted
       quotes: { none: { providerId: profile.id } },
     },
     include: {

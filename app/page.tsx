@@ -85,15 +85,16 @@ export default function LandingPage() {
   const [savedAddress, setSavedAddress] = useState('');
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [topPros, setTopPros]           = useState<any[]>([]);
+  const [prosLoading, setProsLoading]   = useState(true);
 
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
     if (addr) setSavedAddress(addr);
-    // Fetch top pros for homepage
     fetch('/api/providers')
       .then(r => r.json())
       .then(d => { if (Array.isArray(d)) setTopPros(d.slice(0, 4)); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setProsLoading(false));
   }, []);
 
   useEffect(() => {
@@ -395,7 +396,29 @@ export default function LandingPage() {
             <Link href="/browse" className="text-sm font-bold text-black border-b-2 border-black pb-1 hover:opacity-70">Browse all</Link>
           </div>
 
-          {topPros.length > 0 ? (
+          {prosLoading ? (
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {Array.from({ length: 4 }).map((_, idx) => (
+                <div key={idx} className="bg-white rounded-3xl border border-gray-100 p-6 animate-pulse">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-14 h-14 bg-gray-200 rounded-2xl shrink-0" />
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-24" />
+                      <div className="h-3 bg-gray-100 rounded w-16" />
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    <div className="h-4 bg-gray-200 rounded w-32" />
+                    <div className="h-3 bg-gray-100 rounded w-20" />
+                  </div>
+                  <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
+                    <div className="h-3 bg-gray-100 rounded w-16" />
+                    <div className="h-3 bg-gray-200 rounded w-10" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : topPros.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {topPros.map((pro, idx) => (
                 <motion.div key={pro.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }}>
@@ -444,40 +467,13 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            /* Placeholder cards while no data / loading */
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { cat: 'Electrician', from: '€40', jobs: '180+', rating: '4.9', tag: 'Fast reply',     tagColor: 'bg-blue-100 text-blue-700' },
-                { cat: 'Plumber',     from: '€35', jobs: '220+', rating: '4.8', tag: 'Available today', tagColor: 'bg-green-100 text-green-700' },
-                { cat: 'Cleaner',     from: '€25', jobs: '310+', rating: '5.0', tag: 'Top rated',      tagColor: 'bg-purple-100 text-purple-700' },
-                { cat: 'Handyman',    from: '€30', jobs: '140+', rating: '4.7', tag: 'Verified',       tagColor: 'bg-gray-100 text-gray-700' },
-              ].map((p, idx) => (
-                <motion.div key={idx} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }}>
-                  <Link href="/browse" className="group block bg-white rounded-3xl border border-gray-100 p-6 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-14 h-14 bg-gray-100 rounded-2xl overflow-hidden shrink-0 grayscale group-hover:grayscale-0 transition-all">
-                        <img src={`https://i.pravatar.cc/100?img=${idx + 20}`} alt="" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-sm">{p.cat} Pro</p>
-                        <p className="text-xs text-gray-400">{p.cat}</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-1.5">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-bold">{p.rating}</span>
-                        <span className="text-xs text-gray-400">({p.jobs} jobs)</span>
-                      </div>
-                      <p className="text-xs text-green-700 font-semibold">From {p.from}</p>
-                    </div>
-                    <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${p.tagColor}`}>{p.tag}</span>
-                      <span className="text-xs font-bold text-black flex items-center gap-0.5 group-hover:gap-1.5 transition-all">View <ChevronRight className="w-3.5 h-3.5" /></span>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+            <div className="bg-white p-12 rounded-3xl border border-dashed border-gray-200 text-center">
+              <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="font-bold text-lg mb-2">No professionals listed yet</h3>
+              <p className="text-gray-500 text-sm mb-6">Be one of the first to join our growing community of verified pros.</p>
+              <Link href="/browse" className="inline-flex items-center gap-2 text-sm font-bold text-black border-b-2 border-black pb-1 hover:opacity-70">
+                Browse categories <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           )}
         </div>
