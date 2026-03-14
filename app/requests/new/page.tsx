@@ -3,23 +3,29 @@
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, ArrowRight, MapPin, Calendar, Camera,
-  AlertCircle, Loader2, CheckCircle2, Send, Zap,
-  Droplets, Hammer, Sparkles, Box, Truck, Package,
+  ArrowLeft, ArrowRight, MapPin, Calendar,
+  AlertCircle, Loader2, CheckCircle2, Send,
   X, ImagePlus,
 } from 'lucide-react';
 
-const ICON_MAP: Record<string, React.ElementType> = {
-  Droplets, Zap, Hammer, Sparkles, Box, Truck,
+const EMOJI_MAP: Record<string, string> = {
+  plumber:              '🔧',
+  electrician:          '⚡',
+  cleaning:             '🧹',
+  handyman:             '🔨',
+  'furniture-assembly': '🪑',
+  'moving-help':        '📦',
+  painting:             '🎨',
 };
 
-const CAT_STYLES: Record<string, { color: string; bg: string; border: string }> = {
-  plumber:            { color: 'text-blue-600',   bg: 'bg-blue-50',   border: 'border-blue-200' },
-  electrician:        { color: 'text-yellow-600', bg: 'bg-yellow-50', border: 'border-yellow-200' },
-  handyman:           { color: 'text-orange-600', bg: 'bg-orange-50', border: 'border-orange-200' },
-  cleaning:           { color: 'text-green-600',  bg: 'bg-green-50',  border: 'border-green-200' },
-  'furniture-assembly': { color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
-  'moving-help':      { color: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200' },
+const CAT_BORDER: Record<string, string> = {
+  plumber:              'border-blue-200',
+  electrician:          'border-yellow-200',
+  handyman:             'border-orange-200',
+  cleaning:             'border-green-200',
+  'furniture-assembly': 'border-purple-200',
+  'moving-help':        'border-red-200',
+  painting:             'border-pink-200',
 };
 
 const STEPS = ['Service', 'Details', 'Schedule', 'Review'];
@@ -196,19 +202,19 @@ function NewRequestContent() {
             <p className="text-gray-500 text-sm mb-8">Choose a service to get matched with the right pros.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {categories.map((cat) => {
-                const Icon = ICON_MAP[cat.icon] || Package;
-                const style = CAT_STYLES[cat.slug] || { color: 'text-gray-500', bg: 'bg-gray-50', border: 'border-gray-200' };
+                const emoji = EMOJI_MAP[cat.slug] || '🛠️';
+                const border = CAT_BORDER[cat.slug] || 'border-gray-200';
                 const selected = form.categoryId === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
                     className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                      selected ? 'border-black bg-black' : `${style.border} bg-white hover:border-gray-400`
+                      selected ? 'border-black bg-black' : `${border} bg-white hover:border-gray-400`
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${selected ? 'bg-white/20' : style.bg}`}>
-                      <Icon className={`w-5 h-5 ${selected ? 'text-white' : style.color}`} />
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-2xl ${selected ? 'bg-white/20' : 'bg-gray-50'}`}>
+                      {emoji}
                     </div>
                     <p className={`font-bold text-sm ${selected ? 'text-white' : 'text-black'}`}>{cat.name}</p>
                     {cat.description && (
