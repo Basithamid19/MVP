@@ -6,20 +6,20 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useSession } from 'next-auth/react';
 import {
-  Search, MapPin, Star, ShieldCheck, Droplets, Zap, Hammer,
-  Sparkles, Box, Truck, ArrowRight, AlertCircle, Clock,
+  Search, MapPin, Star, ShieldCheck, Zap,
+  ArrowRight, AlertCircle, Clock,
   ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush,
 } from 'lucide-react';
 
 /* ─── Static data ─── */
 const categories = [
-  { name: 'Plumber',     slug: 'plumber',            icon: Droplets, color: 'text-blue-500',   bg: 'bg-blue-50' },
-  { name: 'Electrician', slug: 'electrician',         icon: Zap,      color: 'text-yellow-500', bg: 'bg-yellow-50' },
-  { name: 'Handyman',    slug: 'handyman',            icon: Hammer,   color: 'text-orange-500', bg: 'bg-orange-50' },
-  { name: 'Cleaning',    slug: 'cleaning',            icon: Sparkles, color: 'text-green-500',  bg: 'bg-green-50' },
-  { name: 'Furniture',   slug: 'furniture-assembly',  icon: Box,      color: 'text-purple-500', bg: 'bg-purple-50' },
-  { name: 'Moving',      slug: 'moving-help',         icon: Truck,    color: 'text-red-500',    bg: 'bg-red-50' },
+  { name: 'Plumber',     slug: 'plumber',            emoji: '🔧' },
+  { name: 'Electrician', slug: 'electrician',         emoji: '⚡' },
+  { name: 'Cleaning',    slug: 'cleaning',            emoji: '🧹' },
+  { name: 'Handyman',    slug: 'handyman',            emoji: '🔨' },
+  { name: 'Moving Help', slug: 'moving-help',         emoji: '📦' },
+  { name: 'Painting',    slug: 'painting',            emoji: '🎨' },
 ];
 
 const HOW_IT_WORKS = [
@@ -209,8 +209,9 @@ export default function LandingPage() {
                   <button
                     key={cat.slug}
                     onClick={() => handleCategoryRequest(cat.slug)}
-                    className="px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-colors"
                   >
+                    <span>{cat.emoji}</span>
                     {cat.name}{isUrgent && <span className="ml-1 text-orange-500">⚡</span>}
                   </button>
                 ))}
@@ -335,8 +336,8 @@ export default function LandingPage() {
                   onClick={() => handleCategoryRequest(cat.slug)}
                   className="group block w-full p-6 bg-white rounded-3xl border border-gray-100 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all text-left cursor-pointer"
                 >
-                  <div className={`w-12 h-12 ${cat.bg} ${cat.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                    <cat.icon className="w-6 h-6" />
+                  <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-2xl">
+                    {cat.emoji}
                   </div>
                   <h3 className="font-bold text-sm">{cat.name}</h3>
                   {isUrgent && <p className="text-[10px] text-orange-500 font-bold mt-1">⚡ Urgent</p>}
