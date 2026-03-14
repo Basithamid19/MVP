@@ -52,8 +52,8 @@ export default function ProviderProfilePage() {
           fetch(`/api/reviews?providerId=${id}`).catch(() => null),
         ]);
         const provData = await provRes.json();
-        const p = provData.find((item: any) => item.id === id);
-        setProvider(p);
+        // API returns a single object when queried by id
+        setProvider(provData?.id ? provData : null);
         if (revRes?.ok) {
           const revData = await revRes.json();
           if (Array.isArray(revData)) setReviews(revData);
