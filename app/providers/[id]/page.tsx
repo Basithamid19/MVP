@@ -48,17 +48,13 @@ export default function ProviderProfilePage() {
     if (!id) return;
     const fetchProvider = async () => {
       try {
-        const [provRes, revRes] = await Promise.all([
-          fetch(`/api/providers?id=${id}`),
-          fetch(`/api/reviews?providerId=${id}`).catch(() => null),
-        ]);
+        const provRes = await fetch(`/api/providers?id=${id}`);
+        if (provRes.ok) {
+          const provData = await provRes.json();
+          setProvider(provData?.id ? provData : null);
+        }
 
-        if (!provRes.ok) { setLoading(false); return; }
-
-        const provData = await provRes.json();
-        // API returns a single object (not an array) when queried by id
-        setProvider(provData && provData.id ? provData : null);
-
+        const revRes = await fetch(`/api/reviews?providerId=${id}`).catch(() => null);
         if (revRes?.ok) {
           const revData = await revRes.json();
           if (Array.isArray(revData)) setReviews(revData);
@@ -82,9 +78,15 @@ export default function ProviderProfilePage() {
 
   if (!provider) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
-        <h1 className="text-2xl font-bold mb-4">Provider not found</h1>
-        <Link href="/browse" className="text-black font-bold underline">Back to browse</Link>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center gap-4">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-2">
+          <ShieldCheck className="w-8 h-8 text-gray-300" />
+        </div>
+        <h1 className="text-2xl font-bold">Professional not found</h1>
+        <p className="text-gray-400 text-sm max-w-xs">This profile may have been removed or the link is incorrect.</p>
+        <Link href="/browse" className="mt-2 bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all text-sm">
+          Browse all professionals
+        </Link>
       </div>
     );
   }
