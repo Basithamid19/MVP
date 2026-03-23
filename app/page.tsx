@@ -6,20 +6,67 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useSession } from 'next-auth/react';
 import {
-  Search, MapPin, Star, ShieldCheck, Zap,
+  Search, MapPin, Star, ShieldCheck,
   ArrowRight, AlertCircle, Clock,
   ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush,
+  Wrench, Hammer, Truck, Paintbrush, Zap
 } from 'lucide-react';
+import { buttonVariants } from '@/components/ui';
+
+// Custom Broom Icon for Cleaning
+const BroomIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <g transform="scale(1.2) translate(-2, -2)">
+      <path d="M18 2l-6 6" />
+      <path d="M15 8c-3-3-8-3-11 0l-3 3h11l3-3z" />
+      <path d="M4 11v9" />
+      <path d="M10 11v9" />
+      <path d="M1 20h13" />
+      <path d="M17 14h5" />
+      <path d="M18 17h4" />
+      <path d="M17 20h5" />
+    </g>
+  </svg>
+);
+
+// Custom Plug/Electrician Icon
+const ElectricianIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <path d="M6 6h12a2 2 0 0 1 2 2v4a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V8a2 2 0 0 1 2-2z" />
+    <path d="M12 18v4" />
+    <path d="M10 12h4" />
+  </svg>
+);
 
 /* ─── Static data ─── */
 const categories = [
-  { name: 'Plumber',     slug: 'plumber',            emoji: '🔧' },
-  { name: 'Electrician', slug: 'electrician',         emoji: '⚡' },
-  { name: 'Cleaning',    slug: 'cleaning',            emoji: '🧹' },
-  { name: 'Handyman',    slug: 'handyman',            emoji: '🔨' },
-  { name: 'Moving Help', slug: 'moving-help',         emoji: '📦' },
-  { name: 'Painting',    slug: 'painting',            emoji: '🎨' },
+  { name: 'Plumber',     slug: 'plumber',            icon: Wrench },
+  { name: 'Electrician', slug: 'electrician',         icon: ElectricianIcon },
+  { name: 'Cleaning',    slug: 'cleaning',            icon: BroomIcon },
+  { name: 'Handyman',    slug: 'handyman',            icon: Hammer },
+  { name: 'Moving Help', slug: 'moving-help',         icon: Truck },
+  { name: 'Painting',    slug: 'painting',            icon: Paintbrush },
 ];
 
 const HOW_IT_WORKS = [
@@ -71,10 +118,10 @@ const TESTIMONIALS = [
 ];
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
-  SCHEDULED:   'bg-blue-100 text-blue-700',
-  IN_PROGRESS: 'bg-orange-100 text-orange-700',
-  COMPLETED:   'bg-green-100 text-green-700',
-  CANCELED:    'bg-red-100 text-red-600',
+  SCHEDULED:   'bg-info-surface text-info',
+  IN_PROGRESS: 'bg-caution-surface text-caution',
+  COMPLETED:   'bg-trust-surface text-trust',
+  CANCELED:    'bg-danger-surface text-danger',
 };
 
 export default function LandingPage() {
@@ -121,24 +168,38 @@ export default function LandingPage() {
     <div className="min-h-screen bg-white">
 
       {/* ── Nav ── */}
-      <nav className="border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-50">
+      <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">VilniusPro</span>
+            <span className="font-bold text-lg tracking-tight text-ink">VilniusPro</span>
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {session ? (
               <>
-                <Link href="/dashboard" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">My Account</Link>
-                <Link href="/requests/new" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">Book a Pro</Link>
+                <Link href="/dashboard" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
+                  My Account
+                </Link>
+                <Link
+                  href="/requests/new"
+                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
+                >
+                  Book a Pro
+                </Link>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-sm font-medium text-gray-600 hover:text-black transition-colors">Log in</Link>
-                <Link href="/register" className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">Join as Pro</Link>
+                <Link href="/login" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
+                  Log in
+                </Link>
+                <Link
+                  href="/register"
+                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
+                >
+                  Join as Pro
+                </Link>
               </>
             )}
           </div>
@@ -146,172 +207,182 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-12 pb-16 sm:pt-16 sm:pb-24 lg:pt-20 lg:pb-28 overflow-hidden">
+      <section className="relative pt-14 pb-18 sm:pt-20 sm:pb-28 lg:pt-32 lg:pb-40 overflow-hidden bg-canvas">
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
+        
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 text-[11px] font-bold uppercase tracking-widest rounded-full mb-5">
+
+              {/* Eyebrow */}
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5" />
                 Trusted local pros in Vilnius
               </span>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tighter leading-[0.95] mb-5">
-                Find trusted home service professionals in Vilnius.
+
+              {/* Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight leading-[1.05] mb-6 text-ink">
+                Premium home services, <br className="hidden lg:block" />
+                <span className="text-brand">delivered with trust.</span>
               </h1>
-              <p className="text-base sm:text-lg text-gray-500 mb-7 leading-relaxed max-w-xl">
-                Compare plumbers, electricians, cleaners and more.<br />
-                Transparent pricing. Real reviews. Fast responses.
+
+              {/* Sub-headline */}
+              <p className="text-base sm:text-lg text-ink-sub mb-10 leading-relaxed max-w-xl">
+                Find and book verified plumbers, electricians, and cleaners. 
+                Transparent pricing, real reviews, and exceptional quality.
               </p>
 
-              {/* Search bar */}
-              <form onSubmit={handleSearch} className="mb-4">
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              {/* Unified Search Bar */}
+              <form onSubmit={handleSearch} className="mb-8">
+                <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
+                  <div className="flex-1 flex items-center px-4 py-2">
+                    <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="What do you need? e.g. 'plumber'…"
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-black outline-none transition-all"
+                      placeholder="What do you need?"
+                      className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
-                  <button type="submit" className="bg-black text-white px-6 py-4 rounded-2xl font-semibold hover:bg-gray-800 transition-all shrink-0">
+                  <div className="hidden sm:block w-px h-8 bg-border-dim self-center" />
+                  <div className="flex-1 flex items-center px-4 py-2">
+                    <MapPin className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
+                    <input
+                      type="text"
+                      value={savedAddress}
+                      onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
+                      placeholder="Your address"
+                      className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' sm:w-auto w-full rounded-input'}
+                  >
                     Search
                   </button>
                 </div>
               </form>
 
-              {/* Address + urgency */}
-              <div className="flex flex-wrap items-center gap-3 mb-5">
-                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                  <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-                  <input
-                    type="text"
-                    value={savedAddress}
-                    onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
-                    placeholder="Your address in Vilnius"
-                    className="bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400 w-44"
-                  />
-                </div>
+              {/* Quick category pills & Urgency */}
+              <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => setIsUrgent(!isUrgent)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${isUrgent ? 'bg-orange-50 border-orange-300 text-orange-700' : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-400'}`}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
+                    isUrgent
+                      ? 'bg-caution-surface border-caution-edge text-caution'
+                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
+                  }`}
                 >
-                  <AlertCircle className={`w-4 h-4 ${isUrgent ? 'text-orange-500' : 'text-gray-400'}`} />
-                  {isUrgent ? 'Urgent — on' : 'Mark as urgent'}
-                  <div className={`w-8 h-5 rounded-full relative transition-colors ${isUrgent ? 'bg-orange-500' : 'bg-gray-200'}`}>
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isUrgent ? 'left-3.5' : 'left-0.5'}`} />
-                  </div>
+                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
+                  {isUrgent ? 'Urgent' : 'Mark urgent'}
                 </button>
-              </div>
-
-              {/* Quick category pills */}
-              <div className="flex flex-wrap gap-2 mb-7">
-                {categories.slice(0, 4).map(cat => (
+                <div className="w-px h-4 bg-border-dim mx-1" />
+                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider">Popular:</span>
+                {categories.slice(0, 3).map(cat => {
+                  const Icon = cat.icon;
+                  return (
                   <button
                     key={cat.slug}
                     onClick={() => handleCategoryRequest(cat.slug)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-gray-200 text-sm font-medium text-gray-700 hover:text-black hover:border-gray-400 hover:bg-gray-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
                   >
-                    <span>{cat.emoji}</span>
-                    {cat.name}{isUrgent && <span className="ml-1 text-orange-500">⚡</span>}
+                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                    {cat.name}
                   </button>
-                ))}
-              </div>
-
-              {/* Trust signals */}
-              <div className="flex flex-wrap items-center gap-5 pt-5 border-t border-gray-100">
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" /> 4.9 average rating
-                </div>
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
-                  <Zap className="w-4 h-4 text-orange-500" /> &lt;1h response time
-                </div>
-                <div className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
-                  <ShieldCheck className="w-4 h-4 text-blue-500" /> 100% verified pros
-                </div>
+                )})}
               </div>
             </motion.div>
 
-            {/* Hero right card */}
+            {/* Hero right — Art Directed Image */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.1 }}
-              className="hidden lg:block"
+              className="hidden lg:block relative"
             >
-              <div className="bg-gray-50 rounded-[40px] border border-gray-100 p-8 shadow-sm">
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  {[
-                    { label: 'Avg. Rating', value: '4.9' },
-                    { label: 'Response',    value: '<1h' },
-                    { label: 'Verified',    value: '100%' },
-                  ].map(({ label, value }) => (
-                    <div key={label} className="bg-white rounded-2xl p-4 border border-gray-100">
-                      <p className="text-xs text-gray-500 mb-1">{label}</p>
-                      <p className="text-2xl font-bold tracking-tight">{value}</p>
+              <div className="relative aspect-[4/5] rounded-hero overflow-hidden shadow-float border border-border-dim/50">
+                <img 
+                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop" 
+                  alt="Professional at work" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+              </div>
+
+              {/* Floating Trust Badge */}
+              <div className="absolute -bottom-6 -left-10 bg-white p-5 rounded-panel shadow-float border border-border-dim flex items-center gap-4">
+                <div className="w-12 h-12 bg-trust-surface rounded-full flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-6 h-6 text-trust" />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-ink">100% Verified</p>
+                  <p className="text-xs text-ink-dim">Professionals in Vilnius</p>
+                </div>
+              </div>
+
+              {/* Floating Pro Badge */}
+              <div className="absolute top-12 -right-8 bg-white p-4 rounded-card shadow-elevated border border-border-dim flex items-center gap-3">
+                <div className="flex -space-x-2">
+                  {[11, 12, 13].map(i => (
+                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
+                      <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
                     </div>
                   ))}
                 </div>
-                <div className="space-y-3">
-                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold">Emergency plumber</p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700 font-medium">Available now</span>
-                    </div>
-                    <p className="text-sm text-gray-500">From €35 · 4.9 rating · 220+ jobs</p>
+                <div>
+                  <div className="flex items-center gap-1 text-yellow-500 mb-0.5">
+                    <Star className="w-3.5 h-3.5 fill-current" />
+                    <span className="text-ink font-bold text-xs">4.9</span>
                   </div>
-                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold">Licensed electrician</p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">Fast reply</span>
-                    </div>
-                    <p className="text-sm text-gray-500">From €40 · 4.8 rating · 180+ jobs</p>
-                  </div>
-                  <div className="bg-white rounded-2xl border border-gray-100 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-semibold">Professional cleaner</p>
-                      <span className="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-700 font-medium">Top rated</span>
-                    </div>
-                    <p className="text-sm text-gray-500">From €25 · 5.0 rating · 310+ jobs</p>
-                  </div>
+                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">Top Rated</p>
                 </div>
               </div>
             </motion.div>
           </div>
         </div>
-        <div className="absolute top-0 right-0 w-1/2 h-full bg-gray-50 -z-10 rounded-l-[100px] hidden lg:block">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:20px_20px]" />
-        </div>
       </section>
 
       {/* ── Recent Bookings (logged-in only) ── */}
       {session && recentBookings.length > 0 && (
-        <section className="py-12 border-b border-gray-100">
+        <section className="py-10 border-y border-border-dim bg-surface-alt">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-xl font-bold tracking-tight">Recent bookings</h2>
-                <p className="text-sm text-gray-500">Pick up where you left off.</p>
+                <h2 className="text-base font-bold text-ink">Recent bookings</h2>
+                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off.</p>
               </div>
-              <Link href="/dashboard" className="text-sm font-bold text-black border-b-2 border-black pb-0.5 hover:opacity-70">View all</Link>
+              <Link href="/dashboard" className="text-xs font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+                View all <ChevronRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {recentBookings.map(b => (
-                <Link key={b.id} href={`/bookings/${b.id}`} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:border-black transition-all">
-                  <img src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`} alt="" className="w-10 h-10 rounded-xl object-cover grayscale shrink-0" />
+                <Link
+                  key={b.id}
+                  href={`/bookings/${b.id}`}
+                  className="flex items-center gap-3 bg-white rounded-card border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
+                >
+                  <img
+                    src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+                    alt=""
+                    className="w-10 h-10 rounded-input object-cover shrink-0"
+                  />
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm truncate">{b.provider?.user?.name}</p>
-                    <p className="text-xs text-gray-400">{b.quote?.request?.category?.name ?? 'Service'}</p>
-                    <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                    <p className="font-bold text-sm text-ink truncate">{b.provider?.user?.name}</p>
+                    <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? 'Service'}</p>
+                    <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
                       <Clock className="w-3 h-3" />
                       {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </p>
                   </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-gray-100 text-gray-500'}`}>
+                  <div className="shrink-0 flex flex-col items-end gap-1.5">
+                    <span className={`px-2 py-0.5 rounded-chip text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
                       {b.status.replace('_', ' ')}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-border" />
                   </div>
                 </Link>
               ))}
@@ -321,44 +392,66 @@ export default function LandingPage() {
       )}
 
       {/* ── 2. Popular Services ── */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-12">
+          <div className="flex items-end justify-between mb-16">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">Popular Services</h2>
-              <p className="text-gray-500">Whatever you need, we have a pro for that.</p>
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Services</p>
+              <h2 className="text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
+              <p className="text-ink-sub mt-2">Whatever you need, we have a pro for that.</p>
             </div>
-            <Link href="/browse" className="text-sm font-bold text-black border-b-2 border-black pb-1 hover:opacity-70">View all</Link>
+            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+              View all <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {categories.map((cat, idx) => (
-              <motion.div key={cat.slug} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ delay: idx * 0.07 }} viewport={{ once: true }}>
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-y-12 gap-x-4 justify-items-center">
+            {categories.map((cat, idx) => {
+              const Icon = cat.icon;
+              return (
+              <motion.div
+                key={cat.slug}
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                viewport={{ once: true }}
+              >
                 <button
                   onClick={() => handleCategoryRequest(cat.slug)}
-                  className="group block w-full p-6 bg-white rounded-3xl border border-gray-100 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all text-left cursor-pointer"
+                  className="group flex flex-col items-center cursor-pointer outline-none"
                 >
-                  <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform text-2xl">
-                    {cat.emoji}
+                  <div className="relative w-20 h-20 flex items-center justify-center mb-3">
+                    {/* Soft organic shape or rounded rect for hover */}
+                    <div className="absolute inset-0 bg-brand-muted rounded-3xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300 ease-out" />
+                    <Icon className="w-8 h-8 text-ink-sub group-hover:text-brand relative z-10 transition-colors duration-300" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-bold text-sm">{cat.name}</h3>
-                  {isUrgent && <p className="text-[10px] text-orange-500 font-bold mt-1">⚡ Urgent</p>}
+                  <div className="relative pb-2">
+                    <span className="text-sm font-bold text-ink-sub group-hover:text-brand transition-colors duration-300">
+                      {cat.name}
+                    </span>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-full bg-brand transition-all duration-300 rounded-full" />
+                  </div>
                 </button>
               </motion.div>
-            ))}
+            )})}
           </div>
         </div>
       </section>
 
       {/* ── 3. How It Works ── */}
-      <section className="py-24 bg-white">
+      <section className="py-24 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight mb-3">How VilniusPro Works</h2>
-            <p className="text-gray-500 max-w-xl mx-auto">From posting a job to booking a professional — it takes less than 5 minutes.</p>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
+            <h2 className="text-3xl font-bold tracking-tight text-ink mb-3">Three steps to getting it done</h2>
+            <p className="text-ink-sub max-w-xl mx-auto">
+              From posting a job to booking a professional — it takes less than 5 minutes.
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 relative">
+
+          <div className="grid md:grid-cols-3 gap-10 relative">
             {/* Connector line */}
-            <div className="hidden md:block absolute top-10 left-1/3 right-1/3 h-px bg-gray-200" />
+            <div className="hidden md:block absolute top-9 left-1/3 right-1/3 h-px bg-border-dim" />
+
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
               <motion.div
                 key={step}
@@ -368,17 +461,23 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 className="relative text-center"
               >
-                <div className="w-20 h-20 bg-black text-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Icon className="w-8 h-8" />
+                <div className="w-18 h-18 bg-brand text-white rounded-panel flex items-center justify-center mx-auto mb-6 shadow-elevated">
+                  <Icon className="w-7 h-7" />
                 </div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Step {step}</span>
-                <h3 className="text-lg font-bold mb-3">{title}</h3>
-                <p className="text-gray-500 text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
+                <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-2 block">
+                  Step {step}
+                </span>
+                <h3 className="text-lg font-bold text-ink mb-3">{title}</h3>
+                <p className="text-ink-sub text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
               </motion.div>
             ))}
           </div>
-          <div className="text-center mt-12">
-            <Link href="/requests/new" className="inline-flex items-center gap-2 bg-black text-white px-7 py-3.5 rounded-2xl font-bold hover:bg-gray-800 transition-all">
+
+          <div className="text-center mt-14">
+            <Link
+              href="/requests/new"
+              className={buttonVariants({ variant: 'primary', size: 'xl' })}
+            >
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -386,80 +485,99 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4. Top Rated Professionals ── */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-end justify-between mb-12">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">Top Rated Professionals</h2>
-              <p className="text-gray-500">Verified experts trusted by Vilnius homeowners.</p>
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
+              <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
+              <p className="text-ink-sub mt-2">Verified experts trusted by Vilnius homeowners.</p>
             </div>
-            <Link href="/browse" className="text-sm font-bold text-black border-b-2 border-black pb-1 hover:opacity-70">Browse all</Link>
+            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+              Browse all <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
 
           {prosLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="bg-white rounded-3xl border border-gray-100 p-6 animate-pulse">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-14 h-14 bg-gray-200 rounded-2xl shrink-0" />
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded w-24" />
-                      <div className="h-3 bg-gray-100 rounded w-16" />
+                <div key={idx} className="bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 animate-pulse shadow-sm">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-14 h-14 bg-white rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-white rounded w-24" />
+                      <div className="h-3 bg-border-dim rounded w-16" />
                     </div>
                   </div>
-                  <div className="space-y-2 mb-4">
-                    <div className="h-4 bg-gray-200 rounded w-32" />
-                    <div className="h-3 bg-gray-100 rounded w-20" />
+                  <div className="space-y-2 mb-6">
+                    <div className="h-3 bg-white rounded w-28" />
+                    <div className="h-3 bg-border-dim rounded w-20" />
                   </div>
-                  <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-                    <div className="h-3 bg-gray-100 rounded w-16" />
-                    <div className="h-3 bg-gray-200 rounded w-10" />
+                  <div className="pt-4 border-t border-border-dim flex justify-between mt-auto">
+                    <div className="h-3 bg-border-dim rounded w-16" />
+                    <div className="h-3 bg-white rounded w-10" />
                   </div>
                 </div>
               ))}
             </div>
           ) : topPros.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {topPros.map((pro, idx) => (
-                <motion.div key={pro.id} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }}>
-                  <Link href={`/providers/${pro.id}`} className="group block bg-white rounded-3xl border border-gray-100 p-6 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-14 h-14 bg-gray-100 rounded-2xl overflow-hidden shrink-0 grayscale group-hover:grayscale-0 transition-all">
-                        <img src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`} alt={pro.user?.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <p className="font-bold text-sm truncate">{pro.user?.name}</p>
-                          {pro.isVerified && <ShieldCheck className="w-3.5 h-3.5 text-blue-500 shrink-0" />}
+                <motion.div
+                  key={pro.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  viewport={{ once: true }}
+                >
+                  <Link
+                    href={`/providers/${pro.id}`}
+                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
+                  >
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 shadow-sm border border-border-dim">
+                          <img
+                            src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
+                            alt={pro.user?.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <p className="text-xs text-gray-400 truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
+                        <div className="min-w-0">
+                          <p className="font-bold text-base text-ink truncate">{pro.user?.name}</p>
+                          <p className="text-sm text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
+                        </div>
                       </div>
+                      {pro.isVerified && (
+                        <div className="w-8 h-8 rounded-full bg-white border border-trust/10 flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-4 h-4 text-trust" />
+                        </div>
+                      )}
                     </div>
 
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-2 mb-6 flex-1">
                       <div className="flex items-center gap-1.5">
                         <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-bold">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                        <span className="text-xs text-gray-400">({pro.completedJobs ?? 0} jobs)</span>
+                        <span className="text-sm font-bold text-ink">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
+                        <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
                       </div>
                       {pro.responseTime && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                          <Clock className="w-3.5 h-3.5" /> {pro.responseTime}
-                        </div>
-                      )}
-                      {pro.offerings?.[0] && (
-                        <div className="flex items-center gap-1.5 text-xs text-green-700 font-semibold">
-                          From €{pro.offerings[0].price}
+                        <div className="flex items-center gap-1.5 text-xs text-ink-sub">
+                          <Clock className="w-4 h-4 text-ink-dim" /> Usually responds in {pro.responseTime}
                         </div>
                       )}
                     </div>
 
-                    <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-xs text-gray-400 flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {pro.serviceArea?.split(',')[0] ?? 'Vilnius'}
-                      </span>
-                      <span className="text-xs font-bold text-black flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
-                        View <ChevronRight className="w-3.5 h-3.5" />
+                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
+                      {pro.offerings?.[0] ? (
+                        <div className="text-sm font-medium text-ink-dim">
+                          From <span className="font-bold text-ink">€{pro.offerings[0].price}</span>
+                        </div>
+                      ) : (
+                        <div className="text-sm font-medium text-ink-dim">Price on request</div>
+                      )}
+                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
+                        View <ChevronRight className="w-4 h-4" />
                       </span>
                     </div>
                   </Link>
@@ -467,80 +585,115 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            /* Category browse fallback */
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {[
-                { name: 'Electricians', slug: 'electrician', emoji: '⚡', desc: 'Wiring, repairs & installations', color: 'bg-blue-50' },
-                { name: 'Plumbers',     slug: 'plumber',     emoji: '🔧', desc: 'Leaks, pipes & fixtures',        color: 'bg-green-50' },
-                { name: 'Cleaners',     slug: 'cleaning',    emoji: '🧹', desc: 'Deep cleaning & maintenance',    color: 'bg-purple-50' },
-                { name: 'Handymen',     slug: 'handyman',    emoji: '🔨', desc: 'Furniture, odd jobs & more',     color: 'bg-orange-50' },
-              ].map((cat, idx) => (
-                <motion.div key={cat.slug} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.08 }} viewport={{ once: true }}>
-                  <Link href={`/browse?category=${cat.slug}`} className="group block bg-white rounded-3xl border border-gray-100 p-6 hover:border-black hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className={`w-14 h-14 ${cat.color} rounded-2xl flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform`}>
-                      {cat.emoji}
+                { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
+                { name: 'Plumbers',     slug: 'plumber',     icon: Wrench, desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
+                { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon, desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
+                { name: 'Handymen',     slug: 'handyman',    icon: Hammer, desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
+              ].map((cat, idx) => {
+                const Icon = cat.icon;
+                return (
+                <motion.div
+                  key={cat.slug}
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.08 }}
+                  viewport={{ once: true }}
+                >
+                  <Link
+                    href={`/browse?category=${cat.slug}`}
+                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
+                  >
+                    <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm`}>
+                      <Icon className="w-6 h-6" strokeWidth={1.5} />
                     </div>
-                    <p className="font-bold text-sm mb-1">{cat.name}</p>
-                    <p className="text-xs text-gray-400 mb-4">{cat.desc}</p>
-                    <div className="pt-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Browse pros</span>
-                      <span className="text-xs font-bold text-black flex items-center gap-0.5 group-hover:gap-1.5 transition-all">
-                        View <ChevronRight className="w-3.5 h-3.5" />
+                    <p className="font-bold text-base text-ink mb-1">{cat.name}</p>
+                    <p className="text-sm text-ink-sub mb-6 flex-1">{cat.desc}</p>
+                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
+                      <span className="text-sm text-ink-dim">Browse pros</span>
+                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
+                        View <ChevronRight className="w-4 h-4" />
                       </span>
                     </div>
                   </Link>
                 </motion.div>
-              ))}
+              )})}
             </div>
           )}
         </div>
       </section>
 
       {/* ── 5. Why VilniusPro ── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="relative aspect-square bg-gray-100 rounded-[60px] overflow-hidden">
+            {/* Image side */}
+            <div className="relative aspect-square bg-canvas rounded-hero overflow-hidden shadow-float border border-border-dim">
               <img
-                src="https://picsum.photos/seed/vilnius/800/800"
+                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop"
                 alt="Vilnius Professional"
-                className="object-cover w-full h-full grayscale hover:grayscale-0 transition-all duration-700"
+                className="object-cover w-full h-full transition-all duration-700"
               />
-              <div className="absolute bottom-8 left-8 right-8 p-5 bg-white/90 backdrop-blur-md rounded-3xl border border-white/20 shadow-2xl">
-                <div className="flex items-center gap-3 mb-2">
+              {/* Floating testimonial overlay */}
+              <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-panel shadow-float border border-border-dim">
+                <div className="flex items-center gap-3 mb-3">
                   <div className="flex -space-x-2">
                     {[11, 12, 13].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 overflow-hidden">
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
                         <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
                       </div>
                     ))}
                   </div>
                   <div className="flex items-center gap-1 text-yellow-500">
                     <Star className="w-4 h-4 fill-current" />
-                    <span className="text-black font-bold text-sm">4.9/5</span>
+                    <span className="text-ink font-bold text-sm">4.9/5</span>
+                    <span className="text-xs text-ink-dim ml-1">from 2,400+ reviews</span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-800 italic">&ldquo;Found an amazing electrician in just 5 minutes. Highly recommend!&rdquo;</p>
-                <p className="text-xs text-gray-400 mt-1">— Anna K., Vilnius</p>
+                <p className="text-sm font-medium text-ink leading-relaxed">
+                  &ldquo;Found an amazing electrician in just 5 minutes. Highly recommend!&rdquo;
+                </p>
+                <p className="text-xs text-ink-dim mt-2">— Anna K., Vilnius</p>
               </div>
             </div>
 
+            {/* Content side */}
             <div>
-              <h2 className="text-4xl font-bold tracking-tight mb-10">Why VilniusPro?</h2>
-              <div className="space-y-7">
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why VilniusPro</p>
+              <h2 className="text-4xl font-bold tracking-tight text-ink mb-10">
+                Built for trust, <br/>built for Vilnius.
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-5">
                 {[
-                  { icon: BadgeCheck, bg: 'bg-black', iconColor: 'text-white', title: 'Verified Experts', desc: 'All professionals are ID-verified and trade-certified before joining the platform.' },
-                  { icon: Star,       bg: 'bg-gray-100', iconColor: 'text-black', title: 'Real Reviews',    desc: 'Only customers with completed bookings can leave reviews — 100% authentic.' },
-                  { icon: Zap,        bg: 'bg-gray-100', iconColor: 'text-black', title: 'Fast Response',   desc: 'Local pros ready to help. Most requests get a reply within 1 hour.' },
-                  { icon: MessageCircle, bg: 'bg-gray-100', iconColor: 'text-black', title: 'Direct Messaging', desc: 'Chat with professionals before booking to align on scope and price.' },
-                ].map(({ icon: Icon, bg, iconColor, title, desc }) => (
-                  <div key={title} className="flex gap-5">
-                    <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center shrink-0`}>
-                      <Icon className={`w-5 h-5 ${iconColor}`} />
+                  {
+                    icon: BadgeCheck,
+                    title: 'Verified Experts',
+                    desc: 'All professionals are ID-verified and trade-certified before joining the platform.',
+                  },
+                  {
+                    icon: Star,
+                    title: 'Real Reviews Only',
+                    desc: 'Only customers with completed bookings can leave reviews — 100% authentic.',
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Fast Response',
+                    desc: 'Local pros ready to help. Most requests get a reply within 1 hour.',
+                  },
+                  {
+                    icon: MessageCircle,
+                    title: 'Direct Messaging',
+                    desc: 'Chat with professionals before booking to align on scope and price.',
+                  },
+                ].map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="bg-surface-alt rounded-[2rem] p-8 border border-border-dim shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm text-brand shrink-0 border border-border-dim">
+                      <Icon className="w-6 h-6" strokeWidth={1.5} />
                     </div>
-                    <div>
-                      <h3 className="font-bold mb-1">{title}</h3>
-                      <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
-                    </div>
+                    <h3 className="font-bold text-ink text-lg mb-3">{title}</h3>
+                    <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                   </div>
                 ))}
               </div>
@@ -550,30 +703,46 @@ export default function LandingPage() {
       </section>
 
       {/* ── 6. Testimonials ── */}
-      <section className="py-24 bg-gray-50">
+      <section className="py-24 bg-surface-alt">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold tracking-tight mb-3">What Customers Say</h2>
-            <p className="text-gray-500">Real reviews from real homeowners in Vilnius.</p>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer stories</p>
+            <h2 className="text-3xl font-bold tracking-tight text-ink mb-3">What Customers Say</h2>
+            <p className="text-ink-sub">Real reviews from real homeowners in Vilnius.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {TESTIMONIALS.map((t, idx) => (
-              <motion.div key={idx} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} viewport={{ once: true }}
-                className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm flex flex-col"
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-panel border border-border-dim p-8 shadow-sm flex flex-col hover:shadow-elevated transition-shadow"
               >
-                <div className="flex items-center gap-1 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  ))}
+                {/* Quote Icon */}
+                <div className="text-brand/20 mb-4">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.017 18L14.017 10.609C14.017 4.905 17.748 1.039 23 0L23.995 2.151C21.563 3.068 20 5.789 20 8H24V18H14.017ZM0 18V10.609C0 4.905 3.748 1.038 9 0L9.996 2.151C7.563 3.068 6 5.789 6 8H9.983L9.983 18L0 18Z" />
+                  </svg>
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed flex-1 mb-5 italic">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
+
+                {/* Quote */}
+                <p className="text-ink text-base leading-relaxed flex-1 mb-8 font-medium">
+                  "{t.quote}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center gap-4 pt-6 border-t border-border-dim">
+                  <div className="w-12 h-12 rounded-full bg-surface-alt overflow-hidden shrink-0 shadow-sm border border-border-dim">
                     <img src={`https://i.pravatar.cc/100?img=${t.avatar}`} alt={t.name} className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <p className="font-bold text-sm">{t.name}</p>
-                    <p className="text-xs text-gray-400">{t.city} · {t.service}</p>
+                    <p className="font-bold text-sm text-ink flex items-center gap-1.5">
+                      {t.name}
+                      <CheckCircle2 className="w-3.5 h-3.5 text-trust" />
+                    </p>
+                    <p className="text-xs text-ink-dim mt-0.5">{t.city} · {t.service}</p>
                   </div>
                 </div>
               </motion.div>
@@ -583,28 +752,37 @@ export default function LandingPage() {
       </section>
 
       {/* ── 7. Join as a Professional ── */}
-      <section className="py-24 bg-black text-white">
+      <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-14 items-center">
             <div>
-              <span className="inline-block px-3 py-1 bg-white/10 text-white text-[11px] font-bold uppercase tracking-widest rounded-full mb-5">
+              <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-5">
                 For professionals
               </span>
-              <h2 className="text-4xl font-bold tracking-tight mb-5">
+              <h2 className="text-4xl font-bold tracking-tight text-ink mb-5">
                 Are you a professional?<br />Get new customers in Vilnius.
               </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8 max-w-lg">
-                Join hundreds of local pros already growing their business on VilniusPro. Receive verified leads, manage bookings, and build your reputation.
+              <p className="text-ink-sub text-lg leading-relaxed mb-8 max-w-lg">
+                Join hundreds of local pros already growing their business on VilniusPro.
+                Receive verified leads, manage bookings, and build your reputation.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="flex items-center gap-2 bg-white text-black px-6 py-3.5 rounded-2xl font-bold hover:bg-gray-100 transition-all">
+                <Link
+                  href="/register"
+                  className={buttonVariants({ variant: 'primary', size: 'lg' })}
+                >
                   Join as a Pro <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link href="/browse" className="flex items-center gap-2 border border-white/20 text-white px-6 py-3.5 rounded-2xl font-bold hover:bg-white/10 transition-all">
+                <Link
+                  href="/browse"
+                  className={buttonVariants({ variant: 'outline', size: 'lg' })}
+                >
                   Learn More
                 </Link>
               </div>
             </div>
+
+            {/* Feature cards — off-white on canvas background */}
             <div className="grid grid-cols-2 gap-4">
               {[
                 { icon: Brush,        title: 'Your own profile',    desc: 'Showcase your skills, certifications, and reviews.' },
@@ -612,10 +790,12 @@ export default function LandingPage() {
                 { icon: ShieldCheck,  title: 'Verified badge',      desc: 'Build trust with a verified professional badge.' },
                 { icon: CheckCircle2, title: 'Secure payments',     desc: 'Get paid on time, every time — no chasing invoices.' },
               ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="bg-white/5 border border-white/10 rounded-2xl p-5">
-                  <Icon className="w-5 h-5 text-white mb-3" />
-                  <p className="font-bold text-sm mb-1">{title}</p>
-                  <p className="text-xs text-gray-400 leading-relaxed">{desc}</p>
+                <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-white rounded-input flex items-center justify-center mb-4 shadow-sm text-brand border border-border-dim">
+                    <Icon className="w-5 h-5" strokeWidth={1.5} />
+                  </div>
+                  <p className="font-bold text-base text-ink mb-1.5">{title}</p>
+                  <p className="text-sm text-ink-sub leading-relaxed">{desc}</p>
                 </div>
               ))}
             </div>
@@ -624,75 +804,96 @@ export default function LandingPage() {
       </section>
 
       {/* ── 8. Final CTA ── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold tracking-tight mb-4">Ready to get your job done?</h2>
-          <p className="text-gray-500 text-lg mb-10">
+      <section className="py-24 bg-canvas">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl font-bold tracking-tight text-ink mb-4">
+            Ready to get your job done?
+          </h2>
+          <p className="text-ink-sub text-lg mb-10 leading-relaxed">
             Find a trusted professional in minutes or post your job and receive quotes today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/browse" className="w-full sm:w-auto flex items-center justify-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all text-base">
+            <Link
+              href="/browse"
+              className={buttonVariants({ variant: 'primary', size: 'xl' })}
+            >
               <Search className="w-5 h-5" /> Find a Professional
             </Link>
-            <Link href="/requests/new" className="w-full sm:w-auto flex items-center justify-center gap-2 border-2 border-black text-black px-8 py-4 rounded-2xl font-bold hover:bg-gray-50 transition-all text-base">
+            <Link
+              href="/requests/new"
+              className={buttonVariants({ variant: 'outline', size: 'xl' })}
+            >
               Post a Job <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
-          <p className="text-xs text-gray-400 mt-6">Free to post · No commitment · Instant quotes</p>
+          <p className="text-xs text-ink-dim mt-6">Free to post · No commitment · Instant quotes</p>
         </div>
       </section>
 
       {/* ── 9. Footer ── */}
-      <footer className="bg-black text-white py-20">
+      <footer className="bg-canvas border-t border-border-dim py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12 mb-16">
-            <div className="md:col-span-1">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-                  <span className="text-black font-bold text-xl">V</span>
-                </div>
-                <span className="font-bold text-xl tracking-tight">VilniusPro</span>
+
+          {/* Brand lockup — centered above columns */}
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-2.5 mb-3">
+              <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+                <span className="text-white font-bold text-sm">V</span>
               </div>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                Connecting Vilnius residents with the best local service professionals. Quality work, guaranteed.
-              </p>
+              <span className="font-bold text-xl tracking-tight text-brand">VilniusPro</span>
             </div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">
+              Trusted local professionals · Vilnius, Lithuania
+            </p>
+          </div>
+
+          {/* Link columns */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
             <div>
-              <h4 className="font-bold mb-5 text-sm uppercase tracking-widest">Services</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="/browse?category=plumber"      className="hover:text-white transition-colors">Plumbing</Link></li>
-                <li><Link href="/browse?category=electrician"  className="hover:text-white transition-colors">Electrical</Link></li>
-                <li><Link href="/browse?category=cleaning"     className="hover:text-white transition-colors">Cleaning</Link></li>
-                <li><Link href="/browse?category=handyman"     className="hover:text-white transition-colors">Handyman</Link></li>
-                <li><Link href="/browse?category=moving-help"  className="hover:text-white transition-colors">Moving Help</Link></li>
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
+                <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
+                <li><Link href="/browse?category=cleaning"    className="text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
+                <li><Link href="/browse?category=handyman"    className="text-ink-sub hover:text-ink transition-colors">Handyman</Link></li>
+                <li><Link href="/browse?category=moving-help" className="text-ink-sub hover:text-ink transition-colors">Moving Help</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-sm uppercase tracking-widest">For Professionals</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="/register"              className="hover:text-white transition-colors">Join as a Pro</Link></li>
-                <li><Link href="/provider/dashboard"    className="hover:text-white transition-colors">Pro Dashboard</Link></li>
-                <li><Link href="/provider/onboarding"   className="hover:text-white transition-colors">Get Verified</Link></li>
-                <li><Link href="/provider/earnings"     className="hover:text-white transition-colors">Earnings</Link></li>
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/register"            className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
+                <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
+                <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
+                <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-sm uppercase tracking-widest">Company</h4>
-              <ul className="space-y-3 text-gray-400 text-sm">
-                <li><Link href="/about"   className="hover:text-white transition-colors">About Us</Link></li>
-                <li><Link href="/support" className="hover:text-white transition-colors">Support</Link></li>
-                <li><Link href="/terms"   className="hover:text-white transition-colors">Terms of Service</Link></li>
-                <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/about"   className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
+                <li><Link href="/support" className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
+                <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
+                <li><Link href="/privacy" className="text-ink-sub hover:text-ink transition-colors">Privacy Policy</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
+              <ul className="space-y-3 text-sm">
+                <li><Link href="/browse"       className="text-ink-sub hover:text-ink transition-colors">Find a Professional</Link></li>
+                <li><Link href="/requests/new" className="text-ink-sub hover:text-ink transition-colors">Post a Job</Link></li>
+                <li><Link href="/login"        className="text-ink-sub hover:text-ink transition-colors">Log In</Link></li>
+                <li><Link href="/register"     className="text-ink-sub hover:text-ink transition-colors">Create Account</Link></li>
               </ul>
             </div>
           </div>
-          <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500">
-            <p>© 2026 VilniusPro Marketplace. All rights reserved.</p>
-            <div className="flex gap-6">
-              <span>Vilnius, Lithuania</span>
-              <span>English / Lietuvių</span>
-            </div>
+
+          {/* Bottom bar */}
+          <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-xs text-ink-dim">© 2026 VilniusPro Marketplace. All rights reserved.</p>
+            <p className="text-xs text-ink-dim">Vilnius, Lithuania · English / Lietuvių</p>
           </div>
+
         </div>
       </footer>
     </div>

@@ -1,16 +1,29 @@
 import type {Metadata} from 'next';
-import './globals.css'; // Global styles
+import { Manrope } from 'next/font/google';
+import './globals.css';
 import AuthProvider from '@/components/providers/auth-provider';
 
+/*
+ * Manrope — premium, modern sans-serif with excellent legibility at all sizes.
+ * The `variable` option sets --font-manrope on <html>, which globals.css
+ * picks up via --font-sans in @theme, making `font-sans` resolve to Manrope.
+ */
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
 export const metadata: Metadata = {
-  title: 'VilniusPro Marketplace',
-  description: 'Find trusted local pros in Vilnius',
+  title: 'VilniusPro — Trusted Local Professionals',
+  description: 'Find and book verified local service professionals in Vilnius. Transparent pricing, real reviews, fast response.',
 };
 
 export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
-    <html lang="en">
-      <body suppressHydrationWarning>
+    <html lang="en" className={manrope.variable}>
+      <body suppressHydrationWarning className="font-sans">
         <AuthProvider>
           {children}
         </AuthProvider>
