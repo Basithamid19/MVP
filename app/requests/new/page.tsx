@@ -6,27 +6,65 @@ import {
   ArrowLeft, ArrowRight, MapPin, Calendar,
   AlertCircle, Loader2, CheckCircle2, Send,
   X, ImagePlus,
+  Wrench, Hammer, Truck, Paintbrush, Box
 } from 'lucide-react';
 
-const EMOJI_MAP: Record<string, string> = {
-  plumber:              '🔧',
-  electrician:          '⚡',
-  cleaning:             '🧹',
-  handyman:             '🔨',
-  'furniture-assembly': '🪑',
-  'moving-help':        '📦',
-  painting:             '🎨',
+// Custom Broom Icon for Cleaning
+const BroomIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <g transform="scale(1.2) translate(-2, -2)">
+      <path d="M18 2l-6 6" />
+      <path d="M15 8c-3-3-8-3-11 0l-3 3h11l3-3z" />
+      <path d="M4 11v9" />
+      <path d="M10 11v9" />
+      <path d="M1 20h13" />
+      <path d="M17 14h5" />
+      <path d="M18 17h4" />
+      <path d="M17 20h5" />
+    </g>
+  </svg>
+);
+
+// Custom Plug/Electrician Icon
+const ElectricianIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <path d="M6 6h12a2 2 0 0 1 2 2v4a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V8a2 2 0 0 1 2-2z" />
+    <path d="M12 18v4" />
+    <path d="M10 12h4" />
+  </svg>
+);
+
+const ICON_MAP: Record<string, React.ElementType> = {
+  plumber:              Wrench,
+  electrician:          ElectricianIcon,
+  cleaning:             BroomIcon,
+  handyman:             Hammer,
+  'furniture-assembly': Box,
+  'moving-help':        Truck,
+  painting:             Paintbrush,
 };
 
-const CAT_BORDER: Record<string, string> = {
-  plumber:              'border-blue-200',
-  electrician:          'border-yellow-200',
-  handyman:             'border-orange-200',
-  cleaning:             'border-green-200',
-  'furniture-assembly': 'border-purple-200',
-  'moving-help':        'border-danger-edge',
-  painting:             'border-pink-200',
-};
+
 
 const STEPS = ['Service', 'Details', 'Schedule', 'Review'];
 
@@ -200,26 +238,26 @@ function NewRequestContent() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">What do you need help with?</h1>
             <p className="text-ink-sub text-base mb-8">Choose a service to get matched with the right pros.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="flex items-center gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
               {categories.map((cat) => {
-                const emoji = EMOJI_MAP[cat.slug] || '🛠️';
-                const border = CAT_BORDER[cat.slug] || 'border-border';
+                const Icon = ICON_MAP[cat.slug] || Wrench;
                 const selected = form.categoryId === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
-                    className={`p-5 rounded-card border-2 text-left transition-all ${
-                      selected ? 'border-brand bg-brand' : `${border} bg-white hover:border-border`
+                    className={`shrink-0 w-[160px] p-5 rounded-[20px] border-2 text-left transition-all flex flex-col items-center text-center ${
+                      selected 
+                        ? 'border-brand bg-brand shadow-elevated -translate-y-1' 
+                        : 'border-transparent bg-white shadow-sm hover:shadow-elevated hover:border-brand-muted hover:-translate-y-1'
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-input flex items-center justify-center mb-3 text-2xl ${selected ? 'bg-white/20' : 'bg-surface-alt'}`}>
-                      {emoji}
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                      selected ? 'bg-white/20 text-white' : 'bg-surface-alt text-ink-sub'
+                    }`}>
+                      <Icon className="w-6 h-6" />
                     </div>
-                    <p className={`font-bold text-sm ${selected ? 'text-white' : 'text-ink'}`}>{cat.name}</p>
-                    {cat.description && (
-                      <p className={`text-xs mt-0.5 line-clamp-1 ${selected ? 'text-white/70' : 'text-ink-dim'}`}>{cat.description}</p>
-                    )}
+                    <p className={`font-bold text-sm leading-tight ${selected ? 'text-white' : 'text-ink'}`}>{cat.name}</p>
                   </button>
                 );
               })}
