@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Search, Calendar, User } from 'lucide-react';
+import { LayoutDashboard, Search, CalendarCheck, UserCircle } from 'lucide-react';
 
 export default function MobileNav() {
   const pathname = usePathname();
@@ -10,20 +10,35 @@ export default function MobileNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
       <div className="flex items-center justify-around px-2 py-2">
-        <Link href="/dashboard" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/dashboard' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+        <Link
+          href="/dashboard"
+          className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/dashboard' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
+        >
           <LayoutDashboard className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Dashboard</span>
+          <span className="text-[10px] font-medium">Home</span>
         </Link>
-        <Link href="/browse" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/browse' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+
+        <Link
+          href="/browse"
+          className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/browse' || pathname?.startsWith('/providers') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
+        >
           <Search className="w-6 h-6" />
           <span className="text-[10px] font-medium">Find Pros</span>
         </Link>
-        <Link href="/requests" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/requests') || pathname?.startsWith('/bookings') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-          <Calendar className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Jobs</span>
+
+        <Link
+          href="/account"
+          className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/account' || pathname?.startsWith('/bookings') || pathname?.startsWith('/requests') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
+        >
+          <CalendarCheck className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Bookings</span>
         </Link>
-        <Link href="/account" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/account' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-          <User className="w-6 h-6" />
+
+        <Link
+          href="/account"
+          className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors text-ink-dim hover:text-ink`}
+        >
+          <UserCircle className="w-6 h-6" />
           <span className="text-[10px] font-medium">Settings</span>
         </Link>
       </div>
