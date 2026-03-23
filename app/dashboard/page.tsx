@@ -115,7 +115,7 @@ const STEPPER_LABELS = ['Posted', 'Quotes In', 'Choose Pro', 'Completed'];
 function JobStepper({ step }: { step: number }) {
   if (step < 0) return null; // don't show for declined/expired
   return (
-    <div className="flex items-start my-4">
+    <div className="flex items-start my-6">
       {STEPPER_LABELS.map((label, i) => {
         const done    = i < step;
         const current = i === step;
@@ -268,7 +268,7 @@ export default function DashboardPage() {
         </div>
 
         <nav className="flex-1 px-2 lg:px-3 py-4 space-y-1 overflow-y-auto">
-          <Link href="/dashboard" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm bg-brand text-white">
+          <Link href="/dashboard" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm bg-surface-alt text-ink">
             <LayoutDashboard className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Dashboard</span>
           </Link>
           <Link href="/browse" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
@@ -308,20 +308,22 @@ export default function DashboardPage() {
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-border-dim rounded-card shadow-float overflow-hidden z-50">
-                <div className="flex items-center justify-between px-4 py-3 border-b border-border-dim">
-                  <h3 className="font-bold text-sm">Notifications</h3>
+              <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-border-dim rounded-panel shadow-float overflow-hidden z-50">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
+                  <h3 className="font-bold text-base text-ink">Notifications</h3>
                   {visibleNotifs.length > 0 && (
-                    <button onClick={() => setDismissed(new Set(notifications.map(n => n.id)))} className="text-[10px] font-bold text-ink-dim hover:text-ink transition-colors">
+                    <button onClick={() => setDismissed(new Set(notifications.map(n => n.id)))} className="text-xs font-bold text-ink-dim hover:text-brand transition-colors">
                       Mark all read
                     </button>
                   )}
                 </div>
                 <div className="max-h-80 overflow-y-auto">
                   {visibleNotifs.length === 0 ? (
-                    <div className="py-10 text-center">
-                      <Bell className="w-6 h-6 text-ink-dim mx-auto mb-2" />
-                      <p className="text-xs text-ink-dim">You&apos;re all caught up</p>
+                    <div className="py-12 text-center">
+                      <div className="w-12 h-12 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Bell className="w-5 h-5 text-ink-dim" />
+                      </div>
+                      <p className="text-sm font-medium text-ink-sub">You&apos;re all caught up</p>
                     </div>
                   ) : visibleNotifs.slice(0, 10).map(n => {
                     const Icon = NOTIF_ICON[n.type];
@@ -330,13 +332,13 @@ export default function DashboardPage() {
                       <Link
                         key={n.id} href={n.href}
                         onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
-                        className="flex items-start gap-3 px-4 py-3 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
+                        className="flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
                       >
                         <div className={`w-8 h-8 rounded-input flex items-center justify-center shrink-0 ${clr}`}><Icon className="w-4 h-4" /></div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold">{n.title}</p>
+                          <p className="text-sm font-bold text-ink">{n.title}</p>
                           <p className="text-xs text-ink-sub truncate mt-0.5">{n.body}</p>
-                          <p className="text-[10px] text-ink-dim mt-1 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.time)}</p>
+                          <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.time)}</p>
                         </div>
                         <button
                           onClick={e => { e.preventDefault(); e.stopPropagation(); setDismissed(prev => new Set(prev).add(n.id)); }}
@@ -349,8 +351,8 @@ export default function DashboardPage() {
                   })}
                 </div>
                 {visibleNotifs.length > 0 && (
-                  <div className="px-4 py-2.5 border-t border-border-dim bg-surface-alt">
-                    <button onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }} className="text-xs font-bold text-ink hover:underline">
+                  <div className="px-5 py-3 border-t border-border-dim bg-surface-alt text-center">
+                    <button onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }} className="text-xs font-bold text-ink-sub hover:text-ink transition-colors">
                       Dismiss all
                     </button>
                   </div>
@@ -365,27 +367,27 @@ export default function DashboardPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* ── Header ────────────────────────────────────── */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-ink">Hello, {firstName}</h1>
-                <p className="text-ink-sub mt-1">{heroSubtitle}</p>
+                <h1 className="text-3xl font-bold tracking-tight text-ink">Hello, {firstName}</h1>
+                <p className="text-ink-sub mt-1.5 text-base">{heroSubtitle}</p>
               </div>
               <Link
                 href="/requests/new"
-                className="inline-flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shrink-0"
+                className="inline-flex items-center justify-center gap-2 bg-brand text-white px-6 py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated shrink-0"
               >
                 <Plus className="w-4 h-4" /> Post a Job
               </Link>
             </div>
 
             {/* ── Quick-job shortcuts ───────────────────────── */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-6" style={{ scrollbarWidth: 'none' }}>
-              <span className="text-xs font-semibold text-ink-dim shrink-0 pr-1">Quick post:</span>
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-8" style={{ scrollbarWidth: 'none' }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim shrink-0 pr-2">Quick post:</span>
               {QUICK_JOBS.map(cat => (
                 <Link
                   key={cat.slug}
                   href={`/requests/new?category=${cat.slug}`}
-                  className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 bg-white border border-border shadow-card rounded-full text-xs font-semibold text-ink-sub hover:border-brand hover:text-ink hover:shadow-elevated transition-all"
+                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white border border-border-dim shadow-sm rounded-full text-sm font-medium text-ink-sub hover:border-brand hover:text-brand hover:shadow-card transition-all"
                 >
                   <span>{cat.emoji}</span> {cat.label}
                 </Link>
@@ -404,7 +406,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="text-xs text-trust mt-0.5">Compare prices and book the right professional.</p>
                 </div>
-                <Link href={`/requests/${quotedReqs[0].id}`} className="shrink-0 bg-trust text-white px-3 py-1.5 rounded-input text-xs font-bold hover:opacity-90 transition-colors">
+                <Link href={`/requests/${quotedReqs[0].id}`} className="shrink-0 bg-trust text-white px-4 py-2 rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
                   Review Now
                 </Link>
               </div>
@@ -417,23 +419,23 @@ export default function DashboardPage() {
               <div className="lg:col-span-2 space-y-8">
 
                 <section>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold tracking-tight text-ink">My Jobs</h2>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold tracking-tight text-ink">My Jobs</h2>
                     {requests.length > 0 && (
-                      <span className="text-xs text-ink-dim font-medium">{requests.length} total</span>
+                      <span className="text-sm text-ink-dim font-medium">{requests.length} total</span>
                     )}
                   </div>
 
                   {requests.length === 0 ? (
-                    <div className="bg-white rounded-card border border-dashed border-border p-12 text-center">
-                      <div className="w-14 h-14 bg-surface-alt rounded-card flex items-center justify-center mx-auto mb-4">
-                        <Inbox className="w-7 h-7 text-ink-dim" />
+                    <div className="bg-white rounded-panel border border-dashed border-border p-12 text-center">
+                      <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-5">
+                        <Inbox className="w-8 h-8 text-ink-dim" />
                       </div>
-                      <p className="font-bold text-sm mb-2">No jobs posted yet</p>
-                      <p className="text-xs text-ink-dim mb-6 max-w-xs mx-auto leading-relaxed">
+                      <p className="font-bold text-lg mb-2">No jobs posted yet</p>
+                      <p className="text-sm text-ink-sub mb-8 max-w-sm mx-auto leading-relaxed">
                         Describe your task, choose a category, and get quotes from local professionals within hours.
                       </p>
-                      <Link href="/requests/new" className="inline-flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-input text-sm font-bold hover:bg-brand-dark transition-all">
+                      <Link href="/requests/new" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
                         <Plus className="w-4 h-4" /> Post Your First Job
                       </Link>
                     </div>
@@ -452,7 +454,7 @@ export default function DashboardPage() {
                         return (
                           <div
                             key={req.id}
-                            className={`bg-white rounded-card p-5 transition-all duration-150 cursor-default ${
+                            className={`bg-white rounded-panel p-6 transition-all duration-150 cursor-default ${
                               isBooked
                                 ? 'border border-ink shadow-card'
                                 : 'border border-border-dim shadow-card hover:shadow-elevated hover:-translate-y-0.5'
@@ -461,11 +463,11 @@ export default function DashboardPage() {
                             {/* Category + status */}
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold bg-surface-alt text-ink-sub px-2.5 py-0.5 rounded-full">
+                                <span className="text-xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-3 py-1 rounded-full">
                                   {req.category?.name}
                                 </span>
                                 {req.isUrgent && (
-                                  <span className="flex items-center gap-0.5 text-xs font-semibold text-orange-500">
+                                  <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-caution bg-caution-surface px-3 py-1 rounded-full">
                                     <Zap className="w-3 h-3" /> Urgent
                                   </span>
                                 )}
@@ -474,9 +476,9 @@ export default function DashboardPage() {
                             </div>
 
                             {/* Title + location */}
-                            <p className="font-semibold text-sm mt-2.5 mb-1 line-clamp-1 text-ink">{req.description}</p>
-                            <p className="flex items-center gap-1 text-xs text-ink-dim">
-                              <MapPin className="w-3 h-3 shrink-0" /> {req.address}
+                            <p className="font-bold text-base mt-4 mb-1.5 line-clamp-1 text-ink">{req.description}</p>
+                            <p className="flex items-center gap-1.5 text-sm text-ink-sub font-medium">
+                              <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
                             </p>
 
                             {/* Labeled progress stepper */}
@@ -484,64 +486,64 @@ export default function DashboardPage() {
 
                             {/* Top-match preview — shown when quotes exist and provider data available */}
                             {quoteCount > 0 && topPro && (
-                              <div className="mb-3 px-3 py-2.5 bg-surface-alt rounded-input">
-                                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1.5">Top match</p>
-                                <div className="flex items-center gap-2.5">
-                                  <div className="w-6 h-6 rounded-full bg-border overflow-hidden shrink-0">
+                              <div className="mb-4 px-4 py-3 bg-surface-alt rounded-card border border-border-dim">
+                                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Top match</p>
+                                <div className="flex items-center gap-3">
+                                  <div className="w-8 h-8 rounded-full bg-border overflow-hidden shrink-0">
                                     <img
                                       src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
                                       alt={topPro.user?.name}
                                       className="w-full h-full object-cover"
                                     />
                                   </div>
-                                  <span className="text-xs font-semibold text-ink-sub">{topPro.user?.name}</span>
+                                  <span className="text-sm font-bold text-ink">{topPro.user?.name}</span>
                                   {topPro.ratingAvg && (
-                                    <span className="flex items-center gap-0.5 text-xs text-ink-sub">
-                                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                    <span className="flex items-center gap-0.5 text-xs font-bold text-ink-sub">
+                                      <Star className="w-3.5 h-3.5 text-brand fill-current" />
                                       {topPro.ratingAvg.toFixed(1)}
                                     </span>
                                   )}
                                   {topPro.isVerified && (
-                                    <span className="text-[10px] font-bold text-info bg-info-surface px-1.5 py-0.5 rounded-full">✓ Verified</span>
+                                    <span className="text-[10px] font-bold text-trust bg-trust-surface px-2 py-0.5 rounded-full">✓ Verified</span>
                                   )}
                                   {topPro.responseTime && (
-                                    <span className="text-[10px] text-ink-dim ml-auto">⚡ {topPro.responseTime}</span>
+                                    <span className="text-xs font-medium text-ink-dim ml-auto">⚡ {topPro.responseTime}</span>
                                   )}
                                 </div>
                               </div>
                             )}
 
                             {/* Footer: quote count + action */}
-                            <div className="flex items-center justify-between pt-3 border-t border-border-dim">
+                            <div className="flex items-center justify-between pt-4 mt-2 border-t border-border-dim">
                               <div className="min-w-0">
                                 {quoteCount > 0 ? (
                                   <div className="flex items-center gap-2">
                                     <div className="flex -space-x-1.5">
                                       {req.quotes.slice(0, 3).map((_: any, i: number) => (
-                                        <div key={i} className="w-5 h-5 rounded-full bg-border border-2 border-white" />
+                                        <div key={i} className="w-6 h-6 rounded-full bg-surface-alt border-2 border-white" />
                                       ))}
                                     </div>
-                                    <span className="text-xs text-ink-sub font-medium">
+                                    <span className="text-sm text-ink-sub font-bold">
                                       {quoteCount} quote{quoteCount > 1 ? 's' : ''} received
                                     </span>
                                   </div>
                                 ) : isActive ? (
-                                  <span className="text-xs text-ink-dim flex items-center gap-1">
-                                    <Clock className="w-3 h-3" /> Waiting for responses…
+                                  <span className="text-sm text-ink-dim font-medium flex items-center gap-1.5">
+                                    <Clock className="w-4 h-4" /> Waiting for responses…
                                   </span>
                                 ) : null}
                               </div>
 
                               <Link
                                 href={`/requests/${req.id}`}
-                                className={`shrink-0 flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-input transition-all ${
+                                className={`shrink-0 flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-input transition-all ${
                                   action.primary
-                                    ? 'bg-brand text-white hover:bg-brand-dark'
-                                    : 'text-ink-sub hover:text-ink'
+                                    ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
+                                    : 'bg-surface-alt text-ink hover:bg-border'
                                 }`}
                               >
                                 {action.label}
-                                {!action.primary && <ChevronRight className="w-3.5 h-3.5" />}
+                                {!action.primary && <ChevronRight className="w-4 h-4" />}
                               </Link>
                             </div>
                           </div>
@@ -559,16 +561,16 @@ export default function DashboardPage() {
 
                 {/* Browse Services */}
                 <section>
-                  <h2 className="text-lg font-bold tracking-tight text-ink mb-4">Browse Services</h2>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                  <h2 className="text-xl font-bold tracking-tight text-ink mb-4">Browse Services</h2>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                     {QUICK_JOBS.map(({ label, slug, emoji }) => (
                       <Link
                         key={slug}
                         href={`/browse?category=${slug}`}
-                        className="bg-white border border-border-dim shadow-card rounded-card p-3 flex flex-col items-center gap-1.5 text-center hover:shadow-elevated hover:-translate-y-0.5 transition-all group"
+                        className="bg-white border border-border-dim shadow-sm rounded-panel p-4 flex flex-col items-center gap-2 text-center hover:shadow-elevated hover:border-brand hover:-translate-y-0.5 transition-all group"
                       >
-                        <span className="text-xl">{emoji}</span>
-                        <span className="text-[11px] font-semibold text-ink-sub group-hover:text-ink transition-colors leading-tight">{label}</span>
+                        <span className="text-2xl">{emoji}</span>
+                        <span className="text-xs font-semibold text-ink-sub group-hover:text-brand transition-colors leading-tight">{label}</span>
                       </Link>
                     ))}
                   </div>
@@ -581,22 +583,22 @@ export default function DashboardPage() {
 
                 {/* Post a Job — minimal */}
                 <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
-                  <p className="font-bold text-sm mb-3">Need something done?</p>
-                  <Link href="/requests/new" className="w-full flex items-center justify-center gap-2 bg-brand text-white py-2.5 rounded-input text-xs font-bold hover:bg-brand-dark transition-all">
-                    <Plus className="w-3.5 h-3.5" /> Post a Job
+                  <p className="font-bold text-base mb-4 text-ink">Need something done?</p>
+                  <Link href="/requests/new" className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
+                    <Plus className="w-4 h-4" /> Post a Job
                   </Link>
                 </div>
 
                 {/* Recommended Pros with trust signals */}
                 <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center justify-between mb-4">
                     {/* Adapts to the active job's category */}
-                    <h3 className="font-semibold text-sm text-ink-sub">
+                    <h3 className="font-bold text-base text-ink">
                       {activeCat && matchedPros.length > 0
                         ? `${activeCat} pros near you`
                         : 'Recommended Pros'}
                     </h3>
-                    <Link href="/browse" className="text-[11px] font-bold text-ink-dim hover:text-ink transition-colors">
+                    <Link href="/browse" className="text-xs font-bold text-ink-dim hover:text-brand transition-colors">
                       See all
                     </Link>
                   </div>
@@ -612,11 +614,11 @@ export default function DashboardPage() {
                         <Link
                           key={s.slug}
                           href={`/browse?category=${s.slug}`}
-                          className="flex items-center gap-3 px-2 py-2 rounded-input hover:bg-surface-alt transition-all group"
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-input hover:bg-surface-alt transition-all group"
                         >
-                          <span className="text-base leading-none">{s.emoji}</span>
-                          <span className="text-sm font-medium text-ink-sub group-hover:text-ink transition-colors flex-1">{s.label}</span>
-                          <ChevronRight className="w-3.5 h-3.5 text-ink-dim group-hover:text-ink-sub transition-colors shrink-0" />
+                          <span className="text-lg leading-none">{s.emoji}</span>
+                          <span className="text-sm font-bold text-ink-sub group-hover:text-ink transition-colors flex-1">{s.label}</span>
+                          <ChevronRight className="w-4 h-4 text-ink-dim group-hover:text-ink-sub transition-colors shrink-0" />
                         </Link>
                       ))}
                     </div>
@@ -626,25 +628,25 @@ export default function DashboardPage() {
                         <Link
                           key={pro.id}
                           href={`/providers/${pro.id}`}
-                          className="flex items-start gap-3 p-2 rounded-input hover:bg-surface-alt transition-all group"
+                          className="flex items-start gap-3 p-3 rounded-input hover:bg-surface-alt transition-all group"
                         >
                           {/* Avatar */}
-                          <div className="w-9 h-9 rounded-input bg-surface-alt overflow-hidden shrink-0  transition-all">
+                          <div className="w-10 h-10 rounded-input bg-surface-alt overflow-hidden shrink-0 transition-all shadow-sm">
                             <img src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`} alt={pro.user?.name} className="w-full h-full object-cover" />
                           </div>
 
                           {/* Name + trust signals */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <p className="text-sm font-semibold truncate">{pro.user?.name}</p>
+                              <p className="text-sm font-bold text-ink truncate">{pro.user?.name}</p>
                               {pro.isVerified && (
-                                <span className="text-[10px] font-bold text-info bg-info-surface px-1.5 py-0.5 rounded-full shrink-0">✓ ID</span>
+                                <span className="text-[10px] font-bold text-trust bg-trust-surface px-1.5 py-0.5 rounded-full shrink-0">✓ ID</span>
                               )}
                             </div>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                               {pro.ratingAvg && (
                                 <span className="flex items-center gap-0.5 text-xs text-ink-sub">
-                                  <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                                  <Star className="w-3.5 h-3.5 text-brand fill-current" />
                                   {pro.ratingAvg.toFixed(1)}
                                   {pro.completedJobs > 0 && (
                                     <span className="text-[10px] text-ink-dim ml-0.5">({pro.completedJobs})</span>
@@ -662,8 +664,8 @@ export default function DashboardPage() {
                   )}
 
                   {displayPros.length > 0 && (
-                    <Link href="/browse" className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-input text-xs font-bold text-ink-sub hover:text-ink hover:bg-surface-alt transition-all border border-border-dim">
-                      Browse all professionals <ChevronRight className="w-3.5 h-3.5" />
+                    <Link href="/browse" className="mt-4 w-full flex items-center justify-center gap-1.5 py-3 rounded-card text-sm font-bold text-ink hover:bg-surface-alt transition-all border border-border-dim">
+                      Browse all professionals <ChevronRight className="w-4 h-4" />
                     </Link>
                   )}
                 </div>
