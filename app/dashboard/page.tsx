@@ -374,7 +374,7 @@ export default function DashboardPage() {
                 href="/requests/new"
                 className="inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0"
               >
-                <Plus className="w-4 h-4" /> Post a Job
+                <Search className="w-4 h-4" /> Find a Pro
               </Link>
             </div>
 
@@ -421,7 +421,7 @@ export default function DashboardPage() {
                         Ready to tackle your next home project? Describe what you need done and get quotes from verified Vilnius professionals.
                       </p>
                       <Link href="/requests/new" className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md">
-                        <Plus className="w-5 h-5" /> Post a Job
+                        <Search className="w-5 h-5" /> Find a Pro
                       </Link>
                     </div>
                   ) : (
@@ -555,17 +555,19 @@ export default function DashboardPage() {
               <div className="space-y-6">
 
                 {/* Recommended Pros */}
-                <div className="bg-white border border-border-dim shadow-sm rounded-[24px] p-6 sm:p-8 sticky top-28">
+                <section className="sticky top-28">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="font-semibold text-lg text-ink">
+                    <h2 className="text-xl font-semibold tracking-tight text-ink">
                       {activeCat && matchedPros.length > 0
                         ? `${activeCat} pros near you`
                         : 'Recommended Pros'}
-                    </h3>
+                    </h2>
                     <Link href="/browse" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">
                       See all
                     </Link>
                   </div>
+
+                  <div className="bg-white border border-border-dim shadow-sm rounded-[24px] p-6 sm:p-8">
 
                   {displayPros.length === 0 ? (
                     <div className="space-y-2">
@@ -624,7 +626,8 @@ export default function DashboardPage() {
                       Browse all professionals
                     </Link>
                   )}
-                </div>
+                  </div>
+                </section>
 
               </div>
             </div>
