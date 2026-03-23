@@ -273,10 +273,10 @@ export default function DashboardPage() {
           <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
             <Search className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Find Pros</span>
           </Link>
-          <Link href="/account" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
+          <Link href="/bookings" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
             <Calendar className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Bookings</span>
           </Link>
-          <Link href="/account?tab=settings" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
+          <Link href="/account" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
             <Users className="w-4 h-4 shrink-0" /><span className="hidden lg:block">My Account</span>
           </Link>
         </nav>
