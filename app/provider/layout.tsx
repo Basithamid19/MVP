@@ -145,36 +145,36 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
   const unreadCount = visibleNotifs.length;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-canvas flex">
       {/* Sidebar */}
-      <aside className="w-16 lg:w-60 bg-white border-r border-gray-100 flex flex-col sticky top-0 h-screen shrink-0">
-        <div className="p-4 lg:p-5 border-b border-gray-100">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm">V</span>
+      <aside className="w-16 lg:w-64 bg-canvas flex flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
+        <div className="p-6 lg:p-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
             </div>
-            <span className="font-bold text-base tracking-tight hidden lg:block">VilniusPro</span>
+            <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">VilniusPro</span>
           </Link>
         </div>
 
-        <nav className="flex-1 px-2 lg:px-3 py-4 space-y-5 overflow-y-auto">
+        <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest hidden lg:block px-2 mb-1.5">
+              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest hidden lg:block px-4 mb-2">
                 {group.label}
               </p>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {group.items.map(({ href, label, icon: Icon }) => {
                   const active = pathname === href || pathname?.startsWith(href + '/');
                   return (
                     <Link
                       key={href}
                       href={href}
-                      className={`flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                        active ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                        active ? 'bg-white shadow-sm border border-border-dim text-brand' : 'text-ink-sub hover:text-ink hover:bg-white/60 border border-transparent'
                       }`}
                     >
-                      <Icon className="w-5 h-5 shrink-0" />
+                      <Icon className="w-4 h-4 shrink-0" />
                       <span className="hidden lg:block">{label}</span>
                     </Link>
                   );
@@ -184,19 +184,19 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           ))}
         </nav>
 
-        <div className="p-2 lg:p-3 border-t border-gray-100 space-y-0.5">
+        <div className="p-4 lg:p-6 space-y-1">
           <Link
             href="/provider/onboarding"
-            className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-all"
+            className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-info hover:bg-info-surface transition-all"
           >
-            <ShieldCheck className="w-5 h-5 shrink-0" />
+            <ShieldCheck className="w-4 h-4 shrink-0" />
             <span className="hidden lg:block">Verification</span>
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-xl text-sm font-semibold text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
           >
-            <LogOut className="w-5 h-5 shrink-0" />
+            <LogOut className="w-4 h-4 shrink-0" />
             <span className="hidden lg:block">Log Out</span>
           </button>
         </div>
@@ -205,30 +205,30 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       {/* Main */}
       <div className="flex-1 min-w-0 flex flex-col">
         {/* Top bar */}
-        <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-end gap-2 sticky top-0 z-20">
+        <header className="bg-canvas/80 backdrop-blur-xl px-8 py-5 flex items-center justify-end gap-2 sticky top-0 z-20">
           {/* Notifications bell + dropdown */}
           <div className="relative" ref={panelRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-50 transition-colors text-gray-500 hover:text-black"
+              className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/60 transition-colors text-ink-sub hover:text-ink border border-transparent hover:border-border-dim"
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-white">
+                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-gray-100 rounded-2xl shadow-2xl overflow-hidden z-50">
+              <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden z-50">
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                  <h3 className="font-bold text-sm">Notifications</h3>
+                <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
+                  <h3 className="font-semibold text-base text-ink">Notifications</h3>
                   {visibleNotifs.length > 0 && (
                     <button
                       onClick={() => setDismissed(new Set(notifications.map(n => n.id)))}
-                      className="text-[10px] font-bold text-gray-400 hover:text-black transition-colors"
+                      className="text-xs font-medium text-ink-dim hover:text-brand transition-colors"
                     >
                       Mark all read
                     </button>
@@ -238,9 +238,11 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 {/* List */}
                 <div className="max-h-80 overflow-y-auto">
                   {visibleNotifs.length === 0 ? (
-                    <div className="py-10 text-center">
-                      <Bell className="w-6 h-6 text-gray-200 mx-auto mb-2" />
-                      <p className="text-xs text-gray-400">You're all caught up</p>
+                    <div className="py-12 text-center">
+                      <div className="w-12 h-12 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
+                        <Bell className="w-5 h-5 text-ink-dim" />
+                      </div>
+                      <p className="text-sm font-medium text-ink-sub">You're all caught up</p>
                     </div>
                   ) : (
                     visibleNotifs.slice(0, 10).map(n => {
@@ -251,21 +253,21 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                           key={n.id}
                           href={n.href}
                           onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
-                          className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                          className="flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
                         >
-                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${color}`}>
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold">{n.title}</p>
-                            <p className="text-xs text-gray-500 truncate mt-0.5">{n.body}</p>
-                            <p className="text-[10px] text-gray-400 mt-1 flex items-center gap-1">
+                            <p className="text-sm font-bold text-ink mb-0.5">{n.title}</p>
+                            <p className="text-xs text-ink-sub truncate">{n.body}</p>
+                            <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1">
                               <Clock className="w-3 h-3" /> {timeAgo(n.time)}
                             </p>
                           </div>
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDismissed(prev => new Set(prev).add(n.id)); }}
-                            className="shrink-0 p-1 text-gray-300 hover:text-gray-500 transition-colors"
+                            className="shrink-0 p-1 text-ink-dim hover:text-ink-sub transition-colors"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -277,10 +279,10 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
 
                 {/* Footer */}
                 {visibleNotifs.length > 0 && (
-                  <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
+                  <div className="px-5 py-3 border-t border-border-dim bg-surface-alt text-center">
                     <button
                       onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }}
-                      className="text-xs font-bold text-black hover:underline"
+                      className="text-xs font-medium text-ink-sub hover:text-ink transition-colors"
                     >
                       Dismiss all
                     </button>

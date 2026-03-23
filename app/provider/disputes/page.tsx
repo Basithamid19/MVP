@@ -61,11 +61,11 @@ export default function DisputesPage() {
           <CheckCircle2 className="w-10 h-10 text-green-600" />
         </div>
         <h1 className="text-2xl font-bold mb-3">Ticket submitted</h1>
-        <p className="text-gray-500 mb-2">Ticket ID: <span className="font-bold">VP-{Math.random().toString(36).slice(2, 10).toUpperCase()}</span></p>
-        <p className="text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+        <p className="text-ink-dim mb-2">Ticket ID: <span className="font-bold">VP-{Math.random().toString(36).slice(2, 10).toUpperCase()}</span></p>
+        <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
           Our support team will review your ticket and respond within <strong>24–48 business hours</strong> via email.
         </p>
-        <Link href="/provider/dashboard" className="bg-black text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all">
+        <Link href="/provider/dashboard" className="bg-brand text-white px-8 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all">
           Back to Dashboard
         </Link>
       </div>
@@ -80,29 +80,29 @@ export default function DisputesPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight">Support & Disputes</h1>
-          <p className="text-sm text-gray-400">Get help or raise a formal dispute</p>
+          <p className="text-sm text-ink-dim">Get help or raise a formal dispute</p>
         </div>
       </div>
 
       <div className="space-y-5">
         {/* Ticket type */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">What do you need help with?</p>
+        <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm">
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">What do you need help with?</p>
           <div className="space-y-2">
             {TICKET_TYPES.map(t => (
               <button
                 key={t.id}
                 onClick={() => { setTicketType(t.id); setSubject(t.label); }}
                 className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
-                  ticketType === t.id ? 'border-black bg-black text-white' : 'border-gray-200 hover:border-gray-400'
+                  ticketType === t.id ? 'border-brand bg-brand text-white' : 'border-border hover:border-border'
                 }`}
               >
-                <t.icon className={`w-5 h-5 shrink-0 ${ticketType === t.id ? 'text-white' : 'text-gray-400'}`} />
+                <t.icon className={`w-5 h-5 shrink-0 ${ticketType === t.id ? 'text-white' : 'text-ink-dim'}`} />
                 <div>
-                  <p className={`font-bold text-sm ${ticketType === t.id ? 'text-white' : 'text-black'}`}>{t.label}</p>
-                  <p className={`text-xs ${ticketType === t.id ? 'text-white/70' : 'text-gray-400'}`}>{t.desc}</p>
+                  <p className={`font-bold text-sm ${ticketType === t.id ? 'text-white' : 'text-ink'}`}>{t.label}</p>
+                  <p className={`text-xs ${ticketType === t.id ? 'text-white/70' : 'text-ink-dim'}`}>{t.desc}</p>
                 </div>
-                <ChevronRight className={`w-4 h-4 ml-auto shrink-0 ${ticketType === t.id ? 'text-white/50' : 'text-gray-200'}`} />
+                <ChevronRight className={`w-4 h-4 ml-auto shrink-0 ${ticketType === t.id ? 'text-white/50' : 'text-ink-dim'}`} />
               </button>
             ))}
           </div>
@@ -111,32 +111,32 @@ export default function DisputesPage() {
         {ticketType && (
           <>
             {/* Details */}
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm space-y-4">
+            <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm space-y-4">
               <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Details</p>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Subject</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Subject</label>
                 <input
                   type="text"
                   value={subject}
                   onChange={e => setSubject(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm"
+                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Booking reference <span className="normal-case font-normal">(optional)</span></label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Booking reference <span className="normal-case font-normal">(optional)</span></label>
                 <input
                   type="text"
                   value={bookingRef}
                   onChange={e => setBookingRef(e.target.value)}
                   placeholder="Booking ID or date"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black outline-none text-sm"
+                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Description *</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Description *</label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
@@ -147,15 +147,15 @@ export default function DisputesPage() {
                     ticketType === 'no_show' ? 'When was the booking? What happened when you arrived?...' :
                     'Describe your issue in detail...'
                   }
-                  className="w-full p-4 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-black outline-none resize-none text-sm"
+                  className="w-full p-4 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
                 />
-                <p className="text-xs text-gray-400 mt-1">{description.length} characters</p>
+                <p className="text-xs text-ink-dim mt-1">{description.length} characters</p>
               </div>
             </div>
 
             {/* Evidence upload */}
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-              <p className="font-bold mb-4 flex items-center gap-2"><Upload className="w-4 h-4" /> Evidence <span className="text-xs text-gray-400 font-normal ml-1">(optional)</span></p>
+            <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm">
+              <p className="font-bold mb-4 flex items-center gap-2"><Upload className="w-4 h-4" /> Evidence <span className="text-xs text-ink-dim font-normal ml-1">(optional)</span></p>
               <input
                 ref={fileRef}
                 type="file"
@@ -168,20 +168,20 @@ export default function DisputesPage() {
                 {evidence.map((f, i) => (
                   <div key={i} className="relative">
                     {f.file.type.startsWith('image/') ? (
-                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 relative">
+                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border relative">
                         <img src={f.preview} alt={f.name} className="w-full h-full object-cover" />
                         <button
                           onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))}
-                          className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                          className="absolute top-1 right-1 w-5 h-5 bg-brand/60 rounded-full flex items-center justify-center"
                         >
                           <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200">
-                        <FileText className="w-4 h-4 text-gray-400 shrink-0" />
-                        <span className="text-xs font-medium text-gray-600 max-w-[80px] truncate">{f.name}</span>
-                        <button onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))} className="text-gray-400 hover:text-red-500">
+                      <div className="flex items-center gap-2 px-3 py-2 bg-surface-alt rounded-xl border border-border">
+                        <FileText className="w-4 h-4 text-ink-dim shrink-0" />
+                        <span className="text-xs font-medium text-ink-sub max-w-[80px] truncate">{f.name}</span>
+                        <button onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))} className="text-ink-dim hover:text-red-500">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -191,18 +191,18 @@ export default function DisputesPage() {
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploadingEvidence}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 hover:border-black transition-colors text-gray-400 hover:text-black"
+                  className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
                 >
                   {uploadingEvidence ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Upload className="w-4 h-4" /><span className="text-[10px] font-bold">Upload</span></>}
                 </button>
               </div>
-              <p className="text-xs text-gray-400">Photos, screenshots, or PDF documents. Max 10MB per file.</p>
+              <p className="text-xs text-ink-dim">Photos, screenshots, or PDF documents. Max 10MB per file.</p>
             </div>
 
             <button
               onClick={handleSubmit}
               disabled={!subject.trim() || !description.trim() || submitting}
-              className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><LifeBuoy className="w-4 h-4" /> Submit Support Ticket</>}
             </button>

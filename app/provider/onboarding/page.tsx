@@ -82,16 +82,16 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
           {step > 1 && step < 5 ? (
-            <button onClick={() => setStep(s => s - 1)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <button onClick={() => setStep(s => s - 1)} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </button>
           ) : (
-            <Link href="/provider/dashboard" className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <Link href="/provider/dashboard" className="p-2 hover:bg-surface-alt rounded-full transition-colors">
               <ArrowLeft className="w-5 h-5" />
             </Link>
           )}
@@ -99,14 +99,14 @@ export default function OnboardingPage() {
             {STEPS.filter(s => s.id < 5).map((s, i) => (
               <React.Fragment key={s.id}>
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
-                  s.id < step ? 'bg-black text-white' :
-                  s.id === step ? 'bg-black text-white' :
-                  'bg-gray-100 text-gray-400'
+                  s.id < step ? 'bg-brand text-white' :
+                  s.id === step ? 'bg-brand text-white' :
+                  'bg-surface-alt text-ink-dim'
                 }`}>
                   {s.id < step ? <CheckCircle2 className="w-3.5 h-3.5" /> : s.id}
                 </div>
-                <span className={`text-xs font-bold hidden sm:block ${s.id === step ? 'text-black' : 'text-gray-300'}`}>{s.label}</span>
-                {i < 3 && <div className={`flex-1 h-px ${s.id < step ? 'bg-black' : 'bg-gray-100'}`} />}
+                <span className={`text-xs font-bold hidden sm:block ${s.id === step ? 'text-ink' : 'text-ink-dim'}`}>{s.label}</span>
+                {i < 3 && <div className={`flex-1 h-px ${s.id < step ? 'bg-brand' : 'bg-surface-alt'}`} />}
               </React.Fragment>
             ))}
           </div>
@@ -118,39 +118,39 @@ export default function OnboardingPage() {
         {step === 1 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Identity details</h1>
-            <p className="text-gray-500 text-sm mb-8">This information is verified by our team and never shown publicly.</p>
+            <p className="text-ink-dim text-sm mb-8">This information is verified by our team and never shown publicly.</p>
             <div className="space-y-5">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Full legal name</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Full legal name</label>
                 <input
                   type="text"
                   value={identity.fullName}
                   onChange={e => setIdentity(p => ({ ...p, fullName: e.target.value }))}
                   placeholder="Jonas Jonaitis"
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                  className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Phone number</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Phone number</label>
                 <input
                   type="tel"
                   value={identity.phone}
                   onChange={e => setIdentity(p => ({ ...p, phone: e.target.value }))}
                   placeholder="+370 6X XXX XXX"
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                  className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">National ID number <span className="normal-case font-normal">(optional, encrypted)</span></label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">National ID number <span className="normal-case font-normal">(optional, encrypted)</span></label>
                 <input
                   type="text"
                   value={identity.idNumber}
                   onChange={e => setIdentity(p => ({ ...p, idNumber: e.target.value }))}
                   placeholder="Personal code or ID number"
-                  className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                  className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-xs text-blue-700 leading-relaxed">
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-card text-xs text-info leading-relaxed">
                 <strong>Privacy:</strong> Your personal data is encrypted at rest and only used for verification. It is never shared with customers.
               </div>
             </div>
@@ -161,18 +161,18 @@ export default function OnboardingPage() {
         {step === 2 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Business type</h1>
-            <p className="text-gray-500 text-sm mb-8">How do you operate your services?</p>
+            <p className="text-ink-dim text-sm mb-8">How do you operate your services?</p>
             <div className="space-y-3 mb-6">
               {BUSINESS_TYPES.map(bt => (
                 <button
                   key={bt.id}
                   onClick={() => setBusinessType(bt.id)}
-                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all ${
-                    businessType === bt.id ? 'border-black bg-black text-white' : 'border-gray-200 bg-white hover:border-gray-400'
+                  className={`w-full text-left p-5 rounded-card border-2 transition-all ${
+                    businessType === bt.id ? 'border-brand bg-brand text-white' : 'border-border bg-white hover:border-border'
                   }`}
                 >
-                  <p className={`font-bold mb-0.5 ${businessType === bt.id ? 'text-white' : 'text-black'}`}>{bt.label}</p>
-                  <p className={`text-xs ${businessType === bt.id ? 'text-white/70' : 'text-gray-400'}`}>{bt.desc}</p>
+                  <p className={`font-bold mb-0.5 ${businessType === bt.id ? 'text-white' : 'text-ink'}`}>{bt.label}</p>
+                  <p className={`text-xs ${businessType === bt.id ? 'text-white/70' : 'text-ink-dim'}`}>{bt.desc}</p>
                 </button>
               ))}
             </div>
@@ -180,23 +180,23 @@ export default function OnboardingPage() {
             {businessType === 'company' && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Company name</label>
+                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Company name</label>
                   <input
                     type="text"
                     value={companyName}
                     onChange={e => setCompanyName(e.target.value)}
                     placeholder="UAB Your Company"
-                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                    className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">VAT number <span className="normal-case font-normal">(optional)</span></label>
+                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">VAT number <span className="normal-case font-normal">(optional)</span></label>
                   <input
                     type="text"
                     value={vatNumber}
                     onChange={e => setVatNumber(e.target.value)}
                     placeholder="LT000000000"
-                    className="w-full px-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                    className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
               </div>
@@ -208,13 +208,13 @@ export default function OnboardingPage() {
         {step === 3 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Documents & credentials</h1>
-            <p className="text-gray-500 text-sm mb-8">Upload your ID and any relevant trade certificates.</p>
+            <p className="text-ink-dim text-sm mb-8">Upload your ID and any relevant trade certificates.</p>
             <div className="space-y-4">
               {DOC_TYPES.map(doc => {
                 const uploaded = docs[doc.id];
                 return (
-                  <div key={doc.id} className={`p-4 bg-white rounded-2xl border transition-all ${
-                    uploaded?.uploaded ? 'border-green-200 bg-green-50' : 'border-gray-200'
+                  <div key={doc.id} className={`p-4 bg-white rounded-card border transition-all ${
+                    uploaded?.uploaded ? 'border-green-200 bg-green-50' : 'border-border'
                   }`}>
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -222,21 +222,21 @@ export default function OnboardingPage() {
                           {doc.label}
                           {doc.required && <span className="ml-1 text-red-500">*</span>}
                         </p>
-                        {!doc.required && <p className="text-xs text-gray-400">Optional — increases your trust score</p>}
+                        {!doc.required && <p className="text-xs text-ink-dim">Optional — increases your trust score</p>}
                       </div>
                       {uploaded?.uploaded && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
                     </div>
 
                     {uploaded ? (
                       <div className="flex items-center gap-3">
-                        <div className="w-16 h-12 rounded-xl overflow-hidden border border-gray-200 shrink-0">
+                        <div className="w-16 h-12 rounded-input overflow-hidden border border-border shrink-0">
                           <img src={uploaded.preview} alt={doc.label} className="w-full h-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-gray-700 truncate">{uploaded.file.name}</p>
-                          <p className="text-[10px] text-gray-400">{uploaded.uploaded ? 'Uploaded ✓' : 'Uploading…'}</p>
+                          <p className="text-xs font-bold text-ink-sub truncate">{uploaded.file.name}</p>
+                          <p className="text-[10px] text-ink-dim">{uploaded.uploaded ? 'Uploaded ✓' : 'Uploading…'}</p>
                         </div>
-                        <button onClick={() => setDocs(prev => { const n = { ...prev }; delete n[doc.id]; return n; })} className="text-gray-400 hover:text-red-500 transition-colors">
+                        <button onClick={() => setDocs(prev => { const n = { ...prev }; delete n[doc.id]; return n; })} className="text-ink-dim hover:text-red-500 transition-colors">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
@@ -251,7 +251,7 @@ export default function OnboardingPage() {
                         />
                         <button
                           onClick={() => fileRefs.current[doc.id]?.click()}
-                          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-gray-200 rounded-xl text-sm font-bold text-gray-400 hover:border-black hover:text-black transition-colors"
+                          className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-border rounded-input text-sm font-bold text-ink-dim hover:border-brand hover:text-ink transition-colors"
                         >
                           <Upload className="w-4 h-4" /> Upload file
                         </button>
@@ -268,7 +268,7 @@ export default function OnboardingPage() {
         {step === 4 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Selfie proof</h1>
-            <p className="text-gray-500 text-sm mb-8">Take a photo holding your ID to confirm your identity. This is reviewed only by our compliance team.</p>
+            <p className="text-ink-dim text-sm mb-8">Take a photo holding your ID to confirm your identity. This is reviewed only by our compliance team.</p>
             <input
               ref={selfieRef}
               type="file"
@@ -279,20 +279,20 @@ export default function OnboardingPage() {
             />
             {selfie ? (
               <div className="space-y-4">
-                <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-gray-200">
+                <div className="relative w-full aspect-[4/3] rounded-panel overflow-hidden border border-border">
                   <img src={selfie.preview} alt="Selfie" className="w-full h-full object-cover" />
                   <button
                     onClick={() => setSelfie(null)}
-                    className="absolute top-3 right-3 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center"
+                    className="absolute top-3 right-3 w-8 h-8 bg-brand/60 rounded-full flex items-center justify-center"
                   >
                     <X className="w-4 h-4 text-white" />
                   </button>
                 </div>
-                <div className="p-4 bg-green-50 border border-green-100 rounded-2xl flex items-center gap-3">
+                <div className="p-4 bg-green-50 border border-green-100 rounded-card flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-green-900">Looking good!</p>
-                    <p className="text-xs text-green-700">Our team will review within 24 hours.</p>
+                    <p className="text-xs text-trust">Our team will review within 24 hours.</p>
                   </div>
                 </div>
               </div>
@@ -300,16 +300,16 @@ export default function OnboardingPage() {
               <div className="space-y-4">
                 <button
                   onClick={() => selfieRef.current?.click()}
-                  className="w-full aspect-[4/3] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-3xl hover:border-black transition-colors gap-4 text-gray-400 hover:text-black"
+                  className="w-full aspect-[4/3] flex flex-col items-center justify-center border-2 border-dashed border-border rounded-panel hover:border-brand transition-colors gap-4 text-ink-dim hover:text-ink"
                 >
-                  <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center">
                     <Camera className="w-8 h-8" />
                   </div>
                   <p className="font-bold">Take selfie with ID</p>
-                  <p className="text-xs text-gray-400">Or tap to upload a photo</p>
+                  <p className="text-xs text-ink-dim">Or tap to upload a photo</p>
                 </button>
-                <div className="p-4 bg-gray-50 border border-gray-100 rounded-2xl text-xs text-gray-500 space-y-1">
-                  <p className="font-bold text-gray-700">Tips for a good selfie:</p>
+                <div className="p-4 bg-surface-alt border border-border-dim rounded-card text-xs text-ink-dim space-y-1">
+                  <p className="font-bold text-ink-sub">Tips for a good selfie:</p>
                   <p>• Hold your ID clearly visible next to your face</p>
                   <p>• Make sure your face and ID text are both in focus</p>
                   <p>• Use good lighting — avoid glare on the ID</p>
@@ -326,10 +326,10 @@ export default function OnboardingPage() {
               <Shield className="w-10 h-10 text-green-600" />
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-3">Verification submitted!</h1>
-            <p className="text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+            <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
               Our compliance team will review your documents within <strong>24 hours</strong>. You'll receive a notification once approved.
             </p>
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 text-left max-w-sm mx-auto mb-8 shadow-sm space-y-3">
+            <div className="bg-white rounded-panel border border-border-dim p-6 text-left max-w-sm mx-auto mb-8 shadow-card space-y-3">
               {[
                 { label: 'Identity details', done: true },
                 { label: 'Business type', done: true },
@@ -337,16 +337,16 @@ export default function OnboardingPage() {
                 { label: 'Selfie proof', done: !!selfie },
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.done ? 'bg-green-500' : 'bg-gray-200'}`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.done ? 'bg-green-500' : 'bg-border'}`}>
                     {item.done && <CheckCircle2 className="w-3 h-3 text-white" />}
                   </div>
-                  <span className={`text-sm font-medium ${item.done ? 'text-black' : 'text-gray-400'}`}>{item.label}</span>
+                  <span className={`text-sm font-medium ${item.done ? 'text-ink' : 'text-ink-dim'}`}>{item.label}</span>
                 </div>
               ))}
             </div>
             <Link
               href="/provider/dashboard"
-              className="inline-flex items-center gap-2 bg-black text-white px-8 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all"
+              className="inline-flex items-center gap-2 bg-brand text-white px-8 py-4 rounded-card font-bold hover:bg-gray-800 transition-all"
             >
               Go to Dashboard <ArrowRight className="w-4 h-4" />
             </Link>
@@ -356,13 +356,13 @@ export default function OnboardingPage() {
 
       {/* Bottom bar */}
       {step < 5 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
           <div className="max-w-2xl mx-auto">
             {step < 4 ? (
               <button
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canProceed()}
-                className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 Continue <ArrowRight className="w-4 h-4" />
               </button>
@@ -370,7 +370,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleFinish}
                 disabled={!canProceed() || saving}
-                className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Shield className="w-4 h-4" /> Submit for Review</>}
               </button>

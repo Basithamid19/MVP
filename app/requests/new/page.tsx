@@ -238,7 +238,7 @@ function NewRequestContent() {
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">What do you need help with?</h1>
             <p className="text-ink-sub text-base mb-8">Choose a service to get matched with the right pros.</p>
-            <div className="flex items-center gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {categories.map((cat) => {
                 const Icon = ICON_MAP[cat.slug] || Wrench;
                 const selected = form.categoryId === cat.id;
@@ -246,7 +246,7 @@ function NewRequestContent() {
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
-                    className={`shrink-0 w-[160px] p-5 rounded-[20px] border-2 text-left transition-all flex flex-col items-center text-center ${
+                    className={`p-6 rounded-[20px] border-2 text-center transition-all flex flex-col items-center justify-center h-full ${
                       selected 
                         ? 'border-brand bg-brand shadow-elevated -translate-y-1' 
                         : 'border-transparent bg-white shadow-sm hover:shadow-elevated hover:border-brand-muted hover:-translate-y-1'

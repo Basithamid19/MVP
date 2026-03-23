@@ -58,7 +58,7 @@ export default function ProviderDashboardPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
       </div>
     );
   }
@@ -151,7 +151,7 @@ export default function ProviderDashboardPage() {
       {/* Verification banner — shown when not verified */}
       {!isVerified && (
         <div className="mb-6 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-100 rounded-xl flex items-center justify-center shrink-0">
+          <div className="w-8 h-8 bg-info-surface rounded-xl flex items-center justify-center shrink-0">
             <ShieldCheck className="w-4 h-4 text-blue-600" />
           </div>
           <div className="flex-1 min-w-0">
@@ -170,28 +170,28 @@ export default function ProviderDashboardPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-8">
-        <div className="flex items-center gap-4">
+      <div className="flex items-start justify-between mb-10">
+        <div className="flex items-center gap-5">
           {/* Avatar */}
-          <div className="w-12 h-12 rounded-2xl bg-black text-white flex items-center justify-center text-base font-bold shrink-0 select-none">
+          <div className="w-16 h-16 rounded-full bg-brand text-white flex items-center justify-center text-xl font-semibold shrink-0 select-none shadow-sm">
             {getInitials(session?.user?.name)}
           </div>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              Sveiki, {firstName}!
+            <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink">
+              Hello, {firstName}!
             </h1>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+            <div className="flex items-center gap-3 mt-2">
+              <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                 profile?.verificationTier === 'TIER2_TRADE_VERIFIED' || profile?.verificationTier === 'TIER3_ENHANCED'
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'bg-gray-100 text-gray-500'
+                  ? 'bg-info-surface text-info'
+                  : 'bg-surface-alt text-ink-dim'
               }`}>
-                <ShieldCheck className="w-3 h-3" />
+                <ShieldCheck className="w-3.5 h-3.5" />
                 {profile?.verificationTier?.replace(/_/g, ' ') ?? 'Basic'}
               </span>
               {profile?.ratingAvg > 0 && (
-                <span className="flex items-center gap-1 text-sm font-semibold text-gray-600">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                <span className="flex items-center gap-1.5 text-sm font-medium text-ink-sub">
+                  <Star className="w-4 h-4 text-brand fill-brand" />
                   {profile.ratingAvg.toFixed(1)}
                 </span>
               )}
@@ -200,25 +200,25 @@ export default function ProviderDashboardPage() {
         </div>
         <Link
           href="/provider/leads"
-          className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:bg-gray-800 transition-all"
+          className="hidden sm:flex items-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md"
         >
           View Leads <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
         {stats.map(({ label, value, sub, icon: Icon, color, href, badge }) => (
-          <Link key={label} href={href} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-black transition-all shadow-sm relative group">
+          <Link key={label} href={href} className="bg-white rounded-2xl border border-border-dim p-6 hover:shadow-md hover:border-brand/30 transition-all shadow-sm relative group">
             {badge && (
-              <span className="absolute top-3 right-3 w-5 h-5 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{badge}</span>
+              <span className="absolute top-4 right-4 w-5 h-5 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">{badge}</span>
             )}
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${color}`}>
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${color}`}>
               <Icon className="w-5 h-5" />
             </div>
-            <p className="text-2xl font-bold tracking-tight">{value}</p>
-            <p className="text-xs text-gray-400 font-medium mt-0.5">{label}</p>
-            <p className="text-[11px] text-gray-400 mt-1 font-medium">{sub}</p>
+            <p className="text-3xl font-semibold tracking-tight text-ink">{value}</p>
+            <p className="text-sm text-ink-sub font-medium mt-1">{label}</p>
+            <p className="text-[11px] text-ink-dim mt-1 font-medium">{sub}</p>
           </Link>
         ))}
       </div>
@@ -246,20 +246,22 @@ export default function ProviderDashboardPage() {
 
           {/* Recent leads */}
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold">Recent Leads</h2>
-              <Link href="/provider/leads" className="text-xs font-bold text-black border-b border-black pb-0.5 hover:opacity-70">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-ink">Recent Leads</h2>
+              <Link href="/provider/leads" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">
                 View all
               </Link>
             </div>
             {leads.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-10 text-center">
-                <Inbox className="w-8 h-8 text-gray-200 mx-auto mb-2" />
-                <p className="font-bold text-sm mb-1">No leads yet</p>
-                <p className="text-xs text-gray-400">New service requests in your area will appear here.</p>
+              <div className="bg-white rounded-2xl border border-dashed border-border-dim p-12 text-center">
+                <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Inbox className="w-6 h-6 text-ink-dim" />
+                </div>
+                <p className="font-semibold text-base mb-1">No leads yet</p>
+                <p className="text-sm text-ink-sub">New service requests in your area will appear here.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {leads.slice(0, 4).map((lead: any) => (
                   <LeadCard key={lead.id} lead={lead} />
                 ))}
@@ -269,28 +271,30 @@ export default function ProviderDashboardPage() {
 
           {/* Active jobs */}
           <section>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold">Active Jobs</h2>
-              <Link href="/provider/jobs" className="text-xs font-bold text-black border-b border-black pb-0.5 hover:opacity-70">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-ink">Active Jobs</h2>
+              <Link href="/provider/jobs" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">
                 View all
               </Link>
             </div>
             {activeJobs.length === 0 ? (
-              <p className="text-sm text-gray-400">No active jobs right now.</p>
+              <div className="bg-surface-alt rounded-2xl border border-border-dim p-8 text-center">
+                <p className="text-sm text-ink-sub font-medium">No active jobs right now.</p>
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {activeJobs.slice(0, 2).map((b: any) => (
-                  <Link key={b.id} href={`/provider/jobs/${b.id}`} className="flex items-center gap-3 bg-white rounded-2xl border border-gray-100 p-4 hover:border-black transition-all">
-                    <div className={`w-2 h-2 rounded-full shrink-0 ${b.status === 'IN_PROGRESS' ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                  <Link key={b.id} href={`/provider/jobs/${b.id}`} className="flex items-center gap-4 bg-white rounded-2xl border border-border-dim p-5 hover:border-brand/30 hover:shadow-md transition-all shadow-sm">
+                    <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${b.status === 'IN_PROGRESS' ? 'bg-caution' : 'bg-info'}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-sm truncate">{b.quote?.request?.category?.name ?? 'Job'}</p>
-                      <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                        <Calendar className="w-3 h-3" />
+                      <p className="font-semibold text-base truncate text-ink">{b.quote?.request?.category?.name ?? 'Job'}</p>
+                      <p className="text-sm text-ink-sub flex items-center gap-1.5 mt-1">
+                        <Calendar className="w-4 h-4" />
                         {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     <span className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</span>
-                    <ChevronRight className="w-4 h-4 text-gray-300" />
+                    <ChevronRight className="w-4 h-4 text-ink-dim" />
                   </Link>
                 ))}
               </div>
@@ -301,7 +305,7 @@ export default function ProviderDashboardPage() {
         {/* Right column */}
         <div className="space-y-5">
           {/* Quick actions */}
-          <div className="bg-black text-white rounded-3xl p-6">
+          <div className="bg-brand text-white rounded-3xl p-6">
             <h3 className="font-bold mb-4">Quick Actions</h3>
             <div className="space-y-2">
               {[
@@ -319,17 +323,17 @@ export default function ProviderDashboardPage() {
           </div>
 
           {/* Verification card (detail) */}
-          <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
+          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-blue-600" />
               </div>
               <div>
                 <p className="font-bold text-sm">Verification</p>
-                <p className="text-xs text-gray-400">{profile?.verificationTier?.replace(/_/g, ' ') ?? 'Basic'}</p>
+                <p className="text-xs text-ink-dim">{profile?.verificationTier?.replace(/_/g, ' ') ?? 'Basic'}</p>
               </div>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5 mb-3">
+            <div className="w-full bg-surface-alt rounded-full h-1.5 mb-3">
               <div
                 className="bg-blue-500 h-1.5 rounded-full transition-all"
                 style={{ width: `${verificationProgress}%` }}
@@ -341,16 +345,16 @@ export default function ProviderDashboardPage() {
           </div>
 
           {/* Rating */}
-          <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Your Rating</p>
+          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">Your Rating</p>
             <div className="flex items-end gap-2 mb-2">
               <span className="text-4xl font-bold tracking-tight">
                 {profile?.ratingAvg > 0 ? profile.ratingAvg.toFixed(1) : '—'}
               </span>
-              <Star className="w-6 h-6 text-yellow-500 fill-yellow-500 mb-1" />
+              <Star className="w-6 h-6 text-brand fill-yellow-500 mb-1" />
             </div>
-            <p className="text-xs text-gray-400">{profile?.completedJobs ?? 0} completed jobs</p>
-            <Link href="/provider/performance" className="text-xs font-bold text-black hover:underline flex items-center gap-1 mt-3">
+            <p className="text-xs text-ink-dim">{profile?.completedJobs ?? 0} completed jobs</p>
+            <Link href="/provider/performance" className="text-xs font-bold text-ink hover:underline flex items-center gap-1 mt-3">
               Full performance <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
@@ -367,45 +371,45 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
   const hasBudget = lead.budget != null && lead.budget > 0;
 
   return (
-    <div className={`rounded-2xl border p-4 transition-all hover:shadow-sm ${
+    <div className={`rounded-2xl border p-5 transition-all hover:shadow-md ${
       urgent
-        ? 'bg-orange-50 border-orange-200 hover:border-orange-400'
-        : 'bg-white border-gray-100 hover:border-black'
+        ? 'bg-caution-surface border-caution/30 hover:border-caution/50'
+        : 'bg-white border-border-dim hover:border-brand/30 shadow-sm'
     }`}>
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           {/* Category + urgent badge */}
-          <div className="flex items-center gap-2 flex-wrap mb-1.5">
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              urgent ? 'bg-orange-200 text-orange-700' : 'bg-gray-100 text-gray-600'
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <span className={`text-[10px] font-bold px-2.5 py-1 uppercase tracking-widest rounded-full ${
+              urgent ? 'bg-caution text-white' : 'bg-surface-alt text-ink-sub'
             }`}>
               {lead.category?.name}
             </span>
             {lead.isUrgent && (
-              <span className="flex items-center gap-0.5 text-xs font-bold text-orange-600">
-                <Zap className="w-3 h-3" /> Urgent
+              <span className="flex items-center gap-1 text-xs font-bold text-caution">
+                <Zap className="w-3.5 h-3.5" /> Urgent
               </span>
             )}
           </div>
 
           {/* Description */}
-          <p className="text-sm font-semibold text-gray-800 line-clamp-1 mb-2">{lead.description}</p>
+          <p className="text-base font-semibold text-ink line-clamp-1 mb-3">{lead.description}</p>
 
           {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             {lead.address && (
-              <span className="flex items-center gap-1 text-xs text-gray-500">
-                <MapPin className="w-3 h-3" />
+              <span className="flex items-center gap-1.5 text-sm text-ink-sub">
+                <MapPin className="w-4 h-4" />
                 {lead.address}
               </span>
             )}
-            <span className="flex items-center gap-1 text-xs text-gray-400">
-              <Clock className="w-3 h-3" />
+            <span className="flex items-center gap-1.5 text-sm text-ink-sub">
+              <Clock className="w-4 h-4" />
               Posted {ageLabel}
             </span>
             {responders > 0 && (
-              <span className="flex items-center gap-1 text-xs font-semibold text-orange-600">
-                <Users className="w-3 h-3" />
+              <span className="flex items-center gap-1.5 text-sm font-medium text-caution">
+                <Users className="w-4 h-4" />
                 {responders} provider{responders > 1 ? 's' : ''} responded
               </span>
             )}
@@ -413,7 +417,7 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
 
           {/* Budget */}
           {hasBudget && (
-            <p className="text-xs font-bold text-green-700 mt-2">
+            <p className="text-sm font-semibold text-trust mt-3">
               💰 Budget ~€{lead.budget}
             </p>
           )}
@@ -422,10 +426,10 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
         {/* CTA */}
         <Link
           href={`/provider/quote/${lead.id}`}
-          className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+          className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-medium transition-all whitespace-nowrap shadow-sm hover:shadow-md ${
             urgent
-              ? 'bg-orange-500 text-white hover:bg-orange-600'
-              : 'bg-black text-white hover:bg-gray-800'
+              ? 'bg-caution text-white hover:bg-caution/90'
+              : 'bg-brand text-white hover:bg-brand-dark'
           }`}
         >
           Respond Now
