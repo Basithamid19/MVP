@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import {
   Calendar, Clock, CheckCircle2,
   ChevronRight, Star, Loader2, LayoutDashboard,
-  Search, LogOut, MapPin, ShieldCheck, Bell,
-  Inbox, Plus, Users, Zap, X,
+  Search, LogOut, MapPin, Bell,
+  Inbox, Plus, Users, Zap, X, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -23,18 +23,15 @@ const QUICK_JOBS = [
   { label: 'Painting',   slug: 'painting',    emoji: '🎨' },
 ];
 
-// step drives the labeled stepper component
 const STATUS_STAGE: Record<string, { label: string; dot: string; step: number }> = {
-  NEW:      { label: 'Waiting for responses', dot: 'bg-info',   step: 0 },
-  QUOTED:   { label: 'Quotes received',       dot: 'bg-trust',  step: 1 },
-  CHATTING: { label: 'In discussion',         dot: 'bg-brand-light', step: 1 },
-  ACCEPTED: { label: 'Booked',               dot: 'bg-brand',       step: 2 },
-  DECLINED: { label: 'Declined',             dot: 'bg-border',    step: -1 },
-  EXPIRED:  { label: 'Expired',              dot: 'bg-border',    step: -1 },
-  COMPLETED:{ label: 'Completed',            dot: 'bg-border',    step: 3 },
+  NEW:      { label: 'Waiting for quotes', dot: 'bg-info',   step: 0 },
+  QUOTED:   { label: 'Quotes received',    dot: 'bg-trust',  step: 1 },
+  CHATTING: { label: 'In discussion',      dot: 'bg-brand-light', step: 1 },
+  ACCEPTED: { label: 'Booked',             dot: 'bg-brand',       step: 2 },
+  DECLINED: { label: 'Declined',           dot: 'bg-border',    step: -1 },
+  EXPIRED:  { label: 'Expired',            dot: 'bg-border',    step: -1 },
+  COMPLETED:{ label: 'Completed',          dot: 'bg-border',    step: 3 },
 };
-
-/* ─── Notification types ──────────────────────────────────── */
 
 interface Notification {
   id: string;
@@ -61,11 +58,6 @@ function capitalize(s?: string | null) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-function getInitials(name?: string | null) {
-  if (!name) return '?';
-  return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-}
-
 function timeAgo(date: string) {
   const ms = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
@@ -74,16 +66,6 @@ function timeAgo(date: string) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   return `${Math.floor(hrs / 24)}d ago`;
-}
-
-function bookingDateLabel(scheduledAt: string) {
-  const date = new Date(scheduledAt);
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(today.getDate() + 1);
-  if (date.toDateString() === today.toDateString()) return 'today';
-  if (date.toDateString() === tomorrow.toDateString()) return 'tomorrow';
-  return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 }
 
 function getJobAction(req: any): { label: string; primary: boolean } {
@@ -97,55 +79,35 @@ function getJobAction(req: any): { label: string; primary: boolean } {
 
 /* ─── Sub-components ──────────────────────────────────────── */
 
-// Unified status dot badge — consistent style across all cards
 function StatusBadge({ status }: { status: string }) {
   const stage = STATUS_STAGE[status];
   if (!stage) return null;
   return (
-    <span className="flex items-center gap-1.5 shrink-0">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-alt rounded-full border border-border-dim">
       <span className={`w-1.5 h-1.5 rounded-full ${stage.dot}`} />
-      <span className="text-xs font-semibold text-ink-sub">{stage.label}</span>
+      <span className="text-xs font-medium text-ink-sub">{stage.label}</span>
     </span>
   );
 }
 
-// Labeled 4-step progress tracker — replaces the plain bar
-const STEPPER_LABELS = ['Posted', 'Quotes In', 'Choose Pro', 'Completed'];
+const STEPPER_LABELS = ['Posted', 'Quotes', 'Selected', 'Done'];
 
 function JobStepper({ step }: { step: number }) {
-  if (step < 0) return null; // don't show for declined/expired
+  if (step < 0) return null;
   return (
-    <div className="flex items-start my-6">
-      {STEPPER_LABELS.map((label, i) => {
-        const done    = i < step;
-        const current = i === step;
-        return (
-          <React.Fragment key={label}>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all ${
-                done    ? 'bg-brand' :
-                current ? 'bg-brand ring-2 ring-offset-1 ring-border' :
-                          'border-2 border-border bg-white'
-              }`}>
-                {done && (
-                  /* inline checkmark — avoids extra icon import */
-                  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-                    <path d="M1 3L3 5L7 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-                {current && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
-              </div>
-              <span className={`text-[9px] font-semibold leading-none whitespace-nowrap ${
-                i <= step ? 'text-ink-sub' : 'text-ink-dim'
-              }`}>{label}</span>
-            </div>
-            {/* connector line — aligned to circle centre */}
-            {i < STEPPER_LABELS.length - 1 && (
-              <div className={`flex-1 h-px mt-2.5 mx-1 transition-colors ${done ? 'bg-brand' : 'bg-border'}`} />
-            )}
-          </React.Fragment>
-        );
-      })}
+    <div className="w-full">
+      <div className="flex items-center gap-1 mb-2">
+        {STEPPER_LABELS.map((_, i) => (
+          <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
+        ))}
+      </div>
+      <div className="flex items-center justify-between px-1">
+        {STEPPER_LABELS.map((label, i) => (
+          <span key={label} className={`text-[10px] font-bold uppercase tracking-widest ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
+            {label}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -231,60 +193,50 @@ export default function DashboardPage() {
   const totalQuotes   = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
   const quotedReqs    = requests.filter((r: any) => (r.quotes?.length ?? 0) > 0);
   const nextBooking   = upcoming[0] ?? null;
-  const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
-  const unreadCount   = visibleNotifs.length;
-
-  // Smart suggestions: filter pros by the category of the most active job
-  const activeJob    = requests.find(r => r.status === 'NEW' || r.status === 'QUOTED' || r.status === 'CHATTING');
-  const activeCat    = activeJob?.category?.name ?? null;
-  const matchedPros  = activeCat
+  const activeCat     = requests[0]?.category?.name;
+  
+  // Filter top pros to match active category if possible
+  const matchedPros = activeCat 
     ? topPros.filter(p => p.categories?.some((c: any) => c.name === activeCat))
     : [];
-  const displayPros  = matchedPros.length > 0 ? matchedPros : topPros;
+  const displayPros = matchedPros.length > 0 ? matchedPros : topPros;
 
-  // Contextual one-liner under greeting
-  const heroSubtitle = totalQuotes > 0
-    ? `You have ${totalQuotes} quote${totalQuotes > 1 ? 's' : ''} ready to review`
-    : nextBooking
-    ? `Booking ${bookingDateLabel(nextBooking.scheduledAt)} at ${new Date(nextBooking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-    : requests.length > 0
-    ? 'Your jobs are being reviewed by local professionals'
-    : 'Post a job and receive quotes from trusted pros';
-
+  const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
+  const unreadCount   = visibleNotifs.length;
   const showQuotesBanner = totalQuotes > 0 && !!quotedReqs[0];
 
   return (
-    <div className="min-h-screen bg-canvas flex">
+    <div className="min-h-screen bg-canvas flex font-sans">
 
       {/* ══ Sidebar ══════════════════════════════════════════ */}
-      <aside className="w-16 lg:w-56 bg-canvas flex flex-col sticky top-0 h-screen shrink-0">
-        <div className="p-4 lg:p-6">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-chip flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm">V</span>
+      <aside className="w-16 lg:w-64 bg-canvas flex flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
+        <div className="p-6 lg:p-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
             </div>
-            <span className="font-bold text-base tracking-tight hidden lg:block">VilniusPro</span>
+            <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">VilniusPro</span>
           </Link>
         </div>
 
-        <nav className="flex-1 px-2 lg:px-3 py-4 space-y-1 overflow-y-auto">
-          <Link href="/dashboard" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm bg-white shadow-sm text-brand">
-            <LayoutDashboard className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Dashboard</span>
+        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm bg-white shadow-sm border border-border-dim text-brand">
+            <LayoutDashboard className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Dashboard</span>
           </Link>
-          <Link href="/browse" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
-            <Search className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Find Pros</span>
+          <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
+            <Search className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Find Pros</span>
           </Link>
-          <Link href={requests[0] ? `/requests/${requests[0].id}` : '/requests/new'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
-            <Inbox className="w-5 h-5 shrink-0" /><span className="hidden lg:block">My Jobs</span>
+          <Link href={requests[0] ? `/requests/${requests[0].id}` : '/requests/new'} className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
+            <Inbox className="w-4 h-4 shrink-0" /><span className="hidden lg:block">My Jobs</span>
           </Link>
-          <Link href={nextBooking ? `/bookings/${nextBooking.id}` : '/browse'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
-            <Calendar className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Bookings</span>
+          <Link href={nextBooking ? `/bookings/${nextBooking.id}` : '/browse'} className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
+            <Calendar className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Bookings</span>
           </Link>
         </nav>
 
         <div className="p-4 lg:p-6">
-          <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input text-sm font-semibold text-ink-dim hover:text-danger hover:bg-danger-surface transition-all">
-            <LogOut className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Log Out</span>
+          <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all">
+            <LogOut className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Log Out</span>
           </button>
         </div>
       </aside>
@@ -293,26 +245,26 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 flex flex-col">
 
         {/* Top bar */}
-        <header className="bg-canvas/90 backdrop-blur-md px-6 py-4 flex items-center justify-end sticky top-0 z-20">
+        <header className="bg-canvas/80 backdrop-blur-xl px-8 py-5 flex items-center justify-end sticky top-0 z-20">
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-input hover:bg-white/60 transition-colors text-ink-sub hover:text-ink"
+              className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/60 transition-colors text-ink-sub hover:text-ink border border-transparent hover:border-border-dim"
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-white">
+                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </button>
 
             {showNotifs && (
-              <div className="absolute right-0 top-12 w-80 sm:w-96 bg-white border border-border-dim rounded-panel shadow-float overflow-hidden z-50">
+              <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden z-50">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
-                  <h3 className="font-bold text-base text-ink">Notifications</h3>
+                  <h3 className="font-semibold text-base text-ink">Notifications</h3>
                   {visibleNotifs.length > 0 && (
-                    <button onClick={() => setDismissed(new Set(notifications.map(n => n.id)))} className="text-xs font-bold text-ink-dim hover:text-brand transition-colors">
+                    <button onClick={() => setDismissed(new Set(notifications.map(n => n.id)))} className="text-xs font-medium text-ink-dim hover:text-brand transition-colors">
                       Mark all read
                     </button>
                   )}
@@ -334,9 +286,9 @@ export default function DashboardPage() {
                         onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
                         className="flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
                       >
-                        <div className={`w-8 h-8 rounded-input flex items-center justify-center shrink-0 ${clr}`}><Icon className="w-4 h-4" /></div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${clr}`}><Icon className="w-4 h-4" /></div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-ink">{n.title}</p>
+                          <p className="text-sm font-semibold text-ink">{n.title}</p>
                           <p className="text-xs text-ink-sub truncate mt-0.5">{n.body}</p>
                           <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.time)}</p>
                         </div>
@@ -352,7 +304,7 @@ export default function DashboardPage() {
                 </div>
                 {visibleNotifs.length > 0 && (
                   <div className="px-5 py-3 border-t border-border-dim bg-surface-alt text-center">
-                    <button onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }} className="text-xs font-bold text-ink-sub hover:text-ink transition-colors">
+                    <button onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }} className="text-xs font-medium text-ink-sub hover:text-ink transition-colors">
                       Dismiss all
                     </button>
                   </div>
@@ -363,175 +315,158 @@ export default function DashboardPage() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
           <div className="max-w-5xl mx-auto">
 
             {/* ── Header ────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Welcome back, {firstName}</h1>
-                <p className="text-ink-sub text-base">Here's what's happening with your home projects today.</p>
+                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink mb-2">Welcome back, {firstName}</h1>
+                <p className="text-ink-sub text-base">Here is what's happening with your home projects.</p>
               </div>
               <Link
                 href="/requests/new"
-                className="inline-flex items-center justify-center gap-2 bg-brand text-white px-6 py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated shrink-0"
+                className="inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <Plus className="w-4 h-4" /> Post a Job
               </Link>
             </div>
 
-            
-
-            {/* ── Single priority banner ────────────────────── */}
+            {/* ── Priority Banner ───────────────────────────── */}
             {showQuotesBanner && (
-              <div className="bg-trust-surface border border-trust-edge rounded-card px-4 py-3.5 flex items-center gap-3 mb-8">
-                <div className="w-8 h-8 bg-trust-surface rounded-input flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4 text-trust" />
+              <div className="relative overflow-hidden bg-brand text-white rounded-[24px] p-6 sm:p-8 mb-10 shadow-elevated flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
+                <div className="relative z-10 flex items-center gap-5">
+                  <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0 backdrop-blur-md">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold mb-1">{totalQuotes} new quote{totalQuotes > 1 ? 's' : ''} received</h2>
+                    <p className="text-white/80 text-sm">Professionals have responded to your request. Review and book now.</p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-green-900">
-                    {totalQuotes} quote{totalQuotes > 1 ? 's' : ''} ready to review
-                  </p>
-                  <p className="text-xs text-trust mt-0.5">Compare prices and book the right professional.</p>
-                </div>
-                <Link href={`/requests/${quotedReqs[0].id}`} className="shrink-0 bg-trust text-white px-4 py-2 rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
-                  Review Now
+                <Link href={`/requests/${quotedReqs[0].id}`} className="relative z-10 shrink-0 w-full sm:w-auto text-center bg-white text-brand px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-surface-alt transition-colors shadow-sm">
+                  Review Quotes
                 </Link>
               </div>
             )}
 
             {/* ── Main grid ─────────────────────────────────── */}
-            <div className="grid lg:grid-cols-3 gap-6">
+            <div className="grid lg:grid-cols-3 gap-8">
 
               {/* ── Left: My Jobs ── */}
-              <div className="lg:col-span-2 space-y-8">
+              <div className="lg:col-span-2 space-y-10">
 
                 <section>
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold tracking-tight text-ink">My Jobs</h2>
+                    <h2 className="text-xl font-semibold tracking-tight text-ink">My Jobs</h2>
                     {requests.length > 0 && (
-                      <span className="text-sm text-ink-dim font-medium">{requests.length} total</span>
+                      <span className="text-sm text-ink-dim font-medium">{requests.length} active</span>
                     )}
                   </div>
 
                   {requests.length === 0 ? (
-                    <div className="bg-white rounded-panel border border-border-dim p-16 text-center shadow-sm">
-                      <div className="w-20 h-20 bg-brand-muted rounded-full flex items-center justify-center mx-auto mb-6">
-                        <Inbox className="w-10 h-10 text-brand" />
+                    <div className="bg-white rounded-[24px] border border-border-dim p-12 sm:p-16 text-center shadow-sm">
+                      <div className="w-20 h-20 bg-canvas rounded-full flex items-center justify-center mx-auto mb-6 border border-border-dim">
+                        <Inbox className="w-8 h-8 text-ink-dim" />
                       </div>
-                      <h3 className="text-2xl font-bold text-ink mb-3">No active jobs</h3>
-                      <p className="text-base text-ink-sub mb-8 max-w-md mx-auto leading-relaxed">
-                        Ready to tackle your next project? Describe what you need done and get quotes from verified Vilnius professionals.
+                      <h3 className="text-2xl font-semibold text-ink mb-3">No active projects</h3>
+                      <p className="text-ink-sub mb-8 max-w-md mx-auto leading-relaxed">
+                        Ready to tackle your next home project? Describe what you need done and get quotes from verified Vilnius professionals.
                       </p>
-                      <Link href="/requests/new" className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
-                        <Plus className="w-5 h-5" /> Post Your First Job
+                      <Link href="/requests/new" className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md">
+                        <Plus className="w-5 h-5" /> Post a Job
                       </Link>
                     </div>
                   ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {requests.slice(0, 6).map(req => {
                         const stage      = STATUS_STAGE[req.status] ?? { label: req.status, dot: 'bg-border', step: 0 };
                         const quoteCount = req.quotes?.length ?? 0;
                         const action     = getJobAction(req);
-                        const isActive   = req.status === 'NEW' || req.status === 'QUOTED' || req.status === 'CHATTING';
                         const isBooked   = req.status === 'ACCEPTED';
-                        // Best quote's provider for top-match preview
                         const topQuote   = req.quotes?.find((q: any) => q.provider) ?? req.quotes?.[0];
                         const topPro     = topQuote?.provider;
 
                         return (
                           <div
                             key={req.id}
-                            className={`bg-white rounded-panel p-6 transition-all duration-150 cursor-default ${
+                            className={`bg-white rounded-[24px] p-6 sm:p-8 transition-all duration-200 ${
                               isBooked
-                                ? 'border border-ink shadow-sm'
-                                : 'border border-border-dim shadow-sm hover:shadow-elevated hover:-translate-y-0.5'
+                                ? 'border border-brand/20 shadow-md'
+                                : 'border border-border-dim shadow-sm hover:shadow-md hover:border-border'
                             }`}
                           >
-                            {/* Category + status */}
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest bg-white shadow-sm text-brand-sub px-3 py-1 rounded-full">
-                                  {req.category?.name}
-                                </span>
-                                {req.isUrgent && (
-                                  <span className="flex items-center gap-1 text-xs font-bold uppercase tracking-widest text-caution bg-caution-surface px-3 py-1 rounded-full">
-                                    <Zap className="w-3 h-3" /> Urgent
+                            <div className="flex items-start justify-between gap-4 mb-6">
+                              <div>
+                                <div className="flex items-center gap-2 mb-2.5">
+                                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">
+                                    {req.category?.name}
                                   </span>
-                                )}
+                                  {req.isUrgent && (
+                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution">
+                                      <Zap className="w-3 h-3" /> Urgent
+                                    </span>
+                                  )}
+                                </div>
+                                <h3 className="font-semibold text-xl text-ink leading-tight mb-2">{req.description}</h3>
+                                <p className="flex items-center gap-1.5 text-sm text-ink-sub">
+                                  <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
+                                </p>
                               </div>
                               <StatusBadge status={req.status} />
                             </div>
 
-                            {/* Title + location */}
-                            <p className="font-bold text-base mt-4 mb-1.5 line-clamp-1 text-ink">{req.description}</p>
-                            <p className="flex items-center gap-1.5 text-sm text-ink-sub font-medium">
-                              <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
-                            </p>
+                            <div className="py-4 my-4 border-y border-border-dim">
+                              <JobStepper step={stage.step} />
+                            </div>
 
-                            {/* Labeled progress stepper */}
-                            <JobStepper step={stage.step} />
-
-                            {/* Top-match preview — shown when quotes exist and provider data available */}
                             {quoteCount > 0 && topPro && (
-                              <div className="mb-4 px-4 py-3 bg-surface-alt rounded-card border border-border-dim">
-                                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Top match</p>
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-surface-alt rounded-2xl p-4 border border-border-dim">
                                 <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-border overflow-hidden shrink-0">
-                                    <img
-                                      src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
-                                      alt={topPro.user?.name}
-                                      className="w-full h-full object-cover"
-                                    />
+                                  <img
+                                    src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
+                                    alt={topPro.user?.name}
+                                    className="w-10 h-10 rounded-full object-cover shadow-sm bg-white"
+                                  />
+                                  <div>
+                                    <p className="text-sm font-semibold text-ink leading-none mb-1.5">{topPro.user?.name}</p>
+                                    <div className="flex items-center gap-2">
+                                      {topPro.ratingAvg && (
+                                        <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
+                                          <Star className="w-3 h-3 text-brand fill-current" />
+                                          {topPro.ratingAvg.toFixed(1)}
+                                        </span>
+                                      )}
+                                      {topPro.isVerified && (
+                                        <span className="text-[10px] font-medium text-trust">✓ Verified</span>
+                                      )}
+                                    </div>
                                   </div>
-                                  <span className="text-sm font-bold text-ink">{topPro.user?.name}</span>
-                                  {topPro.ratingAvg && (
-                                    <span className="flex items-center gap-0.5 text-xs font-bold text-ink-sub">
-                                      <Star className="w-3.5 h-3.5 text-brand fill-current" />
-                                      {topPro.ratingAvg.toFixed(1)}
-                                    </span>
-                                  )}
-                                  {topPro.isVerified && (
-                                    <span className="text-[10px] font-bold text-trust bg-trust-surface px-2 py-0.5 rounded-full">✓ Verified</span>
-                                  )}
-                                  {topPro.responseTime && (
-                                    <span className="text-xs font-medium text-ink-dim ml-auto">⚡ {topPro.responseTime}</span>
-                                  )}
+                                </div>
+                                <div className="sm:text-right pl-12 sm:pl-0">
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-ink-dim mb-0.5">Est. Price</p>
+                                  <p className="text-base font-semibold text-ink">€{topQuote.price}</p>
                                 </div>
                               </div>
                             )}
 
-                            {/* Footer: quote count + action */}
-                            <div className="flex items-center justify-between pt-4 mt-2 border-t border-border-dim">
-                              <div className="min-w-0">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-medium text-ink-sub">
                                 {quoteCount > 0 ? (
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex -space-x-1.5">
-                                      {req.quotes.slice(0, 3).map((_: any, i: number) => (
-                                        <div key={i} className="w-6 h-6 rounded-full bg-surface-alt border-2 border-white" />
-                                      ))}
-                                    </div>
-                                    <span className="text-sm text-ink-sub font-bold">
-                                      {quoteCount} quote{quoteCount > 1 ? 's' : ''} received
-                                    </span>
-                                  </div>
-                                ) : isActive ? (
-                                  <span className="text-sm text-ink-dim font-medium flex items-center gap-1.5">
-                                    <Clock className="w-4 h-4" /> Waiting for responses…
-                                  </span>
-                                ) : null}
+                                  <span className="text-ink font-semibold">{quoteCount} quote{quoteCount > 1 ? 's' : ''}</span>
+                                ) : (
+                                  <span className="text-ink-dim">Waiting for professionals...</span>
+                                )}
                               </div>
 
                               <Link
                                 href={`/requests/${req.id}`}
-                                className={`shrink-0 flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-input transition-all ${
-                                  action.primary
-                                    ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
-                                    : 'bg-white shadow-sm text-brand hover:bg-border'
+                                className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
+                                  action.primary ? 'text-brand hover:text-brand-dark' : 'text-ink-sub hover:text-ink'
                                 }`}
                               >
-                                {action.label}
-                                {!action.primary && <ChevronRight className="w-4 h-4" />}
+                                {action.label} <ChevronRight className="w-4 h-4" />
                               </Link>
                             </div>
                           </div>
@@ -539,26 +474,30 @@ export default function DashboardPage() {
                       })}
 
                       {requests.length > 6 && (
-                        <p className="text-center text-xs text-ink-dim font-medium pt-1">
-                          Showing 6 of {requests.length} jobs
-                        </p>
+                        <div className="pt-4 text-center">
+                          <Link href="/requests" className="text-sm font-medium text-ink-sub hover:text-ink transition-colors">
+                            View all {requests.length} jobs
+                          </Link>
+                        </div>
                       )}
                     </div>
                   )}
                 </section>
 
                 {/* Browse Services */}
-                <section>
-                  <h2 className="text-xl font-bold tracking-tight text-ink mb-4">Browse Services</h2>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                <section className="pt-6">
+                  <h2 className="text-xl font-semibold tracking-tight text-ink mb-6">Browse Services</h2>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {QUICK_JOBS.map(({ label, slug, emoji }) => (
                       <Link
                         key={slug}
                         href={`/browse?category=${slug}`}
-                        className="bg-white border border-transparent shadow-sm rounded-panel p-5 flex flex-col items-center gap-3 text-center hover:shadow-elevated hover:border-brand-muted hover:-translate-y-1 transition-all group"
+                        className="bg-white border border-border-dim shadow-sm rounded-[20px] p-6 flex flex-col items-center gap-4 text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group"
                       >
-                        <span className="text-3xl mb-1">{emoji}</span>
-                        <span className="text-sm font-bold text-ink-sub group-hover:text-brand transition-colors leading-tight">{label}</span>
+                        <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                          {emoji}
+                        </div>
+                        <span className="text-sm font-medium text-ink group-hover:text-brand transition-colors leading-tight">{label}</span>
                       </Link>
                     ))}
                   </div>
@@ -567,27 +506,23 @@ export default function DashboardPage() {
               </div>
 
               {/* ── Right column ──────────────────────────── */}
-              <div className="space-y-4">
+              <div className="space-y-6">
 
-                
-
-                {/* Recommended Pros with trust signals */}
-                <div className="bg-white border border-border-dim shadow-sm rounded-panel p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    {/* Adapts to the active job's category */}
-                    <h3 className="font-bold text-base text-ink">
+                {/* Recommended Pros */}
+                <div className="bg-white border border-border-dim shadow-sm rounded-[24px] p-6 sm:p-8 sticky top-28">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="font-semibold text-lg text-ink">
                       {activeCat && matchedPros.length > 0
                         ? `${activeCat} pros near you`
                         : 'Recommended Pros'}
                     </h3>
-                    <Link href="/browse" className="text-xs font-bold text-ink-dim hover:text-brand transition-colors">
+                    <Link href="/browse" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">
                       See all
                     </Link>
                   </div>
 
                   {displayPros.length === 0 ? (
-                    /* Category browse fallback */
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       {[
                         { label: 'Electricians', slug: 'electrician', emoji: '⚡' },
                         { label: 'Plumbers',     slug: 'plumber',     emoji: '🔧' },
@@ -596,48 +531,41 @@ export default function DashboardPage() {
                         <Link
                           key={s.slug}
                           href={`/browse?category=${s.slug}`}
-                          className="flex items-center gap-3 px-3 py-2.5 rounded-input hover:bg-surface-alt transition-all group"
+                          className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-alt transition-all group"
                         >
-                          <span className="text-lg leading-none">{s.emoji}</span>
-                          <span className="text-sm font-bold text-ink-sub group-hover:text-ink transition-colors flex-1">{s.label}</span>
+                          <div className="w-10 h-10 bg-canvas rounded-full flex items-center justify-center text-lg border border-border-dim">
+                            {s.emoji}
+                          </div>
+                          <span className="text-sm font-medium text-ink-sub group-hover:text-ink transition-colors flex-1">{s.label}</span>
                           <ChevronRight className="w-4 h-4 text-ink-dim group-hover:text-ink-sub transition-colors shrink-0" />
                         </Link>
                       ))}
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      {displayPros.slice(0, 3).map(pro => (
+                    <div className="space-y-5">
+                      {displayPros.slice(0, 4).map(pro => (
                         <Link
                           key={pro.id}
                           href={`/providers/${pro.id}`}
-                          className="flex items-start gap-3 p-3 rounded-input hover:bg-surface-alt transition-all group"
+                          className="flex items-center gap-4 group"
                         >
-                          {/* Avatar */}
-                          <div className="w-10 h-10 rounded-input bg-surface-alt overflow-hidden shrink-0 transition-all shadow-sm">
-                            <img src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`} alt={pro.user?.name} className="w-full h-full object-cover" />
-                          </div>
-
-                          {/* Name + trust signals */}
+                          <img 
+                            src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`} 
+                            alt={pro.user?.name} 
+                            className="w-12 h-12 rounded-full object-cover shadow-sm bg-surface-alt group-hover:ring-2 ring-brand/20 transition-all" 
+                          />
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <p className="text-sm font-bold text-ink truncate">{pro.user?.name}</p>
-                              {pro.isVerified && (
-                                <span className="text-[10px] font-bold text-trust bg-trust-surface px-1.5 py-0.5 rounded-full shrink-0">✓ ID</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                            <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
                               {pro.ratingAvg && (
-                                <span className="flex items-center gap-0.5 text-xs text-ink-sub">
-                                  <Star className="w-3.5 h-3.5 text-brand fill-current" />
+                                <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
+                                  <Star className="w-3 h-3 text-brand fill-current" />
                                   {pro.ratingAvg.toFixed(1)}
-                                  {pro.completedJobs > 0 && (
-                                    <span className="text-[10px] text-ink-dim ml-0.5">({pro.completedJobs})</span>
-                                  )}
                                 </span>
                               )}
-                              {pro.responseTime && (
-                                <span className="text-[10px] text-ink-dim">⚡ {pro.responseTime}</span>
-                              )}
+                              <span className="text-xs text-ink-dim truncate">
+                                {pro.categories?.[0]?.name || 'Professional'}
+                              </span>
                             </div>
                           </div>
                         </Link>
@@ -646,8 +574,8 @@ export default function DashboardPage() {
                   )}
 
                   {displayPros.length > 0 && (
-                    <Link href="/browse" className="mt-4 w-full flex items-center justify-center gap-1.5 py-3 rounded-card text-sm font-bold text-ink hover:bg-surface-alt transition-all border border-border-dim">
-                      Browse all professionals <ChevronRight className="w-4 h-4" />
+                    <Link href="/browse" className="mt-8 w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-medium text-ink bg-surface-alt hover:bg-border transition-all">
+                      Browse all professionals
                     </Link>
                   )}
                 </div>
