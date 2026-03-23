@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
-  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight,
+  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -386,6 +386,16 @@ export default function ProviderSettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Logout — mobile only */}
+      <div className="md:hidden pt-4 pb-8">
+        <button
+          onClick={() => signOut({ callbackUrl: '/' })}
+          className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-2xl text-sm font-bold text-ink-sub hover:border-red-200 hover:text-danger transition-all"
+        >
+          <LogOut className="w-4 h-4" /> Log Out
+        </button>
+      </div>
     </div>
   );
 }

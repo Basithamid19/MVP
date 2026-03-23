@@ -18,13 +18,13 @@ export default function MobileNav() {
           <Search className="w-6 h-6" />
           <span className="text-[10px] font-medium">Find Pros</span>
         </Link>
-        <Link href="/requests" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/requests') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+        <Link href="/requests" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/requests') || pathname?.startsWith('/bookings') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
           <Calendar className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Bookings</span>
+          <span className="text-[10px] font-medium">Jobs</span>
         </Link>
         <Link href="/account" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/account' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
           <User className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Account</span>
+          <span className="text-[10px] font-medium">Settings</span>
         </Link>
       </div>
     </nav>

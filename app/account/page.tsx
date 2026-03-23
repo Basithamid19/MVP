@@ -65,15 +65,16 @@ export default function AccountPage() {
       {/* Header */}
       <header className="bg-white border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+          <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors md:flex hidden">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold flex-1">My Account</h1>
+          <h1 className="font-bold flex-1">Settings</h1>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="flex items-center gap-2 text-sm font-bold text-ink-dim hover:text-danger transition-colors"
           >
             <LogOut className="w-4 h-4" />
+            <span className="hidden sm:inline">Log Out</span>
           </button>
         </div>
       </header>

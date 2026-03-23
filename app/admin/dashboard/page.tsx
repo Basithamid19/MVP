@@ -7,7 +7,7 @@ import {
   Settings, Users, FileWarning, LogOut, CheckCircle2,
   XCircle, Loader2, TrendingUp, Eye, EyeOff, Plus,
   Clock, DollarSign, Package, Activity, RefreshCcw,
-  ChevronRight, MessageSquare, ArrowUpRight, X, Tag,
+  ChevronRight, MessageSquare, ArrowUpRight, X, Tag, Menu,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -26,10 +26,10 @@ function ModuleLoader() {
 
 function ModuleHeader({ title, description, action }: { title: string; description: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between mb-8">
+    <div className="flex items-start justify-between mb-6 sm:mb-8">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-ink mb-2">{title}</h1>
-        <p className="text-ink-sub text-sm font-medium">{description}</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">{title}</h1>
+        <p className="text-ink-sub text-xs sm:text-sm font-medium">{description}</p>
       </div>
       {action}
     </div>
@@ -129,9 +129,9 @@ function AnalyticsModule() {
           </div>
         ))}
       </div>
-      <div className="bg-white rounded-3xl border border-border-dim p-6">
-        <h2 className="font-bold text-lg mb-6">Marketplace Activity (Last 7 Days)</h2>
-        <div className="h-64">
+      <div className="bg-white rounded-3xl border border-border-dim p-4 sm:p-6">
+        <h2 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Marketplace Activity (Last 7 Days)</h2>
+        <div className="h-48 sm:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
@@ -262,12 +262,12 @@ function BookingsModule() {
   return (
     <div>
       <ModuleHeader title="Booking Operations Console" description="Every request, quote, booking, status event, and owner of each case." />
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELED'].map(s => (
           <button
             key={s}
             onClick={() => setFilter(s)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${filter === s ? 'bg-brand text-white' : 'bg-white border border-border text-ink-dim hover:border-border'}`}
+            className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${filter === s ? 'bg-brand text-white' : 'bg-white border border-border text-ink-dim hover:border-border'}`}
           >
             {s === 'ALL' ? `All (${bookings.length})` : `${s.replace('_', ' ')} (${bookings.filter(b => b.status === s).length})`}
           </button>
@@ -736,6 +736,7 @@ const MODULES = [
 export default function AdminDashboard() {
   const [active, setActive] = useState('analytics');
   const [forbidden, setForbidden] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin?section=overview').then(r => {
@@ -753,6 +754,8 @@ export default function AdminDashboard() {
     );
   }
 
+  const activeModule = MODULES.find(m => m.id === active) ?? MODULES[0];
+
   const renderModule = () => {
     switch (active) {
       case 'analytics':  return <AnalyticsModule />;
@@ -769,8 +772,8 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-canvas flex">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 bg-canvas border-r border-border-dim/50 flex flex-col sticky top-0 h-screen">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 shrink-0 bg-canvas border-r border-border-dim/50 flex-col sticky top-0 h-screen">
         <div className="p-8">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
@@ -809,12 +812,88 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      {/* Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-8 py-12">
-          {renderModule()}
+      {/* Mobile Slide-out Menu Overlay */}
+      {showMobileMenu && (
+        <div
+          className="md:hidden fixed inset-0 bg-ink/40 backdrop-blur-sm z-40"
+          onClick={() => setShowMobileMenu(false)}
+        />
+      )}
+
+      {/* Mobile Slide-out Menu Panel */}
+      <aside className={`md:hidden fixed top-0 left-0 h-full w-72 bg-canvas z-50 flex flex-col shadow-float transition-transform duration-300 ${showMobileMenu ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 flex items-center justify-between border-b border-border-dim">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
+            </div>
+            <div>
+              <span className="font-semibold text-base tracking-tight text-ink block">VilniusPro</span>
+              <span className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowMobileMenu(false)}
+            className="p-2 rounded-xl hover:bg-surface-alt transition-colors text-ink-dim"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
-      </main>
+
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {MODULES.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => { setActive(m.id); setShowMobileMenu(false); }}
+              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all text-left border ${
+                active === m.id
+                  ? 'bg-white shadow-sm border-border-dim text-brand'
+                  : 'border-transparent text-ink-sub hover:text-ink hover:bg-white/60'
+              }`}
+            >
+              <m.icon className="w-4 h-4 shrink-0" />
+              {m.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="p-4 border-t border-border-dim">
+          <button
+            onClick={() => signOut({ callbackUrl: '/' })}
+            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            Log Out
+          </button>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Mobile Top Bar */}
+        <header className="md:hidden sticky top-0 z-30 bg-canvas/90 backdrop-blur-xl border-b border-border-dim/50 px-4 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setShowMobileMenu(true)}
+            className="p-2 rounded-xl hover:bg-surface-alt transition-colors text-ink-sub"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <activeModule.icon className="w-4 h-4 text-brand shrink-0" />
+            <span className="font-semibold text-sm text-ink truncate">{activeModule.label}</span>
+          </div>
+          <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm shrink-0">
+            <span className="text-white font-bold text-xs tracking-tight">V</span>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12">
+            {renderModule()}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
