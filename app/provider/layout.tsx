@@ -7,7 +7,7 @@ import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
-  MessageSquare, X, Clock, Users, CheckCircle2,
+  MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
