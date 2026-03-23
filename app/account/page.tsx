@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 import MobileNav from '@/components/MobileNav';
@@ -22,12 +22,29 @@ const STATUS_STYLES: Record<string, string> = {
   CANCELED:    'bg-red-100 text-red-600',
 };
 
-export default function AccountPage() {
+function AccountContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<Tab>('Bookings');
+
+  // Derive active tab from URL query param; default to Bookings
+  const tabParam = searchParams.get('tab');
+  const initialTab: Tab = tabParam === 'settings' ? 'Profile'
+    : tabParam === 'invoices' ? 'Invoices'
+    : tabParam === 'credits' ? 'Credits'
+    : 'Bookings';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+  // Re-sync if query param changes (e.g. back/forward navigation)
+  useEffect(() => {
+    const t = searchParams.get('tab');
+    if (t === 'settings') setActiveTab('Profile');
+    else if (t === 'invoices') setActiveTab('Invoices');
+    else if (t === 'credits') setActiveTab('Credits');
+    else setActiveTab('Bookings');
+  }, [searchParams]);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -417,5 +434,13 @@ export default function AccountPage() {
       </main>
       <MobileNav />
     </div>
+  );
+}
+
+export default function AccountPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-canvas"><div className="w-8 h-8 border-2 border-brand border-t-transparent rounded-full animate-spin" /></div>}>
+      <AccountContent />
+    </Suspense>
   );
 }
