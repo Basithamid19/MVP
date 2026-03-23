@@ -257,8 +257,8 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-canvas flex">
 
       {/* ══ Sidebar ══════════════════════════════════════════ */}
-      <aside className="w-16 lg:w-56 bg-white border-r border-border-dim flex flex-col sticky top-0 h-screen shrink-0">
-        <div className="p-4 lg:p-5 border-b border-border-dim">
+      <aside className="w-16 lg:w-56 bg-canvas flex flex-col sticky top-0 h-screen shrink-0">
+        <div className="p-4 lg:p-6">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-brand rounded-chip flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-sm">V</span>
@@ -268,21 +268,21 @@ export default function DashboardPage() {
         </div>
 
         <nav className="flex-1 px-2 lg:px-3 py-4 space-y-1 overflow-y-auto">
-          <Link href="/dashboard" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm bg-surface-alt text-ink">
+          <Link href="/dashboard" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm bg-white shadow-sm text-brand">
             <LayoutDashboard className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Dashboard</span>
           </Link>
-          <Link href="/browse" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
+          <Link href="/browse" className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
             <Search className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Find Pros</span>
           </Link>
-          <Link href={requests[0] ? `/requests/${requests[0].id}` : '/requests/new'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
+          <Link href={requests[0] ? `/requests/${requests[0].id}` : '/requests/new'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
             <Inbox className="w-5 h-5 shrink-0" /><span className="hidden lg:block">My Jobs</span>
           </Link>
-          <Link href={nextBooking ? `/bookings/${nextBooking.id}` : '/browse'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
+          <Link href={nextBooking ? `/bookings/${nextBooking.id}` : '/browse'} className="flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input font-semibold text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all">
             <Calendar className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Bookings</span>
           </Link>
         </nav>
 
-        <div className="p-2 lg:p-3 border-t border-border-dim">
+        <div className="p-4 lg:p-6">
           <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 px-2 lg:px-3 py-2.5 rounded-input text-sm font-semibold text-ink-dim hover:text-danger hover:bg-danger-surface transition-all">
             <LogOut className="w-5 h-5 shrink-0" /><span className="hidden lg:block">Log Out</span>
           </button>
@@ -293,11 +293,11 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 flex flex-col">
 
         {/* Top bar */}
-        <header className="bg-white/90 backdrop-blur-md border-b border-border-dim px-6 py-3 flex items-center justify-end sticky top-0 z-20">
+        <header className="bg-canvas/90 backdrop-blur-md px-6 py-4 flex items-center justify-end sticky top-0 z-20">
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
-              className="relative w-9 h-9 flex items-center justify-center rounded-input hover:bg-surface-alt transition-colors text-ink-sub hover:text-ink"
+              className="relative w-9 h-9 flex items-center justify-center rounded-input hover:bg-white/60 transition-colors text-ink-sub hover:text-ink"
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
@@ -369,8 +369,8 @@ export default function DashboardPage() {
             {/* ── Header ────────────────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight text-ink">Hello, {firstName}</h1>
-                <p className="text-ink-sub mt-1.5 text-base">{heroSubtitle}</p>
+                <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Welcome back, {firstName}</h1>
+                <p className="text-ink-sub text-base">Here's what's happening with your home projects today.</p>
               </div>
               <Link
                 href="/requests/new"
@@ -380,19 +380,7 @@ export default function DashboardPage() {
               </Link>
             </div>
 
-            {/* ── Quick-job shortcuts ───────────────────────── */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-8" style={{ scrollbarWidth: 'none' }}>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim shrink-0 pr-2">Quick post:</span>
-              {QUICK_JOBS.map(cat => (
-                <Link
-                  key={cat.slug}
-                  href={`/requests/new?category=${cat.slug}`}
-                  className="shrink-0 flex items-center gap-1.5 px-4 py-2 bg-white border border-border-dim shadow-sm rounded-full text-sm font-medium text-ink-sub hover:border-brand hover:text-brand hover:shadow-card transition-all"
-                >
-                  <span>{cat.emoji}</span> {cat.label}
-                </Link>
-              ))}
-            </div>
+            
 
             {/* ── Single priority banner ────────────────────── */}
             {showQuotesBanner && (
@@ -427,16 +415,16 @@ export default function DashboardPage() {
                   </div>
 
                   {requests.length === 0 ? (
-                    <div className="bg-white rounded-panel border border-dashed border-border p-12 text-center">
-                      <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-5">
-                        <Inbox className="w-8 h-8 text-ink-dim" />
+                    <div className="bg-white rounded-panel border border-border-dim p-16 text-center shadow-sm">
+                      <div className="w-20 h-20 bg-brand-muted rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Inbox className="w-10 h-10 text-brand" />
                       </div>
-                      <p className="font-bold text-lg mb-2">No jobs posted yet</p>
-                      <p className="text-sm text-ink-sub mb-8 max-w-sm mx-auto leading-relaxed">
-                        Describe your task, choose a category, and get quotes from local professionals within hours.
+                      <h3 className="text-2xl font-bold text-ink mb-3">No active jobs</h3>
+                      <p className="text-base text-ink-sub mb-8 max-w-md mx-auto leading-relaxed">
+                        Ready to tackle your next project? Describe what you need done and get quotes from verified Vilnius professionals.
                       </p>
-                      <Link href="/requests/new" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
-                        <Plus className="w-4 h-4" /> Post Your First Job
+                      <Link href="/requests/new" className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
+                        <Plus className="w-5 h-5" /> Post Your First Job
                       </Link>
                     </div>
                   ) : (
@@ -456,14 +444,14 @@ export default function DashboardPage() {
                             key={req.id}
                             className={`bg-white rounded-panel p-6 transition-all duration-150 cursor-default ${
                               isBooked
-                                ? 'border border-ink shadow-card'
-                                : 'border border-border-dim shadow-card hover:shadow-elevated hover:-translate-y-0.5'
+                                ? 'border border-ink shadow-sm'
+                                : 'border border-border-dim shadow-sm hover:shadow-elevated hover:-translate-y-0.5'
                             }`}
                           >
                             {/* Category + status */}
                             <div className="flex items-center justify-between gap-3">
                               <div className="flex items-center gap-2">
-                                <span className="text-xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-3 py-1 rounded-full">
+                                <span className="text-xs font-bold uppercase tracking-widest bg-white shadow-sm text-brand-sub px-3 py-1 rounded-full">
                                   {req.category?.name}
                                 </span>
                                 {req.isUrgent && (
@@ -539,7 +527,7 @@ export default function DashboardPage() {
                                 className={`shrink-0 flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-input transition-all ${
                                   action.primary
                                     ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
-                                    : 'bg-surface-alt text-ink hover:bg-border'
+                                    : 'bg-white shadow-sm text-brand hover:bg-border'
                                 }`}
                               >
                                 {action.label}
@@ -567,10 +555,10 @@ export default function DashboardPage() {
                       <Link
                         key={slug}
                         href={`/browse?category=${slug}`}
-                        className="bg-white border border-border-dim shadow-sm rounded-panel p-4 flex flex-col items-center gap-2 text-center hover:shadow-elevated hover:border-brand hover:-translate-y-0.5 transition-all group"
+                        className="bg-white border border-transparent shadow-sm rounded-panel p-5 flex flex-col items-center gap-3 text-center hover:shadow-elevated hover:border-brand-muted hover:-translate-y-1 transition-all group"
                       >
-                        <span className="text-2xl">{emoji}</span>
-                        <span className="text-xs font-semibold text-ink-sub group-hover:text-brand transition-colors leading-tight">{label}</span>
+                        <span className="text-3xl mb-1">{emoji}</span>
+                        <span className="text-sm font-bold text-ink-sub group-hover:text-brand transition-colors leading-tight">{label}</span>
                       </Link>
                     ))}
                   </div>
@@ -581,16 +569,10 @@ export default function DashboardPage() {
               {/* ── Right column ──────────────────────────── */}
               <div className="space-y-4">
 
-                {/* Post a Job — minimal */}
-                <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
-                  <p className="font-bold text-base mb-4 text-ink">Need something done?</p>
-                  <Link href="/requests/new" className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-card text-sm font-bold hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated">
-                    <Plus className="w-4 h-4" /> Post a Job
-                  </Link>
-                </div>
+                
 
                 {/* Recommended Pros with trust signals */}
-                <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
+                <div className="bg-white border border-border-dim shadow-sm rounded-panel p-6">
                   <div className="flex items-center justify-between mb-4">
                     {/* Adapts to the active job's category */}
                     <h3 className="font-bold text-base text-ink">
