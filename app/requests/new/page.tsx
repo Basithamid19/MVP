@@ -165,7 +165,7 @@ function NewRequestContent() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Header */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
+      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
           <button onClick={back} className="p-2 hover:bg-surface-alt rounded-full transition-colors shrink-0">
             <ArrowLeft className="w-5 h-5" />
@@ -198,8 +198,8 @@ function NewRequestContent() {
         {/* Step 1: Category */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">What do you need help with?</h1>
-            <p className="text-ink-sub text-sm mb-8">Choose a service to get matched with the right pros.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">What do you need help with?</h1>
+            <p className="text-ink-sub text-base mb-8">Choose a service to get matched with the right pros.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {categories.map((cat) => {
                 const emoji = EMOJI_MAP[cat.slug] || '🛠️';
@@ -230,8 +230,8 @@ function NewRequestContent() {
         {/* Step 2: Details */}
         {step === 2 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Describe the job</h1>
-            <p className="text-ink-sub text-sm mb-8">More detail means better, faster quotes from pros.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Describe the job</h1>
+            <p className="text-ink-sub text-base mb-8">More detail means better, faster quotes from pros.</p>
             <div className="space-y-5">
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
@@ -268,14 +268,14 @@ function NewRequestContent() {
                     <div key={p.preview} className="relative w-20 h-20 rounded-input overflow-hidden border border-border">
                       <img src={p.preview} alt="Upload" className="w-full h-full object-cover" />
                       {!p.url && (
-                        <div className="absolute inset-0 bg-brand/40 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
                           <Loader2 className="w-4 h-4 animate-spin text-white" />
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={() => removePhoto(p.preview)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-brand/60 rounded-full flex items-center justify-center"
+                        className="absolute top-1 right-1 w-5 h-5 bg-ink/60 hover:bg-ink rounded-full flex items-center justify-center transition-colors"
                       >
                         <X className="w-3 h-3 text-white" />
                       </button>
@@ -318,8 +318,8 @@ function NewRequestContent() {
         {/* Step 3: Schedule */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Location & schedule</h1>
-            <p className="text-ink-sub text-sm mb-8">Where is the job and when do you need it done?</p>
+            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Location & schedule</h1>
+            <p className="text-ink-sub text-base mb-8">Where is the job and when do you need it done?</p>
             <div className="space-y-6">
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Address in Vilnius</label>
@@ -390,8 +390,8 @@ function NewRequestContent() {
         {/* Step 4: Review */}
         {step === 4 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Review your request</h1>
-            <p className="text-ink-sub text-sm mb-8">Double-check everything before posting to local pros.</p>
+            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Review your request</h1>
+            <p className="text-ink-sub text-base mb-8">Double-check everything before posting to local pros.</p>
             <div className="bg-white rounded-panel border border-border-dim p-6 space-y-4 shadow-card mb-6">
               <ReviewRow label="Service" value={form.categoryName} onEdit={() => setStep(1)} />
               <ReviewRow label="Description" value={form.description} onEdit={() => setStep(2)} multiline />

@@ -101,7 +101,7 @@ export default function ProviderProfilePage() {
   return (
     <div className="min-h-screen bg-canvas pb-20">
       {/* Header */}
-      <div className="bg-white border-b border-border-dim sticky top-0 z-40">
+      <div className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
           <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
@@ -123,7 +123,7 @@ export default function ProviderProfilePage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h2 className="text-3xl font-bold tracking-tight">{provider.user.name}</h2>
+                    <h2 className="text-4xl font-bold tracking-tight text-ink">{provider.user.name}</h2>
                     {provider.isVerified && (
                       <div className="flex items-center gap-1 bg-trust-surface text-trust px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
                         <ShieldCheck className="w-3 h-3" />
@@ -317,26 +317,26 @@ export default function ProviderProfilePage() {
 
           {/* Right Column - Booking Card */}
           <div className="lg:col-span-1">
-            <div className="bg-brand text-white p-8 rounded-hero shadow-float sticky top-24">
-              <h3 className="text-2xl font-bold tracking-tight mb-2">Need help?</h3>
-              <p className="text-white/80 text-sm mb-6">Send a request to {provider.user.name.split(' ')[0]} and get a quote within the hour.</p>
+            <div className="bg-white p-8 rounded-hero border border-border-dim shadow-elevated sticky top-24">
+              <h3 className="text-2xl font-bold tracking-tight mb-2 text-ink">Need help?</h3>
+              <p className="text-ink-sub text-sm mb-6">Send a request to {provider.user.name.split(' ')[0]} and get a quote within the hour.</p>
               
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-3 h-3 text-white" />
+                <div className="flex items-center gap-3 text-sm font-medium text-ink-sub">
+                  <div className="w-5 h-5 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3 h-3 text-trust" />
                   </div>
                   No upfront payment
                 </div>
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-3 h-3 text-white" />
+                <div className="flex items-center gap-3 text-sm font-medium text-ink-sub">
+                  <div className="w-5 h-5 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3 h-3 text-trust" />
                   </div>
                   Free cancellation
                 </div>
-                <div className="flex items-center gap-3 text-sm font-medium">
-                  <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center shrink-0">
-                    <CheckCircle2 className="w-3 h-3 text-white" />
+                <div className="flex items-center gap-3 text-sm font-medium text-ink-sub">
+                  <div className="w-5 h-5 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3 h-3 text-trust" />
                   </div>
                   VilniusPro Guarantee
                 </div>
@@ -344,27 +344,27 @@ export default function ProviderProfilePage() {
 
               <Link 
                 href={`/requests/new?providerId=${provider.id}&category=${provider.categories[0]?.slug}`}
-                className="block w-full bg-white text-ink text-center py-4 rounded-card font-bold hover:bg-surface-alt transition-all mb-3"
+                className="block w-full bg-brand text-white text-center py-4 rounded-card font-bold hover:bg-brand-dark transition-all mb-3 shadow-card hover:shadow-elevated"
               >
                 Send Service Request
               </Link>
               
-              <button className="w-full bg-white/10 text-white text-center py-4 rounded-card font-bold hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+              <button className="w-full bg-surface-alt text-ink text-center py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim">
                 <MessageSquare className="w-4 h-4" />
                 Chat with Pro
               </button>
 
               {/* Mini availability preview */}
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <p className="text-xs font-bold text-white/50 uppercase tracking-widest mb-3">This week</p>
+              <div className="mt-6 pt-6 border-t border-border-dim">
+                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">This week</p>
                 <div className="flex gap-1.5">
                   {Object.entries(AVAILABILITY).map(([day, avail]) => (
                     <div key={day} className="flex-1 text-center">
-                      <p className="text-[9px] font-bold text-white/40 uppercase mb-1">{day.slice(0,1)}</p>
+                      <p className="text-[9px] font-bold text-ink-dim uppercase mb-1">{day.slice(0,1)}</p>
                       <div className={`rounded py-1.5 text-[9px] font-bold ${
                         avail.slots.length > 1 ? 'bg-trust text-white' :
                         avail.slots.length === 1 ? 'bg-trust text-white' :
-                        'bg-white/10 text-white/20'
+                        'bg-surface-alt text-ink-dim border border-border-dim'
                       }`}>
                         {avail.slots.length > 0 ? '✓' : '×'}
                       </div>

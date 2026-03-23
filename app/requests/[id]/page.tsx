@@ -91,7 +91,7 @@ export default function QuoteInboxPage() {
   return (
     <div className="min-h-screen bg-canvas pb-20">
       {/* Header */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
+      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
           <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
@@ -109,7 +109,7 @@ export default function QuoteInboxPage() {
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {/* Request summary */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -147,7 +147,7 @@ export default function QuoteInboxPage() {
 
         {/* Accepted quote banner */}
         {acceptedQuote && (
-          <div className="bg-brand text-white rounded-panel p-5">
+          <div className="bg-brand text-white rounded-panel p-6">
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle2 className="w-5 h-5 text-white" />
               <span className="font-bold">Quote accepted — booking confirmed!</span>
@@ -190,7 +190,7 @@ export default function QuoteInboxPage() {
                   const p = quote.provider;
                   const eta = etaFromResponse(p?.responseTime);
                   return (
-                    <div key={quote.id} className={`bg-white rounded-panel border p-5 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
+                    <div key={quote.id} className={`bg-white rounded-panel border p-6 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star className="w-3.5 h-3.5 text-brand fill-yellow-500" />

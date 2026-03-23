@@ -46,7 +46,7 @@ function BrowseContent() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Header */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
+      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-chip flex items-center justify-center">
@@ -60,7 +60,7 @@ function BrowseContent() {
               <input 
                 type="text" 
                 placeholder="Search services..." 
-                className="w-full pl-10 pr-4 py-2 bg-surface-alt border-none rounded-full text-sm focus:ring-2 focus:ring-brand transition-all"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-border-dim shadow-card rounded-full text-sm focus:ring-2 focus:ring-brand focus:border-transparent transition-all outline-none"
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ function BrowseContent() {
                   <select 
                     value={category} 
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm font-medium focus:ring-2 focus:ring-brand outline-none"
+                    className="w-full p-3 bg-white border border-border rounded-input text-sm font-medium focus:ring-2 focus:ring-brand focus:border-transparent outline-none shadow-card transition-all"
                   >
                     <option value="">All Categories</option>
                     <option value="plumber">Plumber</option>
@@ -117,7 +117,7 @@ function BrowseContent() {
           {/* Provider List */}
           <div className="flex-1">
             <div className="mb-6 flex items-center justify-between">
-              <h1 className="text-2xl font-bold tracking-tight">
+              <h1 className="text-3xl font-bold tracking-tight text-ink">
                 {category ? `${category.charAt(0).toUpperCase() + category.slice(1)}s` : 'All Professionals'} in Vilnius
               </h1>
               <span className="text-sm text-ink-sub font-medium">{providers.length} results</span>
@@ -134,7 +134,7 @@ function BrowseContent() {
                   <Link 
                     key={p.id} 
                     href={`/providers/${p.id}`}
-                    className="group bg-white p-6 rounded-panel border border-border-dim hover:border-brand transition-all hover:shadow-float flex flex-col"
+                    className="group bg-white p-6 rounded-panel border border-border-dim shadow-card hover:border-brand transition-all hover:shadow-elevated flex flex-col"
                   >
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">

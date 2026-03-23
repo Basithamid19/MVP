@@ -293,7 +293,7 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 flex flex-col">
 
         {/* Top bar */}
-        <header className="bg-white border-b border-border-dim px-6 py-3 flex items-center justify-end sticky top-0 z-20">
+        <header className="bg-white/90 backdrop-blur-md border-b border-border-dim px-6 py-3 flex items-center justify-end sticky top-0 z-20">
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
@@ -367,8 +367,8 @@ export default function DashboardPage() {
             {/* ── Header ────────────────────────────────────── */}
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-xl font-bold tracking-tight">Hello, {firstName} 👋</h1>
-                <p className="text-sm text-ink-dim mt-0.5">{heroSubtitle}</p>
+                <h1 className="text-2xl font-bold tracking-tight text-ink">Hello, {firstName}</h1>
+                <p className="text-ink-sub mt-1">{heroSubtitle}</p>
               </div>
               <Link
                 href="/requests/new"
@@ -418,7 +418,7 @@ export default function DashboardPage() {
 
                 <section>
                   <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-bold text-base">My Jobs</h2>
+                    <h2 className="text-lg font-bold tracking-tight text-ink">My Jobs</h2>
                     {requests.length > 0 && (
                       <span className="text-xs text-ink-dim font-medium">{requests.length} total</span>
                     )}
@@ -559,7 +559,7 @@ export default function DashboardPage() {
 
                 {/* Browse Services */}
                 <section>
-                  <h2 className="font-bold text-base mb-3">Browse Services</h2>
+                  <h2 className="text-lg font-bold tracking-tight text-ink mb-4">Browse Services</h2>
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                     {QUICK_JOBS.map(({ label, slug, emoji }) => (
                       <Link
@@ -580,7 +580,7 @@ export default function DashboardPage() {
               <div className="space-y-4">
 
                 {/* Post a Job — minimal */}
-                <div className="bg-white border border-border-dim shadow-card rounded-card p-4">
+                <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
                   <p className="font-bold text-sm mb-3">Need something done?</p>
                   <Link href="/requests/new" className="w-full flex items-center justify-center gap-2 bg-brand text-white py-2.5 rounded-input text-xs font-bold hover:bg-brand-dark transition-all">
                     <Plus className="w-3.5 h-3.5" /> Post a Job
@@ -588,7 +588,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Recommended Pros with trust signals */}
-                <div className="bg-white border border-border-dim shadow-card rounded-card p-4">
+                <div className="bg-white border border-border-dim shadow-card rounded-panel p-6">
                   <div className="flex items-center justify-between mb-3">
                     {/* Adapts to the active job's category */}
                     <h3 className="font-semibold text-sm text-ink-sub">

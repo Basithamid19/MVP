@@ -143,7 +143,7 @@ export default function BookingPage() {
   return (
     <div className="min-h-screen bg-canvas pb-28">
       {/* Header */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
+      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
           <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
@@ -166,7 +166,7 @@ export default function BookingPage() {
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {/* Status timeline */}
         {!isCanceled && (
-          <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Job Progress</p>
             <div className="flex items-center mb-4">
               {BOOKING_STEPS.map((s, i) => (
@@ -207,7 +207,7 @@ export default function BookingPage() {
 
         {/* Approve final price (if adjusted) */}
         {isCompleted && priceAdjusted && !priceApproved && (
-          <div className="bg-caution-surface border border-caution-edge rounded-panel p-5 shadow-card">
+          <div className="bg-caution-surface border border-caution-edge rounded-panel p-6 shadow-card">
             <div className="flex items-start gap-3 mb-4">
               <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
               <div>
@@ -244,7 +244,7 @@ export default function BookingPage() {
         )}
 
         {/* Provider card */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Your Pro</p>
           <div className="flex items-start gap-4 mb-4">
             <img
@@ -300,7 +300,7 @@ export default function BookingPage() {
         </div>
 
         {/* Booking details */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Booking Details</p>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
@@ -321,7 +321,7 @@ export default function BookingPage() {
         </div>
 
         {/* Payment + fee breakdown */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Payment</p>
           <div className="space-y-2 text-sm mb-4">
             {quotedPrice && (
@@ -361,7 +361,7 @@ export default function BookingPage() {
 
         {/* Review section */}
         {isCompleted && (!priceAdjusted || priceApproved) && (
-          <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Rate your experience</p>
             {booking.review || reviewSubmitted ? (
               <div className="flex flex-col items-center py-4 text-center">
@@ -410,7 +410,7 @@ export default function BookingPage() {
 
         {/* Report issue */}
         {!isCanceled && (
-          <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
             {reportingIssue ? (
               <div>
                 <p className="font-bold mb-3 flex items-center gap-2">
@@ -462,7 +462,7 @@ export default function BookingPage() {
 
       {/* Cancel confirm modal */}
       {showCancelConfirm && (
-        <div className="fixed inset-0 bg-brand/40 z-50 flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-panel p-6 w-full max-w-sm">
             <h2 className="font-bold text-lg mb-2">Cancel booking?</h2>
             <p className="text-sm text-ink-sub mb-6">This action cannot be undone. Cancellation fees may apply if within 24 hours of the appointment.</p>
