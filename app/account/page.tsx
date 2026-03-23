@@ -8,11 +8,12 @@ import { signOut } from 'next-auth/react';
 import MobileNav from '@/components/MobileNav';
 import {
   ArrowLeft, Star, Loader2, CheckCircle2, Clock,
-  MapPin, Gift, Share2, Heart, FileText, LogOut,
-  ChevronRight, DollarSign, User, Receipt, Download,
+  Gift, Share2, FileText, LogOut,
+  ChevronRight, User, Receipt, Download,
+  LifeBuoy, Mail, MessageCircle, HelpCircle, Shield,
 } from 'lucide-react';
 
-const TABS = ['Bookings', 'Invoices', 'Credits', 'Profile'] as const;
+const TABS = ['Bookings', 'Invoices', 'Credits', 'My Account'] as const;
 type Tab = typeof TABS[number];
 
 const STATUS_STYLES: Record<string, string> = {
@@ -31,7 +32,7 @@ function AccountContent() {
 
   // Derive active tab from URL query param; default to Bookings
   const tabParam = searchParams.get('tab');
-  const initialTab: Tab = tabParam === 'settings' ? 'Profile'
+  const initialTab: Tab = tabParam === 'settings' ? 'My Account'
     : tabParam === 'invoices' ? 'Invoices'
     : tabParam === 'credits' ? 'Credits'
     : 'Bookings';
@@ -40,7 +41,7 @@ function AccountContent() {
   // Re-sync if query param changes (e.g. back/forward navigation)
   useEffect(() => {
     const t = searchParams.get('tab');
-    if (t === 'settings') setActiveTab('Profile');
+    if (t === 'settings') setActiveTab('My Account');
     else if (t === 'invoices') setActiveTab('Invoices');
     else if (t === 'credits') setActiveTab('Credits');
     else setActiveTab('Bookings');
@@ -85,7 +86,7 @@ function AccountContent() {
           <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors md:flex hidden">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="font-bold flex-1">Settings</h1>
+          <h1 className="font-bold flex-1">My Account</h1>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="flex items-center gap-2 text-sm font-bold text-ink-dim hover:text-danger transition-colors"
@@ -128,13 +129,13 @@ function AccountContent() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-white rounded-2xl border border-gray-100">
+        <div className="flex gap-1 p-1 bg-white rounded-2xl border border-gray-100 overflow-x-auto">
           {TABS.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${
-                activeTab === tab ? 'bg-black text-white' : 'text-gray-400 hover:text-black'
+              className={`flex-1 min-w-[80px] py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
+                activeTab === tab ? 'bg-brand text-white' : 'text-gray-400 hover:text-ink'
               }`}
             >
               {tab}
@@ -355,77 +356,90 @@ function AccountContent() {
           </div>
         )}
 
-        {/* Tab: Profile */}
-        {activeTab === 'Profile' && (
+        {/* Tab: My Account */}
+        {activeTab === 'My Account' && (
           <div className="space-y-4">
-            {/* Info */}
+
+            {/* Profile */}
             <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold mb-4">Account Info</h3>
+              <h3 className="font-bold mb-4 flex items-center gap-2">
+                <User className="w-4 h-4 text-ink-dim" /> Profile
+              </h3>
               <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center py-1">
                   <span className="text-gray-400">Name</span>
                   <span className="font-semibold">{user?.name}</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center py-1 border-t border-border-dim">
                   <span className="text-gray-400">Email</span>
-                  <span className="font-semibold">{user?.email}</span>
+                  <span className="font-semibold truncate max-w-[180px]">{user?.email}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-400">Role</span>
-                  <span className="font-semibold capitalize">{(user as any)?.role?.toLowerCase() ?? 'customer'}</span>
+                <div className="flex justify-between items-center py-1 border-t border-border-dim">
+                  <span className="text-gray-400">Member since</span>
+                  <span className="font-semibold">2024</span>
                 </div>
               </div>
             </div>
 
-            {/* Saved addresses */}
-            <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold mb-4">Saved Addresses</h3>
-              {uniqueAddresses.length === 0 ? (
-                <p className="text-sm text-gray-400">No saved addresses yet. They&apos;ll appear here after your first booking.</p>
-              ) : (
-                <div className="space-y-2">
-                  {uniqueAddresses.map((addr, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-canvas rounded-xl">
-                      <MapPin className="w-4 h-4 text-gray-400 shrink-0" />
-                      <span className="text-sm font-medium">{addr}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Favorite pros */}
-            <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Heart className="w-4 h-4 text-red-400 fill-red-400" /> Favourite Pros
-              </h3>
-              <p className="text-sm text-gray-400">Pros you&apos;ve bookmarked will appear here.</p>
-              <Link href="/browse" className="mt-4 flex items-center gap-2 text-sm font-bold text-black hover:underline">
-                Browse pros <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Quick links */}
+            {/* Settings */}
             <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+              <div className="px-5 pt-5 pb-2">
+                <h3 className="font-bold flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-ink-dim" /> Settings
+                </h3>
+              </div>
               {[
-                { label: 'Browse Services', href: '/browse' },
-                { label: 'New Service Request', href: '/requests/new' },
-                { label: 'Dashboard', href: '/dashboard' },
+                { label: 'Saved Addresses', sub: uniqueAddresses.length > 0 ? `${uniqueAddresses.length} saved` : 'None yet', href: '/dashboard' },
+                { label: 'Favourite Pros', sub: 'Manage saved pros', href: '/browse' },
+                { label: 'New Service Request', sub: 'Post a job for quotes', href: '/requests/new' },
               ].map((item, i) => (
                 <Link
                   key={i}
                   href={item.href}
-                  className="flex items-center justify-between px-5 py-4 border-b border-border-dim last:border-0 hover:bg-canvas transition-colors"
+                  className="flex items-center justify-between px-5 py-4 border-t border-border-dim hover:bg-canvas transition-colors"
                 >
-                  <span className="text-sm font-semibold">{item.label}</span>
-                  <ChevronRight className="w-4 h-4 text-ink-dim" />
+                  <div>
+                    <p className="text-sm font-semibold">{item.label}</p>
+                    <p className="text-xs text-gray-400">{item.sub}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
                 </Link>
               ))}
             </div>
 
+            {/* Support */}
+            <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+              <div className="px-5 pt-5 pb-2">
+                <h3 className="font-bold flex items-center gap-2">
+                  <LifeBuoy className="w-4 h-4 text-ink-dim" /> Support
+                </h3>
+              </div>
+              {[
+                { icon: MessageCircle, label: 'Chat with us', sub: 'Avg. reply time: under 1 hour', href: 'mailto:support@vilniuspro.lt' },
+                { icon: Mail,          label: 'Email support', sub: 'support@vilniuspro.lt',          href: 'mailto:support@vilniuspro.lt' },
+                { icon: HelpCircle,    label: 'Help Centre',   sub: 'FAQs and how-to guides',         href: '/' },
+              ].map((item, i) => (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="flex items-center gap-4 px-5 py-4 border-t border-border-dim hover:bg-canvas transition-colors"
+                >
+                  <div className="w-9 h-9 bg-canvas rounded-xl flex items-center justify-center shrink-0">
+                    <item.icon className="w-4 h-4 text-ink-sub" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold">{item.label}</p>
+                    <p className="text-xs text-gray-400 truncate">{item.sub}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+                </Link>
+              ))}
+            </div>
+
+            {/* Log out */}
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-2xl text-sm font-bold text-ink-sub hover:border-red-200 hover:text-red-600 transition-all"
+              className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-2xl text-sm font-bold text-ink-sub hover:border-red-200 hover:text-danger transition-all"
             >
               <LogOut className="w-4 h-4" /> Log Out
             </button>
