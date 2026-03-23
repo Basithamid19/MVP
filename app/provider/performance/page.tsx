@@ -77,20 +77,30 @@ export default function PerformancePage() {
   if (warnings.length === 0) warnings.push({ type: 'info', message: 'Great work! No active warnings or penalties on your account.' });
 
   const metrics = [
-    { label: 'Completion rate', value: `${completionRate}%`, icon: CheckCircle2, color: completionRate >= 90 ? 'text-green-600' : completionRate >= 70 ? 'text-yellow-600' : 'text-red-500', gauge: completionRate, gaugeMax: 100, gaugeColor: completionRate >= 90 ? 'bg-green-500' : 'bg-yellow-400' },
-    { label: 'Average rating', value: ratingAvg > 0 ? ratingAvg.toFixed(1) : '—', icon: Star, color: 'text-yellow-600', gauge: ratingAvg * 20, gaugeMax: 100, gaugeColor: 'bg-yellow-400' },
-    { label: 'Jobs completed', value: completed.length, icon: Award, color: 'text-blue-600', gauge: Math.min(completed.length, 100), gaugeMax: 100, gaugeColor: 'bg-blue-500' },
-    { label: 'Repeat customers', value: repeatCustomers, icon: ThumbsUp, color: 'text-purple-600', gauge: Math.min(repeatCustomers * 10, 100), gaugeMax: 100, gaugeColor: 'bg-purple-400' },
+    { label: 'Completion rate', value: `${completionRate}%`, icon: CheckCircle2, color: completionRate >= 90 ? 'text-trust' : completionRate >= 70 ? 'text-caution' : 'text-danger', gauge: completionRate, gaugeMax: 100, gaugeColor: completionRate >= 90 ? 'bg-trust' : 'bg-caution' },
+    { label: 'Average rating', value: ratingAvg > 0 ? ratingAvg.toFixed(1) : '—', icon: Star, color: 'text-brand', gauge: ratingAvg * 20, gaugeMax: 100, gaugeColor: 'bg-brand' },
+    { label: 'Jobs completed', value: completed.length, icon: Award, color: 'text-info', gauge: Math.min(completed.length, 100), gaugeMax: 100, gaugeColor: 'bg-info' },
+    { label: 'Repeat customers', value: repeatCustomers, icon: ThumbsUp, color: 'text-brand-dark', gauge: Math.min(repeatCustomers * 10, 100), gaugeMax: 100, gaugeColor: 'bg-brand-dark' },
   ];
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Performance</h1>
-          <p className="text-sm text-ink-dim mt-0.5">Track your quality metrics and standing</p>
+      {/* Mobile-only section tabs */}
+      <div className="md:hidden flex gap-1 p-1.5 bg-white rounded-2xl border border-border-dim shadow-sm mb-6">
+        <div className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all bg-surface-alt text-ink shadow-sm border border-border-dim">
+          Performance
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold ${
+        <Link href="/provider/earnings" className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+          Earnings
+        </Link>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Performance</h1>
+          <p className="text-sm text-ink-sub mt-1">Track your quality metrics and standing</p>
+        </div>
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium w-fit ${
           ratingAvg >= 4.5 ? 'bg-trust-surface text-trust' :
           ratingAvg >= 4.0 ? 'bg-info-surface text-info' :
           ratingAvg > 0 ? 'bg-caution-surface text-caution' : 'bg-surface-alt text-ink-dim'
@@ -101,53 +111,53 @@ export default function PerformancePage() {
       </div>
 
       {/* Metric cards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
         {metrics.map(m => (
-          <div key={m.label} className="bg-white rounded-2xl border border-border-dim p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <m.icon className={`w-4 h-4 ${m.color}`} />
-              <p className="text-xs font-bold text-ink-dim uppercase tracking-widest">{m.label}</p>
+          <div key={m.label} className="bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-4">
+              <m.icon className={`w-5 h-5 ${m.color}`} />
+              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{m.label}</p>
             </div>
-            <p className="text-3xl font-bold tracking-tight mb-3">{m.value}</p>
+            <p className="text-3xl font-semibold tracking-tight text-ink mb-4">{m.value}</p>
             <Gauge value={m.gauge} max={m.gaugeMax} color={m.gaugeColor} />
           </div>
         ))}
       </div>
 
       {/* Response speed */}
-      <div className="bg-white rounded-2xl border border-border-dim p-5 shadow-sm mb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center shrink-0">
-            <Zap className="w-5 h-5 text-green-600" />
+      <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm mb-5 sm:mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-trust-surface rounded-full flex items-center justify-center shrink-0">
+            <Zap className="w-5 h-5 text-trust" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-sm">Response speed</p>
-            <p className="text-xs text-ink-dim">{responseTime}</p>
+            <p className="font-semibold text-ink text-base mb-1">Response speed</p>
+            <p className="text-sm text-ink-sub">{responseTime}</p>
           </div>
-          <div className="text-right">
-            <p className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">Fast</p>
+          <div className="text-right shrink-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-trust bg-trust-surface px-2.5 py-1 rounded-full">Fast</p>
           </div>
         </div>
       </div>
 
       {/* Rating distribution */}
       {reviews.length > 0 && (
-        <div className="bg-white rounded-2xl border border-border-dim p-5 shadow-sm mb-5">
-          <div className="flex items-center justify-between mb-4">
-            <p className="font-bold">Rating breakdown</p>
-            <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-brand fill-yellow-500" />
-              <span className="font-bold">{ratingAvg.toFixed(1)}</span>
-              <span className="text-sm text-ink-dim">({reviews.length})</span>
+        <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm mb-5 sm:mb-6">
+          <div className="flex items-center justify-between mb-5">
+            <p className="font-semibold text-ink text-base">Rating breakdown</p>
+            <div className="flex items-center gap-1.5">
+              <Star className="w-4 h-4 text-brand fill-brand" />
+              <span className="font-semibold text-ink">{ratingAvg.toFixed(1)}</span>
+              <span className="text-sm text-ink-sub">({reviews.length})</span>
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {ratingDist.map(({ star, count }) => (
               <div key={star} className="flex items-center gap-3">
                 <span className="text-xs font-bold text-ink-dim w-3">{star}</span>
-                <Star className="w-3 h-3 text-brand fill-yellow-400 shrink-0" />
+                <Star className="w-4 h-4 text-brand fill-brand shrink-0" />
                 <div className="flex-1 h-2 bg-surface-alt rounded-full overflow-hidden">
-                  <div className="h-full bg-yellow-400 rounded-full" style={{ width: `${(count / maxRatingCount) * 100}%` }} />
+                  <div className="h-full bg-brand rounded-full" style={{ width: `${(count / maxRatingCount) * 100}%` }} />
                 </div>
                 <span className="text-xs text-ink-dim w-4 text-right">{count}</span>
               </div>
@@ -155,12 +165,12 @@ export default function PerformancePage() {
           </div>
           {/* Recent reviews */}
           {reviews.slice(0, 3).map(r => (
-            <div key={r.id} className="mt-4 pt-4 border-t border-gray-50">
-              <div className="flex items-center gap-1 mb-1">
-                {[1,2,3,4,5].map(i => <Star key={i} className={`w-3 h-3 ${i <= r.rating ? 'text-brand fill-yellow-400' : 'text-ink-dim'}`} />)}
-                <span className="text-[10px] text-ink-dim ml-1">{new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+            <div key={r.id} className="mt-5 pt-5 border-t border-border-dim">
+              <div className="flex items-center gap-1 mb-2">
+                {[1,2,3,4,5].map(i => <Star key={i} className={`w-4 h-4 ${i <= r.rating ? 'text-brand fill-brand' : 'text-border'}`} />)}
+                <span className="text-xs text-ink-dim ml-2">{new Date(r.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
               </div>
-              {r.comment && <p className="text-xs text-ink-sub italic">"{r.comment}"</p>}
+              {r.comment && <p className="text-sm text-ink-sub italic">"{r.comment}"</p>}
             </div>
           ))}
         </div>

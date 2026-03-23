@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 import { 
   Star, 
   ShieldCheck, 
@@ -44,7 +45,7 @@ function BrowseContent() {
   }, [category, verifiedOnly]);
 
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-canvas pb-20 md:pb-0">
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -212,6 +213,7 @@ export default function BrowsePage() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       <BrowseContent />
+      <MobileNav />
     </Suspense>
   );
 }

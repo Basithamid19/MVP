@@ -71,44 +71,54 @@ export default function EarningsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold tracking-tight">Earnings & Payouts</h1>
-        <button onClick={exportTaxCSV} className="flex items-center gap-2 text-sm font-bold border border-border px-4 py-2 rounded-xl hover:border-brand transition-colors">
+      {/* Mobile-only section tabs */}
+      <div className="md:hidden flex gap-1 p-1.5 bg-white rounded-2xl border border-border-dim shadow-sm mb-6">
+        <Link href="/provider/performance" className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+          Performance
+        </Link>
+        <div className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all bg-surface-alt text-ink shadow-sm border border-border-dim">
+          Earnings
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Earnings & Payouts</h1>
+        <button onClick={exportTaxCSV} className="w-full sm:w-auto flex items-center justify-center gap-2 text-sm font-medium border border-border-dim px-5 py-3 sm:py-2.5 rounded-full hover:border-brand/30 hover:shadow-sm transition-all bg-white">
           <Download className="w-4 h-4" /> Tax Export
         </button>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-brand text-white rounded-2xl p-5">
-          <p className="text-xs text-white/60 font-bold uppercase tracking-widest mb-1">Total Earned</p>
-          <p className="text-2xl font-bold">€{totalNet.toFixed(2)}</p>
-          <p className="text-xs text-white/40 mt-1">{completed.length} jobs</p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 sm:mb-8">
+        <div className="bg-brand text-white rounded-2xl p-5 sm:p-6 shadow-md">
+          <p className="text-[10px] text-white/60 font-bold uppercase tracking-widest mb-2">Total Earned</p>
+          <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
+          <p className="text-sm text-white/60 mt-2">{completed.length} jobs</p>
         </div>
-        <div className="bg-white border border-border-dim rounded-2xl p-5 shadow-sm">
-          <p className="text-xs text-ink-dim font-bold uppercase tracking-widest mb-1">Pending</p>
-          <p className="text-2xl font-bold">€{pendingAmount.toFixed(2)}</p>
-          <p className="text-xs text-ink-dim mt-1">{pending.length} active jobs</p>
+        <div className="bg-white border border-border-dim rounded-2xl p-5 sm:p-6 shadow-sm">
+          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Pending</p>
+          <p className="text-3xl font-semibold tracking-tight text-ink">€{pendingAmount.toFixed(2)}</p>
+          <p className="text-sm text-ink-sub mt-2">{pending.length} active jobs</p>
         </div>
-        <div className="bg-white border border-border-dim rounded-2xl p-5 shadow-sm">
-          <p className="text-xs text-ink-dim font-bold uppercase tracking-widest mb-1">Platform fee</p>
-          <p className="text-2xl font-bold">12%</p>
-          <p className="text-xs text-ink-dim mt-1">€{(totalGross * PLATFORM_FEE).toFixed(2)} total</p>
+        <div className="bg-white border border-border-dim rounded-2xl p-5 sm:p-6 shadow-sm">
+          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Platform fee</p>
+          <p className="text-3xl font-semibold tracking-tight text-ink">12%</p>
+          <p className="text-sm text-ink-sub mt-2">€{(totalGross * PLATFORM_FEE).toFixed(2)} total</p>
         </div>
       </div>
 
       {/* Earnings chart */}
       {months.length > 0 && (
-        <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm mb-6">
-          <p className="font-bold mb-5 flex items-center gap-2"><TrendingUp className="w-4 h-4" /> Monthly earnings</p>
-          <div className="flex items-end gap-2 h-32">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 shadow-sm mb-6 sm:mb-8">
+          <p className="font-semibold text-ink mb-6 flex items-center gap-2"><TrendingUp className="w-5 h-5 text-ink-dim" /> Monthly earnings</p>
+          <div className="flex items-end gap-2 h-40">
             {months.map(([month, value]) => (
-              <div key={month} className="flex-1 flex flex-col items-center gap-1">
+              <div key={month} className="flex-1 flex flex-col items-center gap-2">
                 <div
-                  className="w-full bg-brand rounded-t-lg transition-all"
+                  className="w-full bg-brand rounded-t-md transition-all"
                   style={{ height: `${(value / maxMonth) * 100}%`, minHeight: '4px' }}
                 />
-                <span className="text-[9px] font-bold text-ink-dim uppercase">{month}</span>
+                <span className="text-[10px] font-bold text-ink-dim uppercase">{month}</span>
               </div>
             ))}
           </div>
@@ -116,7 +126,7 @@ export default function EarningsPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white rounded-2xl border border-border-dim mb-5">
+      <div className="flex gap-1 p-1.5 bg-white rounded-2xl border border-border-dim mb-6 sm:mb-8 overflow-x-auto">
         {(['overview', 'history', 'payouts'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
             className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all capitalize ${tab === t ? 'bg-brand text-white' : 'text-ink-dim hover:text-ink'}`}>

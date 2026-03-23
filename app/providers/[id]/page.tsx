@@ -20,6 +20,7 @@ import {
   Sunrise,
 } from 'lucide-react';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 
 const AVAILABILITY: Record<string, { slots: string[]; label: string }> = {
   Mon: { slots: ['morning', 'afternoon'], label: 'Mon' },
@@ -99,7 +100,7 @@ export default function ProviderProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-canvas pb-20">
+    <div className="min-h-screen bg-canvas pb-24 md:pb-20">
       {/* Header */}
       <div className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -376,6 +377,7 @@ export default function ProviderProfilePage() {
           </div>
         </div>
       </div>
+      <MobileNav />
     </div>
   );
 }

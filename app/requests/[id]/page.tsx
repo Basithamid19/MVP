@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 import {
   ArrowLeft, Star, ShieldCheck, Clock, MapPin,
   CheckCircle2, XCircle, Loader2, MessageSquare,
@@ -89,7 +90,7 @@ export default function QuoteInboxPage() {
   const maxPrice = prices.length ? Math.max(...prices) : null;
 
   return (
-    <div className="min-h-screen bg-canvas pb-20">
+    <div className="min-h-screen bg-canvas pb-24 md:pb-20">
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
@@ -282,6 +283,7 @@ export default function QuoteInboxPage() {
           </div>
         )}
       </main>
+      <MobileNav />
     </div>
   );
 }

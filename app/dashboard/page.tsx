@@ -255,7 +255,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-canvas flex font-sans">
 
       {/* ══ Sidebar ══════════════════════════════════════════ */}
-      <aside className="w-16 lg:w-64 bg-canvas flex flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
+      <aside className="hidden md:flex w-16 lg:w-64 bg-canvas flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
         <div className="p-6 lg:p-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
@@ -288,10 +288,17 @@ export default function DashboardPage() {
       </aside>
 
       {/* ══ Main area ════════════════════════════════════════ */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
 
         {/* Top bar */}
-        <header className="bg-canvas/80 backdrop-blur-xl px-8 py-5 flex items-center justify-end sticky top-0 z-20">
+        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between sm:justify-end sticky top-0 z-20">
+          <Link href="/" className="md:hidden flex items-center gap-2">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
+            </div>
+            <span className="font-semibold text-lg tracking-tight text-ink">VilniusPro</span>
+          </Link>
+
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
@@ -365,22 +372,22 @@ export default function DashboardPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* ── Header ────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
               <div>
-                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-ink mb-2">Welcome back, {firstName}</h1>
-                <p className="text-ink-sub text-base">Here is what's happening with your home projects.</p>
+                <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">Welcome back, {firstName}</h1>
+                <p className="text-ink-sub text-sm sm:text-base">Here is what's happening with your home projects.</p>
               </div>
               <Link
                 href="/requests/new"
-                className="inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-4 sm:py-3.5 rounded-full text-base sm:text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0"
               >
-                <Search className="w-4 h-4" /> Find a Pro
+                <Search className="w-5 h-5 sm:w-4 sm:h-4" /> Find a Pro
               </Link>
             </div>
 
             {/* ── Priority Banner ───────────────────────────── */}
             {showQuotesBanner && (
-              <div className="relative overflow-hidden bg-brand text-white rounded-[24px] p-6 sm:p-8 mb-10 shadow-elevated flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+              <div className="relative overflow-hidden bg-brand text-white rounded-2xl sm:rounded-[24px] p-5 sm:p-8 mb-8 sm:mb-10 shadow-md sm:shadow-elevated flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
                 <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
                 <div className="relative z-10 flex items-center gap-5">
                   <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0 backdrop-blur-md">
@@ -401,7 +408,7 @@ export default function DashboardPage() {
             <div className="grid lg:grid-cols-3 gap-8">
 
               {/* ── Left: My Jobs ── */}
-              <div className="lg:col-span-2 space-y-10">
+              <div className="lg:col-span-2 space-y-8 sm:space-y-10">
 
                 <section>
                   <div className="flex items-center justify-between mb-6">
@@ -412,16 +419,16 @@ export default function DashboardPage() {
                   </div>
 
                   {requests.length === 0 ? (
-                    <div className="bg-white rounded-[24px] border border-border-dim p-12 sm:p-16 text-center shadow-sm">
-                      <div className="w-20 h-20 bg-canvas rounded-full flex items-center justify-center mx-auto mb-6 border border-border-dim">
-                        <Inbox className="w-8 h-8 text-ink-dim" />
+                    <div className="bg-white rounded-2xl sm:rounded-[24px] border border-border-dim p-8 sm:p-16 text-center shadow-sm">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-border-dim">
+                        <Inbox className="w-6 h-6 sm:w-8 sm:h-8 text-ink-dim" />
                       </div>
-                      <h3 className="text-2xl font-semibold text-ink mb-3">No active projects</h3>
-                      <p className="text-ink-sub mb-8 max-w-md mx-auto leading-relaxed">
+                      <h3 className="text-xl sm:text-2xl font-semibold text-ink mb-2 sm:mb-3">No active projects</h3>
+                      <p className="text-sm sm:text-base text-ink-sub mb-6 sm:mb-8 max-w-md mx-auto leading-relaxed">
                         Ready to tackle your next home project? Describe what you need done and get quotes from verified Vilnius professionals.
                       </p>
-                      <Link href="/requests/new" className="inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md">
-                        <Search className="w-5 h-5" /> Find a Pro
+                      <Link href="/requests/new" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-3.5 sm:py-4 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md">
+                        <Search className="w-4 h-4 sm:w-5 sm:h-5" /> Find a Pro
                       </Link>
                     </div>
                   ) : (
@@ -437,13 +444,13 @@ export default function DashboardPage() {
                         return (
                           <div
                             key={req.id}
-                            className={`bg-white rounded-[24px] p-6 sm:p-8 transition-all duration-200 ${
+                            className={`bg-white rounded-2xl sm:rounded-[24px] p-5 sm:p-8 transition-all duration-200 ${
                               isBooked
                                 ? 'border border-brand/20 shadow-md'
                                 : 'border border-border-dim shadow-sm hover:shadow-md hover:border-border'
                             }`}
                           >
-                            <div className="flex items-start justify-between gap-4 mb-6">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
                               <div>
                                 <div className="flex items-center gap-2 mb-2.5">
                                   <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">
@@ -460,15 +467,15 @@ export default function DashboardPage() {
                                   <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
                                 </p>
                               </div>
-                              <StatusBadge status={req.status} />
+                              <div className="self-start sm:self-auto"><StatusBadge status={req.status} /></div>
                             </div>
 
-                            <div className="py-4 my-4 border-y border-border-dim">
+                            <div className="py-3 sm:py-4 my-3 sm:my-4 border-y border-border-dim">
                               <JobStepper step={stage.step} />
                             </div>
 
                             {quoteCount > 0 && topPro && (
-                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-surface-alt rounded-2xl p-4 border border-border-dim">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 bg-surface-alt rounded-xl sm:rounded-2xl p-4 border border-border-dim">
                                 <div className="flex items-center gap-3">
                                   <img
                                     src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
@@ -533,12 +540,12 @@ export default function DashboardPage() {
                 {/* Browse Services */}
                 <section className="pt-6">
                   <h2 className="text-xl font-semibold tracking-tight text-ink mb-6">Browse Services</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
                     {QUICK_JOBS.map(({ label, slug, Icon }) => (
                       <Link
                         key={slug}
                         href={`/browse?category=${slug}`}
-                        className="bg-white border border-border-dim shadow-sm rounded-[20px] p-6 flex flex-col items-center justify-center text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group h-full"
+                        className="bg-white border border-border-dim shadow-sm rounded-2xl sm:rounded-[20px] p-4 sm:p-6 flex flex-col items-center justify-center text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group h-full"
                       >
                         <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center text-ink-sub group-hover:bg-brand-muted group-hover:text-brand transition-colors mb-4">
                           <Icon className="w-6 h-6" />
@@ -567,7 +574,7 @@ export default function DashboardPage() {
                     </Link>
                   </div>
 
-                  <div className="bg-white border border-border-dim shadow-sm rounded-[24px] p-6 sm:p-8">
+                  <div className="bg-white border border-border-dim shadow-sm rounded-2xl sm:rounded-[24px] p-5 sm:p-8">
 
                   {displayPros.length === 0 ? (
                     <div className="space-y-2">
@@ -633,6 +640,29 @@ export default function DashboardPage() {
             </div>
           </div>
         </main>
+
+        {/* ══ Mobile Bottom Navigation ════════════════════════════════════════ */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-around px-2 py-2">
+            <Link href="/dashboard" className="flex flex-col items-center gap-1 p-2 min-w-[64px] text-brand">
+              <LayoutDashboard className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Home</span>
+            </Link>
+            <Link href="/browse" className="flex flex-col items-center gap-1 p-2 min-w-[64px] text-ink-dim hover:text-ink transition-colors">
+              <Search className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Find Pros</span>
+            </Link>
+            <Link href={requests[0] ? `/requests/${requests[0].id}` : '/requests/new'} className="flex flex-col items-center gap-1 p-2 min-w-[64px] text-ink-dim hover:text-ink transition-colors">
+              <Inbox className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Jobs</span>
+            </Link>
+            <Link href={nextBooking ? `/bookings/${nextBooking.id}` : '/browse'} className="flex flex-col items-center gap-1 p-2 min-w-[64px] text-ink-dim hover:text-ink transition-colors">
+              <Calendar className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Bookings</span>
+            </Link>
+          </div>
+        </nav>
+
       </div>
     </div>
   );

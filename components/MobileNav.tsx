@@ -1,0 +1,32 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { LayoutDashboard, Search, Calendar, User } from 'lucide-react';
+
+export default function MobileNav() {
+  const pathname = usePathname();
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+      <div className="flex items-center justify-around px-2 py-2">
+        <Link href="/dashboard" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/dashboard' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+          <LayoutDashboard className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Dashboard</span>
+        </Link>
+        <Link href="/browse" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/browse' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+          <Search className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Find Pros</span>
+        </Link>
+        <Link href="/requests" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/requests') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+          <Calendar className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Bookings</span>
+        </Link>
+        <Link href="/account" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/account' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+          <User className="w-6 h-6" />
+          <span className="text-[10px] font-medium">Account</span>
+        </Link>
+      </div>
+    </nav>
+  );
+}

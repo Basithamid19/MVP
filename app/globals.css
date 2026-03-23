@@ -124,5 +124,10 @@
     appearance: none;
     -webkit-appearance: none;
   }
+
+  /* Safe area padding for mobile bottom nav */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
 }
 

@@ -147,7 +147,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
   return (
     <div className="min-h-screen bg-canvas flex">
       {/* Sidebar */}
-      <aside className="w-16 lg:w-64 bg-canvas flex flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
+      <aside className="hidden md:flex w-16 lg:w-64 bg-canvas flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
         <div className="p-6 lg:p-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
@@ -203,9 +203,16 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
       </aside>
 
       {/* Main */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
         {/* Top bar */}
-        <header className="bg-canvas/80 backdrop-blur-xl px-8 py-5 flex items-center justify-end gap-2 sticky top-0 z-20">
+        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between sm:justify-end gap-2 sticky top-0 z-20">
+          <Link href="/" className="md:hidden flex items-center gap-2">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
+            </div>
+            <span className="font-semibold text-lg tracking-tight text-ink">VilniusPro</span>
+          </Link>
+
           {/* Notifications bell + dropdown */}
           <div className="relative" ref={panelRef}>
             <button
@@ -296,6 +303,28 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <main className="flex-1 overflow-y-auto">
           {children}
         </main>
+
+        {/* ══ Mobile Bottom Navigation ════════════════════════════════════════ */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-around px-2 py-2">
+            <Link href="/provider/dashboard" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/dashboard' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+              <LayoutDashboard className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Dashboard</span>
+            </Link>
+            <Link href="/provider/jobs" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+              <Briefcase className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Jobs</span>
+            </Link>
+            <Link href="/provider/performance" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/performance' || pathname === '/provider/earnings' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+              <TrendingUp className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Performance</span>
+            </Link>
+            <Link href="/provider/settings" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/settings' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
+              <Settings className="w-6 h-6" />
+              <span className="text-[10px] font-medium">Account</span>
+            </Link>
+          </div>
+        </nav>
       </div>
     </div>
   );

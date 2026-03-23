@@ -96,16 +96,16 @@ export default function ProviderSettingsPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-          <p className="text-sm text-ink-dim mt-0.5">Manage your profile, services, and availability</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Settings</h1>
+          <p className="text-sm text-ink-sub mt-1">Manage your profile, services, and availability</p>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all ${
-            saved ? 'bg-green-500 text-white' : 'bg-brand text-white hover:bg-gray-800'
+          className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 sm:py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
+            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
           } disabled:opacity-50`}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
@@ -113,10 +113,10 @@ export default function ProviderSettingsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 bg-white rounded-2xl border border-border-dim mb-6">
+      <div className="flex gap-1 p-1.5 bg-white rounded-2xl border border-border-dim mb-6 sm:mb-8 overflow-x-auto">
         {TABS.map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`flex-1 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? 'bg-brand text-white' : 'text-ink-dim hover:text-ink'}`}>
+            className={`flex-1 min-w-[100px] py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? 'bg-surface-alt text-ink shadow-sm border border-border-dim' : 'text-ink-sub hover:text-ink border border-transparent'}`}>
             {tab}
           </button>
         ))}
@@ -125,7 +125,7 @@ export default function ProviderSettingsPage() {
       {/* PROFILE TAB */}
       {activeTab === 'Profile' && (
         <div className="space-y-5">
-          <div className="bg-white rounded-3xl border border-border-dim p-6 space-y-5">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 space-y-5">
             <div>
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
               <textarea
@@ -190,9 +190,9 @@ export default function ProviderSettingsPage() {
           </div>
 
           {/* Category selection */}
-          <div className="bg-white rounded-3xl border border-border-dim p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
             <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Service categories</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {categories.map(cat => {
                 const sel = selectedCategories.includes(cat.id);
                 return (
@@ -210,7 +210,7 @@ export default function ProviderSettingsPage() {
       {/* SERVICES TAB */}
       {activeTab === 'Services' && (
         <div className="space-y-5">
-          <div className="bg-white rounded-3xl border border-border-dim p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
             <div className="flex items-center justify-between mb-5">
               <p className="font-bold">Service offerings</p>
               <button
@@ -238,7 +238,7 @@ export default function ProviderSettingsPage() {
                         placeholder="Service name (e.g. Pipe repair)"
                         className="flex-1 px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm font-medium"
                       />
-                      <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="text-ink-dim hover:text-red-500 transition-colors mt-1">
+                      <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="hidden sm:block text-ink-dim hover:text-red-500 transition-colors mt-1">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -270,6 +270,9 @@ export default function ProviderSettingsPage() {
                         <option value="FROM">from</option>
                       </select>
                     </div>
+                    <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="sm:hidden flex items-center gap-2 text-danger text-sm font-medium mt-2">
+                      <X className="w-4 h-4" /> Remove Service
+                    </button>
                   </div>
                 ))}
               </div>
@@ -277,7 +280,7 @@ export default function ProviderSettingsPage() {
           </div>
 
           {/* Instant book toggle */}
-          <div className="bg-white rounded-3xl border border-border-dim p-6 flex items-center justify-between">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 flex items-center justify-between">
             <div>
               <p className="font-bold">Instant book</p>
               <p className="text-sm text-ink-dim mt-0.5">Allow customers to book directly without waiting for your approval</p>
@@ -296,42 +299,46 @@ export default function ProviderSettingsPage() {
       {activeTab === 'Availability' && (
         <div className="space-y-5">
           {/* Working hours */}
-          <div className="bg-white rounded-3xl border border-border-dim p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
             <p className="font-bold mb-5 flex items-center gap-2"><Calendar className="w-4 h-4" /> Working hours</p>
             <div className="space-y-3">
               {slots.map((slot, i) => (
-                <div key={i} className={`flex items-center gap-3 p-3 rounded-2xl transition-all ${slot.enabled ? 'bg-surface-alt' : 'opacity-40'}`}>
-                  <button
-                    onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
-                    className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
-                  >
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
-                  </button>
-                  <span className="w-8 text-sm font-bold text-ink-sub shrink-0">{DAYS[i]}</span>
-                  <select
-                    value={slot.startTime}
-                    disabled={!slot.enabled}
-                    onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
-                    className="flex-1 px-3 py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
-                  >
-                    {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                  <span className="text-ink-dim text-sm">–</span>
-                  <select
-                    value={slot.endTime}
-                    disabled={!slot.enabled}
-                    onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
-                    className="flex-1 px-3 py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
-                  >
-                    {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
+                <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl transition-all ${slot.enabled ? 'bg-surface-alt' : 'opacity-40'}`}>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
+                      className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
+                    >
+                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
+                    </button>
+                    <span className="w-10 text-sm font-bold text-ink-sub shrink-0">{DAYS[i]}</span>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
+                    <select
+                      value={slot.startTime}
+                      disabled={!slot.enabled}
+                      onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
+                      className="flex-1 px-3 py-2 sm:py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
+                    >
+                      {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <span className="text-ink-dim text-sm">–</span>
+                    <select
+                      value={slot.endTime}
+                      disabled={!slot.enabled}
+                      onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
+                      className="flex-1 px-3 py-2 sm:py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
+                    >
+                      {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Buffer time */}
-          <div className="bg-white rounded-3xl border border-border-dim p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
             <p className="font-bold mb-4 flex items-center gap-2"><Clock className="w-4 h-4" /> Buffer time between jobs</p>
             <div className="flex gap-2 flex-wrap">
               {[0, 15, 30, 45, 60].map(mins => (
@@ -347,7 +354,7 @@ export default function ProviderSettingsPage() {
           </div>
 
           {/* Blackout dates */}
-          <div className="bg-white rounded-3xl border border-border-dim p-6">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
             <p className="font-bold mb-4 flex items-center gap-2"><X className="w-4 h-4" /> Blackout dates</p>
             <div className="flex gap-2 mb-4">
               <input

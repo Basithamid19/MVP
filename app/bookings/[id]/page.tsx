@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 import {
   ArrowLeft, Star, ShieldCheck, MapPin, Calendar,
   Clock, Phone, MessageSquare, CheckCircle2, XCircle,
@@ -141,7 +142,7 @@ export default function BookingPage() {
   const priceAdjusted = quotedPrice && finalPrice && Math.abs(finalPrice - quotedPrice) > 0.01;
 
   return (
-    <div className="min-h-screen bg-canvas pb-28">
+    <div className="min-h-screen bg-canvas pb-32 md:pb-28">
       {/* Header */}
       <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
@@ -506,6 +507,7 @@ export default function BookingPage() {
           </div>
         </div>
       )}
+      <MobileNav />
     </div>
   );
 }
