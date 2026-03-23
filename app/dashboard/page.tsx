@@ -7,20 +7,66 @@ import {
   Calendar, Clock, CheckCircle2,
   ChevronRight, Star, Loader2, LayoutDashboard,
   Search, LogOut, MapPin, Bell,
-  Inbox, Plus, Users, Zap, X, ShieldCheck
+  Inbox, Plus, Users, Zap, X, ShieldCheck,
+  Wrench, Hammer, Truck, Paintbrush
 } from 'lucide-react';
+
+// Custom Broom Icon for Cleaning
+const BroomIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <g transform="scale(1.2) translate(-2, -2)">
+      <path d="M18 2l-6 6" />
+      <path d="M15 8c-3-3-8-3-11 0l-3 3h11l3-3z" />
+      <path d="M4 11v9" />
+      <path d="M10 11v9" />
+      <path d="M1 20h13" />
+      <path d="M17 14h5" />
+      <path d="M18 17h4" />
+      <path d="M17 20h5" />
+    </g>
+  </svg>
+);
+
+// Custom Plug/Electrician Icon
+const ElectricianIcon = ({ className, strokeWidth = 1.5 }: { className?: string, strokeWidth?: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth={strokeWidth} 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M8 2v4" />
+    <path d="M16 2v4" />
+    <path d="M6 6h12a2 2 0 0 1 2 2v4a6 6 0 0 1-6 6h-4a6 6 0 0 1-6-6V8a2 2 0 0 1 2-2z" />
+    <path d="M12 18v4" />
+    <path d="M10 12h4" />
+  </svg>
+);
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 
 /* ─── Static ──────────────────────────────────────────────── */
 
 const QUICK_JOBS = [
-  { label: 'Plumbing',   slug: 'plumber',     emoji: '🔧' },
-  { label: 'Electrical', slug: 'electrician', emoji: '⚡' },
-  { label: 'Cleaning',   slug: 'cleaning',    emoji: '🧹' },
-  { label: 'Handyman',   slug: 'handyman',    emoji: '🔨' },
-  { label: 'Moving',     slug: 'moving-help', emoji: '📦' },
-  { label: 'Painting',   slug: 'painting',    emoji: '🎨' },
+  { label: 'Plumbing',   slug: 'plumber',     Icon: Wrench },
+  { label: 'Electrical', slug: 'electrician', Icon: ElectricianIcon },
+  { label: 'Cleaning',   slug: 'cleaning',    Icon: BroomIcon },
+  { label: 'Handyman',   slug: 'handyman',    Icon: Hammer },
+  { label: 'Moving',     slug: 'moving-help', Icon: Truck },
+  { label: 'Painting',   slug: 'painting',    Icon: Paintbrush },
 ];
 
 const STATUS_STAGE: Record<string, { label: string; dot: string; step: number }> = {
@@ -487,15 +533,15 @@ export default function DashboardPage() {
                 {/* Browse Services */}
                 <section className="pt-6">
                   <h2 className="text-xl font-semibold tracking-tight text-ink mb-6">Browse Services</h2>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {QUICK_JOBS.map(({ label, slug, emoji }) => (
+                  <div className="flex items-center gap-4 overflow-x-auto pb-4" style={{ scrollbarWidth: 'none' }}>
+                    {QUICK_JOBS.map(({ label, slug, Icon }) => (
                       <Link
                         key={slug}
                         href={`/browse?category=${slug}`}
-                        className="bg-white border border-border-dim shadow-sm rounded-[20px] p-6 flex flex-col items-center gap-4 text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group"
+                        className="shrink-0 w-[140px] bg-white border border-border-dim shadow-sm rounded-[20px] p-6 flex flex-col items-center gap-4 text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group"
                       >
-                        <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
-                          {emoji}
+                        <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center text-ink-sub group-hover:bg-brand-muted group-hover:text-brand transition-colors">
+                          <Icon className="w-6 h-6" />
                         </div>
                         <span className="text-sm font-medium text-ink group-hover:text-brand transition-colors leading-tight">{label}</span>
                       </Link>
