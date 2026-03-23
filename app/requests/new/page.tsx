@@ -24,7 +24,7 @@ const CAT_BORDER: Record<string, string> = {
   handyman:             'border-orange-200',
   cleaning:             'border-green-200',
   'furniture-assembly': 'border-purple-200',
-  'moving-help':        'border-red-200',
+  'moving-help':        'border-danger-edge',
   painting:             'border-pink-200',
 };
 
@@ -41,12 +41,12 @@ function ReviewRow({
   label, value, onEdit, multiline,
 }: { label: string; value: string; onEdit: () => void; multiline?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
+    <div className="flex items-start justify-between gap-4 pb-4 border-b border-border-dim last:border-0 last:pb-0">
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
-        <p className={`text-sm font-medium text-gray-800 ${multiline ? 'whitespace-pre-wrap' : 'truncate'}`}>{value}</p>
+        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{label}</p>
+        <p className={`text-sm font-medium text-ink ${multiline ? 'whitespace-pre-wrap' : 'truncate'}`}>{value}</p>
       </div>
-      <button onClick={onEdit} className="text-xs font-bold text-gray-400 hover:text-black transition-colors shrink-0 mt-0.5">
+      <button onClick={onEdit} className="text-xs font-bold text-ink-dim hover:text-ink transition-colors shrink-0 mt-0.5">
         Edit
       </button>
     </div>
@@ -163,11 +163,11 @@ function NewRequestContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
-          <button onClick={back} className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0">
+          <button onClick={back} className="p-2 hover:bg-surface-alt rounded-full transition-colors shrink-0">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 flex items-center gap-1.5 min-w-0">
@@ -175,16 +175,16 @@ function NewRequestContent() {
               <React.Fragment key={s}>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <div className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center transition-all ${
-                    i + 1 < step ? 'bg-black text-white' :
-                    i + 1 === step ? 'bg-black text-white' :
-                    'bg-gray-100 text-gray-400'
+                    i + 1 < step ? 'bg-brand text-white' :
+                    i + 1 === step ? 'bg-brand text-white' :
+                    'bg-surface-alt text-ink-dim'
                   }`}>
                     {i + 1 < step ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
                   </div>
-                  <span className={`text-xs font-bold hidden sm:block transition-colors ${i + 1 === step ? 'text-black' : 'text-gray-300'}`}>{s}</span>
+                  <span className={`text-xs font-bold hidden sm:block transition-colors ${i + 1 === step ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-px transition-colors ${i + 1 < step ? 'bg-black' : 'bg-gray-100'}`} />
+                  <div className={`flex-1 h-px transition-colors ${i + 1 < step ? 'bg-brand' : 'bg-surface-alt'}`} />
                 )}
               </React.Fragment>
             ))}
@@ -199,26 +199,26 @@ function NewRequestContent() {
         {step === 1 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">What do you need help with?</h1>
-            <p className="text-gray-500 text-sm mb-8">Choose a service to get matched with the right pros.</p>
+            <p className="text-ink-sub text-sm mb-8">Choose a service to get matched with the right pros.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {categories.map((cat) => {
                 const emoji = EMOJI_MAP[cat.slug] || '🛠️';
-                const border = CAT_BORDER[cat.slug] || 'border-gray-200';
+                const border = CAT_BORDER[cat.slug] || 'border-border';
                 const selected = form.categoryId === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
-                    className={`p-5 rounded-2xl border-2 text-left transition-all ${
-                      selected ? 'border-black bg-black' : `${border} bg-white hover:border-gray-400`
+                    className={`p-5 rounded-card border-2 text-left transition-all ${
+                      selected ? 'border-brand bg-brand' : `${border} bg-white hover:border-border`
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-2xl ${selected ? 'bg-white/20' : 'bg-gray-50'}`}>
+                    <div className={`w-10 h-10 rounded-input flex items-center justify-center mb-3 text-2xl ${selected ? 'bg-white/20' : 'bg-surface-alt'}`}>
                       {emoji}
                     </div>
-                    <p className={`font-bold text-sm ${selected ? 'text-white' : 'text-black'}`}>{cat.name}</p>
+                    <p className={`font-bold text-sm ${selected ? 'text-white' : 'text-ink'}`}>{cat.name}</p>
                     {cat.description && (
-                      <p className={`text-xs mt-0.5 line-clamp-1 ${selected ? 'text-white/70' : 'text-gray-400'}`}>{cat.description}</p>
+                      <p className={`text-xs mt-0.5 line-clamp-1 ${selected ? 'text-white/70' : 'text-ink-dim'}`}>{cat.description}</p>
                     )}
                   </button>
                 );
@@ -231,10 +231,10 @@ function NewRequestContent() {
         {step === 2 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Describe the job</h1>
-            <p className="text-gray-500 text-sm mb-8">More detail means better, faster quotes from pros.</p>
+            <p className="text-ink-sub text-sm mb-8">More detail means better, faster quotes from pros.</p>
             <div className="space-y-5">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   What needs to be done?
                 </label>
                 <textarea
@@ -242,17 +242,17 @@ function NewRequestContent() {
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={5}
                   placeholder={`e.g. "Leaking pipe under kitchen sink, dripping for 2 days. The shutoff valve still works. Apartment on 3rd floor."`}
-                  className="w-full p-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none resize-none text-sm"
+                  className="w-full p-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
                 />
                 <div className="flex justify-between mt-1">
-                  <p className="text-xs text-gray-400">{form.description.length} characters — aim for at least 50</p>
-                  {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+                  <p className="text-xs text-ink-dim">{form.description.length} characters — aim for at least 50</p>
+                  {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-trust" />}
                 </div>
               </div>
 
               {/* Photo upload */}
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   Photos <span className="normal-case font-normal">(optional — helps pros give accurate quotes)</span>
                 </label>
                 <input
@@ -265,17 +265,17 @@ function NewRequestContent() {
                 />
                 <div className="flex flex-wrap gap-3">
                   {photos.map(p => (
-                    <div key={p.preview} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200">
+                    <div key={p.preview} className="relative w-20 h-20 rounded-input overflow-hidden border border-border">
                       <img src={p.preview} alt="Upload" className="w-full h-full object-cover" />
                       {!p.url && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="absolute inset-0 bg-brand/40 flex items-center justify-center">
                           <Loader2 className="w-4 h-4 animate-spin text-white" />
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={() => removePhoto(p.preview)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center"
+                        className="absolute top-1 right-1 w-5 h-5 bg-brand/60 rounded-full flex items-center justify-center"
                       >
                         <X className="w-3 h-3 text-white" />
                       </button>
@@ -285,28 +285,28 @@ function NewRequestContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 hover:border-black transition-colors text-gray-400 hover:text-black"
+                    className="w-20 h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
                   >
                     <ImagePlus className="w-5 h-5" />
                     <span className="text-[10px] font-bold">Add</span>
                   </button>
                 </div>
                 {photos.length > 0 && (
-                  <p className="text-xs text-gray-400 mt-2">{photos.length} photo{photos.length > 1 ? 's' : ''} attached</p>
+                  <p className="text-xs text-ink-dim mt-2">{photos.length} photo{photos.length > 1 ? 's' : ''} attached</p>
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-orange-50 rounded-2xl border border-orange-100">
+              <div className="flex items-center justify-between p-4 bg-caution-surface rounded-card border border-caution-edge">
                 <div className="flex items-center gap-3">
                   <AlertCircle className="w-5 h-5 text-orange-500 shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-orange-900">Mark as urgent</p>
-                    <p className="text-xs text-orange-700 mt-0.5">Pros get an instant notification to respond faster.</p>
+                    <p className="text-xs text-caution mt-0.5">Pros get an instant notification to respond faster.</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setForm(f => ({ ...f, isUrgent: !f.isUrgent }))}
-                  className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${form.isUrgent ? 'bg-orange-500' : 'bg-gray-200'}`}
+                  className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${form.isUrgent ? 'bg-caution' : 'bg-border'}`}
                 >
                   <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isUrgent ? 'left-6' : 'left-1'}`} />
                 </button>
@@ -319,69 +319,69 @@ function NewRequestContent() {
         {step === 3 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Location & schedule</h1>
-            <p className="text-gray-500 text-sm mb-8">Where is the job and when do you need it done?</p>
+            <p className="text-ink-sub text-sm mb-8">Where is the job and when do you need it done?</p>
             <div className="space-y-6">
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Address in Vilnius</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Address in Vilnius</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim" />
                   <input
                     type="text"
                     value={form.address}
                     onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                     placeholder="Street name, house number, apartment"
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Preferred date</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Preferred date</label>
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim" />
                   <input
                     type="date"
                     value={form.dateWindow}
                     min={new Date().toISOString().split('T')[0]}
                     onChange={e => setForm(f => ({ ...f, dateWindow: e.target.value }))}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Time preference</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Time preference</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {TIME_PREFS.map(t => (
                     <button
                       key={t.id}
                       onClick={() => setForm(f => ({ ...f, timePreference: t.id }))}
-                      className={`p-3 rounded-xl border-2 text-center transition-all ${
-                        form.timePreference === t.id ? 'border-black bg-black' : 'border-gray-200 bg-white hover:border-gray-400'
+                      className={`p-3 rounded-input border-2 text-center transition-all ${
+                        form.timePreference === t.id ? 'border-brand bg-brand' : 'border-border bg-white hover:border-border'
                       }`}
                     >
-                      <p className={`font-bold text-xs ${form.timePreference === t.id ? 'text-white' : 'text-black'}`}>{t.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${form.timePreference === t.id ? 'text-white/70' : 'text-gray-400'}`}>{t.sub}</p>
+                      <p className={`font-bold text-xs ${form.timePreference === t.id ? 'text-white' : 'text-ink'}`}>{t.label}</p>
+                      <p className={`text-[10px] mt-0.5 ${form.timePreference === t.id ? 'text-white/70' : 'text-ink-dim'}`}>{t.sub}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   Budget estimate <span className="normal-case font-normal">(optional)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-sm">€</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-sm">€</span>
                   <input
                     type="number"
                     value={form.budget}
                     onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
                     placeholder="e.g. 80"
-                    className="w-full pl-10 pr-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-black outline-none text-sm"
+                    className="w-full pl-10 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
-                <p className="text-xs text-gray-400 mt-1">Helps pros calibrate their quotes. You&apos;re not locked in.</p>
+                <p className="text-xs text-ink-dim mt-1">Helps pros calibrate their quotes. You&apos;re not locked in.</p>
               </div>
             </div>
           </div>
@@ -391,13 +391,13 @@ function NewRequestContent() {
         {step === 4 && (
           <div>
             <h1 className="text-2xl font-bold tracking-tight mb-1">Review your request</h1>
-            <p className="text-gray-500 text-sm mb-8">Double-check everything before posting to local pros.</p>
-            <div className="bg-white rounded-3xl border border-gray-100 p-6 space-y-4 shadow-sm mb-6">
+            <p className="text-ink-sub text-sm mb-8">Double-check everything before posting to local pros.</p>
+            <div className="bg-white rounded-panel border border-border-dim p-6 space-y-4 shadow-card mb-6">
               <ReviewRow label="Service" value={form.categoryName} onEdit={() => setStep(1)} />
               <ReviewRow label="Description" value={form.description} onEdit={() => setStep(2)} multiline />
               {form.isUrgent && (
                 <div className="flex items-center gap-2 py-1">
-                  <span className="px-3 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded-full uppercase tracking-wide">Urgent request</span>
+                  <span className="px-3 py-1 bg-caution-surface text-caution text-xs font-bold rounded-full uppercase tracking-wide">Urgent request</span>
                 </div>
               )}
               <ReviewRow label="Address" value={form.address} onEdit={() => setStep(3)} />
@@ -405,31 +405,31 @@ function NewRequestContent() {
               <ReviewRow label="Time preference" value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'} onEdit={() => setStep(3)} />
               {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(3)} />}
               {photos.length > 0 && (
-                <div className="pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Photos</p>
+                <div className="pb-4 border-b border-border-dim last:border-0 last:pb-0">
+                  <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Photos</p>
                   <div className="flex gap-2 flex-wrap">
                     {photos.map(p => (
-                      <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-xl object-cover border border-gray-100" />
+                      <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-input object-cover border border-border-dim" />
                     ))}
                   </div>
                 </div>
               )}
             </div>
-            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-sm text-gray-500 leading-relaxed">
-              Once posted, verified local pros will review your request and send competitive quotes. Most requests receive a response within <span className="font-bold text-black">1 hour</span>.
+            <div className="p-4 bg-surface-alt rounded-card border border-border-dim text-sm text-ink-sub leading-relaxed">
+              Once posted, verified local pros will review your request and send competitive quotes. Most requests receive a response within <span className="font-bold text-ink">1 hour</span>.
             </div>
           </div>
         )}
       </main>
 
       {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 p-4">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
         <div className="max-w-2xl mx-auto">
           {step < 4 ? (
             <button
               onClick={next}
               disabled={!canProceed()}
-              className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -437,7 +437,7 @@ function NewRequestContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-black text-white py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Post Request</>}
             </button>
@@ -450,8 +450,8 @@ function NewRequestContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+    <div className="min-h-screen bg-canvas flex items-center justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
     </div>
   );
 }

@@ -42,24 +42,24 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col lg:flex-row">
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-24 py-12">
+    <div className="min-h-screen bg-canvas flex flex-col lg:flex-row overflow-hidden">
+      <div className="flex-1 flex flex-col justify-center px-8 lg:px-24 py-12 relative z-10">
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 mb-12">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-sm tracking-tight">V</span>
             </div>
-            <span className="font-bold text-xl tracking-tight">VilniusPro</span>
+            <span className="font-bold text-lg tracking-tight text-ink">VilniusPro</span>
           </Link>
 
-          <h1 className="text-4xl font-bold tracking-tighter mb-2">Create account.</h1>
-          <p className="text-gray-500 mb-10">Join the VilniusPro community today.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">Create account.</h1>
+          <p className="text-ink-sub mb-10">Join the VilniusPro community today.</p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button 
               onClick={() => setRole('CUSTOMER')}
-              className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
-                role === 'CUSTOMER' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-gray-50 text-gray-400'
+              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
+                role === 'CUSTOMER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
               }`}
             >
               <User className="w-6 h-6" />
@@ -67,8 +67,8 @@ export default function RegisterPage() {
             </button>
             <button 
               onClick={() => setRole('PROVIDER')}
-              className={`p-4 rounded-2xl border flex flex-col items-center gap-2 transition-all ${
-                role === 'PROVIDER' ? 'border-black bg-black text-white shadow-xl' : 'border-gray-100 bg-gray-50 text-gray-400'
+              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
+                role === 'PROVIDER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
               }`}
             >
               <Briefcase className="w-6 h-6" />
@@ -78,43 +78,43 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-100 text-red-600 text-sm font-medium rounded-2xl">
+              <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
                 {error}
               </div>
             )}
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">Full Name</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Full Name</label>
               <input 
                 type="text" 
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black outline-none transition-all"
+                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
                 placeholder="Jonas Jonaitis"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">Email Address</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Email Address</label>
               <input 
                 type="email" 
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black outline-none transition-all"
+                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
                 placeholder="name@example.com"
               />
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2 block">Password</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Password</label>
               <input 
                 type="password" 
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black outline-none transition-all"
+                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
                 placeholder="••••••••"
               />
             </div>
@@ -122,32 +122,32 @@ export default function RegisterPage() {
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-black text-white p-4 rounded-2xl font-bold hover:bg-gray-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
 
-          <div className="mt-10 pt-10 border-t border-gray-100 text-center">
-            <p className="text-sm text-gray-500">
-              Already have an account? <Link href="/login" className="text-black font-bold hover:underline">Log in</Link>
+          <div className="mt-10 pt-10 border-t border-border-dim text-center">
+            <p className="text-sm text-ink-sub">
+              Already have an account? <Link href="/login" className="text-brand font-bold hover:underline">Log in</Link>
             </p>
           </div>
         </div>
       </div>
 
-      <div className="hidden lg:block flex-1 bg-gray-50 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:40px_40px] opacity-10"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white rounded-full shadow-2xl flex items-center justify-center p-20">
+      <div className="hidden lg:flex flex-1 relative items-center justify-center">
+        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
+        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
           <div className="text-center">
-            <div className="w-20 h-20 bg-black rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
               <span className="text-white font-bold text-4xl">V</span>
             </div>
-            <h2 className="text-3xl font-bold tracking-tight mb-4">
+            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">
               {role === 'PROVIDER' ? 'Grow your business in Vilnius.' : 'The best pros in Vilnius.'}
             </h2>
-            <p className="text-gray-500 leading-relaxed">
+            <p className="text-ink-sub leading-relaxed text-lg">
               {role === 'PROVIDER' 
                 ? 'Join our network of verified professionals and get access to high-quality leads every day.'
                 : 'Join thousands of residents who trust VilniusPro for their home maintenance needs.'}

@@ -11,12 +11,12 @@ import {
 } from 'lucide-react';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  NEW:      { label: 'Waiting for quotes', color: 'bg-blue-100 text-blue-700' },
-  CHATTING: { label: 'In discussion',      color: 'bg-purple-100 text-purple-700' },
-  QUOTED:   { label: 'Quotes received',    color: 'bg-green-100 text-green-700' },
-  ACCEPTED: { label: 'Accepted',           color: 'bg-black text-white' },
-  DECLINED: { label: 'Declined',           color: 'bg-red-100 text-red-700' },
-  EXPIRED:  { label: 'Expired',            color: 'bg-gray-100 text-gray-500' },
+  NEW:      { label: 'Waiting for quotes', color: 'bg-info-surface text-info' },
+  CHATTING: { label: 'In discussion',      color: 'bg-brand-muted text-brand-dark' },
+  QUOTED:   { label: 'Quotes received',    color: 'bg-trust-surface text-trust' },
+  ACCEPTED: { label: 'Accepted',           color: 'bg-brand text-white' },
+  DECLINED: { label: 'Declined',           color: 'bg-danger-surface text-danger' },
+  EXPIRED:  { label: 'Expired',            color: 'bg-surface-alt text-ink-sub' },
 };
 
 function etaFromResponse(responseTime: string | undefined): string {
@@ -64,22 +64,22 @@ export default function QuoteInboxPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+      <div className="min-h-screen flex items-center justify-center bg-surface-alt">
+        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
       </div>
     );
   }
 
   if (!request) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 text-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-alt text-center p-4">
         <p className="text-xl font-bold mb-2">Request not found</p>
-        <Link href="/dashboard" className="text-black font-bold underline">Back to dashboard</Link>
+        <Link href="/dashboard" className="text-ink font-bold underline">Back to dashboard</Link>
       </div>
     );
   }
 
-  const status = STATUS_LABELS[request.status] ?? { label: request.status, color: 'bg-gray-100 text-gray-500' };
+  const status = STATUS_LABELS[request.status] ?? { label: request.status, color: 'bg-surface-alt text-ink-sub' };
   const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING');
   const acceptedQuote = (request.quotes ?? []).find((q: any) => q.status === 'ACCEPTED');
 
@@ -89,43 +89,43 @@ export default function QuoteInboxPage() {
   const maxPrice = prices.length ? Math.max(...prices) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-canvas pb-20">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+          <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1">
             <h1 className="font-bold text-sm">Quote Inbox</h1>
-            <p className="text-xs text-gray-400">{request.category?.name}</p>
+            <p className="text-xs text-ink-dim">{request.category?.name}</p>
           </div>
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${status.color}`}>{status.label}</span>
-          <button onClick={load} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-            <RefreshCcw className="w-4 h-4 text-gray-400" />
+          <button onClick={load} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+            <RefreshCcw className="w-4 h-4 text-ink-dim" />
           </button>
         </div>
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
         {/* Request summary */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase tracking-widest rounded-full">
+                <span className="px-2.5 py-1 bg-surface-alt text-ink-sub text-[10px] font-bold uppercase tracking-widest rounded-full">
                   {request.category?.name}
                 </span>
                 {request.isUrgent && (
-                  <span className="px-2.5 py-1 bg-orange-100 text-orange-600 text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
+                  <span className="px-2.5 py-1 bg-caution-surface text-caution text-[10px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" /> Urgent
                   </span>
                 )}
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed">{request.description}</p>
+              <p className="text-sm text-ink-sub leading-relaxed">{request.description}</p>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 text-xs text-gray-400 font-medium pt-3 border-t border-gray-50">
+          <div className="flex flex-wrap gap-3 text-xs text-ink-dim font-medium pt-3 border-t border-border-dim">
             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{request.address}</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{new Date(request.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             {request.budget && <span className="flex items-center gap-1">Budget: €{request.budget}</span>}
@@ -134,30 +134,30 @@ export default function QuoteInboxPage() {
 
         {/* Price range summary */}
         {pendingQuotes.length > 1 && minPrice !== null && (
-          <div className="bg-white rounded-2xl border border-gray-100 p-4 flex items-center gap-3">
-            <TrendingDown className="w-5 h-5 text-green-600 shrink-0" />
+          <div className="bg-white rounded-card border border-border-dim p-4 flex items-center gap-3">
+            <TrendingDown className="w-5 h-5 text-trust shrink-0" />
             <div>
-              <p className="text-sm font-bold text-gray-800">
-                Price range: <span className="text-green-700">€{minPrice.toFixed(0)}</span> – <span className="text-gray-600">€{maxPrice?.toFixed(0)}</span>
+              <p className="text-sm font-bold text-ink">
+                Price range: <span className="text-trust">€{minPrice.toFixed(0)}</span> – <span className="text-ink-sub">€{maxPrice?.toFixed(0)}</span>
               </p>
-              <p className="text-xs text-gray-400 mt-0.5">Pick the quote that fits your budget — all pros are verified.</p>
+              <p className="text-xs text-ink-dim mt-0.5">Pick the quote that fits your budget — all pros are verified.</p>
             </div>
           </div>
         )}
 
         {/* Accepted quote banner */}
         {acceptedQuote && (
-          <div className="bg-black text-white rounded-3xl p-5">
+          <div className="bg-brand text-white rounded-panel p-5">
             <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-5 h-5 text-green-400" />
+              <CheckCircle2 className="w-5 h-5 text-white" />
               <span className="font-bold">Quote accepted — booking confirmed!</span>
             </div>
-            <p className="text-sm text-gray-300 mb-4">
+            <p className="text-sm text-white/80 mb-4">
               {acceptedQuote.provider?.user?.name} · €{acceptedQuote.price?.toFixed(2)}
             </p>
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-100 transition-colors"
+              className="inline-flex items-center gap-2 bg-white text-ink px-4 py-2 rounded-input text-sm font-bold hover:bg-surface-alt transition-colors"
             >
               View in Dashboard <ChevronRight className="w-4 h-4" />
             </Link>
@@ -166,13 +166,13 @@ export default function QuoteInboxPage() {
 
         {/* Waiting state */}
         {!acceptedQuote && pendingQuotes.length === 0 && (
-          <div className="bg-white rounded-3xl border border-dashed border-gray-200 p-10 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 text-gray-200" />
+          <div className="bg-white rounded-panel border border-dashed border-border p-10 text-center">
+            <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-8 h-8 text-ink-dim" />
             </div>
             <p className="font-bold mb-1">Waiting for quotes</p>
-            <p className="text-sm text-gray-400 max-w-xs mx-auto">Verified local pros are reviewing your request. Most respond within 1 hour.</p>
-            <button onClick={load} className="mt-6 flex items-center gap-2 mx-auto text-sm font-bold text-gray-400 hover:text-black transition-colors">
+            <p className="text-sm text-ink-dim max-w-xs mx-auto">Verified local pros are reviewing your request. Most respond within 1 hour.</p>
+            <button onClick={load} className="mt-6 flex items-center gap-2 mx-auto text-sm font-bold text-ink-dim hover:text-ink transition-colors">
               <RefreshCcw className="w-4 h-4" /> Refresh
             </button>
           </div>
@@ -181,7 +181,7 @@ export default function QuoteInboxPage() {
         {/* Quotes list */}
         {!acceptedQuote && pendingQuotes.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{pendingQuotes.length} quote{pendingQuotes.length > 1 ? 's' : ''} received</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{pendingQuotes.length} quote{pendingQuotes.length > 1 ? 's' : ''} received</p>
             <div className="space-y-4">
               {pendingQuotes
                 .slice()
@@ -190,87 +190,87 @@ export default function QuoteInboxPage() {
                   const p = quote.provider;
                   const eta = etaFromResponse(p?.responseTime);
                   return (
-                    <div key={quote.id} className={`bg-white rounded-3xl border p-5 shadow-sm ${i === 0 ? 'border-black' : 'border-gray-100'}`}>
+                    <div key={quote.id} className={`bg-white rounded-panel border p-5 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
-                          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                          <span className="text-[10px] font-bold text-yellow-700 uppercase tracking-widest">Best match</span>
+                          <Star className="w-3.5 h-3.5 text-brand fill-yellow-500" />
+                          <span className="text-[10px] font-bold text-caution uppercase tracking-widest">Best match</span>
                         </div>
                       )}
                       <div className="flex items-start gap-4 mb-4">
                         <img
                           src={p?.user?.image || `https://i.pravatar.cc/80?u=${p?.id}`}
                           alt={p?.user?.name}
-                          className="w-12 h-12 rounded-2xl object-cover grayscale shrink-0"
+                          className="w-12 h-12 rounded-card object-cover  shrink-0"
                         />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-0.5">
                             <span className="font-bold">{p?.user?.name}</span>
                             {p?.isVerified && (
-                              <span className="flex items-center gap-1 bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">
+                              <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide">
                                 <ShieldCheck className="w-3 h-3" /> Verified
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-400">
+                          <div className="flex items-center gap-3 text-xs text-ink-dim">
                             <span className="flex items-center gap-1">
-                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
-                              <span className="font-bold text-black">{p?.ratingAvg?.toFixed(1)}</span>
+                              <Star className="w-3 h-3 text-brand fill-yellow-500" />
+                              <span className="font-bold text-ink">{p?.ratingAvg?.toFixed(1)}</span>
                             </span>
                             <span>{p?.completedJobs} jobs</span>
-                            <span className="flex items-center gap-1 text-green-600 font-bold">
+                            <span className="flex items-center gap-1 text-trust font-bold">
                               <Timer className="w-3 h-3" /> ETA: {eta}
                             </span>
                           </div>
-                          <p className="text-xs text-gray-400 mt-1 truncate">{p?.categories?.map((c: any) => c.name).join(', ')}</p>
+                          <p className="text-xs text-ink-dim mt-1 truncate">{p?.categories?.map((c: any) => c.name).join(', ')}</p>
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-xl font-bold">€{quote.price?.toFixed(2)}</p>
                           {quote.estimatedHours && (
-                            <p className="text-xs text-gray-400 mt-0.5">~{quote.estimatedHours}h</p>
+                            <p className="text-xs text-ink-dim mt-0.5">~{quote.estimatedHours}h</p>
                           )}
                           {minPrice !== null && maxPrice !== null && maxPrice > minPrice && (
-                            <p className="text-[10px] text-gray-400 mt-0.5">
+                            <p className="text-[10px] text-ink-dim mt-0.5">
                               {quote.price === minPrice ? (
-                                <span className="text-green-600 font-bold">Lowest</span>
+                                <span className="text-trust font-bold">Lowest</span>
                               ) : quote.price === maxPrice ? (
-                                <span className="text-gray-500">Highest</span>
+                                <span className="text-ink-sub">Highest</span>
                               ) : (
-                                <span className="text-gray-400">Mid range</span>
+                                <span className="text-ink-dim">Mid range</span>
                               )}
                             </p>
                           )}
                         </div>
                       </div>
                       {quote.notes && (
-                        <div className="p-3 bg-gray-50 rounded-xl border border-gray-100 mb-4">
-                          <p className="text-sm text-gray-600 italic">&quot;{quote.notes}&quot;</p>
+                        <div className="p-3 bg-surface-alt rounded-input border border-border-dim mb-4">
+                          <p className="text-sm text-ink-sub italic">&quot;{quote.notes}&quot;</p>
                         </div>
                       )}
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleQuote(quote.id, 'ACCEPTED')}
                           disabled={actioning === quote.id}
-                          className="flex-1 bg-black text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="flex-1 bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                         >
                           {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Accept</>}
                         </button>
                         <Link
                           href={`/providers/${p?.id}`}
-                          className="px-4 py-3 border border-gray-200 rounded-xl font-bold text-sm hover:border-gray-400 transition-colors"
+                          className="px-4 py-3 border border-border rounded-input font-bold text-sm hover:border-border transition-colors"
                         >
                           Profile
                         </Link>
                         <button
                           title="Message pro"
-                          className="p-3 border border-gray-200 rounded-xl text-gray-400 hover:border-black hover:text-black transition-colors"
+                          className="p-3 border border-border rounded-input text-ink-dim hover:border-brand hover:text-ink transition-colors"
                         >
                           <MessageSquare className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleQuote(quote.id, 'DECLINED')}
                           disabled={!!actioning}
-                          className="p-3 border border-gray-200 rounded-xl text-gray-400 hover:border-red-200 hover:text-red-500 transition-colors disabled:opacity-50"
+                          className="p-3 border border-border rounded-input text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
                         >
                           <XCircle className="w-5 h-5" />
                         </button>

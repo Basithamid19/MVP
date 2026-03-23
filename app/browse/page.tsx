@@ -44,29 +44,29 @@ function BrowseContent() {
   }, [category, verifiedOnly]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-canvas">
       {/* Header */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
+      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-brand rounded-chip flex items-center justify-center">
               <span className="text-white font-bold text-xl">V</span>
             </div>
           </Link>
           
           <div className="flex-1 max-w-md mx-4">
             <div className="relative">
-              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim" />
               <input 
                 type="text" 
                 placeholder="Search services..." 
-                className="w-full pl-10 pr-4 py-2 bg-gray-100 border-none rounded-full text-sm focus:ring-2 focus:ring-black transition-all"
+                className="w-full pl-10 pr-4 py-2 bg-surface-alt border-none rounded-full text-sm focus:ring-2 focus:ring-brand transition-all"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+            <Link href="/dashboard" className="w-8 h-8 bg-surface-alt rounded-full flex items-center justify-center">
               <img src="https://i.pravatar.cc/100?img=12" className="w-full h-full rounded-full" alt="Profile" />
             </Link>
           </div>
@@ -77,7 +77,7 @@ function BrowseContent() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar Filters */}
           <aside className="w-full lg:w-64 shrink-0">
-            <div className="bg-white p-6 rounded-3xl border border-gray-100 sticky top-24">
+            <div className="bg-white p-6 rounded-panel border border-border-dim sticky top-24">
               <div className="flex items-center gap-2 mb-6">
                 <Filter className="w-4 h-4" />
                 <h2 className="font-bold">Filters</h2>
@@ -85,11 +85,11 @@ function BrowseContent() {
 
               <div className="space-y-6">
                 <div>
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 block">Category</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-ink-dim mb-3 block">Category</label>
                   <select 
                     value={category} 
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-medium focus:ring-2 focus:ring-black outline-none"
+                    className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm font-medium focus:ring-2 focus:ring-brand outline-none"
                   >
                     <option value="">All Categories</option>
                     <option value="plumber">Plumber</option>
@@ -105,7 +105,7 @@ function BrowseContent() {
                   <span className="text-sm font-medium">Verified Only</span>
                   <button 
                     onClick={() => setVerifiedOnly(!verifiedOnly)}
-                    className={`w-10 h-6 rounded-full transition-colors relative ${verifiedOnly ? 'bg-black' : 'bg-gray-200'}`}
+                    className={`w-10 h-6 rounded-full transition-colors relative ${verifiedOnly ? 'bg-brand' : 'bg-border'}`}
                   >
                     <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${verifiedOnly ? 'left-5' : 'left-1'}`} />
                   </button>
@@ -120,13 +120,13 @@ function BrowseContent() {
               <h1 className="text-2xl font-bold tracking-tight">
                 {category ? `${category.charAt(0).toUpperCase() + category.slice(1)}s` : 'All Professionals'} in Vilnius
               </h1>
-              <span className="text-sm text-gray-500 font-medium">{providers.length} results</span>
+              <span className="text-sm text-ink-sub font-medium">{providers.length} results</span>
             </div>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-300 mb-4" />
-                <p className="text-gray-400 font-medium">Finding the best pros...</p>
+                <Loader2 className="w-8 h-8 animate-spin text-ink-dim mb-4" />
+                <p className="text-ink-dim font-medium">Finding the best pros...</p>
               </div>
             ) : providers.length > 0 ? (
               <div className="grid md:grid-cols-2 gap-6">
@@ -134,41 +134,41 @@ function BrowseContent() {
                   <Link 
                     key={p.id} 
                     href={`/providers/${p.id}`}
-                    className="group bg-white p-6 rounded-[32px] border border-gray-100 hover:border-black transition-all hover:shadow-2xl flex flex-col"
+                    className="group bg-white p-6 rounded-panel border border-border-dim hover:border-brand transition-all hover:shadow-float flex flex-col"
                   >
                     <div className="flex items-start justify-between mb-6">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gray-100 rounded-2xl overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+                        <div className="w-16 h-16 bg-surface-alt rounded-card overflow-hidden  transition-all">
                           <img src={p.user.image || `https://i.pravatar.cc/150?u=${p.id}`} alt={p.user.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-bold text-lg">{p.user.name}</h3>
                             {p.isVerified && (
-                              <div className="w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center">
+                              <div className="w-5 h-5 bg-info text-white rounded-full flex items-center justify-center">
                                 <ShieldCheck className="w-3 h-3" />
                               </div>
                             )}
                           </div>
-                          <div className="flex items-center gap-1 text-yellow-500">
+                          <div className="flex items-center gap-1 text-brand">
                             <Star className="w-4 h-4 fill-current" />
-                            <span className="text-black font-bold text-sm">{p.ratingAvg.toFixed(1)}</span>
-                            <span className="text-gray-400 text-xs font-medium ml-1">({p.completedJobs} jobs)</span>
+                            <span className="text-ink font-bold text-sm">{p.ratingAvg.toFixed(1)}</span>
+                            <span className="text-ink-dim text-xs font-medium ml-1">({p.completedJobs} jobs)</span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <p className="text-gray-500 text-sm line-clamp-2 mb-6 leading-relaxed">
+                    <p className="text-ink-sub text-sm line-clamp-2 mb-6 leading-relaxed">
                       {p.bio}
                     </p>
 
-                    <div className="mt-auto flex items-center justify-between pt-6 border-t border-gray-50">
-                      <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                    <div className="mt-auto flex items-center justify-between pt-6 border-t border-border-dim">
+                      <div className="flex items-center gap-2 text-xs font-bold text-ink-dim uppercase tracking-widest">
                         <MapPin className="w-3 h-3" />
                         {p.serviceArea}
                       </div>
-                      <div className="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">
+                      <div className="text-xs font-bold text-trust bg-trust-surface px-3 py-1 rounded-full">
                         {p.responseTime}
                       </div>
                     </div>
@@ -176,15 +176,15 @@ function BrowseContent() {
                 ))}
               </div>
             ) : (
-              <div className="bg-white p-12 rounded-[40px] border border-dashed border-gray-200 text-center">
-                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <SearchIcon className="w-8 h-8 text-gray-300" />
+              <div className="bg-white p-12 rounded-hero border border-dashed border-border text-center">
+                <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-6">
+                  <SearchIcon className="w-8 h-8 text-ink-dim" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">No pros found</h3>
-                <p className="text-gray-500 mb-8">Try adjusting your filters to find more professionals.</p>
+                <p className="text-ink-sub mb-8">Try adjusting your filters to find more professionals.</p>
                 <button 
                   onClick={() => { setCategory(''); setVerifiedOnly(false); }}
-                  className="bg-black text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all"
+                  className="bg-brand text-white px-6 py-3 rounded-card font-bold hover:bg-brand-dark transition-all"
                 >
                   Clear all filters
                 </button>
@@ -199,10 +199,10 @@ function BrowseContent() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-canvas flex items-center justify-center">
       <div className="flex flex-col items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-gray-400 mb-4" />
-        <p className="text-gray-500 font-medium">Loading...</p>
+        <Loader2 className="w-8 h-8 animate-spin text-ink-dim mb-4" />
+        <p className="text-ink-sub font-medium">Loading...</p>
       </div>
     </div>
   );
