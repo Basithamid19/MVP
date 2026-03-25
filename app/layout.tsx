@@ -16,7 +16,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: 'VilniusPro — Trusted Local Professionals',
+  title: 'Dispatch — Trusted Local Professionals',
   description: 'Find and book verified local service professionals in Vilnius. Transparent pricing, real reviews, fast response.',
 };
 

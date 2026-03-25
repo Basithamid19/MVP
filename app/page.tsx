@@ -108,7 +108,7 @@ const TESTIMONIALS = [
     avatar: 12,
   },
   {
-    quote: 'Booked a cleaner for my apartment before moving in. She did an incredible job. VilniusPro made the whole process effortless.',
+    quote: 'Booked a cleaner for my apartment before moving in. She did an incredible job. Dispatch made the whole process effortless.',
     name: 'Eglė S.',
     city: 'Vilnius',
     service: 'Deep Cleaning',
@@ -172,9 +172,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm tracking-tight">V</span>
+              <span className="text-white font-bold text-sm tracking-tight">D</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-ink">VilniusPro</span>
+            <span className="font-bold text-lg tracking-tight text-ink">Dispatch</span>
           </Link>
           <div className="flex items-center gap-3">
             {session ? (
@@ -198,7 +198,7 @@ export default function LandingPage() {
                   href="/register"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
                 >
-                  Join as Pro
+                  Sign up
                 </Link>
               </>
             )}
@@ -207,13 +207,13 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-14 pb-18 sm:pt-20 sm:pb-28 lg:pt-32 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-4 pb-18 sm:pt-8 sm:pb-28 lg:pt-10 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-center">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-4 lg:pt-8">
 
               {/* Eyebrow */}
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
@@ -268,18 +268,6 @@ export default function LandingPage() {
 
               {/* Quick category pills & Urgency */}
               <div className="flex flex-wrap items-center gap-3">
-                <button
-                  onClick={() => setIsUrgent(!isUrgent)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
-                    isUrgent
-                      ? 'bg-caution-surface border-caution-edge text-caution'
-                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
-                  }`}
-                >
-                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
-                  {isUrgent ? 'Urgent' : 'Mark urgent'}
-                </button>
-                <div className="w-px h-4 bg-border-dim mx-1" />
                 <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider">Popular:</span>
                 {categories.slice(0, 3).map(cat => {
                   const Icon = cat.icon;
@@ -293,6 +281,18 @@ export default function LandingPage() {
                     {cat.name}
                   </button>
                 )})}
+                <div className="w-px h-4 bg-border-dim mx-1" />
+                <button
+                  onClick={() => setIsUrgent(!isUrgent)}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
+                    isUrgent
+                      ? 'bg-caution-surface border-caution-edge text-caution'
+                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
+                  }`}
+                >
+                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
+                  {isUrgent ? 'Urgent' : 'Mark urgent'}
+                </button>
               </div>
             </motion.div>
 
@@ -420,12 +420,12 @@ export default function LandingPage() {
                   className="group flex flex-col items-center cursor-pointer outline-none"
                 >
                   <div className="relative w-20 h-20 flex items-center justify-center mb-3">
-                    {/* Soft organic shape or rounded rect for hover */}
-                    <div className="absolute inset-0 bg-brand-muted rounded-3xl opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300 ease-out" />
-                    <Icon className="w-8 h-8 text-ink-sub group-hover:text-brand relative z-10 transition-colors duration-300" strokeWidth={1.5} />
+                    {/* Soft organic shape or rounded rect */}
+                    <div className="absolute inset-0 bg-brand-muted rounded-3xl transition-all duration-300 ease-out" />
+                    <Icon className="w-8 h-8 text-brand relative z-10 transition-colors duration-300" strokeWidth={1.5} />
                   </div>
                   <div className="relative pb-2">
-                    <span className="text-sm font-bold text-ink-sub group-hover:text-brand transition-colors duration-300">
+                    <span className="text-sm font-bold text-brand transition-colors duration-300">
                       {cat.name}
                     </span>
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-full bg-brand transition-all duration-300 rounded-full" />
@@ -625,7 +625,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. Why VilniusPro ── */}
+      {/* ── 5. Why Dispatch ── */}
       <section className="py-24 bg-white relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -661,7 +661,7 @@ export default function LandingPage() {
 
             {/* Content side */}
             <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why VilniusPro</p>
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why Dispatch</p>
               <h2 className="text-4xl font-bold tracking-tight text-ink mb-10">
                 Built for trust, <br/>built for Vilnius.
               </h2>
@@ -763,7 +763,7 @@ export default function LandingPage() {
                 Are you a professional?<br />Get new customers in Vilnius.
               </h2>
               <p className="text-ink-sub text-lg leading-relaxed mb-8 max-w-lg">
-                Join hundreds of local pros already growing their business on VilniusPro.
+                Join hundreds of local pros already growing their business on Dispatch.
                 Receive verified leads, manage bookings, and build your reputation.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -838,9 +838,9 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-2.5 mb-3">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-sm">V</span>
+                <span className="text-white font-bold text-sm">D</span>
               </div>
-              <span className="font-bold text-xl tracking-tight text-brand">VilniusPro</span>
+              <span className="font-bold text-xl tracking-tight text-brand">Dispatch</span>
             </div>
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">
               Trusted local professionals · Vilnius, Lithuania
@@ -890,7 +890,7 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-ink-dim">© 2026 VilniusPro Marketplace. All rights reserved.</p>
+            <p className="text-xs text-ink-dim">© 2026 Dispatch Marketplace. All rights reserved.</p>
             <p className="text-xs text-ink-dim">Vilnius, Lithuania · English / Lietuvių</p>
           </div>
 

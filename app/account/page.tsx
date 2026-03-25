@@ -263,8 +263,8 @@ export default function AccountPage() {
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest">Support</p>
           </div>
           {[
-            { icon: MessageCircle, label: 'Chat with us',      sub: 'Avg. reply under 1 hour',    href: 'mailto:support@vilniuspro.lt' },
-            { icon: Mail,          label: 'Email us',           sub: 'support@vilniuspro.lt',       href: 'mailto:support@vilniuspro.lt' },
+            { icon: MessageCircle, label: 'Chat with us',      sub: 'Avg. reply under 1 hour',    href: 'mailto:support@dispatch.com' },
+            { icon: Mail,          label: 'Email us',           sub: 'support@dispatch.com',       href: 'mailto:support@dispatch.com' },
             { icon: HelpCircle,    label: 'Help Centre',        sub: 'FAQs and how-to guides',     href: '/' },
             { icon: LifeBuoy,      label: 'Dispute a booking',  sub: 'Report an issue with a job', href: '/dashboard' },
           ].map((item, i) => (

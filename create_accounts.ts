@@ -12,7 +12,7 @@ async function main() {
     update: { password: hashedPassword },
     create: {
       email: 'admin2@vilniuspro.lt',
-      name: 'Admin VilniusPro',
+      name: 'Admin Dispatch',
       password: hashedPassword,
       role: 'ADMIN',
     },

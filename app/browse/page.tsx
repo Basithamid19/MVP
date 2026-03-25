@@ -51,7 +51,7 @@ function BrowseContent() {
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-chip flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
+              <span className="text-white font-bold text-xl">D</span>
             </div>
           </Link>
           

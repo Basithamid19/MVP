@@ -777,9 +777,9 @@ export default function AdminDashboard() {
         <div className="p-8">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">V</span>
+              <span className="text-white font-bold text-sm tracking-tight">D</span>
             </div>
-            <span className="font-semibold text-lg tracking-tight text-ink">VilniusPro</span>
+            <span className="font-semibold text-lg tracking-tight text-ink">Dispatch</span>
           </div>
           <span className="text-[10px] font-bold text-ink-dim uppercase tracking-widest ml-11">Admin Panel</span>
         </div>
@@ -825,10 +825,10 @@ export default function AdminDashboard() {
         <div className="p-6 flex items-center justify-between border-b border-border-dim">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">V</span>
+              <span className="text-white font-bold text-sm tracking-tight">D</span>
             </div>
             <div>
-              <span className="font-semibold text-base tracking-tight text-ink block">VilniusPro</span>
+              <span className="font-semibold text-base tracking-tight text-ink block">Dispatch</span>
               <span className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
             </div>
           </div>
@@ -883,7 +883,7 @@ export default function AdminDashboard() {
             <span className="font-semibold text-sm text-ink truncate">{activeModule.label}</span>
           </div>
           <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm shrink-0">
-            <span className="text-white font-bold text-xs tracking-tight">V</span>
+            <span className="text-white font-bold text-xs tracking-tight">D</span>
           </div>
         </header>
 

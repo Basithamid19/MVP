@@ -135,7 +135,7 @@ export default function ProviderJobDetailPage() {
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
-                else alert('Call masking active — your call will be connected through VilniusPro.');
+                else alert('Call masking active — your call will be connected through Dispatch.');
               }}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors"
             >

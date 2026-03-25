@@ -45,9 +45,9 @@ export default function LoginPage() {
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 mb-12">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm tracking-tight">V</span>
+              <span className="text-white font-bold text-sm tracking-tight">D</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-ink">VilniusPro</span>
+            <span className="font-bold text-lg tracking-tight text-ink">Dispatch</span>
           </Link>
 
           <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">Welcome back.</h1>
@@ -108,10 +108,10 @@ export default function LoginPage() {
         <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
           <div className="text-center">
             <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <span className="text-white font-bold text-4xl">V</span>
+              <span className="text-white font-bold text-4xl">D</span>
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">The best pros in Vilnius.</h2>
-            <p className="text-ink-sub leading-relaxed text-lg">Join thousands of residents who trust VilniusPro for their home maintenance needs.</p>
+            <p className="text-ink-sub leading-relaxed text-lg">Join thousands of residents who trust Dispatch for their home maintenance needs.</p>
           </div>
         </div>
       </div>

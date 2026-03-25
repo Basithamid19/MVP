@@ -1,4 +1,4 @@
-/* ─── VilniusPro Shared UI Primitives ───────────────────────────────────────
+/* ─── Dispatch Shared UI Primitives ───────────────────────────────────────
  * Import from this barrel for clean, tree-shakeable usage:
  *   import { Button, buttonVariants, Card, StatusBadge } from '@/components/ui';
  * ────────────────────────────────────────────────────────────────────────── */
