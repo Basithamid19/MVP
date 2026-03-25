@@ -207,13 +207,13 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-4 pb-18 sm:pt-8 sm:pb-28 lg:pt-10 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-18 sm:pt-4 sm:pb-28 lg:pt-6 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-4 lg:pt-8">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-0 lg:pt-2">
 
               {/* Eyebrow */}
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
