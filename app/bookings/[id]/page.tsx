@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import MobileNav from '@/components/MobileNav';
+import CustomerLayout from '@/components/CustomerLayout';
 import {
   ArrowLeft, Star, ShieldCheck, MapPin, Calendar,
   Clock, Phone, MessageSquare, CheckCircle2, XCircle,
@@ -21,7 +21,6 @@ const STEP_INDEX: Record<string, number> = {
   CANCELED: -1,
 };
 
-// Derive an ETA string based on booking status and scheduled time
 function deriveEta(booking: any): string | null {
   if (!booking) return null;
   if (booking.status === 'COMPLETED' || booking.status === 'CANCELED') return null;
@@ -104,7 +103,7 @@ export default function BookingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-surface-alt">
+      <div className="min-h-screen flex items-center justify-center bg-canvas">
         <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
       </div>
     );
@@ -112,14 +111,13 @@ export default function BookingPage() {
 
   if (!booking) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-alt text-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-center p-4">
         <p className="text-xl font-bold mb-2">Booking not found</p>
-        <Link href="/dashboard" className="text-ink font-bold underline">Back to dashboard</Link>
+        <Link href="/dashboard" className="text-brand font-bold hover:underline">Back to dashboard</Link>
       </div>
     );
   }
 
-  // Show chat overlay if active
   if (showChat) {
     return (
       <ChatPage
@@ -135,36 +133,32 @@ export default function BookingPage() {
   const isCanceled = booking.status === 'CANCELED';
   const isCompleted = booking.status === 'COMPLETED';
   const eta = deriveEta(booking);
-
-  // Detect if final price differs from quoted price
   const quotedPrice = booking.quote?.price;
   const finalPrice = booking.totalAmount;
   const priceAdjusted = quotedPrice && finalPrice && Math.abs(finalPrice - quotedPrice) > 0.01;
 
   return (
-    <div className="min-h-screen bg-canvas pb-32 md:pb-28">
-      {/* Header */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-3">
-          <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div className="flex-1">
-            <h1 className="font-bold text-sm">{category?.name ?? 'Booking'}</h1>
-            <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
-          </div>
-          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-            isCanceled ? 'bg-danger-surface text-danger' :
-            isCompleted ? 'bg-trust-surface text-trust' :
-            booking.status === 'IN_PROGRESS' ? 'bg-caution-surface text-caution' :
-            'bg-info-surface text-info'
-          }`}>
-            {booking.status.replace('_', ' ')}
-          </span>
+    <CustomerLayout maxWidth="max-w-2xl">
+      {/* Inline sub-header */}
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <div className="flex-1">
+          <h1 className="font-bold text-lg">{category?.name ?? 'Booking'}</h1>
+          <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
         </div>
-      </header>
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+          isCanceled ? 'bg-danger-surface text-danger' :
+          isCompleted ? 'bg-trust-surface text-trust' :
+          booking.status === 'IN_PROGRESS' ? 'bg-caution-surface text-caution' :
+          'bg-info-surface text-info'
+        }`}>
+          {booking.status.replace('_', ' ')}
+        </span>
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+      <div className="space-y-5 pb-24">
         {/* Status timeline */}
         {!isCanceled && (
           <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
@@ -178,7 +172,7 @@ export default function BookingPage() {
                     }`}>
                       {i < stepIdx ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
                     </div>
-                    <span className={`text-[10px] font-bold mt-1 ${i === stepIdx ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
+                    <span className={`text-[11px] font-bold mt-1 ${i === stepIdx ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
                   </div>
                   {i < BOOKING_STEPS.length - 1 && (
                     <div className={`flex-1 h-0.5 mb-4 ${i < stepIdx ? 'bg-brand' : 'bg-surface-alt'}`} />
@@ -186,7 +180,6 @@ export default function BookingPage() {
                 </React.Fragment>
               ))}
             </div>
-            {/* Provider ETA */}
             {eta && (
               <div className="flex items-center gap-3 px-4 py-3 bg-info-surface rounded-card border border-info-edge">
                 <Timer className="w-5 h-5 text-info shrink-0" />
@@ -206,7 +199,7 @@ export default function BookingPage() {
           </div>
         )}
 
-        {/* Approve final price (if adjusted) */}
+        {/* Approve final price */}
         {isCompleted && priceAdjusted && !priceApproved && (
           <div className="bg-caution-surface border border-caution-edge rounded-panel p-6 shadow-card">
             <div className="flex items-start gap-3 mb-4">
@@ -214,7 +207,7 @@ export default function BookingPage() {
               <div>
                 <p className="font-bold text-caution">Final price adjusted</p>
                 <p className="text-sm text-caution mt-0.5 leading-relaxed">
-                  The pro adjusted the final price from <span className="font-bold">€{quotedPrice?.toFixed(2)}</span> to <span className="font-bold">€{finalPrice?.toFixed(2)}</span>. 
+                  The pro adjusted the final price from <span className="font-bold">€{quotedPrice?.toFixed(2)}</span> to <span className="font-bold">€{finalPrice?.toFixed(2)}</span>.
                   Please approve or dispute before leaving a review.
                 </p>
               </div>
@@ -257,14 +250,14 @@ export default function BookingPage() {
               <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span className="font-bold text-lg">{provider?.user?.name}</span>
                 {provider?.isVerified && (
-                  <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
+                  <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[11px] font-bold uppercase">
                     <ShieldCheck className="w-3 h-3" /> Verified
                   </span>
                 )}
               </div>
               <div className="flex items-center gap-3 text-xs text-ink-dim">
                 <span className="flex items-center gap-1">
-                  <Star className="w-3 h-3 text-brand fill-yellow-500" />
+                  <Star className="w-3 h-3 text-brand fill-current" />
                   <span className="font-bold text-ink">{provider?.ratingAvg?.toFixed(1)}</span>
                 </span>
                 <span>{provider?.completedJobs} jobs</span>
@@ -281,7 +274,7 @@ export default function BookingPage() {
                   alert('Call masking active. Your call will be connected securely through Dispatch.');
                 }
               }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-input text-sm font-bold hover:border-border transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
             >
               <Phone className="w-4 h-4" /> Call
             </button>
@@ -293,7 +286,7 @@ export default function BookingPage() {
             </button>
             <Link
               href={`/providers/${provider?.id}`}
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-input text-sm font-bold hover:border-border transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
             >
               Profile
             </Link>
@@ -321,7 +314,7 @@ export default function BookingPage() {
           </div>
         </div>
 
-        {/* Payment + fee breakdown */}
+        {/* Payment */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Payment</p>
           <div className="space-y-2 text-sm mb-4">
@@ -352,8 +345,6 @@ export default function BookingPage() {
             <DollarSign className="w-3.5 h-3.5" />
             {booking.payment?.status ?? 'Payment pending'}
           </div>
-
-          {/* Cancellation policy */}
           <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim text-xs text-ink-sub leading-relaxed">
             <span className="font-bold text-ink-sub">Cancellation policy: </span>
             Free cancellation up to 24h before the scheduled time. Late cancellations may incur a fee of up to €10.
@@ -372,7 +363,7 @@ export default function BookingPage() {
                 {booking.review && (
                   <div className="flex items-center gap-1 mt-3">
                     {[1,2,3,4,5].map(i => (
-                      <Star key={i} className={`w-5 h-5 ${i <= booking.review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-ink-dim'}`} />
+                      <Star key={i} className={`w-5 h-5 ${i <= booking.review.rating ? 'text-brand fill-current' : 'text-ink-dim'}`} />
                     ))}
                   </div>
                 )}
@@ -386,7 +377,7 @@ export default function BookingPage() {
                       onClick={() => setReview(r => ({ ...r, rating: i }))}
                       className="transition-transform hover:scale-110"
                     >
-                      <Star className={`w-8 h-8 transition-colors ${i <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-ink-dim hover:text-yellow-300'}`} />
+                      <Star className={`w-8 h-8 transition-colors ${i <= review.rating ? 'text-brand fill-current' : 'text-ink-dim hover:text-brand/50'}`} />
                     </button>
                   ))}
                 </div>
@@ -427,7 +418,7 @@ export default function BookingPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => { setReportingIssue(false); setIssueText(''); }}
-                    className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border transition-colors"
+                    className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim transition-colors"
                   >
                     Cancel
                   </button>
@@ -459,7 +450,7 @@ export default function BookingPage() {
             )}
           </div>
         )}
-      </main>
+      </div>
 
       {/* Cancel confirm modal */}
       {showCancelConfirm && (
@@ -470,7 +461,7 @@ export default function BookingPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border"
+                className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
               >
                 Keep booking
               </button>
@@ -488,7 +479,7 @@ export default function BookingPage() {
 
       {/* Bottom action bar */}
       {!isCanceled && !isCompleted && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4 z-30">
           <div className="max-w-2xl mx-auto flex gap-3">
             <button
               onClick={() => setShowCancelConfirm(true)}
@@ -507,7 +498,6 @@ export default function BookingPage() {
           </div>
         </div>
       )}
-      <MobileNav />
-    </div>
+    </CustomerLayout>
   );
 }

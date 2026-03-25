@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import MobileNav from '@/components/MobileNav';
+import CustomerLayout from '@/components/CustomerLayout';
 import {
   Loader2, CheckCircle2, Clock,
   Gift, Share2, FileText, LogOut,
@@ -46,28 +46,16 @@ export default function AccountPage() {
   const totalSpent = completedBookings.reduce((sum, b) => sum + (b.totalAmount ?? 0), 0);
   const reviewsGiven = completedBookings.filter(b => b.review).length;
   const uniqueAddresses = [...new Set(bookings.map(b => b.quote?.request?.address).filter(Boolean))] as string[];
-  const referralLink = `https://mvpvilnius.vercel.app?ref=${(user as any)?.id?.slice(0, 8)}`;
+  const referralLink = typeof window !== 'undefined'
+    ? `${window.location.origin}?ref=${(user as any)?.id?.slice(0, 8)}`
+    : `https://dispatch.app?ref=${(user as any)?.id?.slice(0, 8)}`;
 
   return (
-    <div className="min-h-screen bg-canvas pb-24 md:pb-8">
-      {/* Header */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
-          <h1 className="font-bold text-lg flex-1">My Account</h1>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="flex items-center gap-2 text-sm font-medium text-ink-dim hover:text-danger transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Log Out</span>
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <CustomerLayout maxWidth="max-w-2xl">
+      <div className="space-y-4">
 
         {/* Profile card */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-sm">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-14 h-14 bg-canvas rounded-2xl flex items-center justify-center overflow-hidden border border-border-dim shrink-0">
               {user?.image
@@ -77,46 +65,46 @@ export default function AccountPage() {
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="font-bold text-lg truncate">{user?.name}</h2>
-              <p className="text-sm text-gray-400 truncate">{user?.email}</p>
+              <p className="text-sm text-ink-dim truncate">{user?.email}</p>
             </div>
           </div>
           <div className="grid grid-cols-3 gap-2">
             <div className="text-center p-3 bg-canvas rounded-2xl">
               <p className="text-xl font-bold">{bookings.length}</p>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Bookings</p>
+              <p className="text-[11px] text-ink-dim font-bold uppercase tracking-widest mt-0.5">Bookings</p>
             </div>
             <div className="text-center p-3 bg-canvas rounded-2xl">
               <p className="text-xl font-bold">€{totalSpent.toFixed(0)}</p>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Spent</p>
+              <p className="text-[11px] text-ink-dim font-bold uppercase tracking-widest mt-0.5">Spent</p>
             </div>
             <div className="text-center p-3 bg-canvas rounded-2xl">
               <p className="text-xl font-bold">{reviewsGiven}</p>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">Reviews</p>
+              <p className="text-[11px] text-ink-dim font-bold uppercase tracking-widest mt-0.5">Reviews</p>
             </div>
           </div>
         </div>
 
         {/* Profile info */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-5 shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-sm">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Profile</p>
           <div className="text-sm divide-y divide-border-dim">
             <div className="flex justify-between items-center py-3 first:pt-0">
-              <span className="text-gray-400">Name</span>
+              <span className="text-ink-dim">Name</span>
               <span className="font-semibold">{user?.name}</span>
             </div>
             <div className="flex justify-between items-center py-3">
-              <span className="text-gray-400">Email</span>
+              <span className="text-ink-dim">Email</span>
               <span className="font-semibold truncate max-w-[200px]">{user?.email}</span>
             </div>
             <div className="flex justify-between items-center py-3">
-              <span className="text-gray-400">Account type</span>
+              <span className="text-ink-dim">Account type</span>
               <span className="font-semibold capitalize">{(user as any)?.role?.toLowerCase() ?? 'customer'}</span>
             </div>
           </div>
         </div>
 
         {/* Invoices (collapsible) */}
-        <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim overflow-hidden shadow-sm">
           <button
             onClick={() => setShowInvoices(v => !v)}
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-canvas transition-colors"
@@ -127,7 +115,7 @@ export default function AccountPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold">Invoices</p>
-                <p className="text-xs text-gray-400">{completedBookings.length} invoice{completedBookings.length !== 1 ? 's' : ''} · €{totalSpent.toFixed(2)} total</p>
+                <p className="text-xs text-ink-dim">{completedBookings.length} invoice{completedBookings.length !== 1 ? 's' : ''} · €{totalSpent.toFixed(2)} total</p>
               </div>
             </div>
             <ChevronRight className={`w-4 h-4 text-ink-dim transition-transform ${showInvoices ? 'rotate-90' : ''}`} />
@@ -135,7 +123,7 @@ export default function AccountPage() {
           {showInvoices && (
             <div className="border-t border-border-dim">
               {completedBookings.length === 0 ? (
-                <p className="px-5 py-4 text-sm text-gray-400">No invoices yet. They appear after a booking is completed.</p>
+                <p className="px-5 py-4 text-sm text-ink-dim">No invoices yet. They appear after a booking is completed.</p>
               ) : (
                 <div className="p-4 space-y-3">
                   {completedBookings.map(b => {
@@ -148,12 +136,12 @@ export default function AccountPage() {
                         <div className="flex items-start justify-between gap-3 mb-3">
                           <div>
                             <p className="font-bold text-sm">{b.quote?.request?.category?.name ?? 'Service'}</p>
-                            <p className="text-xs text-gray-400 mt-0.5">#{invoiceNo}</p>
-                            <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3" /> {date}</p>
+                            <p className="text-xs text-ink-dim mt-0.5">#{invoiceNo}</p>
+                            <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3" /> {date}</p>
                           </div>
                           <div className="text-right">
                             <p className="text-lg font-bold">€{b.totalAmount?.toFixed(2)}</p>
-                            <span className="text-[10px] font-bold uppercase bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Paid</span>
+                            <span className="text-[10px] font-bold uppercase bg-trust-surface text-trust px-2 py-0.5 rounded-full">Paid</span>
                           </div>
                         </div>
                         <div className="bg-white rounded-xl p-3 text-xs space-y-1.5 mb-3">
@@ -163,7 +151,7 @@ export default function AccountPage() {
                           <div className="flex justify-between font-bold pt-1.5 border-t border-border-dim"><span>Total</span><span>€{b.totalAmount?.toFixed(2)}</span></div>
                         </div>
                         <div className="flex gap-2">
-                          <Link href={`/bookings/${b.id}`} className="flex-1 text-center py-2 border border-border-dim rounded-xl text-xs font-bold hover:border-gray-400 transition-colors">View booking</Link>
+                          <Link href={`/bookings/${b.id}`} className="flex-1 text-center py-2 border border-border-dim rounded-xl text-xs font-bold hover:border-border transition-colors">View booking</Link>
                           <button
                             onClick={() => {
                               const rows = [['Invoice', invoiceNo], ['Date', date], ['Service', b.quote?.request?.category?.name ?? 'Service'], ['Pro', b.provider?.user?.name ?? ''], ['Service fee', `€${serviceFee}`], ['Platform fee', `€${platformFee}`], ['Total', `€${b.totalAmount?.toFixed(2)}`]];
@@ -187,7 +175,7 @@ export default function AccountPage() {
         </div>
 
         {/* Credits & Referrals (collapsible) */}
-        <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim overflow-hidden shadow-sm">
           <button
             onClick={() => setShowCredits(v => !v)}
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-canvas transition-colors"
@@ -198,7 +186,7 @@ export default function AccountPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-bold">Credits & Referrals</p>
-                <p className="text-xs text-gray-400">€0.00 available · Refer friends to earn</p>
+                <p className="text-xs text-ink-dim">€0.00 available · Refer friends to earn</p>
               </div>
             </div>
             <ChevronRight className={`w-4 h-4 text-ink-dim transition-transform ${showCredits ? 'rotate-90' : ''}`} />
@@ -227,7 +215,7 @@ export default function AccountPage() {
                     <div className="w-8 h-8 bg-canvas rounded-xl flex items-center justify-center shrink-0"><item.icon className="w-4 h-4 text-ink-sub" /></div>
                     <div>
                       <p className="font-bold text-sm">{item.text}</p>
-                      <p className="text-xs text-gray-400">{item.sub}</p>
+                      <p className="text-xs text-ink-dim">{item.sub}</p>
                     </div>
                   </div>
                 ))}
@@ -237,12 +225,12 @@ export default function AccountPage() {
         </div>
 
         {/* Settings */}
-        <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim overflow-hidden shadow-sm">
           <div className="px-5 pt-5 pb-1">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest">Settings</p>
           </div>
           {[
-            { icon: Shield,   label: 'Saved Addresses',     sub: uniqueAddresses.length > 0 ? `${uniqueAddresses.length} saved` : 'None yet', href: '/dashboard' },
+            { icon: Shield,   label: 'Saved Addresses',     sub: uniqueAddresses.length > 0 ? `${uniqueAddresses.length} saved` : 'None yet', href: '/account' },
             { icon: User,     label: 'Favourite Pros',      sub: 'Manage bookmarked pros',    href: '/browse' },
             { icon: FileText, label: 'New Service Request', sub: 'Post a job and get quotes', href: '/requests/new' },
           ].map((item, i) => (
@@ -250,7 +238,7 @@ export default function AccountPage() {
               <div className="w-9 h-9 bg-canvas rounded-xl flex items-center justify-center shrink-0"><item.icon className="w-4 h-4 text-ink-sub" /></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold">{item.label}</p>
-                <p className="text-xs text-gray-400">{item.sub}</p>
+                <p className="text-xs text-ink-dim">{item.sub}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
             </Link>
@@ -258,21 +246,21 @@ export default function AccountPage() {
         </div>
 
         {/* Support */}
-        <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
+        <div className="bg-white rounded-panel border border-border-dim overflow-hidden shadow-sm">
           <div className="px-5 pt-5 pb-1">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest">Support</p>
           </div>
           {[
             { icon: MessageCircle, label: 'Chat with us',      sub: 'Avg. reply under 1 hour',    href: 'mailto:support@dispatch.com' },
             { icon: Mail,          label: 'Email us',           sub: 'support@dispatch.com',       href: 'mailto:support@dispatch.com' },
-            { icon: HelpCircle,    label: 'Help Centre',        sub: 'FAQs and how-to guides',     href: '/' },
-            { icon: LifeBuoy,      label: 'Dispute a booking',  sub: 'Report an issue with a job', href: '/dashboard' },
+            { icon: HelpCircle,    label: 'Help Centre',        sub: 'FAQs and how-to guides',     href: '/account' },
+            { icon: LifeBuoy,      label: 'Dispute a booking',  sub: 'Report an issue with a job', href: '/bookings' },
           ].map((item, i) => (
             <Link key={i} href={item.href} className="flex items-center gap-4 px-5 py-4 border-t border-border-dim hover:bg-canvas transition-colors">
               <div className="w-9 h-9 bg-canvas rounded-xl flex items-center justify-center shrink-0"><item.icon className="w-4 h-4 text-ink-sub" /></div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold">{item.label}</p>
-                <p className="text-xs text-gray-400">{item.sub}</p>
+                <p className="text-xs text-ink-dim">{item.sub}</p>
               </div>
               <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
             </Link>
@@ -282,13 +270,12 @@ export default function AccountPage() {
         {/* Log out */}
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-2xl text-sm font-bold text-ink-sub hover:border-red-200 hover:text-danger transition-all"
+          className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-panel text-sm font-bold text-ink-sub hover:border-danger-edge hover:text-danger transition-all"
         >
           <LogOut className="w-4 h-4" /> Log Out
         </button>
 
-      </main>
-      <MobileNav />
-    </div>
+      </div>
+    </CustomerLayout>
   );
 }
