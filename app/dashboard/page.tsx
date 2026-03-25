@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   Calendar, Clock, CheckCircle2,
   ChevronRight, Star, Loader2, LayoutDashboard,
-  Search, LogOut, MapPin, Bell,
+  Search, LogOut, MapPin, Bell, Home,
   Inbox, Plus, Users, Zap, X, ShieldCheck,
   Wrench, Hammer, Truck, Paintbrush
 } from 'lucide-react';
@@ -137,27 +137,6 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-const STEPPER_LABELS = ['Posted', 'Quotes', 'Selected', 'Done'];
-
-function JobStepper({ step }: { step: number }) {
-  if (step < 0) return null;
-  return (
-    <div className="w-full">
-      <div className="flex items-center gap-1 mb-2">
-        {STEPPER_LABELS.map((_, i) => (
-          <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
-        ))}
-      </div>
-      <div className="flex items-center justify-between px-1">
-        {STEPPER_LABELS.map((label, i) => (
-          <span key={label} className={`text-[10px] font-bold uppercase tracking-widest ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
-            {label}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 /* ─── Page ────────────────────────────────────────────────── */
 
@@ -267,14 +246,14 @@ export default function DashboardPage() {
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
-          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm bg-white shadow-sm border border-border-dim text-brand">
-            <LayoutDashboard className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Dashboard</span>
+          <Link href="/" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
+            <Home className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Home</span>
           </Link>
           <Link href="/browse" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
             <Search className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Find Pros</span>
           </Link>
-          <Link href="/bookings" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
-            <Calendar className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Bookings</span>
+          <Link href="/dashboard" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm bg-white shadow-sm border border-border-dim text-brand">
+            <LayoutDashboard className="w-4 h-4 shrink-0" /><span className="hidden lg:block">Dashboard</span>
           </Link>
           <Link href="/account" className="flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-ink-sub hover:text-ink hover:bg-white/60 transition-all border border-transparent">
             <Users className="w-4 h-4 shrink-0" /><span className="hidden lg:block">My Account</span>
@@ -373,14 +352,15 @@ export default function DashboardPage() {
           <div className="max-w-5xl mx-auto">
 
             {/* ── Header ────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12">
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">Welcome back, {firstName}</h1>
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12 relative">
+              <div className="relative z-10">
+                <p className="text-sm font-medium text-brand mb-1">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},</p>
+                <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">{firstName}</h1>
                 <p className="text-ink-sub text-sm sm:text-base">Here is what's happening with your home projects.</p>
               </div>
               <Link
                 href="/requests/new"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-4 sm:py-3.5 rounded-full text-base sm:text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-4 sm:py-3.5 rounded-full text-base sm:text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0 relative z-10"
               >
                 <Search className="w-5 h-5 sm:w-4 sm:h-4" /> Find a Pro
               </Link>
@@ -452,27 +432,34 @@ export default function DashboardPage() {
                             }`}
                           >
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                              <div>
-                                <div className="flex items-center gap-2 mb-2.5">
-                                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">
-                                    {req.category?.name}
-                                  </span>
-                                  {req.isUrgent && (
-                                    <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution">
-                                      <Zap className="w-3 h-3" /> Urgent
-                                    </span>
-                                  )}
+                              <div className="flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
+                                  {req.category?.slug === 'electrician' ? <ElectricianIcon className="w-6 h-6 text-ink-sub" /> :
+                                   req.category?.slug === 'plumber' ? <Wrench className="w-6 h-6 text-ink-sub" /> :
+                                   req.category?.slug === 'cleaning' ? <BroomIcon className="w-6 h-6 text-ink-sub" /> :
+                                   req.category?.slug === 'handyman' ? <Hammer className="w-6 h-6 text-ink-sub" /> :
+                                   req.category?.slug === 'moving-help' ? <Truck className="w-6 h-6 text-ink-sub" /> :
+                                   req.category?.slug === 'painting' ? <Paintbrush className="w-6 h-6 text-ink-sub" /> :
+                                   <Inbox className="w-6 h-6 text-ink-sub" />}
                                 </div>
-                                <h3 className="font-semibold text-xl text-ink leading-tight mb-2">{req.description}</h3>
-                                <p className="flex items-center gap-1.5 text-sm text-ink-sub">
-                                  <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
-                                </p>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1.5">
+                                    <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">
+                                      {req.category?.name}
+                                    </span>
+                                    {req.isUrgent && (
+                                      <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution">
+                                        <Zap className="w-3 h-3" /> Urgent
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h3 className="font-semibold text-xl text-ink leading-tight mb-2">{req.description}</h3>
+                                  <p className="flex items-center gap-1.5 text-sm text-ink-sub">
+                                    <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
+                                  </p>
+                                </div>
                               </div>
                               <div className="self-start sm:self-auto"><StatusBadge status={req.status} /></div>
-                            </div>
-
-                            <div className="py-3 sm:py-4 my-3 sm:my-4 border-y border-border-dim">
-                              <JobStepper step={stage.step} />
                             </div>
 
                             {quoteCount > 0 && topPro && (
@@ -611,7 +598,10 @@ export default function DashboardPage() {
                             className="w-12 h-12 rounded-full object-cover shadow-sm bg-surface-alt group-hover:ring-2 ring-brand/20 transition-all" 
                           />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
+                              {pro.isVerified && <ShieldCheck className="w-3.5 h-3.5 text-trust shrink-0" />}
+                            </div>
                             <div className="flex items-center gap-2 mt-1">
                               {pro.ratingAvg && (
                                 <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
