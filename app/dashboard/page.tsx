@@ -138,6 +138,28 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 
+const STEPPER_LABELS = ['Posted', 'Quotes', 'Selected', 'Done'];
+
+function JobStepper({ step }: { step: number }) {
+  if (step < 0) return null;
+  return (
+    <div className="w-full">
+      <div className="flex items-center gap-1 mb-2">
+        {STEPPER_LABELS.map((_, i) => (
+          <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
+        ))}
+      </div>
+      <div className="flex items-center justify-between px-1">
+        {STEPPER_LABELS.map((label, i) => (
+          <span key={label} className={`text-[10px] font-bold uppercase tracking-widest ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
+            {label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ─── Page ────────────────────────────────────────────────── */
 
 export default function DashboardPage() {
@@ -460,6 +482,10 @@ export default function DashboardPage() {
                                 </div>
                               </div>
                               <div className="self-start sm:self-auto"><StatusBadge status={req.status} /></div>
+                            </div>
+
+                            <div className="py-3 sm:py-4 my-3 sm:my-4 border-y border-border-dim">
+                              <JobStepper step={stage.step} />
                             </div>
 
                             {quoteCount > 0 && topPro && (
