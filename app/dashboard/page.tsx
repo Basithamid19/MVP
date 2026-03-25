@@ -271,7 +271,7 @@ export default function DashboardPage() {
       <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
 
         {/* Top bar */}
-        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between sm:justify-end sticky top-0 z-20">
+        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-2 sm:py-3 flex items-center justify-between sm:justify-end sticky top-0 z-20">
           <Link href="/" className="md:hidden flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-sm tracking-tight">D</span>
@@ -348,11 +348,11 @@ export default function DashboardPage() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6 lg:p-10">
+        <main className="flex-1 overflow-y-auto px-6 pb-6 lg:px-10 lg:pb-10 pt-2 lg:pt-4">
           <div className="max-w-5xl mx-auto">
 
             {/* ── Header ────────────────────────────────────── */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-8 sm:mb-12 relative">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 relative">
               <div className="relative z-10">
                 <p className="text-sm font-medium text-brand mb-1">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},</p>
                 <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">{firstName}</h1>
