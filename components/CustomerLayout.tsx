@@ -204,7 +204,7 @@ export default function CustomerLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto px-6 pb-6 lg:px-10 lg:pb-10 pt-2 lg:pt-4">
+        <main className="flex-1 overflow-y-auto px-6 pb-24 lg:px-10 lg:pb-10 pt-2 lg:pt-4">
           <div className={`${maxWidth} mx-auto`}>
             {children}
           </div>
