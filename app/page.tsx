@@ -116,9 +116,7 @@ export default function LandingPage() {
   };
 
   const handleCategoryRequest = (slug: string) => {
-    const params = new URLSearchParams({ category: slug });
-    if (isUrgent) params.set('urgent', '1');
-    router.push(`/requests/new?${params.toString()}`);
+    router.push(`/category/${slug}`);
   };
 
   return (
