@@ -445,142 +445,126 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4. Top Rated Professionals ── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
-              <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
-              <p className="text-ink-sub mt-2">Verified experts trusted by Vilnius homeowners.</p>
-            </div>
-            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
-              Browse all <ArrowRight className="w-4 h-4" />
-            </Link>
+      <section className="py-10 lg:py-20 bg-white overflow-hidden">
+        {/* Header */}
+        <div className="flex items-end justify-between px-4 sm:px-6 lg:px-8 mb-5">
+          <div>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Our Pros</p>
+            <h2 className="text-2xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
           </div>
+          <Link href="/browse" className="text-sm font-bold text-brand flex items-center gap-1 shrink-0">
+            See all <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
+        {/* Carousel */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2">
           {prosLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 animate-pulse shadow-sm">
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-14 h-14 bg-white rounded-full shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-white rounded w-24" />
-                      <div className="h-3 bg-border-dim rounded w-16" />
-                    </div>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <div className="h-3 bg-white rounded w-28" />
-                    <div className="h-3 bg-border-dim rounded w-20" />
-                  </div>
-                  <div className="pt-4 border-t border-border-dim flex justify-between mt-auto">
-                    <div className="h-3 bg-border-dim rounded w-16" />
-                    <div className="h-3 bg-white rounded w-10" />
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-surface-alt rounded-3xl border border-border-dim p-4 animate-pulse">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-border-dim rounded-2xl shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3.5 bg-border-dim rounded w-20" />
+                    <div className="h-3 bg-border-dim/60 rounded w-14" />
                   </div>
                 </div>
-              ))}
-            </div>
+                <div className="space-y-2 mb-4">
+                  <div className="h-3 bg-border-dim rounded w-24" />
+                  <div className="h-3 bg-border-dim/60 rounded w-32" />
+                </div>
+                <div className="h-9 bg-border-dim rounded-xl w-full mt-2" />
+              </div>
+            ))
           ) : topPros.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {topPros.map((pro, idx) => (
-                <motion.div
+            topPros.map((pro) => {
+              const responseTime = pro.responseTime
+                ? pro.responseTime.replace(/^usually responds in\s*/i, '')
+                : null;
+              return (
+                <Link
                   key={pro.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                  viewport={{ once: true }}
+                  href={`/providers/${pro.id}`}
+                  className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-3xl border border-border-dim shadow-sm p-4 flex flex-col active:scale-[0.97] transition-transform"
                 >
-                  <Link
-                    href={`/providers/${pro.id}`}
-                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
-                  >
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 shadow-sm border border-border-dim">
-                          <img
-                            src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
-                            alt={pro.user?.name}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-base text-ink truncate">{pro.user?.name}</p>
-                          <p className="text-sm text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
-                        </div>
+                  {/* Avatar + name */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-border-dim bg-surface-alt">
+                      <img
+                        src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
+                        alt={pro.user?.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-sm text-ink truncate">{pro.user?.name}</p>
+                      <p className="text-xs text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
+                    </div>
+                    {pro.isVerified && (
+                      <div className="w-7 h-7 rounded-full bg-trust/10 flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-3.5 h-3.5 text-trust" />
                       </div>
-                      {pro.isVerified && (
-                        <div className="w-8 h-8 rounded-full bg-white border border-trust/10 flex items-center justify-center shrink-0">
-                          <ShieldCheck className="w-4 h-4 text-trust" />
-                        </div>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    <div className="space-y-2 mb-6 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-bold text-ink">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                        <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
-                      </div>
-                      {pro.responseTime && (
-                        <div className="flex items-center gap-1.5 text-xs text-ink-sub">
-                          <Clock className="w-4 h-4 text-ink-dim" /> Usually responds in {pro.responseTime}
-                        </div>
-                      )}
-                    </div>
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-1">
+                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                    <span className="text-sm font-bold text-ink">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
+                    <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
+                  </div>
 
-                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
-                      {pro.offerings?.[0] ? (
-                        <div className="text-sm font-medium text-ink-dim">
-                          From <span className="font-bold text-ink">€{pro.offerings[0].price}</span>
-                        </div>
-                      ) : (
-                        <div className="text-sm font-medium text-ink-dim">Price on request</div>
-                      )}
-                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
-                        View <ChevronRight className="w-4 h-4" />
-                      </span>
+                  {/* Response time */}
+                  {responseTime && (
+                    <div className="flex items-center gap-1 text-xs text-ink-sub mb-3">
+                      <Clock className="w-3.5 h-3.5 text-ink-dim shrink-0" />
+                      <span>Responds in {responseTime}</span>
                     </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+                  )}
+
+                  {/* CTA */}
+                  <div className="mt-auto pt-3 border-t border-border-dim flex items-center justify-between">
+                    {pro.offerings?.[0] ? (
+                      <p className="text-xs text-ink-dim">From <span className="font-bold text-ink">€{pro.offerings[0].price}</span></p>
+                    ) : (
+                      <p className="text-xs text-ink-dim">Price on request</p>
+                    )}
+                    <span className="text-xs font-bold text-brand flex items-center gap-0.5">
+                      View <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
-            /* Category browse fallback */
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {[
-                { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
-                { name: 'Plumbers',     slug: 'plumber',     icon: Wrench, desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
-                { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon, desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
-                { name: 'Handymen',     slug: 'handyman',    icon: Hammer, desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
-              ].map((cat, idx) => {
-                const Icon = cat.icon;
-                return (
-                <motion.div
+            /* Category browse fallback carousel */
+            [
+              { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
+              { name: 'Plumbers',     slug: 'plumber',     icon: Wrench,          desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
+              { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon,       desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
+              { name: 'Handymen',     slug: 'handyman',    icon: Hammer,          desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
+            ].map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Link
                   key={cat.slug}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                  viewport={{ once: true }}
+                  href={`/browse?category=${cat.slug}`}
+                  className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-3xl border border-border-dim shadow-sm p-4 flex flex-col active:scale-[0.97] transition-transform"
                 >
-                  <Link
-                    href={`/browse?category=${cat.slug}`}
-                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
-                  >
-                    <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm`}>
-                      <Icon className="w-6 h-6" strokeWidth={1.5} />
-                    </div>
-                    <p className="font-bold text-base text-ink mb-1">{cat.name}</p>
-                    <p className="text-sm text-ink-sub mb-6 flex-1">{cat.desc}</p>
-                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
-                      <span className="text-sm text-ink-dim">Browse pros</span>
-                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
-                        View <ChevronRight className="w-4 h-4" />
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              )})}
-            </div>
+                  <div className={`w-12 h-12 ${cat.bg} rounded-2xl flex items-center justify-center mb-3 shrink-0`}>
+                    <Icon className="w-6 h-6" strokeWidth={1.5} />
+                  </div>
+                  <p className="font-bold text-sm text-ink mb-1">{cat.name}</p>
+                  <p className="text-xs text-ink-sub flex-1">{cat.desc}</p>
+                  <div className="mt-3 pt-3 border-t border-border-dim flex items-center justify-between">
+                    <span className="text-xs text-ink-dim">Browse pros</span>
+                    <span className="text-xs font-bold text-brand flex items-center gap-0.5">
+                      View <ChevronRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
           )}
         </div>
       </section>
