@@ -355,19 +355,21 @@ export default function LandingPage() {
       )}
 
       {/* ── 2. Popular Services ── */}
-      <section className="py-24 bg-white">
+      <section className="py-10 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-16">
+          {/* Header row — heading + View all on same line */}
+          <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Services</p>
-              <h2 className="text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
-              <p className="text-ink-sub mt-2">Whatever you need, we have a pro for that.</p>
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
+              <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
             </div>
-            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+            <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-y-12 gap-x-4 justify-items-center">
+          <p className="text-sm text-ink-sub mb-6 lg:mb-12">Whatever you need, we have a pro for that.</p>
+
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-6 lg:gap-x-4 lg:gap-y-12 justify-items-center">
             {categories.map((cat, idx) => {
               const Icon = cat.icon;
               return (
@@ -377,22 +379,19 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 viewport={{ once: true }}
+                className="w-full flex justify-center"
               >
                 <button
                   onClick={() => handleCategoryRequest(cat.slug)}
-                  className="group flex flex-col items-center cursor-pointer outline-none"
+                  className="group flex flex-col items-center cursor-pointer outline-none w-full"
                 >
-                  <div className="relative w-20 h-20 flex items-center justify-center mb-3">
-                    {/* Soft organic shape or rounded rect */}
-                    <div className="absolute inset-0 bg-brand-muted rounded-3xl transition-all duration-300 ease-out" />
-                    <Icon className="w-8 h-8 text-brand relative z-10 transition-colors duration-300" strokeWidth={1.5} />
+                  <div className="relative w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-2 lg:mb-3">
+                    <div className="absolute inset-0 bg-brand-muted rounded-2xl lg:rounded-3xl transition-all duration-300 ease-out group-active:scale-95" />
+                    <Icon className="w-6 h-6 lg:w-8 lg:h-8 text-brand relative z-10" strokeWidth={1.5} />
                   </div>
-                  <div className="relative pb-2">
-                    <span className="text-sm font-bold text-brand transition-colors duration-300">
-                      {cat.name}
-                    </span>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-full bg-brand transition-all duration-300 rounded-full" />
-                  </div>
+                  <span className="text-xs lg:text-sm font-bold text-brand leading-tight text-center">
+                    {cat.name}
+                  </span>
                 </button>
               </motion.div>
             )})}
