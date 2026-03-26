@@ -129,6 +129,7 @@ function NewRequestContent() {
 
   const next = () => setStep(s => Math.min(s + 1, 4));
   const back = () => {
+    if (step === 2 && initialSubcategory) { router.back(); return; }
     if (step > 1) setStep(s => s - 1);
     else router.back();
   };
