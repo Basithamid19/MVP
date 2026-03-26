@@ -164,7 +164,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-18 sm:pt-0 sm:pb-28 lg:pt-0 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-8 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
@@ -224,24 +224,24 @@ export default function LandingPage() {
               </form>
 
               {/* Quick category pills & Urgency */}
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider">Popular:</span>
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">Popular:</span>
                 {categories.slice(0, 3).map(cat => {
                   const Icon = cat.icon;
                   return (
                   <button
                     key={cat.slug}
                     onClick={() => handleCategoryRequest(cat.slug)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
                   >
                     <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                     {cat.name}
                   </button>
                 )})}
-                <div className="w-px h-4 bg-border-dim mx-1" />
+                <div className="w-px h-4 bg-border-dim mx-0.5 shrink-0" />
                 <button
                   onClick={() => setIsUrgent(!isUrgent)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
+                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
                     isUrgent
                       ? 'bg-caution-surface border-caution-edge text-caution'
                       : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
@@ -304,45 +304,51 @@ export default function LandingPage() {
 
       {/* ── Recent Bookings (logged-in only) ── */}
       {session && recentBookings.length > 0 && (
-        <section className="py-10 border-y border-border-dim bg-surface-alt">
+        <section className="py-6 sm:py-10 bg-white border-t border-border-dim">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-base font-bold text-ink">Recent bookings</h2>
-                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off.</p>
+                <h2 className="text-sm font-bold text-ink tracking-tight">Recent Bookings</h2>
+                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off</p>
               </div>
-              <Link href="/dashboard" className="text-xs font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+              <Link href="/dashboard" className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
                 View all <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {recentBookings.map(b => (
-                <Link
-                  key={b.id}
-                  href={`/bookings/${b.id}`}
-                  className="flex items-center gap-3 bg-white rounded-card border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
-                >
-                  <img
-                    src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
-                    alt=""
-                    className="w-10 h-10 rounded-input object-cover shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{b.provider?.user?.name}</p>
-                    <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? 'Service'}</p>
-                    <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
-                      <Clock className="w-3 h-3" />
-                      {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    </p>
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <span className={`px-2 py-0.5 rounded-chip text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
-                      {b.status.replace('_', ' ')}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-border" />
-                  </div>
-                </Link>
-              ))}
+            <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
+              {recentBookings.map(b => {
+                const categoryName = b.quote?.request?.category?.name;
+                const providerName = b.provider?.user?.name;
+                return (
+                  <Link
+                    key={b.id}
+                    href={`/bookings/${b.id}`}
+                    className="flex items-center gap-3 bg-canvas rounded-xl border border-border-dim p-3.5 hover:border-brand/30 hover:bg-white hover:shadow-sm transition-all"
+                  >
+                    <div className="relative shrink-0">
+                      <img
+                        src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+                        alt={providerName ?? ''}
+                        className="w-11 h-11 rounded-xl object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-ink truncate capitalize">{providerName ?? 'Professional'}</p>
+                      <p className="text-xs text-ink-sub font-medium">{categoryName ?? 'Home Service'}</p>
+                      <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3 shrink-0" />
+                        {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
+                        {b.status.replace('_', ' ')}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-ink-dim" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
