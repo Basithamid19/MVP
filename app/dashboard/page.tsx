@@ -133,27 +133,35 @@ function OrdersList({ requests }: { requests: any[] }) {
             {/* Collapsed header — always visible */}
             <button
               onClick={() => setOpenId(isOpen ? null : req.id)}
-              className="w-full flex items-center gap-4 p-4 sm:p-5 text-left"
+              className="w-full flex items-center gap-3 p-3 sm:p-4 text-left"
             >
-              <div className="w-10 h-10 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
+              <div className="w-9 h-9 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
                 {getCategoryIcon(req.category?.slug)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">{req.category?.name}</span>
-                  {req.isUrgent && <span className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-widest text-caution"><Zap className="w-3 h-3" /> Urgent</span>}
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim truncate">{req.category?.name}</span>
+                  {req.isUrgent && <span className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-widest text-caution shrink-0"><Zap className="w-3 h-3" /> Urgent</span>}
                 </div>
                 <p className="font-semibold text-sm text-ink leading-snug truncate">{req.description}</p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <StatusBadge status={req.status} />
+              <div className="flex items-center gap-1.5 shrink-0">
+                {/* Dot only on mobile, full badge on sm+ */}
+                <span className={`w-2 h-2 rounded-full sm:hidden ${stage.dot}`} />
+                <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-alt rounded-full border border-border-dim">
+                  <span className={`w-1.5 h-1.5 rounded-full ${stage.dot}`} />
+                  <span className="text-xs font-medium text-ink-sub whitespace-nowrap">{stage.label}</span>
+                </span>
                 <ChevronDown className={`w-4 h-4 text-ink-dim transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
               </div>
             </button>
 
             {/* Expanded details */}
             {isOpen && (
-              <div className="px-4 pb-5 sm:px-5 sm:pb-6 border-t border-border-dim pt-4">
+              <div className="px-3 pb-4 sm:px-5 sm:pb-6 border-t border-border-dim pt-3">
+                <div className="flex items-center justify-between mb-3 sm:hidden">
+                  <StatusBadge status={req.status} />
+                </div>
                 <p className="flex items-center gap-1.5 text-sm text-ink-sub mb-4">
                   <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
                 </p>
