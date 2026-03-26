@@ -96,9 +96,9 @@ function JobStepper({ step }: { step: number }) {
           <div key={i} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-brand' : 'bg-border'}`} />
         ))}
       </div>
-      <div className="flex items-center justify-between px-1">
+      <div className="flex items-center justify-between px-0.5">
         {STEPPER_LABELS.map((label, i) => (
-          <span key={label} className={`text-[11px] font-bold uppercase tracking-widest ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
+          <span key={label} className={`text-[10px] font-bold uppercase tracking-wide ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
             {label}
           </span>
         ))}
@@ -126,7 +126,7 @@ function OrdersList({ requests }: { requests: any[] }) {
         return (
           <div
             key={req.id}
-            className={`bg-white rounded-2xl border transition-all duration-200 ${
+            className={`bg-white rounded-2xl border overflow-hidden transition-all duration-200 ${
               isBooked ? 'border-brand/20 shadow-md' : 'border-border-dim shadow-sm'
             }`}
           >
@@ -344,7 +344,7 @@ export default function DashboardPage() {
       )}
 
       {/* Main grid */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-4 lg:gap-8">
         {/* Left: My Orders */}
         <div className="lg:col-span-2 space-y-8 sm:space-y-10">
           <section>
