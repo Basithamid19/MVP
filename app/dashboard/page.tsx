@@ -343,10 +343,10 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Main grid */}
-      <div className="grid lg:grid-cols-3 gap-4 lg:gap-8">
+      {/* Main layout */}
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-8">
         {/* Left: My Orders */}
-        <div className="lg:col-span-2 space-y-8 sm:space-y-10">
+        <div className="w-full lg:col-span-2 space-y-8">
           <section>
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold tracking-tight text-ink">My Orders</h2>
@@ -393,8 +393,8 @@ export default function DashboardPage() {
           </section>
         </div>
 
-        {/* Right column */}
-        <div className="space-y-6">
+        {/* Right column — desktop only */}
+        <div className="hidden lg:block space-y-6">
           <section className="sticky top-28">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold tracking-tight text-ink">
