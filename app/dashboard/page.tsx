@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Calendar, CheckCircle2,
-  ChevronRight, Star, Loader2,
+  ChevronRight, ChevronDown, Star, Loader2,
   Search, MapPin, Bell,
   Inbox, Users, Zap, ShieldCheck,
   Wrench, Hammer, Truck, Paintbrush
@@ -103,6 +103,122 @@ function JobStepper({ step }: { step: number }) {
           </span>
         ))}
       </div>
+    </div>
+  );
+}
+
+/* ─── Collapsible Orders List ─────────────────────────────── */
+
+function OrdersList({ requests }: { requests: any[] }) {
+  const [openId, setOpenId] = useState<string | null>(requests[0]?.id ?? null);
+
+  return (
+    <div className="space-y-3">
+      {requests.slice(0, 6).map(req => {
+        const stage      = STATUS_STAGE[req.status] ?? { label: req.status, dot: 'bg-border', step: 0 };
+        const quoteCount = req.quotes?.length ?? 0;
+        const action     = getJobAction(req);
+        const isBooked   = req.status === 'ACCEPTED';
+        const topQuote   = req.quotes?.find((q: any) => q.provider) ?? req.quotes?.[0];
+        const topPro     = topQuote?.provider;
+        const isOpen     = openId === req.id;
+
+        return (
+          <div
+            key={req.id}
+            className={`bg-white rounded-2xl border transition-all duration-200 ${
+              isBooked ? 'border-brand/20 shadow-md' : 'border-border-dim shadow-sm'
+            }`}
+          >
+            {/* Collapsed header — always visible */}
+            <button
+              onClick={() => setOpenId(isOpen ? null : req.id)}
+              className="w-full flex items-center gap-4 p-4 sm:p-5 text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
+                {getCategoryIcon(req.category?.slug)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim">{req.category?.name}</span>
+                  {req.isUrgent && <span className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-widest text-caution"><Zap className="w-3 h-3" /> Urgent</span>}
+                </div>
+                <p className="font-semibold text-sm text-ink leading-snug truncate">{req.description}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <StatusBadge status={req.status} />
+                <ChevronDown className={`w-4 h-4 text-ink-dim transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+              </div>
+            </button>
+
+            {/* Expanded details */}
+            {isOpen && (
+              <div className="px-4 pb-5 sm:px-5 sm:pb-6 border-t border-border-dim pt-4">
+                <p className="flex items-center gap-1.5 text-sm text-ink-sub mb-4">
+                  <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
+                </p>
+
+                <div className="py-3 mb-4 border-y border-border-dim">
+                  <JobStepper step={stage.step} />
+                </div>
+
+                {quoteCount > 0 && topPro && (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-surface-alt rounded-xl p-4 border border-border-dim">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
+                        alt={topPro.user?.name}
+                        className="w-10 h-10 rounded-full object-cover shadow-sm bg-white"
+                      />
+                      <div>
+                        <p className="text-sm font-semibold text-ink leading-none mb-1.5">{topPro.user?.name}</p>
+                        <div className="flex items-center gap-2">
+                          {topPro.ratingAvg && (
+                            <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
+                              <Star className="w-3 h-3 text-brand fill-current" />
+                              {topPro.ratingAvg.toFixed(1)}
+                            </span>
+                          )}
+                          {topPro.isVerified && <span className="text-[11px] font-medium text-trust">✓ Verified</span>}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="sm:text-right pl-12 sm:pl-0">
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-ink-dim mb-0.5">Est. Price</p>
+                      <p className="text-base font-semibold text-ink">€{topQuote.price}</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div className="text-sm font-medium">
+                    {quoteCount > 0
+                      ? <span className="text-ink font-semibold">{quoteCount} quote{quoteCount > 1 ? 's' : ''}</span>
+                      : <span className="text-ink-dim">Waiting for professionals...</span>
+                    }
+                  </div>
+                  <Link
+                    href={`/requests/${req.id}`}
+                    className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
+                      action.primary ? 'text-brand hover:text-brand-dark' : 'text-ink-sub hover:text-ink'
+                    }`}
+                  >
+                    {action.label} <ChevronRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {requests.length > 6 && (
+        <div className="pt-2 text-center">
+          <Link href="/requests" className="text-sm font-medium text-ink-sub hover:text-ink transition-colors">
+            View all {requests.length} orders
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
@@ -221,11 +337,11 @@ export default function DashboardPage() {
 
       {/* Main grid */}
       <div className="grid lg:grid-cols-3 gap-8">
-        {/* Left: My Jobs */}
+        {/* Left: My Orders */}
         <div className="lg:col-span-2 space-y-8 sm:space-y-10">
           <section>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold tracking-tight text-ink">My Jobs</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-ink">My Orders</h2>
               {requests.length > 0 && (
                 <span className="text-sm text-ink-dim font-medium">{requests.length} active</span>
               )}
@@ -245,113 +361,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
-                {requests.slice(0, 6).map(req => {
-                  const stage      = STATUS_STAGE[req.status] ?? { label: req.status, dot: 'bg-border', step: 0 };
-                  const quoteCount = req.quotes?.length ?? 0;
-                  const action     = getJobAction(req);
-                  const isBooked   = req.status === 'ACCEPTED';
-                  const topQuote   = req.quotes?.find((q: any) => q.provider) ?? req.quotes?.[0];
-                  const topPro     = topQuote?.provider;
-
-                  return (
-                    <div
-                      key={req.id}
-                      className={`bg-white rounded-2xl sm:rounded-panel p-5 sm:p-8 transition-all duration-200 ${
-                        isBooked
-                          ? 'border border-brand/20 shadow-md'
-                          : 'border border-border-dim shadow-sm hover:shadow-md hover:border-border'
-                      }`}
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
-                            {getCategoryIcon(req.category?.slug)}
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <span className="text-[11px] font-bold uppercase tracking-widest text-ink-dim">
-                                {req.category?.name}
-                              </span>
-                              {req.isUrgent && (
-                                <span className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-widest text-caution">
-                                  <Zap className="w-3 h-3" /> Urgent
-                                </span>
-                              )}
-                            </div>
-                            <h3 className="font-semibold text-xl text-ink leading-tight mb-2">{req.description}</h3>
-                            <p className="flex items-center gap-1.5 text-sm text-ink-sub">
-                              <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="self-start sm:self-auto"><StatusBadge status={req.status} /></div>
-                      </div>
-
-                      <div className="py-3 sm:py-4 my-3 sm:my-4 border-y border-border-dim">
-                        <JobStepper step={stage.step} />
-                      </div>
-
-                      {quoteCount > 0 && topPro && (
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6 bg-surface-alt rounded-xl sm:rounded-2xl p-4 border border-border-dim">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
-                              alt={topPro.user?.name}
-                              className="w-10 h-10 rounded-full object-cover shadow-sm bg-white"
-                            />
-                            <div>
-                              <p className="text-sm font-semibold text-ink leading-none mb-1.5">{topPro.user?.name}</p>
-                              <div className="flex items-center gap-2">
-                                {topPro.ratingAvg && (
-                                  <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
-                                    <Star className="w-3 h-3 text-brand fill-current" />
-                                    {topPro.ratingAvg.toFixed(1)}
-                                  </span>
-                                )}
-                                {topPro.isVerified && (
-                                  <span className="text-[11px] font-medium text-trust">✓ Verified</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                          <div className="sm:text-right pl-12 sm:pl-0">
-                            <p className="text-[11px] font-bold uppercase tracking-widest text-ink-dim mb-0.5">Est. Price</p>
-                            <p className="text-base font-semibold text-ink">€{topQuote.price}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm font-medium text-ink-sub">
-                          {quoteCount > 0 ? (
-                            <span className="text-ink font-semibold">{quoteCount} quote{quoteCount > 1 ? 's' : ''}</span>
-                          ) : (
-                            <span className="text-ink-dim">Waiting for professionals...</span>
-                          )}
-                        </div>
-
-                        <Link
-                          href={`/requests/${req.id}`}
-                          className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
-                            action.primary ? 'text-brand hover:text-brand-dark' : 'text-ink-sub hover:text-ink'
-                          }`}
-                        >
-                          {action.label} <ChevronRight className="w-4 h-4" />
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {requests.length > 6 && (
-                  <div className="pt-4 text-center">
-                    <Link href="/requests" className="text-sm font-medium text-ink-sub hover:text-ink transition-colors">
-                      View all {requests.length} jobs
-                    </Link>
-                  </div>
-                )}
-              </div>
+              <OrdersList requests={requests} />
             )}
           </section>
 
