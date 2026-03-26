@@ -54,8 +54,8 @@ function NewRequestContent() {
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
 
-  // Skip category step when coming from subcategory screen
-  const [step, setStep] = useState(initialSlug && initialSubcategory ? 2 : 1);
+  // Skip category step when a category is already provided (from homepage or subcategory screen)
+  const [step, setStep] = useState(initialSlug ? 2 : 1);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [form, setForm] = useState({
@@ -129,7 +129,7 @@ function NewRequestContent() {
 
   const next = () => setStep(s => Math.min(s + 1, 4));
   const back = () => {
-    if (step === 2 && initialSubcategory) { router.back(); return; }
+    if (step === 2 && initialSlug) { router.back(); return; }
     if (step > 1) setStep(s => s - 1);
     else router.back();
   };
