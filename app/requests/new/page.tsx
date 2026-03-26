@@ -50,16 +50,19 @@ function ReviewRow({
 function NewRequestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const initialSlug = searchParams.get('category') || '';
+  const initialSlug        = searchParams.get('category')    || '';
+  const initialSubcategory = searchParams.get('subcategory') || '';
+  const initialDescription = searchParams.get('description') || '';
 
-  const [step, setStep] = useState(1);
+  // Skip category step when coming from subcategory screen
+  const [step, setStep] = useState(initialSlug && initialSubcategory ? 2 : 1);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [form, setForm] = useState({
     categoryId: '',
     categoryName: '',
     categorySlug: initialSlug,
-    description: '',
+    description: initialDescription,
     isUrgent: false,
     address: '',
     dateWindow: '',
