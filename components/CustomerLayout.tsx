@@ -81,7 +81,7 @@ export default function CustomerLayout({
   const unreadCount = visibleNotifs.length;
 
   return (
-    <div className="min-h-screen bg-canvas flex font-sans">
+    <div className="min-h-screen w-full max-w-full bg-canvas flex font-sans">
       {/* Sidebar */}
       <aside className="hidden md:flex w-16 lg:w-64 bg-canvas flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
         <div className="p-6 lg:p-8">
