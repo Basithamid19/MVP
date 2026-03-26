@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useSession } from 'next-auth/react';
@@ -121,7 +122,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-safe">
 
       {/* ── Nav ── */}
       <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
@@ -852,6 +853,8 @@ export default function LandingPage() {
 
         </div>
       </footer>
+
+      {session && <MobileNav />}
     </div>
   );
 }
