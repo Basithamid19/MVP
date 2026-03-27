@@ -5,7 +5,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
-  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut,
+  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -16,7 +16,7 @@ const ALL_TIMES = ['06:00','06:30','07:00','07:30','08:00','08:30','09:00','09:3
 const TABS = ['Profile', 'Services', 'Availability'] as const;
 
 export default function ProviderSettingsPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Profile');
   const [loading, setLoading] = useState(true);
@@ -43,6 +43,8 @@ export default function ProviderSettingsPage() {
   const [blackoutDates, setBlackoutDates] = useState<string[]>([]);
   const [blackoutInput, setBlackoutInput] = useState('');
   const [bufferMins, setBufferMins] = useState(30);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -71,6 +73,35 @@ export default function ProviderSettingsPage() {
       }).catch(() => setLoading(false));
     }
   }, [status, router]);
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const src = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const size = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d')!;
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setLocalAvatar(dataUrl);
+        fetch('/api/user/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl }),
+        }).then(() => updateSession()).finally(() => setAvatarUploading(false));
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -126,6 +157,30 @@ export default function ProviderSettingsPage() {
       {activeTab === 'Profile' && (
         <div className="space-y-5">
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 space-y-5">
+
+            {/* Photo upload */}
+            <div>
+              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3 block">Profile Photo</label>
+              <div className="flex items-center gap-4">
+                <label className="relative w-20 h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim cursor-pointer group shrink-0">
+                  <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+                  {localAvatar || session?.user?.image
+                    ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center"><User className="w-8 h-8 text-ink-dim" /></div>
+                  }
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    {avatarUploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
+                  </div>
+                </label>
+                <div>
+                  <p className="text-sm font-semibold text-ink">
+                    {avatarUploading ? 'Uploading…' : (localAvatar || session?.user?.image) ? 'Photo uploaded' : 'No photo yet'}
+                  </p>
+                  <p className="text-xs text-ink-sub mt-0.5">Tap to upload · JPG or PNG · Square crop recommended</p>
+                </div>
+              </div>
+            </div>
+
             <div>
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
               <textarea

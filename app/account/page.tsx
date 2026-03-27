@@ -8,7 +8,7 @@ import {
   Loader2, Gift, Share2, FileText, LogOut,
   ChevronRight, User, Receipt, Download, Star,
   Mail, MessageCircle, HelpCircle, LifeBuoy,
-  MapPin, Heart, Clock, Bell, ShieldCheck,
+  MapPin, Heart, Clock, Bell, ShieldCheck, Camera,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 
@@ -60,12 +60,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 export default function AccountPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showInvoices, setShowInvoices] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [localAvatar, setLocalAvatar] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -88,6 +90,35 @@ export default function AccountPage() {
   if (!session) return null;
 
   const user = session.user;
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setAvatarUploading(true);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const src = ev.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const size = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d')!;
+        const scale = Math.max(size / img.width, size / img.height);
+        const w = img.width * scale, h = img.height * scale;
+        ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setLocalAvatar(dataUrl);
+        fetch('/api/user/avatar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: dataUrl }),
+        }).then(() => updateSession()).finally(() => setAvatarUploading(false));
+      };
+      img.src = src;
+    };
+    reader.readAsDataURL(file);
+  };
   const completedBookings = bookings.filter(b => b.status === 'COMPLETED');
   const totalSpent = completedBookings.reduce((sum, b) => sum + (b.totalAmount ?? 0), 0);
   const reviewsGiven = completedBookings.filter(b => b.review).length;
@@ -116,12 +147,19 @@ export default function AccountPage() {
             backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)'
           }} />
           <div className="relative z-10 flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/40 overflow-hidden shrink-0 flex items-center justify-center">
-              {user?.image
-                ? <img src={user.image} alt={user.name ?? ''} className="w-full h-full object-cover" />
+            <label className="relative w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/40 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer group">
+              <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+              {localAvatar || user?.image
+                ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
                 : <User className="w-8 h-8 text-white/80" />
               }
-            </div>
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                {avatarUploading
+                  ? <Loader2 className="w-5 h-5 text-white animate-spin" />
+                  : <Camera className="w-5 h-5 text-white" />
+                }
+              </div>
+            </label>
             <div className="min-w-0">
               <h2 className="text-xl font-bold text-white truncate">{user?.name}</h2>
               <p className="text-sm text-white/70 truncate">{user?.email}</p>
