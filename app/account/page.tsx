@@ -147,16 +147,19 @@ export default function AccountPage() {
             backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)'
           }} />
           <div className="relative z-10 flex items-center gap-4">
-            <label className="relative w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/40 overflow-hidden shrink-0 flex items-center justify-center cursor-pointer group">
+            <label className="relative w-16 h-16 shrink-0 cursor-pointer">
               <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-              {localAvatar || user?.image
-                ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
-                : <User className="w-8 h-8 text-white/80" />
-              }
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 border-2 border-white/40 overflow-hidden flex items-center justify-center">
+                {localAvatar || user?.image
+                  ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
+                  : <User className="w-8 h-8 text-white/80" />
+                }
+              </div>
+              {/* Always-visible camera badge */}
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-md border border-border-dim">
                 {avatarUploading
-                  ? <Loader2 className="w-5 h-5 text-white animate-spin" />
-                  : <Camera className="w-5 h-5 text-white" />
+                  ? <Loader2 className="w-3.5 h-3.5 text-brand animate-spin" />
+                  : <Camera className="w-3.5 h-3.5 text-brand" />
                 }
               </div>
             </label>

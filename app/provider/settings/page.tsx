@@ -162,14 +162,20 @@ export default function ProviderSettingsPage() {
             <div>
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3 block">Profile Photo</label>
               <div className="flex items-center gap-4">
-                <label className="relative w-20 h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim cursor-pointer group shrink-0">
+                <label className="relative w-20 h-20 shrink-0 cursor-pointer">
                   <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-                  {localAvatar || session?.user?.image
-                    ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center"><User className="w-8 h-8 text-ink-dim" /></div>
-                  }
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    {avatarUploading ? <Loader2 className="w-5 h-5 text-white animate-spin" /> : <Camera className="w-5 h-5 text-white" />}
+                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim flex items-center justify-center">
+                    {localAvatar || session?.user?.image
+                      ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
+                      : <User className="w-8 h-8 text-ink-dim" />
+                    }
+                  </div>
+                  {/* Always-visible camera badge */}
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-brand rounded-full flex items-center justify-center shadow-md">
+                    {avatarUploading
+                      ? <Loader2 className="w-4 h-4 text-white animate-spin" />
+                      : <Camera className="w-4 h-4 text-white" />
+                    }
                   </div>
                 </label>
                 <div>
