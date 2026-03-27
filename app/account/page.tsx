@@ -23,7 +23,7 @@ function SettingsRow({
   danger,
 }: {
   icon: React.ElementType;
-  iconBg: string;
+  iconBg?: string;
   label: string;
   sub?: string;
   href?: string;
@@ -32,8 +32,8 @@ function SettingsRow({
 }) {
   const inner = (
     <div className="flex items-center gap-3.5 px-4 py-3.5 active:bg-surface-alt transition-colors">
-      <div className={`w-9 h-9 ${iconBg} rounded-xl flex items-center justify-center shrink-0`}>
-        <Icon className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" strokeWidth={1.8} />
+      <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+        <Icon className="w-[18px] h-[18px] text-brand" strokeWidth={1.8} />
       </div>
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-semibold ${danger ? 'text-red-500' : 'text-ink'}`}>{label}</p>
@@ -161,8 +161,8 @@ export default function AccountPage() {
               onClick={() => setShowInvoices(v => !v)}
               className="w-full flex items-center gap-3.5 px-4 py-3.5 active:bg-surface-alt transition-colors"
             >
-              <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
-                <Receipt className="w-[18px] h-[18px] text-white" strokeWidth={1.8} />
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Receipt className="w-[18px] h-[18px] text-brand" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-semibold text-ink">Invoices</p>
@@ -233,8 +233,8 @@ export default function AccountPage() {
               onClick={() => setShowCredits(v => !v)}
               className="w-full flex items-center gap-3.5 px-4 py-3.5 active:bg-surface-alt transition-colors"
             >
-              <div className="w-9 h-9 bg-orange-500 rounded-xl flex items-center justify-center shrink-0">
-                <Gift className="w-[18px] h-[18px] text-white" strokeWidth={1.8} />
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Gift className="w-[18px] h-[18px] text-brand" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0 text-left">
                 <p className="text-sm font-semibold text-ink">Credits & Referrals</p>
@@ -266,17 +266,17 @@ export default function AccountPage() {
 
         {/* Settings */}
         <Section title="Settings">
-          <SettingsRow icon={MapPin}   iconBg="bg-blue-500"   label="Saved Addresses"     sub="Manage your home & work"   href="/account" />
-          <SettingsRow icon={Heart}    iconBg="bg-red-500"    label="Favourite Pros"       sub="Bookmarked professionals"  href="/browse" />
-          <SettingsRow icon={FileText} iconBg="bg-purple-500" label="New Service Request"  sub="Post a job and get quotes" href="/requests/new" />
+          <SettingsRow icon={MapPin}   label="Saved Addresses"     sub="Manage your home & work"   href="/account" />
+          <SettingsRow icon={Heart}    label="Favourite Pros"       sub="Bookmarked professionals"  href="/browse" />
+          <SettingsRow icon={FileText} label="New Service Request"  sub="Post a job and get quotes" href="/requests/new" />
         </Section>
 
         {/* Support */}
         <Section title="Support">
-          <SettingsRow icon={MessageCircle} iconBg="bg-teal-500"   label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:support@dispatch.com" />
-          <SettingsRow icon={Mail}          iconBg="bg-brand"      label="Email us"          sub="support@dispatch.com"       href="mailto:support@dispatch.com" />
-          <SettingsRow icon={HelpCircle}    iconBg="bg-indigo-500" label="Help Centre"       sub="FAQs and how-to guides"     href="/account" />
-          <SettingsRow icon={LifeBuoy}      iconBg="bg-orange-500" label="Dispute a booking" sub="Report an issue with a job" href="/bookings" />
+          <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:support@dispatch.com" />
+          <SettingsRow icon={Mail}          label="Email us"          sub="support@dispatch.com"       href="mailto:support@dispatch.com" />
+          <SettingsRow icon={HelpCircle}    label="Help Centre"       sub="FAQs and how-to guides"     href="/account" />
+          <SettingsRow icon={LifeBuoy}      label="Dispute a booking" sub="Report an issue with a job" href="/bookings" />
         </Section>
 
         {/* Sign out */}
