@@ -560,28 +560,28 @@ export default function LandingPage() {
 
       {/* ── 5. Why Dispatch ── */}
       <section className="py-10 lg:py-16 bg-canvas">
-        <div className="mx-4 rounded-3xl overflow-hidden" style={{ background: '#1a3828' }}>
+        <div className="mx-4 rounded-3xl overflow-hidden" style={{ background: '#cdd9d0' }}>
           {/* Header */}
           <div className="px-6 pt-7 pb-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Why Dispatch</p>
-            <h2 className="text-[24px] font-bold tracking-tight text-white leading-tight">Built for trust,<br />built for Vilnius.</h2>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: '#1c382880' }}>Why Dispatch</p>
+            <h2 className="text-[24px] font-bold tracking-tight leading-tight" style={{ color: '#1c3828' }}>Built for trust,<br />built for Vilnius.</h2>
           </div>
 
           {/* Feature rows */}
-          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+          <div className="divide-y" style={{ borderColor: '#1c382815' }}>
             {[
               { icon: BadgeCheck,    title: 'Verified Experts',   desc: 'Every pro is ID-verified and trade-certified before joining.' },
               { icon: Star,          title: 'Real Reviews Only',  desc: 'Reviews only from customers with completed bookings.' },
               { icon: Zap,           title: 'Fast Response',      desc: 'Most requests get a reply within 1 hour.' },
               { icon: MessageCircle, title: 'Direct Messaging',   desc: 'Chat with pros before booking to align on price.' },
             ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-4 px-6 py-5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
-                  <Icon className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" strokeWidth={1.8} />
+              <div key={title} className="flex items-start gap-4 px-6 py-5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: '#1c382818' }}>
+                  <Icon className="w-[18px] h-[18px]" style={{ color: '#1c3828' }} strokeWidth={1.8} />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-bold text-[14px] text-white mb-0.5">{title}</p>
-                  <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{desc}</p>
+                  <p className="font-bold text-[14px] mb-0.5" style={{ color: '#1c3828' }}>{title}</p>
+                  <p className="text-[12px] leading-relaxed" style={{ color: '#1c382899' }}>{desc}</p>
                 </div>
               </div>
             ))}
@@ -591,8 +591,8 @@ export default function LandingPage() {
           <div className="px-6 py-5">
             <Link
               href="/browse"
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-white"
-              style={{ background: 'rgba(255,255,255,0.12)' }}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold"
+              style={{ background: '#1c382818', color: '#1c3828' }}
             >
               Find a Pro <ArrowRight className="w-4 h-4" />
             </Link>
