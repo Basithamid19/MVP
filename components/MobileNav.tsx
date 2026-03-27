@@ -15,9 +15,8 @@ export default function MobileNav() {
   const pathname = usePathname() ?? '';
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      {/* Frosted glass bar */}
-      <div className="mx-3 mb-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-border-dim shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+      <div className="bg-white/90 backdrop-blur-xl border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.10)] pb-safe">
         <div className="flex items-center justify-around px-1 py-1.5">
           {TABS.map(({ href, label, icon: Icon, active }) => {
             const isActive = active(pathname);
