@@ -1,5 +1,6 @@
 'use client';
 
+import { AladdinIcon } from '@/components/icons';
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -47,7 +48,7 @@ export default function RegisterPage() {
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 mb-12">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm tracking-tight">A</span>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
@@ -142,7 +143,7 @@ export default function RegisterPage() {
         <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
           <div className="text-center">
             <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <span className="text-white font-bold text-4xl">A</span>
+              <AladdinIcon className="w-12 h-12 text-white" />
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">
               {role === 'PROVIDER' ? 'Grow your business in Vilnius.' : 'The best pros in Vilnius.'}

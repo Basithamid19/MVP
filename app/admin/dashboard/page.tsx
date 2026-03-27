@@ -1,5 +1,6 @@
 'use client';
 
+import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect, useCallback } from 'react';
 import { signOut } from 'next-auth/react';
 import {
@@ -777,7 +778,7 @@ export default function AdminDashboard() {
         <div className="p-8">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">A</span>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </div>
@@ -825,7 +826,7 @@ export default function AdminDashboard() {
         <div className="p-6 flex items-center justify-between border-b border-border-dim">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">A</span>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <div>
               <span className="font-semibold text-base tracking-tight text-ink block">Aladdin</span>
@@ -883,7 +884,7 @@ export default function AdminDashboard() {
             <span className="font-semibold text-sm text-ink truncate">{activeModule.label}</span>
           </div>
           <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm shrink-0">
-            <span className="text-white font-bold text-xs tracking-tight">A</span>
+            <AladdinIcon className="w-4 h-4 text-white" />
           </div>
         </header>
 

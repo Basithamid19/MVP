@@ -1,5 +1,6 @@
 'use client';
 
+import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -87,7 +88,7 @@ export default function CustomerLayout({
         <div className="p-6 lg:p-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">A</span>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">Aladdin</span>
           </Link>
@@ -130,7 +131,7 @@ export default function CustomerLayout({
         <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-2 sm:py-3 flex items-center justify-between sm:justify-end sticky top-0 z-20">
           <Link href="/" className="md:hidden flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">A</span>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
