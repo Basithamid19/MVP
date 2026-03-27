@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import MobileNav from '@/components/MobileNav';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { useSession } from 'next-auth/react';
@@ -115,17 +116,15 @@ export default function LandingPage() {
   };
 
   const handleCategoryRequest = (slug: string) => {
-    const params = new URLSearchParams({ category: slug });
-    if (isUrgent) params.set('urgent', '1');
-    router.push(`/requests/new?${params.toString()}`);
+    router.push(`/category/${slug}`);
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white pb-safe overflow-x-hidden w-full">
 
       {/* ── Nav ── */}
-      <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
               <span className="text-white font-bold text-sm tracking-tight">D</span>
@@ -163,13 +162,13 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-18 sm:pt-0 sm:pb-28 lg:pt-0 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-8 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-14 lg:gap-20 items-start">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-8 lg:pt-12">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-20 items-start">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-8 lg:pt-12 w-full min-w-0">
 
               {/* Eyebrow */}
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
@@ -223,24 +222,24 @@ export default function LandingPage() {
               </form>
 
               {/* Quick category pills & Urgency */}
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider">Popular:</span>
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">Popular:</span>
                 {categories.slice(0, 3).map(cat => {
                   const Icon = cat.icon;
                   return (
                   <button
                     key={cat.slug}
                     onClick={() => handleCategoryRequest(cat.slug)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
                   >
                     <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                     {cat.name}
                   </button>
                 )})}
-                <div className="w-px h-4 bg-border-dim mx-1" />
+                <div className="w-px h-4 bg-border-dim mx-0.5 shrink-0" />
                 <button
                   onClick={() => setIsUrgent(!isUrgent)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
+                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
                     isUrgent
                       ? 'bg-caution-surface border-caution-edge text-caution'
                       : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
@@ -257,7 +256,7 @@ export default function LandingPage() {
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.1 }}
-              className="hidden lg:block relative"
+              className="hidden lg:block relative w-full min-w-0"
             >
               <div className="relative aspect-[4/5] rounded-hero overflow-hidden shadow-float border border-border-dim/50">
                 <img 
@@ -303,64 +302,72 @@ export default function LandingPage() {
 
       {/* ── Recent Bookings (logged-in only) ── */}
       {session && recentBookings.length > 0 && (
-        <section className="py-10 border-y border-border-dim bg-surface-alt">
+        <section className="py-6 sm:py-10 bg-white border-t border-border-dim">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-base font-bold text-ink">Recent bookings</h2>
-                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off.</p>
+                <h2 className="text-sm font-bold text-ink tracking-tight">Recent Bookings</h2>
+                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off</p>
               </div>
-              <Link href="/dashboard" className="text-xs font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+              <Link href="/dashboard" className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
                 View all <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {recentBookings.map(b => (
-                <Link
-                  key={b.id}
-                  href={`/bookings/${b.id}`}
-                  className="flex items-center gap-3 bg-white rounded-card border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
-                >
-                  <img
-                    src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
-                    alt=""
-                    className="w-10 h-10 rounded-input object-cover shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{b.provider?.user?.name}</p>
-                    <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? 'Service'}</p>
-                    <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
-                      <Clock className="w-3 h-3" />
-                      {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    </p>
-                  </div>
-                  <div className="shrink-0 flex flex-col items-end gap-1.5">
-                    <span className={`px-2 py-0.5 rounded-chip text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
-                      {b.status.replace('_', ' ')}
-                    </span>
-                    <ChevronRight className="w-4 h-4 text-border" />
-                  </div>
-                </Link>
-              ))}
+            <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
+              {recentBookings.map(b => {
+                const categoryName = b.quote?.request?.category?.name;
+                const providerName = b.provider?.user?.name;
+                return (
+                  <Link
+                    key={b.id}
+                    href={`/bookings/${b.id}`}
+                    className="flex items-center gap-3 bg-canvas rounded-xl border border-border-dim p-3.5 hover:border-brand/30 hover:bg-white hover:shadow-sm transition-all"
+                  >
+                    <div className="relative shrink-0">
+                      <img
+                        src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+                        alt={providerName ?? ''}
+                        className="w-11 h-11 rounded-xl object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-ink truncate capitalize">{providerName ?? 'Professional'}</p>
+                      <p className="text-xs text-ink-sub font-medium">{categoryName ?? 'Home Service'}</p>
+                      <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
+                        <Clock className="w-3 h-3 shrink-0" />
+                        {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-end gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
+                        {b.status.replace('_', ' ')}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-ink-dim" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
       )}
 
       {/* ── 2. Popular Services ── */}
-      <section className="py-24 bg-white">
+      <section className="py-10 lg:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-16">
+          {/* Header row — heading + View all on same line */}
+          <div className="flex items-start justify-between mb-1">
             <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Services</p>
-              <h2 className="text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
-              <p className="text-ink-sub mt-2">Whatever you need, we have a pro for that.</p>
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
+              <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
             </div>
-            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
+            <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
               View all <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-y-12 gap-x-4 justify-items-center">
+          <p className="text-sm text-ink-sub mb-6 lg:mb-12">Whatever you need, we have a pro for that.</p>
+
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-6 lg:gap-x-4 lg:gap-y-12 justify-items-center">
             {categories.map((cat, idx) => {
               const Icon = cat.icon;
               return (
@@ -370,22 +377,19 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 viewport={{ once: true }}
+                className="w-full flex justify-center"
               >
                 <button
                   onClick={() => handleCategoryRequest(cat.slug)}
-                  className="group flex flex-col items-center cursor-pointer outline-none"
+                  className="group flex flex-col items-center cursor-pointer outline-none w-full"
                 >
-                  <div className="relative w-20 h-20 flex items-center justify-center mb-3">
-                    {/* Soft organic shape or rounded rect */}
-                    <div className="absolute inset-0 bg-brand-muted rounded-3xl transition-all duration-300 ease-out" />
-                    <Icon className="w-8 h-8 text-brand relative z-10 transition-colors duration-300" strokeWidth={1.5} />
+                  <div className="relative w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-2 lg:mb-3">
+                    <div className="absolute inset-0 bg-brand-muted rounded-2xl lg:rounded-3xl transition-all duration-300 ease-out group-active:scale-95" />
+                    <Icon className="w-6 h-6 lg:w-8 lg:h-8 text-brand relative z-10" strokeWidth={1.5} />
                   </div>
-                  <div className="relative pb-2">
-                    <span className="text-sm font-bold text-brand transition-colors duration-300">
-                      {cat.name}
-                    </span>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] w-0 group-hover:w-full bg-brand transition-all duration-300 rounded-full" />
-                  </div>
+                  <span className="text-xs lg:text-sm font-bold text-brand leading-tight text-center">
+                    {cat.name}
+                  </span>
                 </button>
               </motion.div>
             )})}
@@ -441,277 +445,239 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4. Top Rated Professionals ── */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
-              <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
-              <p className="text-ink-sub mt-2">Verified experts trusted by Vilnius homeowners.</p>
-            </div>
-            <Link href="/browse" className="text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
-              Browse all <ArrowRight className="w-4 h-4" />
-            </Link>
+      <section className="py-10 lg:py-24 bg-canvas overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:mb-12 flex items-end justify-between">
+          <div>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
+            <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
           </div>
+          <Link href="/browse" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-dark transition-colors">
+            See all <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
+        <div className="flex gap-4 lg:gap-6 overflow-x-auto scrollbar-none snap-x snap-mandatory px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-8">
           {prosLoading ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="bg-surface-alt rounded-panel border border-border-dim p-6 animate-pulse shadow-sm">
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-14 h-14 bg-white rounded-full shrink-0" />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-4 bg-white rounded w-24" />
-                      <div className="h-3 bg-border-dim rounded w-16" />
-                    </div>
-                  </div>
-                  <div className="space-y-2 mb-6">
-                    <div className="h-3 bg-white rounded w-28" />
-                    <div className="h-3 bg-border-dim rounded w-20" />
-                  </div>
-                  <div className="pt-4 border-t border-border-dim flex justify-between mt-auto">
-                    <div className="h-3 bg-border-dim rounded w-16" />
-                    <div className="h-3 bg-white rounded w-10" />
-                  </div>
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="shrink-0 w-[75vw] sm:w-[300px] snap-start rounded-panel overflow-hidden animate-pulse bg-white shadow-sm border border-border-dim">
+                <div className="h-48 bg-surface-alt" />
+                <div className="p-5 space-y-3">
+                  <div className="h-5 bg-surface-alt rounded w-32" />
+                  <div className="h-4 bg-surface-alt rounded w-20" />
+                  <div className="h-10 bg-surface-alt rounded-input mt-4 w-full" />
                 </div>
-              ))}
-            </div>
+              </div>
+            ))
           ) : topPros.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {topPros.map((pro, idx) => (
-                <motion.div
+            topPros.map((pro) => {
+              const responseTime = pro.responseTime
+                ? pro.responseTime.replace(/^usually responds in\s*/i, '')
+                : null;
+              const categoryName = pro.categories?.[0]?.name ?? 'Professional';
+              return (
+                <Link
                   key={pro.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                  viewport={{ once: true }}
+                  href={`/providers/${pro.id}`}
+                  className="group shrink-0 w-[75vw] sm:w-[300px] snap-start rounded-panel overflow-hidden bg-white shadow-sm hover:shadow-elevated border border-border-dim hover:border-brand/30 transition-all flex flex-col"
                 >
-                  <Link
-                    href={`/providers/${pro.id}`}
-                    className="group block bg-white rounded-panel border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-elevated hover:-translate-y-1 transition-all flex flex-col h-full overflow-hidden"
-                  >
-                    <div className="p-6 flex-1">
-                      <div className="flex items-start justify-between mb-5">
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-surface-alt rounded-2xl overflow-hidden shrink-0 border border-border-dim">
-                            <img
-                              src={pro.user?.image || `https://i.pravatar.cc/150?u=${pro.id}`}
-                              alt={pro.user?.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-bold text-lg text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
-                            <p className="text-sm text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
-                          </div>
-                        </div>
-                        {pro.isVerified && (
-                          <div className="w-6 h-6 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
-                            <ShieldCheck className="w-3.5 h-3.5 text-trust" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="space-y-2.5 mb-6">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 font-bold text-ink text-sm">
-                            <Star className="w-4 h-4 text-brand fill-current" />
-                            {pro.ratingAvg?.toFixed(1) ?? '—'}
-                          </div>
-                          <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
-                        </div>
-                        {pro.responseTime && (
-                          <div className="flex items-center gap-1.5 text-xs text-ink-sub">
-                            <Clock className="w-3.5 h-3.5 text-ink-dim" /> Usually responds in {pro.responseTime}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="px-6 py-4 bg-surface-alt border-t border-border-dim flex items-center justify-between mt-auto">
-                      {pro.offerings?.[0] ? (
-                        <div className="text-sm font-medium text-ink-dim">
-                          From <span className="font-bold text-ink">€{pro.offerings[0].price}</span>
-                        </div>
-                      ) : (
-                        <div className="text-sm font-medium text-ink-dim">Price on request</div>
-                      )}
-                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
-                        View <ChevronRight className="w-4 h-4" />
+                  {/* Photo section */}
+                  <div className="relative h-48 bg-surface-alt shrink-0 overflow-hidden">
+                    <img
+                      src={pro.user?.image || `https://i.pravatar.cc/300?u=${pro.id}`}
+                      alt={pro.user?.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
+                    
+                    {/* Category pill */}
+                    <div className="absolute top-4 left-4">
+                      <span className="text-[10px] font-bold text-white bg-ink/40 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
+                        {categoryName}
                       </span>
                     </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+
+                    {/* Verified badge */}
+                    {pro.isVerified && (
+                      <div className="absolute top-4 right-4 w-8 h-8 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center shadow-sm">
+                        <ShieldCheck className="w-4 h-4 text-trust" />
+                      </div>
+                    )}
+
+                    {/* Name & Rating */}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <p className="font-bold text-xl text-white leading-tight truncate mb-1.5">{pro.user?.name}</p>
+                      <div className="flex items-center gap-1.5">
+                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-sm font-bold text-white">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
+                        <span className="text-xs text-white/70">· {pro.completedJobs ?? 0} jobs</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Info section */}
+                  <div className="p-5 flex flex-col flex-1 bg-white">
+                    {responseTime && (
+                      <div className="flex items-center gap-2 text-xs font-medium text-ink-sub mb-5">
+                        <Clock className="w-4 h-4 text-ink-dim shrink-0" />
+                        <span>Responds in {responseTime}</span>
+                      </div>
+                    )}
+                    <div className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white text-sm font-bold py-3.5 rounded-input group-hover:bg-brand-dark transition-colors">
+                      View Profile <ChevronRight className="w-4 h-4" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })
           ) : (
-            <>
-              {/* Category browse fallback */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                  { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
-                  { name: 'Plumbers',     slug: 'plumber',     icon: Wrench, desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
-                  { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon, desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
-                  { name: 'Handymen',     slug: 'handyman',    icon: Hammer, desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
-                ].map((cat, idx) => {
-                  const Icon = cat.icon;
-                  return (
-                  <motion.div
-                    key={cat.slug}
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.08 }}
-                    viewport={{ once: true }}
-                  >
-                    <Link
-                      href={`/browse?category=${cat.slug}`}
-                      className="group block bg-white rounded-panel border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-elevated hover:-translate-y-1 transition-all flex flex-col h-full overflow-hidden"
-                    >
-                      <div className="p-6 flex-1">
-                        <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm`}>
-                          <Icon className="w-6 h-6" strokeWidth={1.5} />
-                        </div>
-                        <p className="font-bold text-lg text-ink mb-1 group-hover:text-brand transition-colors">{cat.name}</p>
-                        <p className="text-sm text-ink-sub mb-2">{cat.desc}</p>
-                      </div>
-                      <div className="px-6 py-4 bg-surface-alt border-t border-border-dim flex items-center justify-between mt-auto">
-                        <span className="text-sm font-medium text-ink-dim">Browse pros</span>
-                        <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
-                          View <ChevronRight className="w-4 h-4" />
-                        </span>
-                      </div>
-                    </Link>
-                  </motion.div>
-                )})}
-              </div>
-            </>
+            [
+              { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon },
+              { name: 'Plumbers',     slug: 'plumber',     icon: Wrench },
+              { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon },
+              { name: 'Handymen',     slug: 'handyman',    icon: Hammer },
+            ].map((cat) => {
+              const Icon = cat.icon;
+              return (
+                <Link
+                  key={cat.slug}
+                  href={`/browse?category=${cat.slug}`}
+                  className="group shrink-0 w-[75vw] sm:w-[300px] snap-start rounded-panel overflow-hidden bg-white shadow-sm hover:shadow-elevated border border-border-dim p-6 flex flex-col transition-all"
+                >
+                  <div className="w-16 h-16 bg-surface-alt rounded-2xl flex items-center justify-center mb-5 shrink-0 group-hover:scale-110 transition-transform">
+                    <Icon className="w-8 h-8 text-ink-sub" strokeWidth={1.5} />
+                  </div>
+                  <p className="font-bold text-lg text-ink mb-2">{cat.name}</p>
+                  <p className="text-sm text-ink-sub mb-6">Browse verified professionals in Vilnius.</p>
+                  <div className="mt-auto pt-5 border-t border-border-dim">
+                    <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
+                      Browse pros <ChevronRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })
           )}
+        </div>
+        
+        {/* Mobile See All link */}
+        <div className="px-4 sm:hidden mt-2">
+          <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
+            See all pros <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Image side */}
-            <div className="relative aspect-square bg-canvas rounded-hero overflow-hidden shadow-float border border-border-dim">
-              <img
-                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop"
-                alt="Vilnius Professional"
-                className="object-cover w-full h-full transition-all duration-700"
-              />
-              {/* Floating testimonial overlay */}
-              <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-panel shadow-float border border-border-dim">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex -space-x-2">
-                    {[11, 12, 13].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="text-ink font-bold text-sm">4.9/5</span>
-                    <span className="text-xs text-ink-dim ml-1">from 2,400+ reviews</span>
-                  </div>
-                </div>
-                <p className="text-sm font-medium text-ink leading-relaxed">
-                  &ldquo;Found an amazing electrician in just 5 minutes. Highly recommend!&rdquo;
-                </p>
-                <p className="text-xs text-ink-dim mt-2">— Anna K., Vilnius</p>
-              </div>
-            </div>
+      <section className="py-10 lg:py-16 bg-canvas">
+        <div className="mx-4 rounded-3xl overflow-hidden" style={{ background: '#cdd9d0' }}>
+          {/* Header */}
+          <div className="px-6 pt-7 pb-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: '#1c382880' }}>Why Dispatch</p>
+            <h2 className="text-[24px] font-bold tracking-tight leading-tight" style={{ color: '#1c3828' }}>Built for trust,<br />built for Vilnius.</h2>
+          </div>
 
-            {/* Content side */}
-            <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why Dispatch</p>
-              <h2 className="text-4xl font-bold tracking-tight text-ink mb-10">
-                Built for trust, <br/>built for Vilnius.
-              </h2>
-              <div className="grid sm:grid-cols-2 gap-5">
-                {[
-                  {
-                    icon: BadgeCheck,
-                    title: 'Verified Experts',
-                    desc: 'All professionals are ID-verified and trade-certified before joining the platform.',
-                  },
-                  {
-                    icon: Star,
-                    title: 'Real Reviews Only',
-                    desc: 'Only customers with completed bookings can leave reviews — 100% authentic.',
-                  },
-                  {
-                    icon: Zap,
-                    title: 'Fast Response',
-                    desc: 'Local pros ready to help. Most requests get a reply within 1 hour.',
-                  },
-                  {
-                    icon: MessageCircle,
-                    title: 'Direct Messaging',
-                    desc: 'Chat with professionals before booking to align on scope and price.',
-                  },
-                ].map(({ icon: Icon, title, desc }) => (
-                  <div key={title} className="bg-surface-alt rounded-[2rem] p-8 border border-border-dim shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm text-brand shrink-0 border border-border-dim">
-                      <Icon className="w-6 h-6" strokeWidth={1.5} />
-                    </div>
-                    <h3 className="font-bold text-ink text-lg mb-3">{title}</h3>
-                    <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
-                  </div>
-                ))}
+          {/* Feature rows */}
+          <div className="divide-y" style={{ borderColor: '#1c382815' }}>
+            {[
+              { icon: BadgeCheck,    title: 'Verified Experts',   desc: 'Every pro is ID-verified and trade-certified before joining.' },
+              { icon: Star,          title: 'Real Reviews Only',  desc: 'Reviews only from customers with completed bookings.' },
+              { icon: Zap,           title: 'Fast Response',      desc: 'Most requests get a reply within 1 hour.' },
+              { icon: MessageCircle, title: 'Direct Messaging',   desc: 'Chat with pros before booking to align on price.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-4 px-6 py-5">
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: '#1c382818' }}>
+                  <Icon className="w-[18px] h-[18px]" style={{ color: '#1c3828' }} strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-[14px] mb-0.5" style={{ color: '#1c3828' }}>{title}</p>
+                  <p className="text-[12px] leading-relaxed" style={{ color: '#1c382899' }}>{desc}</p>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="px-6 py-5">
+            <Link
+              href="/browse"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold"
+              style={{ background: '#1c382818', color: '#1c3828' }}
+            >
+              Find a Pro <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
 
+
       {/* ── 6. Testimonials ── */}
-      <section className="py-24 bg-surface-alt">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer stories</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-3">What Customers Say</h2>
-            <p className="text-ink-sub">Real reviews from real homeowners in Vilnius.</p>
+      <section className="py-10 lg:py-16 bg-white overflow-hidden">
+        <div className="flex items-center justify-between px-4 sm:px-6 mb-6">
+          <div>
+            <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Customer Stories</p>
+            <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">What Customers Say</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, idx) => (
-              <motion.div
+        </div>
+
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
+          {TESTIMONIALS.map((t, idx) => {
+            // Exact Apple Mac mini palette: muted rose, dark slate, light silver
+            const palettes = [
+              { bg: '#dfc8cc', fg: '#3d1520' },          // muted rose/pink
+              { bg: '#636577', fg: '#ffffff' },           // dark slate grey
+              { bg: '#d5d5d7', fg: '#1d1d1f' },          // cool light silver
+            ];
+            const { bg, fg } = palettes[idx % palettes.length];
+            return (
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-panel border border-border-dim p-8 shadow-sm flex flex-col hover:shadow-elevated transition-shadow"
+                className="shrink-0 w-[82vw] max-w-[300px] snap-start rounded-3xl p-6 flex flex-col"
+                style={{ background: bg, minHeight: 370 }}
               >
-                {/* Quote Icon */}
-                <div className="text-brand/20 mb-4">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.017 18L14.017 10.609C14.017 4.905 17.748 1.039 23 0L23.995 2.151C21.563 3.068 20 5.789 20 8H24V18H14.017ZM0 18V10.609C0 4.905 3.748 1.038 9 0L9.996 2.151C7.563 3.068 6 5.789 6 8H9.983L9.983 18L0 18Z" />
-                  </svg>
+                {/* Top row: avatar + stars */}
+                <div className="flex items-center justify-between mb-5">
+                  <div
+                    className="w-16 h-16 rounded-2xl overflow-hidden shrink-0"
+                    style={{ border: `2px solid ${fg}25` }}
+                  >
+                    <img
+                      src={`https://i.pravatar.cc/120?img=${t.avatar}`}
+                      alt={t.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <svg key={i} width="15" height="15" viewBox="0 0 24 24" fill={fg} opacity={0.9}>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
+                  </div>
                 </div>
 
+                {/* Large decorative quote mark */}
+                <svg width="30" height="24" viewBox="0 0 28 22" fill={fg} opacity={0.12} className="mb-3 shrink-0">
+                  <path d="M0 22V13.364C0 5.727 4.667 1.212 14 0l1.167 2.182C11.083 3.576 9 6.788 9 10h5V22H0ZM16 22V13.364C16 5.727 20.667 1.212 30 0l1.167 2.182C27.083 3.576 25 6.788 25 10h5V22H16Z" />
+                </svg>
+
                 {/* Quote */}
-                <p className="text-ink text-base leading-relaxed flex-1 mb-8 font-medium">
-                  "{t.quote}"
+                <p
+                  className="text-[14px] font-medium leading-relaxed flex-1 mb-5"
+                  style={{ color: fg }}
+                >
+                  {t.quote}
                 </p>
 
                 {/* Author */}
-                <div className="flex items-center gap-4 pt-6 border-t border-border-dim">
-                  <div className="w-12 h-12 rounded-full bg-surface-alt overflow-hidden shrink-0 shadow-sm border border-border-dim">
-                    <img src={`https://i.pravatar.cc/100?img=${t.avatar}`} alt={t.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-sm text-ink flex items-center gap-1.5">
-                      {t.name}
-                      <CheckCircle2 className="w-3.5 h-3.5 text-trust" />
-                    </p>
-                    <p className="text-xs text-ink-dim mt-0.5">{t.city} · {t.service}</p>
-                  </div>
+                <div className="pt-4" style={{ borderTop: `1px solid ${fg}22` }}>
+                  <p className="text-sm font-bold" style={{ color: fg }}>{t.name}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: fg, opacity: 0.55 }}>
+                    {t.service} · {t.city}
+                  </p>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -860,6 +826,8 @@ export default function LandingPage() {
 
         </div>
       </footer>
+
+      {session && <MobileNav />}
     </div>
   );
 }
