@@ -559,74 +559,47 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-10 lg:py-16 bg-white overflow-hidden">
-        <div className="px-4 sm:px-6 mb-6">
-          <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Why Dispatch</p>
-          <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">Built for trust,<br />built for Vilnius.</h2>
-        </div>
+      <section className="py-10 lg:py-16 bg-canvas">
+        <div className="mx-4 rounded-3xl overflow-hidden" style={{ background: '#1a3828' }}>
+          {/* Header */}
+          <div className="px-6 pt-7 pb-5">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>Why Dispatch</p>
+            <h2 className="text-[24px] font-bold tracking-tight text-white leading-tight">Built for trust,<br />built for Vilnius.</h2>
+          </div>
 
-        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
-          {([
-            {
-              icon: BadgeCheck,
-              num: '01',
-              title: 'Verified Experts',
-              desc: 'Every professional is ID-verified and trade-certified before joining.',
-              bg: '#cdd9d0',
-              fg: '#1c3828',
-            },
-            {
-              icon: Star,
-              num: '02',
-              title: 'Real Reviews Only',
-              desc: 'Reviews come only from customers with completed bookings.',
-              bg: '#dfd8c8',
-              fg: '#3a2c10',
-            },
-            {
-              icon: Zap,
-              num: '03',
-              title: 'Fast Response',
-              desc: 'Most requests get a pro reply within 1 hour.',
-              bg: '#c5d0dc',
-              fg: '#1a2f42',
-            },
-            {
-              icon: MessageCircle,
-              num: '04',
-              title: 'Direct Messaging',
-              desc: 'Chat with pros before booking to align on scope and price.',
-              bg: '#d4cede',
-              fg: '#2c1f44',
-            },
-          ] as const).map(({ icon: Icon, num, title, desc, bg, fg }) => (
-            <div
-              key={title}
-              className="shrink-0 w-[72vw] max-w-[250px] snap-start rounded-3xl p-5 flex flex-col justify-between overflow-hidden relative"
-              style={{ background: bg, minHeight: 210 }}
-            >
-              {/* Ghost number */}
-              <span
-                className="absolute top-2 right-4 text-[72px] font-black leading-none select-none pointer-events-none"
-                style={{ color: fg, opacity: 0.07 }}
-              >{num}</span>
-
-              {/* Icon — raw, no container box */}
-              <Icon
-                className="w-8 h-8 mb-auto"
-                style={{ color: fg }}
-                strokeWidth={1.6}
-              />
-
-              {/* Text */}
-              <div className="pt-5">
-                <h3 className="font-bold text-[15px] leading-tight mb-1.5" style={{ color: fg }}>{title}</h3>
-                <p className="text-[12px] leading-relaxed" style={{ color: fg, opacity: 0.65 }}>{desc}</p>
+          {/* Feature rows */}
+          <div className="divide-y" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+            {[
+              { icon: BadgeCheck,    title: 'Verified Experts',   desc: 'Every pro is ID-verified and trade-certified before joining.' },
+              { icon: Star,          title: 'Real Reviews Only',  desc: 'Reviews only from customers with completed bookings.' },
+              { icon: Zap,           title: 'Fast Response',      desc: 'Most requests get a reply within 1 hour.' },
+              { icon: MessageCircle, title: 'Direct Messaging',   desc: 'Chat with pros before booking to align on price.' },
+            ].map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="flex items-start gap-4 px-6 py-5" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                  <Icon className="w-4.5 h-4.5 text-white w-[18px] h-[18px]" strokeWidth={1.8} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-[14px] text-white mb-0.5">{title}</p>
+                  <p className="text-[12px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>{desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="px-6 py-5">
+            <Link
+              href="/browse"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-white"
+              style={{ background: 'rgba(255,255,255,0.12)' }}
+            >
+              Find a Pro <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
+
 
       {/* ── 6. Testimonials ── */}
       <section className="py-10 lg:py-16 bg-white overflow-hidden">
