@@ -150,7 +150,7 @@ export default function LandingPage() {
   };
 
   const handleCategoryRequest = (slug: string) => {
-    router.push(`/category/${slug}`);
+    router.push(`/requests/new?category=${slug}`);
   };
 
   return (

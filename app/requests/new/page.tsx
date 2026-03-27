@@ -251,6 +251,7 @@ function NewRequestContent() {
                           subcategorySlug: item.slug,
                           description: f.description || item.label,
                         }));
+                        setStep(3);
                       }}
                       className={`p-4 rounded-[20px] border-2 text-left transition-all flex flex-col gap-3 ${
                         selected
