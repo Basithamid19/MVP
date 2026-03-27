@@ -98,13 +98,13 @@ const TESTIMONIALS = [
   },
 ];
 
-const SERVICE_CARD_STYLES = [
-  { bg: '#c5d0dc', fg: '#1a2d3d', fgMuted: 'rgba(26,45,61,0.55)', iconBg: 'rgba(26,45,61,0.12)', desc: 'Leaks, pipes & boilers' },
-  { bg: '#dfc8cc', fg: '#3d1520', fgMuted: 'rgba(61,21,32,0.55)', iconBg: 'rgba(61,21,32,0.12)', desc: 'Wiring & fuse boxes' },
-  { bg: '#cdd9d0', fg: '#1c3828', fgMuted: 'rgba(28,56,40,0.55)', iconBg: 'rgba(28,56,40,0.12)', desc: 'Home, deep & end-of-tenancy' },
-  { bg: '#dfd8c8', fg: '#3d2e1c', fgMuted: 'rgba(61,46,28,0.55)', iconBg: 'rgba(61,46,28,0.12)', desc: 'Assembly & repairs' },
-  { bg: '#d4cede', fg: '#2d1f38', fgMuted: 'rgba(45,31,56,0.55)', iconBg: 'rgba(45,31,56,0.12)', desc: 'Packing & transport' },
-  { bg: '#d5d5d7', fg: '#1d1d1f', fgMuted: 'rgba(29,29,31,0.55)', iconBg: 'rgba(29,29,31,0.12)', desc: 'Interior & exterior' },
+const SERVICE_CARD_DESCS = [
+  'Leaks, pipes & boilers',
+  'Wiring & fuse boxes',
+  'Home, deep & end-of-tenancy',
+  'Assembly & repairs',
+  'Packing & transport',
+  'Interior & exterior',
 ];
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
@@ -403,24 +403,23 @@ export default function LandingPage() {
         <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1 lg:hidden">
           {categories.map((cat, idx) => {
             const Icon = cat.icon;
-            const s = SERVICE_CARD_STYLES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left active:scale-[0.97] transition-transform"
-                style={{ background: s.bg, minHeight: '192px' }}
+                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left bg-white border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
+                style={{ minHeight: '192px' }}
               >
-                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg }}>
-                  <Icon className="w-5 h-5" style={{ color: s.fg }} strokeWidth={1.5} />
+                <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
                 </div>
                 <div className="mt-auto pt-4 w-full">
-                  <p className="text-sm font-bold leading-tight" style={{ color: s.fg }}>{cat.name}</p>
-                  <p className="text-[11px] mt-1 leading-snug" style={{ color: s.fgMuted }}>{s.desc}</p>
+                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
+                  <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
-                <div className="mt-3 flex items-center gap-0.5">
-                  <span className="text-[11px] font-semibold" style={{ color: s.fgMuted }}>Explore</span>
-                  <ChevronRight className="w-3 h-3" style={{ color: s.fgMuted }} />
+                <div className="mt-3 flex items-center gap-0.5 text-brand">
+                  <span className="text-[11px] font-semibold">Explore</span>
+                  <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
             );
@@ -431,24 +430,23 @@ export default function LandingPage() {
         <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
             const Icon = cat.icon;
-            const s = SERVICE_CARD_STYLES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-3xl p-6 flex flex-col items-start text-left hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200"
-                style={{ background: s.bg, minHeight: '220px' }}
+                className="rounded-3xl p-6 flex flex-col items-start text-left bg-white border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                style={{ minHeight: '220px' }}
               >
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg }}>
-                  <Icon className="w-6 h-6" style={{ color: s.fg }} strokeWidth={1.5} />
+                <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                  <Icon className="w-6 h-6 text-brand" strokeWidth={1.5} />
                 </div>
                 <div className="mt-auto pt-5 w-full">
-                  <p className="text-sm font-bold leading-tight" style={{ color: s.fg }}>{cat.name}</p>
-                  <p className="text-[11px] mt-1 leading-snug" style={{ color: s.fgMuted }}>{s.desc}</p>
+                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
+                  <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
-                <div className="mt-3 flex items-center gap-0.5">
-                  <span className="text-[11px] font-semibold" style={{ color: s.fgMuted }}>Explore</span>
-                  <ChevronRight className="w-3 h-3" style={{ color: s.fgMuted }} />
+                <div className="mt-3 flex items-center gap-0.5 text-brand">
+                  <span className="text-[11px] font-semibold">Explore</span>
+                  <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
             );
