@@ -559,60 +559,69 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-10 lg:py-16 bg-canvas overflow-hidden">
+      <section className="py-10 lg:py-16 bg-white overflow-hidden">
         <div className="px-4 sm:px-6 mb-6">
           <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Why Dispatch</p>
           <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">Built for trust,<br />built for Vilnius.</h2>
         </div>
 
         <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
-          {[
+          {([
             {
               icon: BadgeCheck,
               num: '01',
               title: 'Verified Experts',
               desc: 'Every professional is ID-verified and trade-certified before joining.',
-              accent: 'from-brand to-emerald-700',
+              bg: '#cdd9d0',
+              fg: '#1c3828',
             },
             {
               icon: Star,
               num: '02',
               title: 'Real Reviews Only',
               desc: 'Reviews come only from customers with completed bookings.',
-              accent: 'from-amber-500 to-orange-600',
+              bg: '#dfd8c8',
+              fg: '#3a2c10',
             },
             {
               icon: Zap,
               num: '03',
               title: 'Fast Response',
               desc: 'Most requests get a pro reply within 1 hour.',
-              accent: 'from-blue-600 to-indigo-700',
+              bg: '#c5d0dc',
+              fg: '#1a2f42',
             },
             {
               icon: MessageCircle,
               num: '04',
               title: 'Direct Messaging',
               desc: 'Chat with pros before booking to align on scope and price.',
-              accent: 'from-violet-600 to-purple-700',
+              bg: '#d4cede',
+              fg: '#2c1f44',
             },
-          ].map(({ icon: Icon, num, title, desc, accent }) => (
+          ] as const).map(({ icon: Icon, num, title, desc, bg, fg }) => (
             <div
               key={title}
-              className={`shrink-0 w-[72vw] max-w-[250px] snap-start rounded-3xl p-5 bg-gradient-to-br ${accent} flex flex-col justify-between overflow-hidden relative`}
-              style={{ minHeight: 200 }}
+              className="shrink-0 w-[72vw] max-w-[250px] snap-start rounded-3xl p-5 flex flex-col justify-between overflow-hidden relative"
+              style={{ background: bg, minHeight: 210 }}
             >
-              {/* Background number */}
-              <span className="absolute top-3 right-4 text-6xl font-black text-white/10 leading-none select-none">{num}</span>
+              {/* Ghost number */}
+              <span
+                className="absolute top-2 right-4 text-[72px] font-black leading-none select-none pointer-events-none"
+                style={{ color: fg, opacity: 0.07 }}
+              >{num}</span>
 
-              {/* Icon */}
-              <div className="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4 shrink-0">
-                <Icon className="w-5.5 h-5.5 text-white w-[22px] h-[22px]" strokeWidth={1.8} />
-              </div>
+              {/* Icon — raw, no container box */}
+              <Icon
+                className="w-8 h-8 mb-auto"
+                style={{ color: fg }}
+                strokeWidth={1.6}
+              />
 
               {/* Text */}
-              <div>
-                <h3 className="font-bold text-[15px] text-white mb-1.5 leading-tight">{title}</h3>
-                <p className="text-[12px] text-white/70 leading-relaxed">{desc}</p>
+              <div className="pt-5">
+                <h3 className="font-bold text-[15px] leading-tight mb-1.5" style={{ color: fg }}>{title}</h3>
+                <p className="text-[12px] leading-relaxed" style={{ color: fg, opacity: 0.65 }}>{desc}</p>
               </div>
             </div>
           ))}
