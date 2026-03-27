@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
+import { avatarUrl } from '@/lib/avatar';
 import {
   ArrowLeft, Star, ShieldCheck, Clock, MapPin,
   CheckCircle2, XCircle, Loader2, MessageSquare,
@@ -206,7 +207,7 @@ export default function QuoteInboxPage() {
                       )}
                       <div className="flex items-start gap-4 mb-4">
                         <img
-                          src={p?.user?.image || `https://i.pravatar.cc/80?u=${p?.id}`}
+                          src={p?.user?.image || avatarUrl(p?.user?.name, 150)}
                           alt={p?.user?.name}
                           className="w-12 h-12 rounded-card object-cover shrink-0"
                         />

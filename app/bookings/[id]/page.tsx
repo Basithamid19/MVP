@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
+import { avatarUrl } from '@/lib/avatar';
 import {
   ArrowLeft, Star, ShieldCheck, MapPin, Calendar,
   Clock, Phone, MessageSquare, CheckCircle2, XCircle,
@@ -242,7 +243,7 @@ export default function BookingPage() {
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Your Pro</p>
           <div className="flex items-start gap-4 mb-4">
             <img
-              src={provider?.user?.image || `https://i.pravatar.cc/80?u=${provider?.id}`}
+              src={provider?.user?.image || avatarUrl(provider?.user?.name, 150)}
               alt={provider?.user?.name}
               className="w-14 h-14 rounded-card object-cover shrink-0"
             />

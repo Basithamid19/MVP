@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 import { useSession } from 'next-auth/react';
+import { avatarUrl } from '@/lib/avatar';
 
 const CATEGORIES = [
   { label: 'All', value: '' },
@@ -139,7 +140,7 @@ function BrowseContent() {
                 {/* Avatar */}
                 <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-border-dim bg-surface-alt">
                   <img
-                    src={p.user?.image || `https://i.pravatar.cc/150?u=${p.id}`}
+                    src={p.user?.image || avatarUrl(p.user?.name, 150)}
                     alt={p.user?.name}
                     className="w-full h-full object-cover"
                   />

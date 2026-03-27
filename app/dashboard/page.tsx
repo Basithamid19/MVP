@@ -11,6 +11,7 @@ import {
   Wrench, Hammer, Truck, Paintbrush
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
+import { avatarUrl } from '@/lib/avatar';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 
@@ -174,7 +175,7 @@ function OrdersList({ requests }: { requests: any[] }) {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-surface-alt rounded-xl p-4 border border-border-dim">
                     <div className="flex items-center gap-3">
                       <img
-                        src={topPro.user?.image || `https://i.pravatar.cc/40?u=${topQuote?.providerId}`}
+                        src={topPro.user?.image || avatarUrl(topPro.user?.name, 80)}
                         alt={topPro.user?.name}
                         className="w-10 h-10 rounded-full object-cover shadow-sm bg-white"
                       />
@@ -437,7 +438,7 @@ export default function DashboardPage() {
                       className="flex items-center gap-4 group"
                     >
                       <img
-                        src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
+                        src={pro.user?.image || avatarUrl(pro.user?.name, 100)}
                         alt={pro.user?.name}
                         className="w-12 h-12 rounded-full object-cover shadow-sm bg-surface-alt group-hover:ring-2 ring-brand/20 transition-all"
                       />

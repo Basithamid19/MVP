@@ -14,6 +14,7 @@ import {
   Wrench, Hammer, Truck, Paintbrush, Zap
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
+import { avatarUrl } from '@/lib/avatar';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 
 /* ─── Static data ─── */
@@ -362,7 +363,7 @@ export default function LandingPage() {
                   >
                     <div className="relative shrink-0">
                       <img
-                        src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+                        src={b.provider?.user?.image || avatarUrl(b.provider?.user?.name, 80)}
                         alt={providerName ?? ''}
                         className="w-11 h-11 rounded-xl object-cover"
                       />
@@ -544,7 +545,7 @@ export default function LandingPage() {
                   {/* Photo section */}
                   <div className="relative h-48 bg-surface-alt shrink-0 overflow-hidden">
                     <img
-                      src={pro.user?.image || `https://i.pravatar.cc/300?u=${pro.id}`}
+                      src={pro.user?.image || avatarUrl(pro.user?.name, 300)}
                       alt={pro.user?.name}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

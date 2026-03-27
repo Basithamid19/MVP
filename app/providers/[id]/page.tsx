@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
+import { avatarUrl } from '@/lib/avatar';
 
 const AVAILABILITY: Record<string, { slots: string[]; label: string }> = {
   Mon: { slots: ['morning', 'afternoon'], label: 'Mon' },
@@ -114,7 +115,7 @@ export default function ProviderProfilePage() {
           <div className="bg-white p-8 rounded-panel border border-border-dim shadow-card">
             <div className="flex flex-col md:flex-row gap-8 items-start">
               <div className="w-32 h-32 bg-surface-alt rounded-panel overflow-hidden shrink-0">
-                <img src={provider.user.image || `https://i.pravatar.cc/300?u=${provider.id}`} alt={provider.user.name} className="w-full h-full object-cover" />
+                <img src={provider.user.image || avatarUrl(provider.user.name, 300)} alt={provider.user.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2 flex-wrap">

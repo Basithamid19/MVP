@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Loader2, Clock, Star, FileText, Search } from 'lucide-react';
+import { avatarUrl } from '@/lib/avatar';
 
 const STATUS_STYLES: Record<string, string> = {
   SCHEDULED:   'bg-info-surface text-info',
@@ -97,7 +98,7 @@ function BookingCard({ b }: { b: any }) {
       className="flex items-start gap-3 bg-white rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
     >
       <img
-        src={b.provider?.user?.image || `https://i.pravatar.cc/60?u=${b.providerId}`}
+        src={b.provider?.user?.image || avatarUrl(b.provider?.user?.name, 80)}
         alt={b.provider?.user?.name}
         className="w-11 h-11 rounded-xl object-cover shrink-0"
       />
