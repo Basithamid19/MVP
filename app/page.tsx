@@ -98,6 +98,15 @@ const TESTIMONIALS = [
   },
 ];
 
+const SERVICE_CARD_STYLES = [
+  { bg: '#c5d0dc', fg: '#1a2d3d', fgMuted: 'rgba(26,45,61,0.55)', iconBg: 'rgba(26,45,61,0.12)', desc: 'Leaks, pipes & boilers' },
+  { bg: '#dfc8cc', fg: '#3d1520', fgMuted: 'rgba(61,21,32,0.55)', iconBg: 'rgba(61,21,32,0.12)', desc: 'Wiring & fuse boxes' },
+  { bg: '#cdd9d0', fg: '#1c3828', fgMuted: 'rgba(28,56,40,0.55)', iconBg: 'rgba(28,56,40,0.12)', desc: 'Home, deep & end-of-tenancy' },
+  { bg: '#dfd8c8', fg: '#3d2e1c', fgMuted: 'rgba(61,46,28,0.55)', iconBg: 'rgba(61,46,28,0.12)', desc: 'Assembly & repairs' },
+  { bg: '#d4cede', fg: '#2d1f38', fgMuted: 'rgba(45,31,56,0.55)', iconBg: 'rgba(45,31,56,0.12)', desc: 'Packing & transport' },
+  { bg: '#d5d5d7', fg: '#1d1d1f', fgMuted: 'rgba(29,29,31,0.55)', iconBg: 'rgba(29,29,31,0.12)', desc: 'Interior & exterior' },
+];
+
 const BOOKING_STATUS_STYLES: Record<string, string> = {
   SCHEDULED:   'bg-info-surface text-info',
   IN_PROGRESS: 'bg-caution-surface text-caution',
@@ -377,47 +386,73 @@ export default function LandingPage() {
       )}
 
       {/* ── 2. Popular Services ── */}
-      <section className="py-10 lg:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Header row — heading + View all on same line */}
-          <div className="flex items-start justify-between mb-1">
-            <div>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
-              <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
-            </div>
-            <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
-              View all <ArrowRight className="w-4 h-4" />
-            </Link>
+      <section className="py-10 lg:py-20 bg-white overflow-hidden">
+        {/* Header */}
+        <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-5 lg:mb-8">
+          <div>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
+            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
+            <p className="text-sm text-ink-sub mt-1">Whatever you need, we have a pro for that.</p>
           </div>
-          <p className="text-sm text-ink-sub mb-6 lg:mb-12">Whatever you need, we have a pro for that.</p>
+          <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
+            View all <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-x-3 gap-y-6 lg:gap-x-4 lg:gap-y-12 justify-items-center">
-            {categories.map((cat, idx) => {
-              const Icon = cat.icon;
-              return (
-              <motion.div
+        {/* Mobile: horizontal snap carousel */}
+        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1 lg:hidden">
+          {categories.map((cat, idx) => {
+            const Icon = cat.icon;
+            const s = SERVICE_CARD_STYLES[idx];
+            return (
+              <button
                 key={cat.slug}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                viewport={{ once: true }}
-                className="w-full flex justify-center"
+                onClick={() => handleCategoryRequest(cat.slug)}
+                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left active:scale-[0.97] transition-transform"
+                style={{ background: s.bg, minHeight: '192px' }}
               >
-                <button
-                  onClick={() => handleCategoryRequest(cat.slug)}
-                  className="group flex flex-col items-center cursor-pointer outline-none w-full"
-                >
-                  <div className="relative w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center mb-2 lg:mb-3">
-                    <div className="absolute inset-0 bg-brand-muted rounded-2xl lg:rounded-3xl transition-all duration-300 ease-out group-active:scale-95" />
-                    <Icon className="w-6 h-6 lg:w-8 lg:h-8 text-brand relative z-10" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-xs lg:text-sm font-bold text-brand leading-tight text-center">
-                    {cat.name}
-                  </span>
-                </button>
-              </motion.div>
-            )})}
-          </div>
+                <div className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg }}>
+                  <Icon className="w-5 h-5" style={{ color: s.fg }} strokeWidth={1.5} />
+                </div>
+                <div className="mt-auto pt-4 w-full">
+                  <p className="text-sm font-bold leading-tight" style={{ color: s.fg }}>{cat.name}</p>
+                  <p className="text-[11px] mt-1 leading-snug" style={{ color: s.fgMuted }}>{s.desc}</p>
+                </div>
+                <div className="mt-3 flex items-center gap-0.5">
+                  <span className="text-[11px] font-semibold" style={{ color: s.fgMuted }}>Explore</span>
+                  <ChevronRight className="w-3 h-3" style={{ color: s.fgMuted }} />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Desktop: 6-col grid */}
+        <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
+          {categories.map((cat, idx) => {
+            const Icon = cat.icon;
+            const s = SERVICE_CARD_STYLES[idx];
+            return (
+              <button
+                key={cat.slug}
+                onClick={() => handleCategoryRequest(cat.slug)}
+                className="rounded-3xl p-6 flex flex-col items-start text-left hover:scale-[1.03] active:scale-[0.98] transition-transform duration-200"
+                style={{ background: s.bg, minHeight: '220px' }}
+              >
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: s.iconBg }}>
+                  <Icon className="w-6 h-6" style={{ color: s.fg }} strokeWidth={1.5} />
+                </div>
+                <div className="mt-auto pt-5 w-full">
+                  <p className="text-sm font-bold leading-tight" style={{ color: s.fg }}>{cat.name}</p>
+                  <p className="text-[11px] mt-1 leading-snug" style={{ color: s.fgMuted }}>{s.desc}</p>
+                </div>
+                <div className="mt-3 flex items-center gap-0.5">
+                  <span className="text-[11px] font-semibold" style={{ color: s.fgMuted }}>Explore</span>
+                  <ChevronRight className="w-3 h-3" style={{ color: s.fgMuted }} />
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
 
