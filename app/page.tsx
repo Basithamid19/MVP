@@ -407,7 +407,7 @@ export default function LandingPage() {
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left bg-white border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
+                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
                 style={{ minHeight: '192px' }}
               >
                 <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
@@ -434,7 +434,7 @@ export default function LandingPage() {
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-3xl p-6 flex flex-col items-start text-left bg-white border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                className="rounded-3xl p-6 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 style={{ minHeight: '220px' }}
               >
                 <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
