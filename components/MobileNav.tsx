@@ -4,43 +4,43 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Search, Inbox, UserCircle2 } from 'lucide-react';
 
+const TABS = [
+  { href: '/',          label: 'Home',      icon: Home,        active: (p: string) => p === '/' },
+  { href: '/browse',    label: 'Find Pros',  icon: Search,      active: (p: string) => p === '/browse' || p.startsWith('/providers') },
+  { href: '/dashboard', label: 'Dashboard',  icon: Inbox,       active: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests') },
+  { href: '/account',   label: 'Account',    icon: UserCircle2, active: (p: string) => p === '/account' },
+];
+
 export default function MobileNav() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? '';
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center justify-around px-2 py-2">
-        <Link
-          href="/"
-          className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors ${pathname === '/' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
-        >
-          <Home className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Home</span>
-        </Link>
-
-        <Link
-          href="/browse"
-          className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors ${pathname === '/browse' || pathname?.startsWith('/providers') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
-        >
-          <Search className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Find Pros</span>
-        </Link>
-
-        <Link
-          href="/dashboard"
-          className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors ${pathname === '/dashboard' || pathname?.startsWith('/bookings') || pathname?.startsWith('/requests') ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
-        >
-          <Inbox className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Dashboard</span>
-        </Link>
-
-        <Link
-          href="/account"
-          className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors ${pathname === '/account' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
-        >
-          <UserCircle2 className="w-6 h-6" />
-          <span className="text-[10px] font-medium">Account</span>
-        </Link>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pb-safe">
+      {/* Frosted glass bar */}
+      <div className="mx-3 mb-3 rounded-2xl bg-white/90 backdrop-blur-xl border border-border-dim shadow-[0_8px_32px_rgba(0,0,0,0.12)] overflow-hidden">
+        <div className="flex items-center justify-around px-1 py-1.5">
+          {TABS.map(({ href, label, icon: Icon, active }) => {
+            const isActive = active(pathname);
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${
+                  isActive ? 'text-brand' : 'text-ink-dim'
+                }`}
+              >
+                {/* Active pill indicator */}
+                {isActive && (
+                  <span className="absolute inset-0 bg-brand-muted rounded-xl" />
+                )}
+                <Icon className={`relative w-5 h-5 ${isActive ? 'stroke-[2]' : 'stroke-[1.5]'}`} />
+                <span className={`relative text-[10px] font-semibold tracking-tight ${isActive ? 'text-brand' : 'text-ink-dim'}`}>
+                  {label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
