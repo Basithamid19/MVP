@@ -296,179 +296,158 @@ export default function DashboardPage() {
   }
   if (!session) return null;
 
-  const firstName     = capitalize(session.user?.name?.split(' ')[0]);
-  const totalQuotes   = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
-  const quotedReqs    = requests.filter((r: any) => (r.quotes?.length ?? 0) > 0);
-  const activeCat     = requests[0]?.category?.name;
+  const firstName    = capitalize(session.user?.name?.split(' ')[0]);
+  const totalQuotes  = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
+  const quotedReqs   = requests.filter((r: any) => (r.quotes?.length ?? 0) > 0);
+  const activeReqs   = requests.filter((r: any) => !['COMPLETED','DECLINED','EXPIRED'].includes(r.status));
+  const completedCt  = bookings.filter((b: any) => b.status === 'COMPLETED').length;
+  const upcomingBook = bookings.find((b: any) => b.status === 'SCHEDULED');
+  const needsReview  = bookings.find((b: any) => b.status === 'COMPLETED' && !b.review);
 
-  const matchedPros = activeCat
-    ? topPros.filter(p => p.categories?.some((c: any) => c.name === activeCat))
-    : [];
+  const activeCat   = requests[0]?.category?.name;
+  const matchedPros = activeCat ? topPros.filter(p => p.categories?.some((c: any) => c.name === activeCat)) : [];
   const displayPros = matchedPros.length > 0 ? matchedPros : topPros;
 
-  const showQuotesBanner = totalQuotes > 0 && !!quotedReqs[0];
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
     <CustomerLayout notifications={notifications}>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 relative">
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-brand mb-1">Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'},</p>
-          <h1 className="text-2xl sm:text-4xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">{firstName}</h1>
-          <p className="text-ink-sub text-sm sm:text-base">Here is what&apos;s happening with your home projects.</p>
+
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between mb-5">
+        <div>
+          <p className="text-sm font-medium text-brand mb-0.5">{greeting},</p>
+          <h1 className="text-2xl font-bold tracking-tight text-ink">{firstName}</h1>
         </div>
         <Link
           href="/requests/new"
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-7 py-4 sm:py-3.5 rounded-full text-base sm:text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md shrink-0 relative z-10"
+          className="flex items-center gap-1.5 bg-brand text-white text-sm font-semibold px-4 py-2.5 rounded-full shadow-sm shrink-0"
         >
-          <Search className="w-5 h-5 sm:w-4 sm:h-4" /> Find a Pro
+          <Search className="w-4 h-4" /> New request
         </Link>
       </div>
 
-      {/* Priority Banner */}
-      {showQuotesBanner && (
-        <div className="relative overflow-hidden bg-brand text-white rounded-2xl sm:rounded-panel p-5 sm:p-8 mb-8 sm:mb-10 shadow-md sm:shadow-elevated flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6">
-          <div className="absolute inset-0 bg-[url('/noise.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-          <div className="relative z-10 flex items-center gap-5">
-            <div className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center shrink-0 backdrop-blur-md">
-              <Users className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold mb-1">{totalQuotes} new quote{totalQuotes > 1 ? 's' : ''} received</h2>
-              <p className="text-white/80 text-sm">Professionals have responded to your request. Review and book now.</p>
-            </div>
+      {/* ── Stats strip ── */}
+      <div className="grid grid-cols-3 gap-2.5 mb-5">
+        {[
+          { value: activeReqs.length, label: 'Active',    highlight: false },
+          { value: totalQuotes,       label: 'Quotes',    highlight: totalQuotes > 0 },
+          { value: completedCt,       label: 'Completed', highlight: false },
+        ].map(({ value, label, highlight }) => (
+          <div key={label} className={`rounded-2xl p-3 text-center border ${highlight ? 'bg-brand border-brand/20' : 'bg-white border-border-dim'}`}>
+            <p className={`text-xl font-bold ${highlight ? 'text-white' : 'text-ink'}`}>{value}</p>
+            <p className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 ${highlight ? 'text-white/70' : 'text-ink-dim'}`}>{label}</p>
           </div>
-          <Link href={`/requests/${quotedReqs[0].id}`} className="relative z-10 shrink-0 w-full sm:w-auto text-center bg-white text-brand px-8 py-3.5 rounded-full text-sm font-semibold hover:bg-surface-alt transition-colors shadow-sm">
-            Review Quotes
-          </Link>
+        ))}
+      </div>
+
+      {/* ── Action cards ── */}
+      {(quotedReqs.length > 0 || upcomingBook || needsReview) && (
+        <div className="flex flex-col gap-2.5 mb-5">
+          {quotedReqs[0] && (
+            <Link href={`/requests/${quotedReqs[0].id}`}
+              className="flex items-center gap-3.5 bg-brand text-white rounded-2xl px-4 py-3.5">
+              <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold">{totalQuotes} new quote{totalQuotes > 1 ? 's' : ''} received</p>
+                <p className="text-xs text-white/70 truncate">{quotedReqs[0].category?.name} · tap to review</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-white/70 shrink-0" />
+            </Link>
+          )}
+          {upcomingBook && (
+            <Link href={`/bookings/${upcomingBook.id}`}
+              className="flex items-center gap-3.5 bg-white border border-brand/20 rounded-2xl px-4 py-3.5">
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Calendar className="w-5 h-5 text-brand" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-ink">Upcoming booking</p>
+                <p className="text-xs text-ink-sub">
+                  {new Date(upcomingBook.scheduledAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  {upcomingBook.totalAmount ? ` · €${upcomingBook.totalAmount.toFixed(0)}` : ''}
+                </p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </Link>
+          )}
+          {needsReview && !upcomingBook && (
+            <Link href={`/bookings/${needsReview.id}`}
+              className="flex items-center gap-3.5 bg-white border border-border-dim rounded-2xl px-4 py-3.5">
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Star className="w-5 h-5 text-brand" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-ink">Leave a review</p>
+                <p className="text-xs text-ink-sub">Your job was completed · share your experience</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </Link>
+          )}
         </div>
       )}
 
-      {/* Main layout */}
+      {/* ── Main layout ── */}
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-8">
-        {/* Left: My Orders */}
-        <div className="w-full lg:col-span-2 space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold tracking-tight text-ink">My Orders</h2>
-              {requests.length > 0 && (
-                <span className="text-sm text-ink-dim font-medium">{requests.length} active</span>
-              )}
-            </div>
-
-            {requests.length === 0 ? (
-              <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-8 sm:p-16 text-center shadow-sm">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-border-dim">
-                  <Inbox className="w-6 h-6 sm:w-8 sm:h-8 text-ink-dim" />
-                </div>
-                <h3 className="text-xl sm:text-2xl font-semibold text-ink mb-2 sm:mb-3">No active projects</h3>
-                <p className="text-sm sm:text-base text-ink-sub mb-6 sm:mb-8 max-w-md mx-auto leading-relaxed">
-                  Ready to tackle your next home project? Describe what you need done and get quotes from verified Vilnius professionals.
-                </p>
-                <Link href="/requests/new" className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-3.5 sm:py-4 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md">
-                  <Search className="w-4 h-4 sm:w-5 sm:h-5" /> Find a Pro
-                </Link>
-              </div>
-            ) : (
-              <OrdersList requests={requests} />
+        {/* Orders */}
+        <div className="w-full lg:col-span-2">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold tracking-tight text-ink">My Orders</h2>
+            {requests.length > 0 && (
+              <span className="text-xs font-semibold text-ink-dim">{requests.length} total</span>
             )}
-          </section>
+          </div>
 
-          {/* Browse Services */}
-          <section className="pt-6">
-            <h2 className="text-xl font-semibold tracking-tight text-ink mb-6">Browse Services</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-              {QUICK_JOBS.map(({ label, slug, Icon }) => (
-                <Link
-                  key={slug}
-                  href={`/browse?category=${slug}`}
-                  className="bg-white border border-border-dim shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center text-center active:scale-[0.97] transition-transform"
-                >
-                  <div className="w-14 h-14 bg-brand-muted rounded-2xl flex items-center justify-center mb-4 shrink-0">
-                    <Icon className="w-7 h-7 text-brand" strokeWidth={1.5} />
-                  </div>
-                  <span className="text-xs font-semibold text-ink leading-tight">{label}</span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </div>
-
-        {/* Right column — desktop only */}
-        <div className="hidden lg:block space-y-6">
-          <section className="sticky top-28">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold tracking-tight text-ink">
-                {activeCat && matchedPros.length > 0
-                  ? `${activeCat} pros near you`
-                  : 'Recommended Pros'}
-              </h2>
-              <Link href="/browse" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">
-                See all
+          {requests.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-border-dim p-10 text-center">
+              <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4 border border-border-dim">
+                <Inbox className="w-6 h-6 text-ink-dim" />
+              </div>
+              <h3 className="text-base font-bold text-ink mb-1">No active projects yet</h3>
+              <p className="text-sm text-ink-sub mb-5 max-w-xs mx-auto">Post your first job and get quotes from verified professionals in Vilnius.</p>
+              <Link href="/requests/new" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-2.5 rounded-full text-sm font-semibold">
+                <Search className="w-4 h-4" /> Post a job
               </Link>
             </div>
+          ) : (
+            <OrdersList requests={requests} />
+          )}
+        </div>
 
-            <div className="bg-white border border-border-dim shadow-sm rounded-2xl sm:rounded-panel p-5 sm:p-8">
-              {displayPros.length === 0 ? (
-                <div className="space-y-2">
-                  {[
-                    { label: 'Electricians', slug: 'electrician', emoji: '⚡' },
-                    { label: 'Plumbers',     slug: 'plumber',     emoji: '🔧' },
-                    { label: 'Cleaners',     slug: 'cleaning',    emoji: '🧹' },
-                  ].map(s => (
-                    <Link
-                      key={s.slug}
-                      href={`/browse?category=${s.slug}`}
-                      className="flex items-center gap-4 p-3 rounded-xl hover:bg-surface-alt transition-all group"
-                    >
-                      <div className="w-10 h-10 bg-canvas rounded-full flex items-center justify-center text-lg border border-border-dim">
-                        {s.emoji}
-                      </div>
-                      <span className="text-sm font-medium text-ink-sub group-hover:text-ink transition-colors flex-1">{s.label}</span>
-                      <ChevronRight className="w-4 h-4 text-ink-dim group-hover:text-ink-sub transition-colors shrink-0" />
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {displayPros.slice(0, 4).map(pro => (
-                    <Link
-                      key={pro.id}
-                      href={`/providers/${pro.id}`}
-                      className="flex items-center gap-4 group"
-                    >
-                      <img
-                        src={pro.user?.image || avatarUrl(pro.user?.name, 100)}
-                        alt={pro.user?.name}
-                        className="w-12 h-12 rounded-full object-cover shadow-sm bg-surface-alt group-hover:ring-2 ring-brand/20 transition-all"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
-                          {pro.isVerified && <ShieldCheck className="w-3.5 h-3.5 text-trust shrink-0" />}
-                        </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          {pro.ratingAvg && (
-                            <span className="flex items-center gap-0.5 text-xs font-medium text-ink-sub">
-                              <Star className="w-3 h-3 text-brand fill-current" />
-                              {pro.ratingAvg.toFixed(1)}
-                            </span>
-                          )}
-                          <span className="text-xs text-ink-dim truncate">
-                            {pro.categories?.[0]?.name || 'Professional'}
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-
-              {displayPros.length > 0 && (
-                <Link href="/browse" className="mt-8 w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-sm font-medium text-ink bg-surface-alt hover:bg-border transition-all">
-                  Browse all professionals
+        {/* Desktop right: Recommended Pros */}
+        <div className="hidden lg:block space-y-6">
+          <section className="sticky top-28">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold tracking-tight text-ink">
+                {activeCat && matchedPros.length > 0 ? `${activeCat} pros` : 'Recommended Pros'}
+              </h2>
+              <Link href="/browse" className="text-sm font-medium text-brand hover:text-brand-dark transition-colors">See all</Link>
+            </div>
+            <div className="bg-white border border-border-dim shadow-sm rounded-2xl p-5 space-y-4">
+              {displayPros.slice(0, 4).map(pro => (
+                <Link key={pro.id} href={`/providers/${pro.id}`} className="flex items-center gap-3 group">
+                  <img src={pro.user?.image || avatarUrl(pro.user?.name, 80)} alt={pro.user?.name}
+                    className="w-10 h-10 rounded-full object-cover bg-surface-alt shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      {pro.ratingAvg && (
+                        <span className="flex items-center gap-0.5 text-xs text-ink-sub">
+                          <Star className="w-3 h-3 text-brand fill-current" />{pro.ratingAvg.toFixed(1)}
+                        </span>
+                      )}
+                      <span className="text-xs text-ink-dim">{pro.categories?.[0]?.name}</span>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
                 </Link>
-              )}
+              ))}
+              <Link href="/browse" className="block text-center text-sm font-semibold text-brand pt-2 border-t border-border-dim mt-2">
+                Browse all pros
+              </Link>
             </div>
           </section>
         </div>
