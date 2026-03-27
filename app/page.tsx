@@ -72,6 +72,30 @@ const TESTIMONIALS = [
     rating: 5,
     avatar: 13,
   },
+  {
+    quote: 'Needed a handyman to mount a TV and some shelves. He was punctual, polite, and left the place spotless.',
+    name: 'Tomas V.',
+    city: 'Vilnius',
+    service: 'Handyman',
+    rating: 5,
+    avatar: 14,
+  },
+  {
+    quote: 'The painters transformed our living room in just two days. The attention to detail was fantastic. Highly recommended.',
+    name: 'Laura M.',
+    city: 'Vilnius',
+    service: 'Interior Painting',
+    rating: 5,
+    avatar: 15,
+  },
+  {
+    quote: 'Moving is usually a nightmare, but the team we found on Dispatch made it so easy and stress-free.',
+    name: 'Darius K.',
+    city: 'Vilnius',
+    service: 'Moving Help',
+    rating: 5,
+    avatar: 16,
+  },
 ];
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
@@ -654,73 +678,55 @@ export default function LandingPage() {
 
 
       {/* ── 6. Testimonials ── */}
-      <section className="py-10 lg:py-16 bg-white overflow-hidden">
-        <div className="flex items-center justify-between px-4 sm:px-6 mb-6">
-          <div>
-            <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Customer Stories</p>
-            <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">What Customers Say</h2>
+      <section className="py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer Stories</p>
+            <h2 className="text-4xl font-bold tracking-tight text-ink mb-4">What Customers Say</h2>
+            <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
           </div>
-        </div>
 
-        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
-          {TESTIMONIALS.map((t, idx) => {
-            // Exact Apple Mac mini palette: muted rose, dark slate, light silver
-            const palettes = [
-              { bg: '#dfc8cc', fg: '#3d1520' },          // muted rose/pink
-              { bg: '#636577', fg: '#ffffff' },           // dark slate grey
-              { bg: '#d5d5d7', fg: '#1d1d1f' },          // cool light silver
-            ];
-            const { bg, fg } = palettes[idx % palettes.length];
-            return (
-              <div
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {TESTIMONIALS.map((t, idx) => (
+              <motion.div
                 key={idx}
-                className="shrink-0 w-[82vw] max-w-[300px] snap-start rounded-3xl p-6 flex flex-col"
-                style={{ background: bg, minHeight: 370 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col hover:scale-[1.02] transition-transform duration-300"
               >
                 {/* Top row: avatar + stars */}
-                <div className="flex items-center justify-between mb-5">
-                  <div
-                    className="w-16 h-16 rounded-2xl overflow-hidden shrink-0"
-                    style={{ border: `2px solid ${fg}25` }}
-                  >
+                <div className="flex items-center justify-between mb-6">
+                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
                     <img
                       src={`https://i.pravatar.cc/120?img=${t.avatar}`}
                       alt={t.name}
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  <div className="flex gap-0.5">
+                  <div className="flex gap-1 text-ink">
                     {Array.from({ length: t.rating }).map((_, i) => (
-                      <svg key={i} width="15" height="15" viewBox="0 0 24 24" fill={fg} opacity={0.9}>
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                      </svg>
+                      <Star key={i} className="w-4 h-4 fill-current" />
                     ))}
                   </div>
                 </div>
 
-                {/* Large decorative quote mark */}
-                <svg width="30" height="24" viewBox="0 0 28 22" fill={fg} opacity={0.12} className="mb-3 shrink-0">
-                  <path d="M0 22V13.364C0 5.727 4.667 1.212 14 0l1.167 2.182C11.083 3.576 9 6.788 9 10h5V22H0ZM16 22V13.364C16 5.727 20.667 1.212 30 0l1.167 2.182C27.083 3.576 25 6.788 25 10h5V22H16Z" />
-                </svg>
-
                 {/* Quote */}
-                <p
-                  className="text-[14px] font-medium leading-relaxed flex-1 mb-5"
-                  style={{ color: fg }}
-                >
-                  {t.quote}
+                <p className="text-base font-medium leading-relaxed text-ink flex-1 mb-8">
+                  "{t.quote}"
                 </p>
 
                 {/* Author */}
-                <div className="pt-4" style={{ borderTop: `1px solid ${fg}22` }}>
-                  <p className="text-sm font-bold" style={{ color: fg }}>{t.name}</p>
-                  <p className="text-[11px] mt-0.5" style={{ color: fg, opacity: 0.55 }}>
+                <div className="pt-5 border-t border-ink/10">
+                  <p className="text-sm font-bold text-ink">{t.name}</p>
+                  <p className="text-[11px] mt-1 text-ink-sub font-medium uppercase tracking-wider">
                     {t.service} · {t.city}
                   </p>
                 </div>
-              </div>
-            );
-          })}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
