@@ -62,13 +62,13 @@ function getJobAction(req: any): { label: string; primary: boolean } {
 
 function getCategoryIcon(slug?: string) {
   switch (slug) {
-    case 'electrician': return <ElectricianIcon className="w-6 h-6 text-ink-sub" />;
-    case 'plumber':     return <Wrench className="w-6 h-6 text-ink-sub" />;
-    case 'cleaning':    return <BroomIcon className="w-6 h-6 text-ink-sub" />;
-    case 'handyman':    return <Hammer className="w-6 h-6 text-ink-sub" />;
-    case 'moving-help': return <Truck className="w-6 h-6 text-ink-sub" />;
-    case 'painting':    return <Paintbrush className="w-6 h-6 text-ink-sub" />;
-    default:            return <Inbox className="w-6 h-6 text-ink-sub" />;
+    case 'electrician': return <ElectricianIcon className="w-5 h-5 text-brand" />;
+    case 'plumber':     return <Wrench className="w-5 h-5 text-brand" />;
+    case 'cleaning':    return <BroomIcon className="w-5 h-5 text-brand" />;
+    case 'handyman':    return <Hammer className="w-5 h-5 text-brand" />;
+    case 'moving-help': return <Truck className="w-5 h-5 text-brand" />;
+    case 'painting':    return <Paintbrush className="w-5 h-5 text-brand" />;
+    default:            return <Inbox className="w-5 h-5 text-brand" />;
   }
 }
 
@@ -135,7 +135,7 @@ function OrdersList({ requests }: { requests: any[] }) {
               onClick={() => setOpenId(isOpen ? null : req.id)}
               className="w-full flex items-center gap-3 p-3 sm:p-4 text-left"
             >
-              <div className="w-9 h-9 rounded-xl bg-surface-alt flex items-center justify-center shrink-0 border border-border-dim">
+              <div className="w-9 h-9 rounded-xl bg-brand-muted flex items-center justify-center shrink-0">
                 {getCategoryIcon(req.category?.slug)}
               </div>
               <div className="flex-1 min-w-0">
@@ -381,12 +381,12 @@ export default function DashboardPage() {
                 <Link
                   key={slug}
                   href={`/browse?category=${slug}`}
-                  className="bg-white border border-border-dim shadow-sm rounded-2xl sm:rounded-panel p-4 sm:p-6 flex flex-col items-center justify-center text-center hover:shadow-md hover:border-brand/30 hover:-translate-y-1 transition-all group h-full"
+                  className="bg-white border border-border-dim shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center text-center active:scale-[0.97] transition-transform"
                 >
-                  <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center text-ink-sub group-hover:bg-brand-muted group-hover:text-brand transition-colors mb-4">
-                    <Icon className="w-6 h-6" />
+                  <div className="w-14 h-14 bg-brand-muted rounded-2xl flex items-center justify-center mb-4 shrink-0">
+                    <Icon className="w-7 h-7 text-brand" strokeWidth={1.5} />
                   </div>
-                  <span className="text-sm font-medium text-ink group-hover:text-brand transition-colors leading-tight">{label}</span>
+                  <span className="text-xs font-semibold text-ink leading-tight">{label}</span>
                 </Link>
               ))}
             </div>
