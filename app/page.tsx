@@ -445,35 +445,27 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4. Top Rated Professionals ── */}
-      <section className="py-10 lg:py-20 bg-white overflow-hidden">
-        {/* Header */}
-        <div className="flex items-end justify-between px-4 sm:px-6 lg:px-8 mb-5">
+      <section className="py-10 lg:py-16 bg-canvas overflow-hidden">
+        <div className="flex items-center justify-between px-4 sm:px-6 mb-6">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Our Pros</p>
-            <h2 className="text-2xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
+            <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Our Pros</p>
+            <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">Top Rated<br />Professionals</h2>
           </div>
-          <Link href="/browse" className="text-sm font-bold text-brand flex items-center gap-1 shrink-0">
-            See all <ArrowRight className="w-4 h-4" />
+          <Link href="/browse" className="flex items-center gap-1 text-xs font-bold text-brand bg-brand-muted px-3 py-1.5 rounded-full shrink-0">
+            See all <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
-        {/* Carousel */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2">
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
           {prosLoading ? (
-            Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-surface-alt rounded-3xl border border-border-dim p-4 animate-pulse">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-border-dim rounded-2xl shrink-0" />
-                  <div className="flex-1 space-y-2">
-                    <div className="h-3.5 bg-border-dim rounded w-20" />
-                    <div className="h-3 bg-border-dim/60 rounded w-14" />
-                  </div>
+            Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="shrink-0 w-[70vw] max-w-[240px] snap-start rounded-3xl overflow-hidden animate-pulse bg-white shadow-lg">
+                <div className="h-40 bg-surface-alt" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-surface-alt rounded w-24" />
+                  <div className="h-3 bg-surface-alt rounded w-16" />
+                  <div className="h-8 bg-surface-alt rounded-xl mt-3 w-full" />
                 </div>
-                <div className="space-y-2 mb-4">
-                  <div className="h-3 bg-border-dim rounded w-24" />
-                  <div className="h-3 bg-border-dim/60 rounded w-32" />
-                </div>
-                <div className="h-9 bg-border-dim rounded-xl w-full mt-2" />
               </div>
             ))
           ) : topPros.length > 0 ? (
@@ -481,86 +473,83 @@ export default function LandingPage() {
               const responseTime = pro.responseTime
                 ? pro.responseTime.replace(/^usually responds in\s*/i, '')
                 : null;
+              const categoryName = pro.categories?.[0]?.name ?? 'Professional';
               return (
                 <Link
                   key={pro.id}
                   href={`/providers/${pro.id}`}
-                  className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-3xl border border-border-dim shadow-sm p-4 flex flex-col active:scale-[0.97] transition-transform"
+                  className="shrink-0 w-[70vw] max-w-[240px] snap-start rounded-3xl overflow-hidden bg-white shadow-[0_4px_24px_rgba(0,0,0,0.10)] active:scale-[0.97] transition-transform flex flex-col"
                 >
-                  {/* Avatar + name */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 rounded-2xl overflow-hidden shrink-0 border border-border-dim bg-surface-alt">
-                      <img
-                        src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
-                        alt={pro.user?.name}
-                        className="w-full h-full object-cover"
-                      />
+                  {/* Photo section */}
+                  <div className="relative h-44 bg-surface-alt shrink-0">
+                    <img
+                      src={pro.user?.image || `https://i.pravatar.cc/300?u=${pro.id}`}
+                      alt={pro.user?.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    {/* Category pill */}
+                    <div className="absolute top-3 left-3">
+                      <span className="text-[10px] font-bold text-white/90 bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {categoryName}
+                      </span>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-sm text-ink truncate">{pro.user?.name}</p>
-                      <p className="text-xs text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
-                    </div>
+                    {/* Verified badge */}
                     {pro.isVerified && (
-                      <div className="w-7 h-7 rounded-full bg-trust/10 flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-3.5 h-3.5 text-trust" />
+                      <div className="absolute top-3 right-3 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md">
+                        <ShieldCheck className="w-4 h-4 text-brand" />
                       </div>
                     )}
-                  </div>
-
-                  {/* Rating */}
-                  <div className="flex items-center gap-1 mb-1">
-                    <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                    <span className="text-sm font-bold text-ink">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                    <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
-                  </div>
-
-                  {/* Response time */}
-                  {responseTime && (
-                    <div className="flex items-center gap-1 text-xs text-ink-sub mb-3">
-                      <Clock className="w-3.5 h-3.5 text-ink-dim shrink-0" />
-                      <span>Responds in {responseTime}</span>
+                    {/* Name over gradient */}
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <p className="font-bold text-base text-white leading-tight truncate">{pro.user?.name}</p>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                        <span className="text-xs font-bold text-white">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
+                        <span className="text-[11px] text-white/60">· {pro.completedJobs ?? 0} jobs</span>
+                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* CTA */}
-                  <div className="mt-auto pt-3 border-t border-border-dim flex items-center justify-between">
-                    {pro.offerings?.[0] ? (
-                      <p className="text-xs text-ink-dim">From <span className="font-bold text-ink">€{pro.offerings[0].price}</span></p>
-                    ) : (
-                      <p className="text-xs text-ink-dim">Price on request</p>
+                  {/* Info section */}
+                  <div className="p-3.5 flex flex-col flex-1">
+                    {responseTime && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-ink-sub mb-3">
+                        <Clock className="w-3 h-3 text-ink-dim shrink-0" />
+                        <span>Responds in {responseTime}</span>
+                      </div>
                     )}
-                    <span className="text-xs font-bold text-brand flex items-center gap-0.5">
-                      View <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
+                    <Link
+                      href={`/providers/${pro.id}`}
+                      className="mt-auto w-full flex items-center justify-center gap-1.5 bg-brand text-white text-xs font-bold py-2.5 rounded-xl"
+                    >
+                      View Profile <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </Link>
               );
             })
           ) : (
-            /* Category browse fallback carousel */
             [
-              { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
-              { name: 'Plumbers',     slug: 'plumber',     icon: Wrench,          desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
-              { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon,       desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
-              { name: 'Handymen',     slug: 'handyman',    icon: Hammer,          desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
+              { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon },
+              { name: 'Plumbers',     slug: 'plumber',     icon: Wrench },
+              { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon },
+              { name: 'Handymen',     slug: 'handyman',    icon: Hammer },
             ].map((cat) => {
               const Icon = cat.icon;
               return (
                 <Link
                   key={cat.slug}
                   href={`/browse?category=${cat.slug}`}
-                  className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-3xl border border-border-dim shadow-sm p-4 flex flex-col active:scale-[0.97] transition-transform"
+                  className="shrink-0 w-[70vw] max-w-[240px] snap-start rounded-3xl overflow-hidden bg-white shadow-[0_4px_24px_rgba(0,0,0,0.10)] p-5 flex flex-col active:scale-[0.97] transition-transform"
                 >
-                  <div className={`w-12 h-12 ${cat.bg} rounded-2xl flex items-center justify-center mb-3 shrink-0`}>
-                    <Icon className="w-6 h-6" strokeWidth={1.5} />
+                  <div className="w-14 h-14 bg-brand-muted rounded-2xl flex items-center justify-center mb-4 shrink-0">
+                    <Icon className="w-7 h-7 text-brand" strokeWidth={1.5} />
                   </div>
-                  <p className="font-bold text-sm text-ink mb-1">{cat.name}</p>
-                  <p className="text-xs text-ink-sub flex-1">{cat.desc}</p>
-                  <div className="mt-3 pt-3 border-t border-border-dim flex items-center justify-between">
-                    <span className="text-xs text-ink-dim">Browse pros</span>
-                    <span className="text-xs font-bold text-brand flex items-center gap-0.5">
-                      View <ChevronRight className="w-3.5 h-3.5" />
-                    </span>
+                  <p className="font-bold text-sm text-ink">{cat.name}</p>
+                  <div className="mt-auto pt-4">
+                    <span className="text-xs font-bold text-brand flex items-center gap-1">Browse pros <ChevronRight className="w-3.5 h-3.5" /></span>
                   </div>
                 </Link>
               );
@@ -570,50 +559,61 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-10 lg:py-20 bg-white overflow-hidden">
-        {/* Header */}
-        <div className="px-4 sm:px-6 lg:px-8 mb-5">
-          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Why Dispatch</p>
-          <h2 className="text-2xl font-bold tracking-tight text-ink">Built for trust,<br />built for Vilnius.</h2>
+      <section className="py-10 lg:py-16 bg-canvas overflow-hidden">
+        <div className="px-4 sm:px-6 mb-6">
+          <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Why Dispatch</p>
+          <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">Built for trust,<br />built for Vilnius.</h2>
         </div>
 
-        {/* Carousel */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2">
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
           {[
             {
               icon: BadgeCheck,
+              num: '01',
               title: 'Verified Experts',
-              desc: 'All professionals are ID-verified and trade-certified before joining the platform.',
-              bg: 'bg-brand-muted',
+              desc: 'Every professional is ID-verified and trade-certified before joining.',
+              accent: 'from-brand to-emerald-700',
             },
             {
               icon: Star,
+              num: '02',
               title: 'Real Reviews Only',
-              desc: 'Only customers with completed bookings can leave reviews — 100% authentic.',
-              bg: 'bg-yellow-50',
+              desc: 'Reviews come only from customers with completed bookings.',
+              accent: 'from-amber-500 to-orange-600',
             },
             {
               icon: Zap,
+              num: '03',
               title: 'Fast Response',
-              desc: 'Local pros ready to help. Most requests get a reply within 1 hour.',
-              bg: 'bg-info-surface',
+              desc: 'Most requests get a pro reply within 1 hour.',
+              accent: 'from-blue-600 to-indigo-700',
             },
             {
               icon: MessageCircle,
+              num: '04',
               title: 'Direct Messaging',
-              desc: 'Chat with professionals before booking to align on scope and price.',
-              bg: 'bg-purple-50',
+              desc: 'Chat with pros before booking to align on scope and price.',
+              accent: 'from-violet-600 to-purple-700',
             },
-          ].map(({ icon: Icon, title, desc, bg }) => (
+          ].map(({ icon: Icon, num, title, desc, accent }) => (
             <div
               key={title}
-              className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-surface-alt rounded-3xl border border-border-dim p-5 flex flex-col"
+              className={`shrink-0 w-[72vw] max-w-[250px] snap-start rounded-3xl p-5 bg-gradient-to-br ${accent} flex flex-col justify-between overflow-hidden relative`}
+              style={{ minHeight: 200 }}
             >
-              <div className={`w-12 h-12 ${bg} rounded-2xl flex items-center justify-center mb-4 shrink-0`}>
-                <Icon className="w-6 h-6 text-brand" strokeWidth={1.5} />
+              {/* Background number */}
+              <span className="absolute top-3 right-4 text-6xl font-black text-white/10 leading-none select-none">{num}</span>
+
+              {/* Icon */}
+              <div className="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-4 shrink-0">
+                <Icon className="w-5.5 h-5.5 text-white w-[22px] h-[22px]" strokeWidth={1.8} />
               </div>
-              <h3 className="font-bold text-sm text-ink mb-2">{title}</h3>
-              <p className="text-xs text-ink-sub leading-relaxed">{desc}</p>
+
+              {/* Text */}
+              <div>
+                <h3 className="font-bold text-[15px] text-white mb-1.5 leading-tight">{title}</h3>
+                <p className="text-[12px] text-white/70 leading-relaxed">{desc}</p>
+              </div>
             </div>
           ))}
         </div>
