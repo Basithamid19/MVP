@@ -630,86 +630,72 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Image side */}
-            <div className="relative aspect-square bg-canvas rounded-hero overflow-hidden shadow-float border border-border-dim order-2 lg:order-1">
-              <img
-                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop"
-                alt="Vilnius Professional"
-                className="object-cover w-full h-full transition-all duration-700 hover:scale-105"
-              />
-              {/* Floating testimonial overlay */}
-              <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-panel shadow-float border border-border-dim">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex -space-x-2">
-                    {[11, 12, 13].map(i => (
-                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex items-center gap-1 text-yellow-500">
-                    <Star className="w-4 h-4 fill-current" />
-                    <span className="text-ink font-bold text-sm">4.9/5</span>
-                    <span className="text-xs text-ink-dim ml-1">from 2,400+ reviews</span>
-                  </div>
+      <section className="bg-brand py-16 sm:py-20">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          {/* Eyebrow + headline */}
+          <p className="text-[11px] font-bold text-white/50 uppercase tracking-widest mb-3">Why Dispatch</p>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white leading-[1.15] mb-8">
+            Built for trust,<br className="hidden sm:block" /> built for Vilnius.
+          </h2>
+
+          {/* Metric pills */}
+          <div className="flex flex-wrap gap-2 mb-10">
+            {[
+              { value: '2,400+', label: 'Reviews' },
+              { value: '100+',   label: 'Vetted Pros' },
+              { value: '<1 hr',  label: 'Avg. Response' },
+            ].map(m => (
+              <div key={m.label} className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
+                <span className="text-white font-bold text-sm">{m.value}</span>
+                <span className="text-white/60 text-sm">{m.label}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Feature rows */}
+          <div className="rounded-2xl overflow-hidden border border-white/10">
+            {[
+              {
+                icon: BadgeCheck,
+                title: 'Verified Experts',
+                desc: 'Every pro is ID-verified and trade-certified before joining.',
+              },
+              {
+                icon: Star,
+                title: 'Real Reviews Only',
+                desc: 'Only customers with completed bookings can leave reviews.',
+              },
+              {
+                icon: Zap,
+                title: 'Fast Response',
+                desc: 'Most requests get a reply from a local pro within 1 hour.',
+              },
+              {
+                icon: MessageCircle,
+                title: 'Direct Messaging',
+                desc: 'Chat with pros before booking to align on scope and price.',
+              },
+            ].map(({ icon: Icon, title, desc }, i) => (
+              <div key={title} className={`flex items-start gap-4 px-5 py-5 ${i > 0 ? 'border-t border-white/10' : ''}`}>
+                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
                 </div>
-                <p className="text-sm font-medium text-ink leading-relaxed">
-                  &ldquo;Found an amazing electrician in just 5 minutes. Highly recommend!&rdquo;
-                </p>
-                <p className="text-xs text-ink-dim mt-2">— Anna K., Vilnius</p>
+                <div>
+                  <p className="font-bold text-white text-sm mb-0.5">{title}</p>
+                  <p className="text-white/60 text-sm leading-relaxed">{desc}</p>
+                </div>
               </div>
-            </div>
+            ))}
+          </div>
 
-            {/* Content side */}
-            <div className="order-1 lg:order-2">
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why Dispatch</p>
-              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink mb-10 leading-[1.1]">
-                Built for trust, <br/>built for Vilnius.
-              </h2>
-              
-              <div className="grid sm:grid-cols-2 gap-6 mb-10">
-                {[
-                  {
-                    icon: BadgeCheck,
-                    title: 'Verified Experts',
-                    desc: 'All professionals are ID-verified and trade-certified before joining.',
-                  },
-                  {
-                    icon: Star,
-                    title: 'Real Reviews',
-                    desc: 'Only customers with completed bookings can leave reviews.',
-                  },
-                  {
-                    icon: Zap,
-                    title: 'Fast Response',
-                    desc: 'Local pros ready to help. Most requests get a reply within 1 hour.',
-                  },
-                  {
-                    icon: MessageCircle,
-                    title: 'Direct Messaging',
-                    desc: 'Chat with professionals before booking to align on scope and price.',
-                  },
-                ].map(({ icon: Icon, title, desc }) => (
-                  <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 transition-all flex flex-col group">
-                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-5 shadow-sm text-brand shrink-0 border border-border-dim group-hover:scale-110 transition-transform">
-                      <Icon className="w-6 h-6" strokeWidth={1.5} />
-                    </div>
-                    <h3 className="font-bold text-ink text-base mb-2">{title}</h3>
-                    <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
-                  </div>
-                ))}
-              </div>
-
-              <Link
-                href="/browse"
-                className={buttonVariants({ variant: 'primary', size: 'lg' }) + " w-full sm:w-auto"}
-              >
-                Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </div>
+          {/* CTA */}
+          <div className="mt-8">
+            <Link
+              href="/browse"
+              className="inline-flex items-center gap-2 bg-white text-brand font-bold px-6 py-3.5 rounded-card hover:bg-white/90 transition-colors text-sm"
+            >
+              Find a Pro <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>

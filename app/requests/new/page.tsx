@@ -9,6 +9,7 @@ import {
   Wrench, Hammer, Truck, Paintbrush, Box
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
+import { SUBCATEGORIES } from '@/lib/subcategories';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   plumber:              Wrench,
@@ -20,9 +21,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   painting:             Paintbrush,
 };
 
-
-
-const STEPS = ['Service', 'Details', 'Schedule', 'Review'];
+const STEPS = ['Service', 'Type', 'Details', 'Schedule', 'Review'];
 
 const TIME_PREFS = [
   { id: 'morning',   label: 'Morning',   sub: '8am – 12pm' },
@@ -54,14 +53,17 @@ function NewRequestContent() {
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
 
-  // Skip category step when a category is already provided (from homepage or subcategory screen)
-  const [step, setStep] = useState(initialSlug ? 2 : 1);
+  // Step 1=category, 2=subcategory, 3=details, 4=schedule, 5=review
+  // Skip ahead based on URL params
+  const startStep = initialSlug && initialSubcategory ? 3 : initialSlug ? 2 : 1;
+  const [step, setStep] = useState(startStep);
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [form, setForm] = useState({
     categoryId: '',
     categoryName: '',
     categorySlug: initialSlug,
+    subcategorySlug: initialSubcategory,
     description: initialDescription,
     isUrgent: false,
     address: '',
@@ -122,14 +124,16 @@ function NewRequestContent() {
 
   const canProceed = () => {
     if (step === 1) return !!form.categoryId;
-    if (step === 2) return form.description.trim().length >= 10;
-    if (step === 3) return !!form.address.trim() && !!form.dateWindow;
+    if (step === 2) return true; // subcategory is optional
+    if (step === 3) return form.description.trim().length >= 10;
+    if (step === 4) return !!form.address.trim() && !!form.dateWindow;
     return true;
   };
 
-  const next = () => setStep(s => Math.min(s + 1, 4));
+  const next = () => setStep(s => Math.min(s + 1, 5));
   const back = () => {
-    if (step === 2 && initialSlug) { router.back(); return; }
+    if (step === 2 && initialSlug && !initialSubcategory) { router.back(); return; }
+    if (step === 3 && initialSlug && initialSubcategory) { router.back(); return; }
     if (step > 1) setStep(s => s - 1);
     else router.back();
   };
@@ -225,8 +229,57 @@ function NewRequestContent() {
           </div>
         )}
 
-        {/* Step 2: Details */}
-        {step === 2 && (
+        {/* Step 2: Subcategory */}
+        {step === 2 && (() => {
+          const catData = SUBCATEGORIES[form.categorySlug];
+          return (
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">
+                {catData?.description ?? 'What type of work do you need?'}
+              </h1>
+              <p className="text-ink-sub text-base mb-8">Pick the closest match — or skip and describe in your own words.</p>
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {(catData?.items ?? []).map((item) => {
+                  const Icon = item.Icon;
+                  const selected = form.subcategorySlug === item.slug;
+                  return (
+                    <button
+                      key={item.slug}
+                      onClick={() => {
+                        setForm(f => ({
+                          ...f,
+                          subcategorySlug: item.slug,
+                          description: f.description || item.label,
+                        }));
+                      }}
+                      className={`p-4 rounded-[20px] border-2 text-left transition-all flex flex-col gap-3 ${
+                        selected
+                          ? 'border-brand bg-brand-muted'
+                          : 'border-border-dim bg-white hover:border-brand/40 hover:shadow-sm'
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                        selected ? 'bg-brand text-white' : 'bg-surface-alt text-ink-sub'
+                      }`}>
+                        <Icon className="w-5 h-5" strokeWidth={1.5} />
+                      </div>
+                      <p className={`font-semibold text-sm leading-tight ${selected ? 'text-brand' : 'text-ink'}`}>{item.label}</p>
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setStep(3)}
+                className="w-full py-3 rounded-card border border-border-dim bg-white text-ink-sub text-sm font-semibold hover:bg-surface-alt transition-colors flex items-center justify-center gap-2"
+              >
+                Something else <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        })()}
+
+        {/* Step 3: Details */}
+        {step === 3 && (
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Describe the job</h1>
             <p className="text-ink-sub text-base mb-8">More detail means better, faster quotes from pros.</p>
@@ -313,8 +366,8 @@ function NewRequestContent() {
           </div>
         )}
 
-        {/* Step 3: Schedule */}
-        {step === 3 && (
+        {/* Step 4: Schedule */}
+        {step === 4 && (
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Location & schedule</h1>
             <p className="text-ink-sub text-base mb-8">Where is the job and when do you need it done?</p>
@@ -385,23 +438,23 @@ function NewRequestContent() {
           </div>
         )}
 
-        {/* Step 4: Review */}
-        {step === 4 && (
+        {/* Step 5: Review */}
+        {step === 5 && (
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Review your request</h1>
             <p className="text-ink-sub text-base mb-8">Double-check everything before posting to local pros.</p>
             <div className="bg-white rounded-panel border border-border-dim p-6 space-y-4 shadow-card mb-6">
               <ReviewRow label="Service" value={form.categoryName} onEdit={() => setStep(1)} />
-              <ReviewRow label="Description" value={form.description} onEdit={() => setStep(2)} multiline />
+              <ReviewRow label="Description" value={form.description} onEdit={() => setStep(3)} multiline />
               {form.isUrgent && (
                 <div className="flex items-center gap-2 py-1">
                   <span className="px-3 py-1 bg-caution-surface text-caution text-xs font-bold rounded-full uppercase tracking-wide">Urgent request</span>
                 </div>
               )}
-              <ReviewRow label="Address" value={form.address} onEdit={() => setStep(3)} />
-              <ReviewRow label="Preferred date" value={new Date(form.dateWindow).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} onEdit={() => setStep(3)} />
-              <ReviewRow label="Time preference" value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'} onEdit={() => setStep(3)} />
-              {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(3)} />}
+              <ReviewRow label="Address" value={form.address} onEdit={() => setStep(4)} />
+              <ReviewRow label="Preferred date" value={new Date(form.dateWindow).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} onEdit={() => setStep(4)} />
+              <ReviewRow label="Time preference" value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'} onEdit={() => setStep(4)} />
+              {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(4)} />}
               {photos.length > 0 && (
                 <div className="pb-4 border-b border-border-dim last:border-0 last:pb-0">
                   <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Photos</p>
@@ -423,7 +476,7 @@ function NewRequestContent() {
       {/* Bottom bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
         <div className="max-w-2xl mx-auto">
-          {step < 4 ? (
+          {step < 5 ? (
             <button
               onClick={next}
               disabled={!canProceed()}
