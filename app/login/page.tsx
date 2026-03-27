@@ -2,7 +2,7 @@
 
 import { AladdinIcon } from '@/components/icons';
 import React, { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
@@ -29,8 +29,11 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Invalid email or password');
       } else {
-        router.push('/');
-        router.refresh();
+        const session = await getSession();
+        const role = (session?.user as any)?.role;
+        if (role === 'PROVIDER') router.push('/provider/dashboard');
+        else if (role === 'ADMIN') router.push('/admin/dashboard');
+        else router.push('/dashboard');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');

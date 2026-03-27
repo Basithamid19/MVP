@@ -306,24 +306,26 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         </main>
 
         {/* ══ Mobile Bottom Navigation ════════════════════════════════════════ */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim/50 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-          <div className="flex items-center justify-around px-2 py-2">
-            <Link href="/provider/dashboard" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/dashboard' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-              <LayoutDashboard className="w-6 h-6" />
-              <span className="text-[10px] font-medium">Dashboard</span>
-            </Link>
-            <Link href="/provider/jobs" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-              <Briefcase className="w-6 h-6" />
-              <span className="text-[10px] font-medium">Jobs</span>
-            </Link>
-            <Link href="/provider/performance" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/performance' || pathname === '/provider/earnings' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-              <TrendingUp className="w-6 h-6" />
-              <span className="text-[10px] font-medium">Performance</span>
-            </Link>
-            <Link href="/provider/settings" className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-colors ${pathname === '/provider/settings' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}>
-              <Settings className="w-6 h-6" />
-              <span className="text-[10px] font-medium">Account</span>
-            </Link>
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+          <div className="bg-white/90 backdrop-blur-xl border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.10)] pb-safe">
+            <div className="flex items-center justify-around px-1 py-1.5">
+              {([
+                { href: '/provider/dashboard',   label: 'Dashboard', Icon: LayoutDashboard, isActive: pathname === '/provider/dashboard' },
+                { href: '/provider/jobs',         label: 'Jobs',      Icon: Briefcase,      isActive: pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' },
+                { href: '/provider/performance',  label: 'Earnings',  Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
+                { href: '/provider/settings',     label: 'Account',   Icon: Settings,       isActive: pathname === '/provider/settings' },
+              ] as const).map(({ href, label, Icon, isActive }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${isActive ? 'text-brand' : 'text-ink-dim'}`}
+                >
+                  {isActive && <span className="absolute inset-0 bg-brand-muted rounded-xl" />}
+                  <Icon className={`relative w-5 h-5 ${isActive ? 'stroke-[2]' : 'stroke-[1.5]'}`} />
+                  <span className={`relative text-[10px] font-semibold tracking-tight ${isActive ? 'text-brand' : 'text-ink-dim'}`}>{label}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </nav>
       </div>
