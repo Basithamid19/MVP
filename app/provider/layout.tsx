@@ -151,9 +151,9 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <div className="p-6 lg:p-8">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">D</span>
+              <span className="text-white font-bold text-sm tracking-tight">A</span>
             </div>
-            <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">Dispatch</span>
+            <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">Aladdin</span>
           </Link>
         </div>
 
@@ -208,9 +208,9 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-4 sm:py-5 flex items-center justify-between sm:justify-end gap-2 sticky top-0 z-20">
           <Link href="/" className="md:hidden flex items-center gap-2">
             <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <span className="text-white font-bold text-sm tracking-tight">D</span>
+              <span className="text-white font-bold text-sm tracking-tight">A</span>
             </div>
-            <span className="font-semibold text-lg tracking-tight text-ink">Dispatch</span>
+            <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
           {/* Notifications bell + dropdown */}

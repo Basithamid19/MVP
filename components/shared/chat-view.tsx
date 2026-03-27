@@ -153,7 +153,7 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
     if (providerPhone) {
       window.location.href = `tel:${providerPhone}`;
     } else {
-      alert('Call masking active. The pro will receive your call securely through Dispatch.');
+      alert('Call masking active. The pro will receive your call securely through Aladdin.');
     }
   };
 

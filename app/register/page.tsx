@@ -47,13 +47,13 @@ export default function RegisterPage() {
         <div className="max-w-md w-full mx-auto">
           <Link href="/" className="flex items-center gap-2 mb-12">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm tracking-tight">D</span>
+              <span className="text-white font-bold text-sm tracking-tight">A</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-ink">Dispatch</span>
+            <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
           <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">Create account.</h1>
-          <p className="text-ink-sub mb-10">Join the Dispatch community today.</p>
+          <p className="text-ink-sub mb-10">Join the Aladdin community today.</p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button 
@@ -142,7 +142,7 @@ export default function RegisterPage() {
         <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
           <div className="text-center">
             <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <span className="text-white font-bold text-4xl">D</span>
+              <span className="text-white font-bold text-4xl">A</span>
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">
               {role === 'PROVIDER' ? 'Grow your business in Vilnius.' : 'The best pros in Vilnius.'}
@@ -150,7 +150,7 @@ export default function RegisterPage() {
             <p className="text-ink-sub leading-relaxed text-lg">
               {role === 'PROVIDER' 
                 ? 'Join our network of verified professionals and get access to high-quality leads every day.'
-                : 'Join thousands of residents who trust Dispatch for their home maintenance needs.'}
+                : 'Join thousands of residents who trust Aladdin for their home maintenance needs.'}
             </p>
           </div>
         </div>

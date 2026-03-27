@@ -326,7 +326,7 @@ export default function ProviderProfilePage() {
             <p className="text-ink-sub text-sm mb-6">Send a request to {provider.user.name.split(' ')[0]} and get a quote within the hour.</p>
 
             <div className="space-y-3 mb-6">
-              {['No upfront payment', 'Free cancellation', 'Dispatch Guarantee'].map(item => (
+              {['No upfront payment', 'Free cancellation', 'Aladdin Guarantee'].map(item => (
                 <div key={item} className="flex items-center gap-3 text-sm font-medium text-ink-sub">
                   <div className="w-5 h-5 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-3 h-3 text-trust" />

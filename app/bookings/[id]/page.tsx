@@ -272,7 +272,7 @@ export default function BookingPage() {
                 if (provider?.phone) {
                   window.location.href = `tel:${provider.phone}`;
                 } else {
-                  alert('Call masking active. Your call will be connected securely through Dispatch.');
+                  alert('Call masking active. Your call will be connected securely through Aladdin.');
                 }
               }}
               className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"

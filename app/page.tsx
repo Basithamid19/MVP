@@ -66,7 +66,7 @@ const TESTIMONIALS = [
     avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
   },
   {
-    quote: 'Booked a cleaner for my apartment before moving in. She did an incredible job. Dispatch made the whole process effortless.',
+    quote: 'Booked a cleaner for my apartment before moving in. She did an incredible job. Aladdin made the whole process effortless.',
     name: 'Eglė S.',
     city: 'Vilnius',
     service: 'Deep Cleaning',
@@ -90,7 +90,7 @@ const TESTIMONIALS = [
     avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
   },
   {
-    quote: 'Moving is usually a nightmare, but the team we found on Dispatch made it so easy and stress-free.',
+    quote: 'Moving is usually a nightmare, but the team we found on Aladdin made it so easy and stress-free.',
     name: 'Darius K.',
     city: 'Vilnius',
     service: 'Moving Help',
@@ -161,9 +161,9 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between w-full">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <span className="text-white font-bold text-sm tracking-tight">D</span>
+              <span className="text-white font-bold text-sm tracking-tight">A</span>
             </div>
-            <span className="font-bold text-lg tracking-tight text-ink">Dispatch</span>
+            <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
           <div className="flex items-center gap-3">
             {session ? (
@@ -629,11 +629,11 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. Why Dispatch ── */}
+      {/* ── 5. Why Aladdin ── */}
       <section className="bg-canvas py-16 sm:py-20">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           {/* Eyebrow + headline */}
-          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Dispatch</p>
+          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-[1.15] mb-8">
             Built for trust,<br className="hidden sm:block" /> built for Vilnius.
           </h2>
@@ -766,7 +766,7 @@ export default function LandingPage() {
                 Are you a professional?<br />Get new customers in Vilnius.
               </h2>
               <p className="text-ink-sub text-lg leading-relaxed mb-8 max-w-lg">
-                Join hundreds of local pros already growing their business on Dispatch.
+                Join hundreds of local pros already growing their business on Aladdin.
                 Receive verified leads, manage bookings, and build your reputation.
               </p>
               <div className="flex flex-wrap gap-3">
@@ -841,9 +841,9 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-2.5 mb-3">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-sm">D</span>
+                <span className="text-white font-bold text-sm">A</span>
               </div>
-              <span className="font-bold text-xl tracking-tight text-brand">Dispatch</span>
+              <span className="font-bold text-xl tracking-tight text-brand">Aladdin</span>
             </div>
             <p className="text-xs font-semibold uppercase tracking-widest text-ink-dim">
               Trusted local professionals · Vilnius, Lithuania
@@ -893,7 +893,7 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-ink-dim">© 2026 Dispatch Marketplace. All rights reserved.</p>
+            <p className="text-xs text-ink-dim">© 2026 Aladdin Marketplace. All rights reserved.</p>
             <p className="text-xs text-ink-dim">Vilnius, Lithuania · English / Lietuvių</p>
           </div>
 
