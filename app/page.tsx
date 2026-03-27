@@ -568,43 +568,86 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Dispatch ── */}
-      <section className="py-10 lg:py-16 bg-canvas">
-        <div className="mx-4 rounded-3xl overflow-hidden" style={{ background: '#cdd9d0' }}>
-          {/* Header */}
-          <div className="px-6 pt-7 pb-5">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-2" style={{ color: '#1c382880' }}>Why Dispatch</p>
-            <h2 className="text-[24px] font-bold tracking-tight leading-tight" style={{ color: '#1c3828' }}>Built for trust,<br />built for Vilnius.</h2>
-          </div>
-
-          {/* Feature rows */}
-          <div className="divide-y" style={{ borderColor: '#1c382815' }}>
-            {[
-              { icon: BadgeCheck,    title: 'Verified Experts',   desc: 'Every pro is ID-verified and trade-certified before joining.' },
-              { icon: Star,          title: 'Real Reviews Only',  desc: 'Reviews only from customers with completed bookings.' },
-              { icon: Zap,           title: 'Fast Response',      desc: 'Most requests get a reply within 1 hour.' },
-              { icon: MessageCircle, title: 'Direct Messaging',   desc: 'Chat with pros before booking to align on price.' },
-            ].map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="flex items-start gap-4 px-6 py-5">
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5" style={{ background: '#1c382818' }}>
-                  <Icon className="w-[18px] h-[18px]" style={{ color: '#1c3828' }} strokeWidth={1.8} />
+      <section className="py-24 bg-white relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Image side */}
+            <div className="relative aspect-square bg-canvas rounded-hero overflow-hidden shadow-float border border-border-dim order-2 lg:order-1">
+              <img
+                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop"
+                alt="Vilnius Professional"
+                className="object-cover w-full h-full transition-all duration-700 hover:scale-105"
+              />
+              {/* Floating testimonial overlay */}
+              <div className="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-panel shadow-float border border-border-dim">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex -space-x-2">
+                    {[11, 12, 13].map(i => (
+                      <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
+                        <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-1 text-yellow-500">
+                    <Star className="w-4 h-4 fill-current" />
+                    <span className="text-ink font-bold text-sm">4.9/5</span>
+                    <span className="text-xs text-ink-dim ml-1">from 2,400+ reviews</span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-bold text-[14px] mb-0.5" style={{ color: '#1c3828' }}>{title}</p>
-                  <p className="text-[12px] leading-relaxed" style={{ color: '#1c382899' }}>{desc}</p>
-                </div>
+                <p className="text-sm font-medium text-ink leading-relaxed">
+                  &ldquo;Found an amazing electrician in just 5 minutes. Highly recommend!&rdquo;
+                </p>
+                <p className="text-xs text-ink-dim mt-2">— Anna K., Vilnius</p>
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Bottom CTA */}
-          <div className="px-6 py-5">
-            <Link
-              href="/browse"
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold"
-              style={{ background: '#1c382818', color: '#1c3828' }}
-            >
-              Find a Pro <ArrowRight className="w-4 h-4" />
-            </Link>
+            {/* Content side */}
+            <div className="order-1 lg:order-2">
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-4">Why Dispatch</p>
+              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink mb-10 leading-[1.1]">
+                Built for trust, <br/>built for Vilnius.
+              </h2>
+              
+              <div className="grid sm:grid-cols-2 gap-6 mb-10">
+                {[
+                  {
+                    icon: BadgeCheck,
+                    title: 'Verified Experts',
+                    desc: 'All professionals are ID-verified and trade-certified before joining.',
+                  },
+                  {
+                    icon: Star,
+                    title: 'Real Reviews',
+                    desc: 'Only customers with completed bookings can leave reviews.',
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Fast Response',
+                    desc: 'Local pros ready to help. Most requests get a reply within 1 hour.',
+                  },
+                  {
+                    icon: MessageCircle,
+                    title: 'Direct Messaging',
+                    desc: 'Chat with professionals before booking to align on scope and price.',
+                  },
+                ].map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 transition-all flex flex-col group">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-5 shadow-sm text-brand shrink-0 border border-border-dim group-hover:scale-110 transition-transform">
+                      <Icon className="w-6 h-6" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="font-bold text-ink text-base mb-2">{title}</h3>
+                    <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/browse"
+                className={buttonVariants({ variant: 'primary', size: 'lg' }) + " w-full sm:w-auto"}
+              >
+                Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
