@@ -297,8 +297,9 @@ export default function DashboardPage() {
   if (!session) return null;
 
   const firstName    = capitalize(session.user?.name?.split(' ')[0]);
-  const totalQuotes  = requests.reduce((s: number, r: any) => s + (r.quotes?.length ?? 0), 0);
-  const quotedReqs   = requests.filter((r: any) => (r.quotes?.length ?? 0) > 0);
+  const pendingQuoteReqs = requests.filter((r: any) => r.quotes?.some((q: any) => q.status === 'PENDING'));
+  const totalQuotes  = pendingQuoteReqs.reduce((s: number, r: any) => s + (r.quotes?.filter((q: any) => q.status === 'PENDING').length ?? 0), 0);
+  const quotedReqs   = pendingQuoteReqs;
   const activeReqs   = requests.filter((r: any) => !['COMPLETED','DECLINED','EXPIRED'].includes(r.status));
   const completedCt  = bookings.filter((b: any) => b.status === 'COMPLETED').length;
   const upcomingBook = bookings.find((b: any) => b.status === 'SCHEDULED');
