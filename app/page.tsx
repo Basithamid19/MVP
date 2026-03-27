@@ -629,51 +629,75 @@ export default function LandingPage() {
       </section>
 
       {/* ── 6. Testimonials ── */}
-      <section className="py-24 bg-surface-alt">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-14">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer stories</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-3">What Customers Say</h2>
-            <p className="text-ink-sub">Real reviews from real homeowners in Vilnius.</p>
+      <section className="py-10 lg:py-16 bg-white overflow-hidden">
+        <div className="flex items-center justify-between px-4 sm:px-6 mb-6">
+          <div>
+            <p className="text-[10px] font-black text-brand uppercase tracking-[0.2em] mb-1">Customer Stories</p>
+            <h2 className="text-[22px] font-bold tracking-tight text-ink leading-tight">What Customers Say</h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, idx) => (
-              <motion.div
+        </div>
+
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
+          {TESTIMONIALS.map((t, idx) => {
+            const palettes = [
+              { bg: '#e8d5d8', fg: '#4a1a22' }, // muted rose
+              { bg: '#cdd9d0', fg: '#1c3828' }, // muted sage
+              { bg: '#dfd8c8', fg: '#3a2c10' }, // warm sand
+              { bg: '#c5d0dc', fg: '#1a2f42' }, // muted slate
+              { bg: '#d4cede', fg: '#2c1f44' }, // soft mauve
+              { bg: '#d0d0d0', fg: '#1a1a1a' }, // cool grey
+            ];
+            const { bg, fg } = palettes[idx % palettes.length];
+            return (
+              <div
                 key={idx}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white rounded-panel border border-border-dim p-8 shadow-sm flex flex-col hover:shadow-elevated transition-shadow"
+                className="shrink-0 w-[78vw] max-w-[280px] snap-start rounded-3xl flex flex-col overflow-hidden"
+                style={{ background: bg, minHeight: 300 }}
               >
-                {/* Quote Icon */}
-                <div className="text-brand/20 mb-4">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.017 18L14.017 10.609C14.017 4.905 17.748 1.039 23 0L23.995 2.151C21.563 3.068 20 5.789 20 8H24V18H14.017ZM0 18V10.609C0 4.905 3.748 1.038 9 0L9.996 2.151C7.563 3.068 6 5.789 6 8H9.983L9.983 18L0 18Z" />
-                  </svg>
+                {/* Avatar image — fills top of card */}
+                <div className="relative h-40 overflow-hidden shrink-0">
+                  <img
+                    src={`https://i.pravatar.cc/300?img=${t.avatar}`}
+                    alt={t.name}
+                    className="w-full h-full object-cover object-top"
+                  />
+                  {/* Fade into card color */}
+                  <div
+                    className="absolute inset-0"
+                    style={{
+                      background: `linear-gradient(to bottom, transparent 40%, ${bg} 100%)`,
+                    }}
+                  />
                 </div>
 
-                {/* Quote */}
-                <p className="text-ink text-base leading-relaxed flex-1 mb-8 font-medium">
-                  "{t.quote}"
-                </p>
-
-                {/* Author */}
-                <div className="flex items-center gap-4 pt-6 border-t border-border-dim">
-                  <div className="w-12 h-12 rounded-full bg-surface-alt overflow-hidden shrink-0 shadow-sm border border-border-dim">
-                    <img src={`https://i.pravatar.cc/100?img=${t.avatar}`} alt={t.name} className="w-full h-full object-cover" />
+                {/* Content */}
+                <div className="px-5 pb-6 flex flex-col flex-1" style={{ marginTop: -8 }}>
+                  {/* Stars */}
+                  <div className="flex gap-0.5 mb-3">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <svg key={i} width="13" height="13" viewBox="0 0 24 24" fill={fg} opacity={0.9}>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                      </svg>
+                    ))}
                   </div>
+
+                  {/* Quote */}
+                  <p
+                    className="text-[13px] font-medium leading-relaxed flex-1 mb-4"
+                    style={{ color: fg }}
+                  >
+                    "{t.quote}"
+                  </p>
+
+                  {/* Author */}
                   <div>
-                    <p className="font-bold text-sm text-ink flex items-center gap-1.5">
-                      {t.name}
-                      <CheckCircle2 className="w-3.5 h-3.5 text-trust" />
-                    </p>
-                    <p className="text-xs text-ink-dim mt-0.5">{t.city} · {t.service}</p>
+                    <p className="text-sm font-bold" style={{ color: fg }}>{t.name}</p>
+                    <p className="text-[11px] mt-0.5" style={{ color: fg, opacity: 0.6 }}>{t.service} · {t.city}</p>
                   </div>
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
