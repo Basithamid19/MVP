@@ -39,7 +39,7 @@ export default function MobileNav() {
           className={`flex flex-col items-center gap-1 p-2 min-w-[60px] transition-colors ${pathname === '/account' ? 'text-brand' : 'text-ink-dim hover:text-ink'}`}
         >
           <UserCircle2 className="w-6 h-6" />
-          <span className="text-[10px] font-medium">My Account</span>
+          <span className="text-[10px] font-medium">Account</span>
         </Link>
       </div>
     </nav>

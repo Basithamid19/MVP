@@ -81,7 +81,7 @@ export default function CustomerLayout({
   const unreadCount = visibleNotifs.length;
 
   return (
-    <div className="min-h-screen bg-canvas flex font-sans">
+    <div className="min-h-screen w-full max-w-full bg-canvas flex font-sans">
       {/* Sidebar */}
       <aside className="hidden md:flex w-16 lg:w-64 bg-canvas flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
         <div className="p-6 lg:p-8">
@@ -125,7 +125,7 @@ export default function CustomerLayout({
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 min-w-0 flex flex-col pb-20 md:pb-0">
+      <div className="flex-1 min-w-0 overflow-x-hidden flex flex-col pb-20 md:pb-0">
         {/* Top bar */}
         <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-2 sm:py-3 flex items-center justify-between sm:justify-end sticky top-0 z-20">
           <Link href="/" className="md:hidden flex items-center gap-2">
@@ -204,7 +204,7 @@ export default function CustomerLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto px-6 pb-6 lg:px-10 lg:pb-10 pt-2 lg:pt-4">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 sm:px-6 pb-24 lg:px-10 lg:pb-10 pt-2 lg:pt-4">
           <div className={`${maxWidth} mx-auto`}>
             {children}
           </div>
