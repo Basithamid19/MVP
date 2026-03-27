@@ -71,24 +71,25 @@ async function main() {
 
   // 4. Create Providers (8 providers across categories in Vilnius)
   const providersData = [
-    { email: 'marius@pro.lt', name: 'Marius Kazlauskas', cat: 'plumber', bio: 'Professional plumber with 10 years experience in Vilnius. Specializing in bathroom renovations and emergency repairs.', area: 'Senamiestis, Naujamiestis, Žvėrynas' },
-    { email: 'tomas@pro.lt', name: 'Tomas Petrauskas', cat: 'electrician', bio: 'Certified master electrician. Smart home installations, rewiring, and 24/7 emergency services.', area: 'Antakalnis, Verkiai, Fabijoniškės' },
-    { email: 'lina@pro.lt', name: 'Lina Rimkutė', cat: 'cleaning', bio: 'Eco-friendly cleaning with premium products. Apartments, offices, post-construction cleanup.', area: 'All Vilnius districts' },
-    { email: 'andrius@pro.lt', name: 'Andrius Butkus', cat: 'handyman', bio: 'Jack of all trades! From hanging pictures to fixing doors. No job too small.', area: 'Pilaitė, Karoliniškės, Lazdynai' },
-    { email: 'vytas@pro.lt', name: 'Vytautas Sabonis', cat: 'furniture-assembly', bio: 'IKEA assembly expert. Fast, precise, and clean work. Tools included.', area: 'All Vilnius districts' },
-    { email: 'paulius@pro.lt', name: 'Paulius Jankauskas', cat: 'moving-help', bio: 'Professional moving team with truck. Careful handling of your belongings.', area: 'Vilnius and surrounding areas' },
-    { email: 'rokas@pro.lt', name: 'Rokas Stankevičius', cat: 'plumber', bio: 'Emergency plumbing 24/7. Pipe repairs, drain cleaning, water heater installation.', area: 'Justiniškės, Pašilaičiai, Baltupiai' },
-    { email: 'darius@pro.lt', name: 'Darius Vaitkus', cat: 'electrician', bio: 'Industrial and residential electrical work. EV charger installations specialist.', area: 'Šnipiškės, Žirmūnai, Šeškinė' },
+    { email: 'marius@pro.lt',   name: 'Marius Kazlauskas',   image: 'https://randomuser.me/api/portraits/men/10.jpg',   cat: 'plumber',            bio: 'Professional plumber with 10 years experience in Vilnius. Specializing in bathroom renovations and emergency repairs.', area: 'Senamiestis, Naujamiestis, Žvėrynas' },
+    { email: 'tomas@pro.lt',    name: 'Tomas Petrauskas',    image: 'https://randomuser.me/api/portraits/men/20.jpg',   cat: 'electrician',        bio: 'Certified master electrician. Smart home installations, rewiring, and 24/7 emergency services.', area: 'Antakalnis, Verkiai, Fabijoniškės' },
+    { email: 'lina@pro.lt',     name: 'Lina Rimkutė',        image: 'https://randomuser.me/api/portraits/women/32.jpg', cat: 'cleaning',           bio: 'Eco-friendly cleaning with premium products. Apartments, offices, post-construction cleanup.', area: 'All Vilnius districts' },
+    { email: 'andrius@pro.lt',  name: 'Andrius Butkus',      image: 'https://randomuser.me/api/portraits/men/30.jpg',   cat: 'handyman',           bio: 'Jack of all trades! From hanging pictures to fixing doors. No job too small.', area: 'Pilaitė, Karoliniškės, Lazdynai' },
+    { email: 'vytas@pro.lt',    name: 'Vytautas Sabonis',    image: 'https://randomuser.me/api/portraits/men/45.jpg',   cat: 'furniture-assembly', bio: 'IKEA assembly expert. Fast, precise, and clean work. Tools included.', area: 'All Vilnius districts' },
+    { email: 'paulius@pro.lt',  name: 'Paulius Jankauskas',  image: 'https://randomuser.me/api/portraits/men/52.jpg',   cat: 'moving-help',        bio: 'Professional moving team with truck. Careful handling of your belongings.', area: 'Vilnius and surrounding areas' },
+    { email: 'rokas@pro.lt',    name: 'Rokas Stankevičius',  image: 'https://randomuser.me/api/portraits/men/16.jpg',   cat: 'plumber',            bio: 'Emergency plumbing 24/7. Pipe repairs, drain cleaning, water heater installation.', area: 'Justiniškės, Pašilaičiai, Baltupiai' },
+    { email: 'darius@pro.lt',   name: 'Darius Vaitkus',      image: 'https://randomuser.me/api/portraits/men/25.jpg',   cat: 'electrician',        bio: 'Industrial and residential electrical work. EV charger installations specialist.', area: 'Šnipiškės, Žirmūnai, Šeškinė' },
   ];
 
   const providers: { id: string; profileId: string; email: string }[] = [];
   for (const p of providersData) {
     const user = await prisma.user.upsert({
       where: { email: p.email },
-      update: {},
+      update: { image: p.image },
       create: {
         email: p.email,
         name: p.name,
+        image: p.image,
         password: hashedPassword,
         role: 'PROVIDER',
         providerProfile: {

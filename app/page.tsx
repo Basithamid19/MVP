@@ -54,7 +54,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Electrical Installation',
     rating: 5,
-    avatar: 11,
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
   },
   {
     quote: 'The plumber arrived within an hour, fixed the leak, and the price matched the quote exactly. Exactly what I needed.',
@@ -62,7 +62,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Plumbing Repair',
     rating: 5,
-    avatar: 12,
+    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
   },
   {
     quote: 'Booked a cleaner for my apartment before moving in. She did an incredible job. Dispatch made the whole process effortless.',
@@ -70,7 +70,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Deep Cleaning',
     rating: 5,
-    avatar: 13,
+    avatar: 'https://randomuser.me/api/portraits/women/63.jpg',
   },
   {
     quote: 'Needed a handyman to mount a TV and some shelves. He was punctual, polite, and left the place spotless.',
@@ -78,7 +78,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Handyman',
     rating: 5,
-    avatar: 14,
+    avatar: 'https://randomuser.me/api/portraits/men/35.jpg',
   },
   {
     quote: 'The painters transformed our living room in just two days. The attention to detail was fantastic. Highly recommended.',
@@ -86,7 +86,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Interior Painting',
     rating: 5,
-    avatar: 15,
+    avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
   },
   {
     quote: 'Moving is usually a nightmare, but the team we found on Dispatch made it so easy and stress-free.',
@@ -94,7 +94,7 @@ const TESTIMONIALS = [
     city: 'Vilnius',
     service: 'Moving Help',
     rating: 5,
-    avatar: 16,
+    avatar: 'https://randomuser.me/api/portraits/men/41.jpg',
   },
 ];
 
@@ -314,9 +314,13 @@ export default function LandingPage() {
               {/* Floating Pro Badge */}
               <div className="absolute top-12 -right-8 bg-white p-4 rounded-card shadow-elevated border border-border-dim flex items-center gap-3">
                 <div className="flex -space-x-2">
-                  {[11, 12, 13].map(i => (
-                    <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
-                      <img src={`https://i.pravatar.cc/100?img=${i}`} alt="" />
+                  {[
+                    'https://randomuser.me/api/portraits/women/44.jpg',
+                    'https://randomuser.me/api/portraits/men/22.jpg',
+                    'https://randomuser.me/api/portraits/women/63.jpg',
+                  ].map(src => (
+                    <div key={src} className="w-8 h-8 rounded-full border-2 border-white bg-canvas overflow-hidden">
+                      <img src={src} alt="" className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
@@ -733,7 +737,7 @@ export default function LandingPage() {
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
                     <img
-                      src={`https://i.pravatar.cc/120?img=${t.avatar}`}
+                      src={t.avatar}
                       alt={t.name}
                       className="w-full h-full object-cover"
                     />
