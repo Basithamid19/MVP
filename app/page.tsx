@@ -612,26 +612,24 @@ export default function LandingPage() {
 
         <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1">
           {TESTIMONIALS.map((t, idx) => {
+            // Exact Apple Mac mini palette: muted rose, dark slate, light silver
             const palettes = [
-              { bg: '#e8d5d8', fg: '#4a1a22' },
-              { bg: '#cdd9d0', fg: '#1c3828' },
-              { bg: '#dfd8c8', fg: '#3a2c10' },
-              { bg: '#c5d0dc', fg: '#1a2f42' },
-              { bg: '#d4cede', fg: '#2c1f44' },
-              { bg: '#d0d0d0', fg: '#1a1a1a' },
+              { bg: '#dfc8cc', fg: '#3d1520' },          // muted rose/pink
+              { bg: '#636577', fg: '#ffffff' },           // dark slate grey
+              { bg: '#d5d5d7', fg: '#1d1d1f' },          // cool light silver
             ];
             const { bg, fg } = palettes[idx % palettes.length];
             return (
               <div
                 key={idx}
-                className="shrink-0 w-[78vw] max-w-[280px] snap-start rounded-3xl p-5 flex flex-col"
-                style={{ background: bg, minHeight: 310 }}
+                className="shrink-0 w-[82vw] max-w-[300px] snap-start rounded-3xl p-6 flex flex-col"
+                style={{ background: bg, minHeight: 370 }}
               >
                 {/* Top row: avatar + stars */}
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-5">
                   <div
-                    className="w-14 h-14 rounded-2xl overflow-hidden border-2 shrink-0"
-                    style={{ borderColor: `${fg}22` }}
+                    className="w-16 h-16 rounded-2xl overflow-hidden shrink-0"
+                    style={{ border: `2px solid ${fg}25` }}
                   >
                     <img
                       src={`https://i.pravatar.cc/120?img=${t.avatar}`}
@@ -641,7 +639,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex gap-0.5">
                     {Array.from({ length: t.rating }).map((_, i) => (
-                      <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={fg}>
+                      <svg key={i} width="15" height="15" viewBox="0 0 24 24" fill={fg} opacity={0.9}>
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     ))}
@@ -649,20 +647,20 @@ export default function LandingPage() {
                 </div>
 
                 {/* Large decorative quote mark */}
-                <svg width="28" height="22" viewBox="0 0 28 22" fill={fg} opacity={0.15} className="mb-3 shrink-0">
+                <svg width="30" height="24" viewBox="0 0 28 22" fill={fg} opacity={0.12} className="mb-3 shrink-0">
                   <path d="M0 22V13.364C0 5.727 4.667 1.212 14 0l1.167 2.182C11.083 3.576 9 6.788 9 10h5V22H0ZM16 22V13.364C16 5.727 20.667 1.212 30 0l1.167 2.182C27.083 3.576 25 6.788 25 10h5V22H16Z" />
                 </svg>
 
                 {/* Quote */}
                 <p
-                  className="text-[13.5px] font-medium leading-relaxed flex-1 mb-5"
+                  className="text-[14px] font-medium leading-relaxed flex-1 mb-5"
                   style={{ color: fg }}
                 >
                   {t.quote}
                 </p>
 
                 {/* Author */}
-                <div className="pt-4" style={{ borderTop: `1px solid ${fg}20` }}>
+                <div className="pt-4" style={{ borderTop: `1px solid ${fg}22` }}>
                   <p className="text-sm font-bold" style={{ color: fg }}>{t.name}</p>
                   <p className="text-[11px] mt-0.5" style={{ color: fg, opacity: 0.55 }}>
                     {t.service} · {t.city}
