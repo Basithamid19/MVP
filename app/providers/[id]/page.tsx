@@ -289,9 +289,9 @@ export default function ProviderProfilePage() {
                   <div key={review.id} className="pb-4 border-b border-border-dim last:border-0 last:pb-0">
                     <div className="flex items-start gap-3 mb-2">
                       <img
-                        src={`https://i.pravatar.cc/40?u=${review.customerId}`}
+                        src={review.customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.customer?.user?.name ?? 'User')}&size=80&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
                         alt="Reviewer"
-                        className="w-8 h-8 rounded-full shrink-0"
+                        className="w-8 h-8 rounded-full shrink-0 object-cover"
                       />
                       <div className="flex-1">
                         <div className="flex items-center justify-between">

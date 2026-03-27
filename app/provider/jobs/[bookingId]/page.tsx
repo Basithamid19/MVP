@@ -117,7 +117,7 @@ export default function ProviderJobDetailPage() {
           <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Customer</p>
           <div className="flex items-center gap-3 mb-4">
             <img
-              src={`https://i.pravatar.cc/80?u=${customer?.id}`}
+              src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
               alt={customer?.user?.name}
               className="w-12 h-12 rounded-card object-cover shrink-0"
             />
