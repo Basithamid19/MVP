@@ -457,7 +457,7 @@ export default function LandingPage() {
           {prosLoading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
               {Array.from({ length: 4 }).map((_, idx) => (
-                <div key={idx} className="bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 animate-pulse shadow-sm">
+                <div key={idx} className="bg-surface-alt rounded-panel border border-border-dim p-6 animate-pulse shadow-sm">
                   <div className="flex items-center gap-4 mb-5">
                     <div className="w-14 h-14 bg-white rounded-full shrink-0" />
                     <div className="flex-1 space-y-2">
@@ -477,7 +477,7 @@ export default function LandingPage() {
               ))}
             </div>
           ) : topPros.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {topPros.map((pro, idx) => (
                 <motion.div
                   key={pro.id}
@@ -488,43 +488,47 @@ export default function LandingPage() {
                 >
                   <Link
                     href={`/providers/${pro.id}`}
-                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
+                    className="group block bg-white rounded-panel border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-elevated hover:-translate-y-1 transition-all flex flex-col h-full overflow-hidden"
                   >
-                    <div className="flex items-center justify-between mb-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-14 h-14 bg-white rounded-full overflow-hidden shrink-0 shadow-sm border border-border-dim">
-                          <img
-                            src={pro.user?.image || `https://i.pravatar.cc/100?u=${pro.id}`}
-                            alt={pro.user?.name}
-                            className="w-full h-full object-cover"
-                          />
+                    <div className="p-6 flex-1">
+                      <div className="flex items-start justify-between mb-5">
+                        <div className="flex items-center gap-4">
+                          <div className="w-16 h-16 bg-surface-alt rounded-2xl overflow-hidden shrink-0 border border-border-dim">
+                            <img
+                              src={pro.user?.image || `https://i.pravatar.cc/150?u=${pro.id}`}
+                              alt={pro.user?.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-lg text-ink truncate group-hover:text-brand transition-colors">{pro.user?.name}</p>
+                            <p className="text-sm text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
+                          </div>
                         </div>
-                        <div className="min-w-0">
-                          <p className="font-bold text-base text-ink truncate">{pro.user?.name}</p>
-                          <p className="text-sm text-ink-sub truncate">{pro.categories?.[0]?.name ?? 'Professional'}</p>
-                        </div>
+                        {pro.isVerified && (
+                          <div className="w-6 h-6 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
+                            <ShieldCheck className="w-3.5 h-3.5 text-trust" />
+                          </div>
+                        )}
                       </div>
-                      {pro.isVerified && (
-                        <div className="w-8 h-8 rounded-full bg-white border border-trust/10 flex items-center justify-center shrink-0">
-                          <ShieldCheck className="w-4 h-4 text-trust" />
+
+                      <div className="space-y-2.5 mb-6">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 font-bold text-ink text-sm">
+                            <Star className="w-4 h-4 text-brand fill-current" />
+                            {pro.ratingAvg?.toFixed(1) ?? '—'}
+                          </div>
+                          <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
                         </div>
-                      )}
+                        {pro.responseTime && (
+                          <div className="flex items-center gap-1.5 text-xs text-ink-sub">
+                            <Clock className="w-3.5 h-3.5 text-ink-dim" /> Usually responds in {pro.responseTime}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <div className="space-y-2 mb-6 flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                        <span className="text-sm font-bold text-ink">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                        <span className="text-xs text-ink-dim">({pro.completedJobs ?? 0} jobs)</span>
-                      </div>
-                      {pro.responseTime && (
-                        <div className="flex items-center gap-1.5 text-xs text-ink-sub">
-                          <Clock className="w-4 h-4 text-ink-dim" /> Usually responds in {pro.responseTime}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
+                    <div className="px-6 py-4 bg-surface-alt border-t border-border-dim flex items-center justify-between mt-auto">
                       {pro.offerings?.[0] ? (
                         <div className="text-sm font-medium text-ink-dim">
                           From <span className="font-bold text-ink">€{pro.offerings[0].price}</span>
@@ -541,42 +545,46 @@ export default function LandingPage() {
               ))}
             </div>
           ) : (
-            /* Category browse fallback */
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-              {[
-                { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
-                { name: 'Plumbers',     slug: 'plumber',     icon: Wrench, desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
-                { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon, desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
-                { name: 'Handymen',     slug: 'handyman',    icon: Hammer, desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
-              ].map((cat, idx) => {
-                const Icon = cat.icon;
-                return (
-                <motion.div
-                  key={cat.slug}
-                  initial={{ opacity: 0, y: 16 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.08 }}
-                  viewport={{ once: true }}
-                >
-                  <Link
-                    href={`/browse?category=${cat.slug}`}
-                    className="group block bg-surface-alt rounded-[1.5rem] border border-border-dim p-6 hover:border-brand/20 hover:shadow-elevated hover:-translate-y-1 transition-all shadow-sm flex flex-col h-full"
+            <>
+              {/* Category browse fallback */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { name: 'Electricians', slug: 'electrician', icon: ElectricianIcon, desc: 'Wiring, repairs & installations', bg: 'bg-info-surface text-info' },
+                  { name: 'Plumbers',     slug: 'plumber',     icon: Wrench, desc: 'Leaks, pipes & fixtures',        bg: 'bg-trust-surface text-trust' },
+                  { name: 'Cleaners',     slug: 'cleaning',    icon: BroomIcon, desc: 'Deep cleaning & maintenance',    bg: 'bg-purple-50 text-purple-600' },
+                  { name: 'Handymen',     slug: 'handyman',    icon: Hammer, desc: 'Furniture, odd jobs & more',     bg: 'bg-caution-surface text-caution' },
+                ].map((cat, idx) => {
+                  const Icon = cat.icon;
+                  return (
+                  <motion.div
+                    key={cat.slug}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.08 }}
+                    viewport={{ once: true }}
                   >
-                    <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm`}>
-                      <Icon className="w-6 h-6" strokeWidth={1.5} />
-                    </div>
-                    <p className="font-bold text-base text-ink mb-1">{cat.name}</p>
-                    <p className="text-sm text-ink-sub mb-6 flex-1">{cat.desc}</p>
-                    <div className="pt-4 border-t border-border-dim flex items-center justify-between mt-auto">
-                      <span className="text-sm text-ink-dim">Browse pros</span>
-                      <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
-                        View <ChevronRight className="w-4 h-4" />
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              )})}
-            </div>
+                    <Link
+                      href={`/browse?category=${cat.slug}`}
+                      className="group block bg-white rounded-panel border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-elevated hover:-translate-y-1 transition-all flex flex-col h-full overflow-hidden"
+                    >
+                      <div className="p-6 flex-1">
+                        <div className={`w-14 h-14 ${cat.bg} rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-sm`}>
+                          <Icon className="w-6 h-6" strokeWidth={1.5} />
+                        </div>
+                        <p className="font-bold text-lg text-ink mb-1 group-hover:text-brand transition-colors">{cat.name}</p>
+                        <p className="text-sm text-ink-sub mb-2">{cat.desc}</p>
+                      </div>
+                      <div className="px-6 py-4 bg-surface-alt border-t border-border-dim flex items-center justify-between mt-auto">
+                        <span className="text-sm font-medium text-ink-dim">Browse pros</span>
+                        <span className="text-sm font-bold text-brand flex items-center gap-1 group-hover:gap-2 transition-all">
+                          View <ChevronRight className="w-4 h-4" />
+                        </span>
+                      </div>
+                    </Link>
+                  </motion.div>
+                )})}
+              </div>
+            </>
           )}
         </div>
       </section>
