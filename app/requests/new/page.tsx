@@ -33,7 +33,7 @@ function ReviewRow({
   label, value, onEdit, multiline,
 }: { label: string; value: string; onEdit: () => void; multiline?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 py-3.5 border-b border-border-dim last:border-0 last:pb-0">
+    <div className="flex items-start justify-between gap-4 py-3.5">
       <div className="flex-1 min-w-0">
         <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1">{label}</p>
         <p className={`text-sm font-medium text-ink ${multiline ? 'whitespace-pre-wrap' : 'truncate'}`}>{value}</p>
@@ -171,7 +171,7 @@ function NewRequestContent() {
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
           <button
             onClick={back}
-            className="p-1.5 hover:bg-surface-alt rounded-full transition-colors shrink-0"
+            className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -557,7 +557,7 @@ function NewRequestContent() {
             <button
               onClick={next}
               disabled={!canProceed()}
-              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -565,7 +565,7 @@ function NewRequestContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Post Request</>}
             </button>

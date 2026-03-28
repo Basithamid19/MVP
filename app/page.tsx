@@ -154,7 +154,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-safe overflow-x-hidden w-full">
+    <div className="min-h-screen bg-white pb-24 md:pb-0 overflow-x-hidden w-full">
 
       {/* ── Nav ── */}
       <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50 w-full">
@@ -359,7 +359,7 @@ export default function LandingPage() {
                   <Link
                     key={b.id}
                     href={`/bookings/${b.id}`}
-                    className="flex items-center gap-3 bg-canvas rounded-xl border border-border-dim p-3.5 hover:border-brand/30 hover:bg-white hover:shadow-sm transition-all"
+                    className="flex items-center gap-3 bg-canvas rounded-xl border border-border-dim shadow-sm p-3.5 hover:border-brand/30 hover:bg-white hover:shadow-elevated transition-all"
                   >
                     <div className="relative shrink-0">
                       <img
@@ -439,7 +439,7 @@ export default function LandingPage() {
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-3xl p-6 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                className="rounded-2xl p-6 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
                 style={{ minHeight: '220px' }}
               >
                 <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
@@ -735,7 +735,7 @@ export default function LandingPage() {
             {TESTIMONIALS.map((t, idx) => (
               <div
                 key={idx}
-                className="shrink-0 w-[82vw] max-w-[320px] snap-start bg-[#f5f5f7] rounded-3xl p-6 flex flex-col"
+                className="shrink-0 w-[82vw] max-w-[320px] snap-start bg-[#f5f5f7] rounded-2xl p-6 flex flex-col"
               >
                 <div className="flex items-center justify-between mb-5">
                   <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
@@ -804,7 +804,7 @@ export default function LandingPage() {
               <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-5">
                 For professionals
               </span>
-              <h2 className="text-4xl font-bold tracking-tight text-ink mb-5">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-5">
                 Are you a professional?<br />Get new customers in Vilnius.
               </h2>
               <p className="text-ink-sub text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
