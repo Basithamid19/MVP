@@ -87,7 +87,7 @@ function BrowseContent() {
 
       {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
-        <div className="flex items-center gap-2.5 px-4 pt-3 pb-2.5">
+        <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
 
           {/* Search field */}
           <div className="flex-1 relative">
@@ -116,7 +116,7 @@ function BrowseContent() {
         </div>
 
         {/* Category chips */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-none px-4 pb-3">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5">
           {CATEGORIES.map(cat => (
             <button
               key={cat.value}
@@ -134,9 +134,9 @@ function BrowseContent() {
       </header>
 
       {/* ── Result count ── */}
-      <div className="px-4 pt-3.5 pb-1 flex items-center justify-between">
-        <p className="text-sm text-ink-dim">
-          {loading ? 'Loading…' : (
+      <div className="px-4 pt-2.5 pb-2.5 flex items-center justify-between">
+        <p className="text-xs text-ink-sub">
+          {loading ? 'Searching…' : (
             <>
               <span className="font-semibold text-ink">{sorted.length}</span>
               {' '}{sorted.length !== 1 ? 'professionals' : 'professional'} found
@@ -173,7 +173,7 @@ function BrowseContent() {
               <Link
                 key={p.id}
                 href={`/providers/${p.id}`}
-                className="bg-white rounded-2xl border border-border-dim shadow-sm active:scale-[0.98] transition-transform flex gap-3.5 p-4 items-start"
+                className="bg-white rounded-2xl border border-border-dim shadow-sm active:scale-[0.98] transition-transform flex gap-3 p-3.5 items-start"
               >
                 {/* Avatar with verified overlay */}
                 <div className="relative shrink-0">
@@ -206,7 +206,7 @@ function BrowseContent() {
                     <span className="text-ink-dim">· {p.completedJobs ?? 0} jobs</span>
                     {responseTime && (
                       <>
-                        <span className="text-ink-dim/40 mx-0.5">·</span>
+                        <span className="text-ink-dim/60 mx-0.5">·</span>
                         <Clock className="w-2.5 h-2.5 text-ink-dim shrink-0" />
                         <span className="text-ink-sub">{responseTime}</span>
                       </>
@@ -214,7 +214,7 @@ function BrowseContent() {
                   </div>
 
                   {p.bio && (
-                    <p className="text-[11px] text-ink-dim mt-1.5 line-clamp-2 leading-relaxed">{p.bio}</p>
+                    <p className="text-[11px] text-ink-sub mt-1.5 line-clamp-1 leading-relaxed">{p.bio}</p>
                   )}
                 </div>
               </Link>

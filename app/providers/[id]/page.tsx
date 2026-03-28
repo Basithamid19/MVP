@@ -144,7 +144,7 @@ export default function ProviderProfilePage() {
                 </div>
 
                 {/* Rating + location */}
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-4 mb-0 sm:mb-4">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-4 mb-2 sm:mb-4">
                   <div className="flex items-center gap-1 text-brand">
                     <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-current" />
                     <span className="text-ink font-bold text-sm sm:text-base">{provider.ratingAvg.toFixed(1)}</span>
@@ -192,19 +192,19 @@ export default function ProviderProfilePage() {
               {provider.bio}
             </p>
             <div className="sm:hidden grid grid-cols-3 gap-2">
-              <div className="p-2.5 bg-surface-alt rounded-xl border border-border-dim text-center">
+              <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
                   <Clock className="w-2.5 h-2.5" /> Responds
                 </p>
                 <p className="text-[11px] font-bold text-ink leading-tight">{provider.responseTime}</p>
               </div>
-              <div className="p-2.5 bg-surface-alt rounded-xl border border-border-dim text-center">
+              <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
                   <Languages className="w-2.5 h-2.5" /> Speaks
                 </p>
                 <p className="text-[11px] font-bold text-ink leading-tight truncate">{provider.languages[0]}</p>
               </div>
-              <div className="p-2.5 bg-surface-alt rounded-xl border border-border-dim text-center">
+              <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
                   <CheckCircle2 className="w-2.5 h-2.5" /> Jobs
                 </p>
@@ -225,7 +225,7 @@ export default function ProviderProfilePage() {
                   qi.positive ? 'bg-trust-surface border-trust-edge' : 'bg-surface-alt border-border-dim'
                 }`}>
                   <qi.icon className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto mb-1.5 sm:mb-2 ${qi.positive ? 'text-trust' : 'text-ink-dim'}`} />
-                  <p className="font-bold text-xs sm:text-sm">{qi.value}</p>
+                  <p className="font-bold text-sm">{qi.value}</p>
                   <p className="text-[10px] sm:text-[11px] text-ink-dim mt-0.5">{qi.label}</p>
                 </div>
               ))}
@@ -287,7 +287,7 @@ export default function ProviderProfilePage() {
                 </div>
               ))}
             </div>
-            <div className="flex flex-wrap gap-3 sm:gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 mb-1.5">
               {(['morning', 'afternoon', 'evening'] as const).map(slot => {
                 const Icon = SLOT_ICONS[slot];
                 return (
@@ -297,10 +297,8 @@ export default function ProviderProfilePage() {
                   </div>
                 );
               })}
-              <span className="text-[10px] sm:text-xs text-ink-dim ml-auto text-right">
-                Times are approximate
-              </span>
             </div>
+            <p className="text-[10px] text-ink-dim/60">Times are approximate — confirm when booking</p>
           </div>
 
           {/* Reviews */}
@@ -376,7 +374,7 @@ export default function ProviderProfilePage() {
 
         {/* ── Right Column — Booking CTA ── */}
         <div className="lg:col-span-1">
-          <div className="bg-white p-5 sm:p-8 rounded-panel border border-border-dim shadow-sm sm:shadow-elevated lg:sticky lg:top-24">
+          <div className="bg-white p-5 sm:p-8 rounded-panel border border-border-dim shadow-elevated lg:sticky lg:top-24">
             <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1.5 sm:mb-2 text-ink">Need help?</h3>
             <p className="text-ink-sub text-sm mb-4 sm:mb-6">
               Send a request to {provider.user.name.split(' ')[0]} and get a quote within the hour.
@@ -413,8 +411,8 @@ export default function ProviderProfilePage() {
               <div className="flex gap-1 sm:gap-1.5">
                 {Object.entries(AVAILABILITY).map(([day, avail]) => (
                   <div key={day} className="flex-1 text-center">
-                    <p className="text-[9px] font-bold text-ink-dim uppercase mb-1">{day.slice(0, 1)}</p>
-                    <div className={`rounded py-1.5 text-[9px] font-bold ${
+                    <p className="text-[10px] font-bold text-ink-dim uppercase mb-1">{day.slice(0, 1)}</p>
+                    <div className={`rounded-md py-2 text-[10px] font-bold ${
                       avail.slots.length > 0
                         ? 'bg-trust text-white'
                         : 'bg-surface-alt text-ink-dim border border-border-dim'
