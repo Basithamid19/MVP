@@ -391,9 +391,9 @@ export default function LandingPage() {
       )}
 
       {/* ── 2. Popular Services ── */}
-      <section className="py-10 lg:py-20 bg-white overflow-hidden">
+      <section className="py-8 lg:py-20 bg-white overflow-hidden">
         {/* Header */}
-        <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-5 lg:mb-8">
+        <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-4 lg:mb-8">
           <div>
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
             <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
@@ -412,18 +412,18 @@ export default function LandingPage() {
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="shrink-0 w-[42vw] max-w-[160px] snap-start rounded-3xl p-5 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
-                style={{ minHeight: '192px' }}
+                className="shrink-0 w-[44vw] max-w-[170px] snap-start rounded-2xl p-4 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
+                style={{ minHeight: '164px' }}
               >
-                <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
+                <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                  <Icon className="w-4.5 h-4.5 text-brand" strokeWidth={1.5} />
                 </div>
-                <div className="mt-auto pt-4 w-full">
+                <div className="mt-auto pt-3 w-full">
                   <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
+                  <p className="text-[11px] text-ink-sub mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
-                <div className="mt-3 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">Explore</span>
+                <div className="mt-2 flex items-center gap-0.5 text-brand">
+                  <span className="text-[11px] font-semibold">Book now</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
@@ -460,19 +460,39 @@ export default function LandingPage() {
       </section>
 
       {/* ── 3. How It Works ── */}
-      <section className="py-24 bg-surface-alt">
+      <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <div className="text-center mb-8 sm:mb-16">
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-3">Three steps to getting it done</h2>
-            <p className="text-ink-sub max-w-xl mx-auto">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">Three steps to getting it done</h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
               From posting a job to booking a professional — it takes less than 5 minutes.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-10 relative">
+          {/* Mobile: horizontal scroll strip */}
+          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory -mx-4 px-4 pb-2 md:hidden">
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
+              <div
+                key={step}
+                className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-2xl p-5 border border-border-dim shadow-sm flex flex-col"
+              >
+                <div className="w-11 h-11 bg-brand text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
+                  <Icon className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-1.5 block">
+                  Step {step}
+                </span>
+                <h3 className="text-sm font-bold text-ink mb-2 leading-snug">{title}</h3>
+                <p className="text-ink-sub text-xs leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: 3-col grid */}
+          <div className="hidden md:grid md:grid-cols-3 gap-10 relative">
             {/* Connector line */}
-            <div className="hidden md:block absolute top-9 left-1/3 right-1/3 h-px bg-border-dim" />
+            <div className="absolute top-9 left-1/3 right-1/3 h-px bg-border-dim" />
 
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
               <motion.div
@@ -495,7 +515,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="text-center mt-14">
+          <div className="text-center mt-8 sm:mt-14">
             <Link
               href="/requests/new"
               className={buttonVariants({ variant: 'primary', size: 'xl' })}
@@ -507,8 +527,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── 4. Top Rated Professionals ── */}
-      <section className="py-10 lg:py-24 bg-canvas overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 lg:mb-12 flex items-end justify-between">
+      <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
           <div>
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
             <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
@@ -577,14 +597,14 @@ export default function LandingPage() {
                   </div>
 
                   {/* Info section */}
-                  <div className="p-5 flex flex-col flex-1 bg-white">
+                  <div className="p-4 sm:p-5 flex flex-col flex-1 bg-white">
                     {responseTime && (
-                      <div className="flex items-center gap-2 text-xs font-medium text-ink-sub mb-5">
+                      <div className="flex items-center gap-2 text-xs font-medium text-ink-sub mb-4 sm:mb-5">
                         <Clock className="w-4 h-4 text-ink-dim shrink-0" />
                         <span>Responds in {responseTime}</span>
                       </div>
                     )}
-                    <div className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white text-sm font-bold py-3.5 rounded-input group-hover:bg-brand-dark transition-colors">
+                    <div className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white text-sm font-bold py-3 sm:py-3.5 rounded-input group-hover:bg-brand-dark transition-colors">
                       View Profile <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
@@ -639,13 +659,13 @@ export default function LandingPage() {
           </h2>
 
           {/* Metric pills */}
-          <div className="flex flex-wrap gap-2 mb-8">
+          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 sm:mb-8 sm:flex-wrap">
             {[
               { value: '2,400+', label: 'Reviews' },
               { value: '100+',   label: 'Vetted Pros' },
               { value: '<1 hr',  label: 'Avg. Response' },
             ].map(m => (
-              <div key={m.label} className="flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
+              <div key={m.label} className="shrink-0 flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
                 <span className="text-brand font-bold text-sm">{m.value}</span>
                 <span className="text-ink-sub text-sm">{m.label}</span>
               </div>
@@ -676,9 +696,9 @@ export default function LandingPage() {
                 desc: 'Chat with pros before booking to align on scope and price.',
               },
             ].map(({ icon: Icon, title, desc }, i) => (
-              <div key={title} className={`flex items-start gap-4 px-5 py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
-                <div className="w-10 h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
+              <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-brand" strokeWidth={1.5} />
                 </div>
                 <div>
                   <p className="font-bold text-ink text-sm mb-0.5">{title}</p>
@@ -702,15 +722,46 @@ export default function LandingPage() {
 
 
       {/* ── 6. Testimonials ── */}
-      <section className="py-24 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+      <section className="py-12 sm:py-24 bg-white overflow-hidden">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-8 sm:mb-16 px-4 sm:px-6 lg:px-8">
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer Stories</p>
-            <h2 className="text-4xl font-bold tracking-tight text-ink mb-4">What Customers Say</h2>
-            <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">What Customers Say</h2>
+            <p className="text-ink-sub text-sm sm:text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Mobile: horizontal scroll carousel */}
+          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory px-4 pb-2 md:hidden">
+            {TESTIMONIALS.map((t, idx) => (
+              <div
+                key={idx}
+                className="shrink-0 w-[82vw] max-w-[320px] snap-start bg-[#f5f5f7] rounded-3xl p-6 flex flex-col"
+              >
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex gap-0.5 text-ink">
+                    {Array.from({ length: t.rating }).map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    ))}
+                  </div>
+                </div>
+                <p className="text-sm font-medium leading-relaxed text-ink flex-1 mb-5">
+                  "{t.quote}"
+                </p>
+                <div className="pt-4 border-t border-ink/10">
+                  <p className="text-sm font-bold text-ink">{t.name}</p>
+                  <p className="text-[11px] mt-0.5 text-ink-sub font-medium uppercase tracking-wider">
+                    {t.service} · {t.city}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop: grid */}
+          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-6 lg:px-8">
             {TESTIMONIALS.map((t, idx) => (
               <motion.div
                 key={idx}
@@ -720,14 +771,9 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col hover:scale-[1.02] transition-transform duration-300"
               >
-                {/* Top row: avatar + stars */}
                 <div className="flex items-center justify-between mb-6">
                   <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex gap-1 text-ink">
                     {Array.from({ length: t.rating }).map((_, i) => (
@@ -735,13 +781,9 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* Quote */}
                 <p className="text-base font-medium leading-relaxed text-ink flex-1 mb-8">
                   "{t.quote}"
                 </p>
-
-                {/* Author */}
                 <div className="pt-5 border-t border-ink/10">
                   <p className="text-sm font-bold text-ink">{t.name}</p>
                   <p className="text-[11px] mt-1 text-ink-sub font-medium uppercase tracking-wider">
@@ -755,7 +797,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 7. Join as a Professional ── */}
-      <section className="py-24 bg-white">
+      <section className="py-12 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-14 items-center">
             <div>
@@ -765,7 +807,7 @@ export default function LandingPage() {
               <h2 className="text-4xl font-bold tracking-tight text-ink mb-5">
                 Are you a professional?<br />Get new customers in Vilnius.
               </h2>
-              <p className="text-ink-sub text-lg leading-relaxed mb-8 max-w-lg">
+              <p className="text-ink-sub text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
                 Join hundreds of local pros already growing their business on Aladdin.
                 Receive verified leads, manage bookings, and build your reputation.
               </p>
@@ -807,12 +849,12 @@ export default function LandingPage() {
       </section>
 
       {/* ── 8. Final CTA ── */}
-      <section className="py-24 bg-canvas">
+      <section className="py-12 sm:py-24 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold tracking-tight text-ink mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">
             Ready to get your job done?
           </h2>
-          <p className="text-ink-sub text-lg mb-10 leading-relaxed">
+          <p className="text-ink-sub text-base sm:text-lg mb-8 sm:mb-10 leading-relaxed">
             Find a trusted professional in minutes or post your job and receive quotes today.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -834,11 +876,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── 9. Footer ── */}
-      <footer className="bg-canvas border-t border-border-dim py-20">
+      <footer className="bg-canvas border-t border-border-dim py-10 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Brand lockup — centered above columns */}
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 sm:mb-14">
             <div className="flex items-center justify-center gap-2.5 mb-3">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
                 <AladdinIcon className="w-5 h-5 text-white" />
@@ -851,10 +893,10 @@ export default function LandingPage() {
           </div>
 
           {/* Link columns */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 mb-8 sm:mb-14">
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
-              <ul className="space-y-3 text-sm">
+              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
+              <ul className="space-y-2.5 sm:space-y-3 text-sm">
                 <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
                 <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
                 <li><Link href="/browse?category=cleaning"    className="text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
@@ -863,8 +905,8 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
-              <ul className="space-y-3 text-sm">
+              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
+              <ul className="space-y-2.5 sm:space-y-3 text-sm">
                 <li><Link href="/register"            className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
@@ -872,8 +914,8 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
-              <ul className="space-y-3 text-sm">
+              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
+              <ul className="space-y-2.5 sm:space-y-3 text-sm">
                 <li><Link href="/about"   className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
                 <li><Link href="/support" className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
                 <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
@@ -881,8 +923,8 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
-              <ul className="space-y-3 text-sm">
+              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
+              <ul className="space-y-2.5 sm:space-y-3 text-sm">
                 <li><Link href="/browse"       className="text-ink-sub hover:text-ink transition-colors">Find a Professional</Link></li>
                 <li><Link href="/requests/new" className="text-ink-sub hover:text-ink transition-colors">Post a Job</Link></li>
                 <li><Link href="/login"        className="text-ink-sub hover:text-ink transition-colors">Log In</Link></li>
