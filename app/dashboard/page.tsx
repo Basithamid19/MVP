@@ -250,7 +250,7 @@ export default function DashboardPage() {
   const [loading, setLoading]         = useState(true);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [mobileTab, setMobileTab]     = useState<'overview' | 'requests'>('overview');
-  const [reqFilter, setReqFilter]     = useState<'active' | 'completed' | 'all'>('all');
+  const [reqFilter, setReqFilter]     = useState<'active' | 'booked' | 'all'>('all');
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -308,15 +308,16 @@ export default function DashboardPage() {
   const pendingQuoteReqs = requests.filter((r: any) => r.quotes?.some((q: any) => q.status === 'PENDING'));
   const totalQuotes  = pendingQuoteReqs.reduce((s: number, r: any) => s + (r.quotes?.filter((q: any) => q.status === 'PENDING').length ?? 0), 0);
   const quotedReqs   = pendingQuoteReqs;
-  const activeReqs   = requests.filter((r: any) => !['COMPLETED','DECLINED','EXPIRED'].includes(r.status));
+  const activeReqs   = requests.filter((r: any) => !['ACCEPTED','DECLINED','EXPIRED'].includes(r.status));
+  const bookedReqs   = requests.filter((r: any) => r.status === 'ACCEPTED');
   const completedCt  = bookings.filter((b: any) => b.status === 'COMPLETED').length;
   const upcomingBook = bookings.find((b: any) => b.status === 'SCHEDULED');
   const needsReview  = bookings.find((b: any) => b.status === 'COMPLETED' && !b.review);
 
   const filteredRequests = reqFilter === 'active'
-    ? requests.filter((r: any) => !['COMPLETED','DECLINED','EXPIRED'].includes(r.status))
-    : reqFilter === 'completed'
-    ? requests.filter((r: any) => r.status === 'COMPLETED')
+    ? requests.filter((r: any) => !['ACCEPTED','DECLINED','EXPIRED'].includes(r.status))
+    : reqFilter === 'booked'
+    ? requests.filter((r: any) => r.status === 'ACCEPTED')
     : requests;
 
   const handleTabSwitch = (tab: 'overview' | 'requests') => {
@@ -455,7 +456,7 @@ export default function DashboardPage() {
 
         {/* ── Mobile filter pills ── */}
         <div className="flex gap-2 mb-4 md:hidden">
-          {(['active', 'completed', 'all'] as const).map(filter => (
+          {(['active', 'booked', 'all'] as const).map(filter => (
             <button
               key={filter}
               onClick={() => setReqFilter(filter)}
@@ -466,7 +467,7 @@ export default function DashboardPage() {
               }`}
             >
               {filter === 'active' ? `Active (${activeReqs.length})`
-                : filter === 'completed' ? `Completed (${completedCt})`
+                : filter === 'booked' ? `Booked (${bookedReqs.length})`
                 : `All (${requests.length})`}
             </button>
           ))}
@@ -492,13 +493,13 @@ export default function DashboardPage() {
                     <Inbox className="w-5 h-5 text-ink-dim" />
                   </div>
                   <h3 className="text-base font-bold text-ink mb-1">
-                    {reqFilter === 'active' ? 'No active requests' : reqFilter === 'completed' ? 'No completed requests' : 'No requests yet'}
+                    {reqFilter === 'active' ? 'No active requests' : reqFilter === 'booked' ? 'No booked requests' : 'No requests yet'}
                   </h3>
                   <p className="text-sm text-ink-sub mb-5 max-w-xs mx-auto">
                     {reqFilter === 'active'
                       ? 'New requests will appear here once posted.'
-                      : reqFilter === 'completed'
-                      ? 'Completed projects will show up here.'
+                      : reqFilter === 'booked'
+                      ? 'Booked jobs from accepted quotes will show up here.'
                       : 'Post your first job and get quotes from verified professionals.'}
                   </p>
                   {requests.length === 0 && (
