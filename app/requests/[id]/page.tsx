@@ -92,23 +92,23 @@ export default function QuoteInboxPage() {
   return (
     <CustomerLayout maxWidth="max-w-2xl">
       {/* Inline sub-header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+      <div className="flex items-center gap-2.5 mb-5">
+        <button onClick={() => router.back()} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <h1 className="font-bold text-lg">Quote Inbox</h1>
+        <div className="flex-1 min-w-0">
+          <h1 className="font-bold text-base sm:text-lg leading-tight">Quote Inbox</h1>
           <p className="text-xs text-ink-dim">{request.category?.name}</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold ${status.color}`}>{status.label}</span>
-        <button onClick={load} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+        <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${status.color}`}>{status.label}</span>
+        <button onClick={load} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0">
           <RefreshCcw className="w-4 h-4 text-ink-dim" />
         </button>
       </div>
 
       <div className="space-y-5">
         {/* Request summary */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -133,7 +133,7 @@ export default function QuoteInboxPage() {
 
         {/* Price range summary */}
         {pendingQuotes.length > 1 && minPrice !== null && (
-          <div className="bg-white rounded-card border border-border-dim p-4 flex items-center gap-3">
+          <div className="bg-white rounded-2xl border border-border-dim p-3.5 flex items-center gap-3">
             <TrendingDown className="w-5 h-5 text-trust shrink-0" />
             <div>
               <p className="text-sm font-bold text-ink">
@@ -146,25 +146,25 @@ export default function QuoteInboxPage() {
 
         {/* Accepted quote banner */}
         {acceptedQuote && (
-          <div className="bg-brand text-white rounded-panel p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <CheckCircle2 className="w-5 h-5 text-white" />
-              <span className="font-bold">Quote accepted — booking confirmed!</span>
+          <div className="bg-brand text-white rounded-2xl p-5 sm:p-6">
+            <div className="flex items-center gap-2 mb-2.5">
+              <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
+              <span className="font-bold text-sm sm:text-base">Quote accepted — booking confirmed!</span>
             </div>
-            <p className="text-sm text-white/80 mb-2">
+            <p className="text-sm text-white/80 mb-1.5">
               {acceptedQuote.provider?.user?.name} · €{acceptedQuote.price?.toFixed(2)}
             </p>
-            <p className="text-xs text-white/60 mb-4">Your pro will be in touch to confirm the details. You can message them or view the full booking below.</p>
-            <div className="flex gap-3">
+            <p className="text-xs text-white/60 mb-4 leading-relaxed">Your pro will be in touch to confirm the details.</p>
+            <div className="flex flex-col sm:flex-row gap-2.5">
               <Link
                 href={`/bookings/${acceptedQuote.bookingId || ''}`}
-                className="inline-flex items-center gap-2 bg-white text-ink px-5 py-2.5 rounded-input text-sm font-bold hover:bg-surface-alt transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-white text-ink px-5 py-3 rounded-2xl text-sm font-bold hover:bg-surface-alt transition-colors"
               >
                 View Booking <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-white/15 text-white px-5 py-2.5 rounded-input text-sm font-medium hover:bg-white/25 transition-colors"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white/15 text-white px-5 py-3 sm:py-2.5 rounded-2xl text-sm font-medium hover:bg-white/25 transition-colors"
               >
                 Dashboard
               </Link>
@@ -174,14 +174,14 @@ export default function QuoteInboxPage() {
 
         {/* Waiting state */}
         {!acceptedQuote && pendingQuotes.length === 0 && (
-          <div className="bg-white rounded-panel border border-dashed border-border p-10 text-center">
-            <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-8 h-8 text-ink-dim" />
+          <div className="bg-white rounded-2xl border border-dashed border-border-dim p-7 sm:p-10 text-center">
+            <div className="w-14 h-14 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <MessageSquare className="w-7 h-7 text-ink-dim" />
             </div>
-            <p className="font-bold mb-1">Waiting for quotes</p>
-            <p className="text-sm text-ink-dim max-w-xs mx-auto">Verified local pros are reviewing your request. Most respond within 1 hour.</p>
-            <button onClick={load} className="mt-6 flex items-center gap-2 mx-auto text-sm font-bold text-ink-dim hover:text-ink transition-colors">
-              <RefreshCcw className="w-4 h-4" /> Refresh
+            <p className="font-bold text-base mb-1.5">Waiting for quotes</p>
+            <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">Verified pros are reviewing your request. Most respond within 1 hour.</p>
+            <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-xl px-4 py-2.5 transition-colors">
+              <RefreshCcw className="w-3.5 h-3.5" /> Check for updates
             </button>
           </div>
         )}
@@ -198,11 +198,11 @@ export default function QuoteInboxPage() {
                   const p = quote.provider;
                   const eta = etaFromResponse(p?.responseTime);
                   return (
-                    <div key={quote.id} className={`bg-white rounded-panel border p-6 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
+                    <div key={quote.id} className={`bg-white rounded-2xl border p-4 sm:p-6 shadow-sm ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star className="w-3.5 h-3.5 text-brand fill-current" />
-                          <span className="text-[11px] font-bold text-caution uppercase tracking-widest">Best match</span>
+                          <span className="text-[11px] font-bold text-brand uppercase tracking-widest">Best match</span>
                         </div>
                       )}
                       <div className="flex items-start gap-4 mb-4">
@@ -251,37 +251,39 @@ export default function QuoteInboxPage() {
                         </div>
                       </div>
                       {quote.notes && (
-                        <div className="p-3 bg-surface-alt rounded-input border border-border-dim mb-4">
+                        <div className="p-3 bg-surface-alt rounded-xl border border-border-dim mb-4">
                           <p className="text-sm text-ink-sub italic">&quot;{quote.notes}&quot;</p>
                         </div>
                       )}
-                      <div className="flex gap-2">
+                      <div className="space-y-2 sm:space-y-0 sm:flex sm:gap-2">
                         <button
                           onClick={() => handleQuote(quote.id, 'ACCEPTED')}
                           disabled={actioning === quote.id}
-                          className="flex-1 bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-2xl font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
                         >
-                          {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Accept</>}
+                          {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Accept Quote</>}
                         </button>
-                        <Link
-                          href={`/providers/${p?.id}`}
-                          className="px-4 py-3 border border-border rounded-input font-bold text-sm hover:border-border transition-colors"
-                        >
-                          Profile
-                        </Link>
-                        <button
-                          title="Message pro"
-                          className="p-3 border border-border rounded-input text-ink-dim hover:border-brand hover:text-ink transition-colors"
-                        >
-                          <MessageSquare className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleQuote(quote.id, 'DECLINED')}
-                          disabled={!!actioning}
-                          className="p-3 border border-border rounded-input text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
-                        >
-                          <XCircle className="w-5 h-5" />
-                        </button>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/providers/${p?.id}`}
+                            className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 border border-border-dim rounded-2xl font-bold text-sm text-ink hover:bg-surface-alt transition-colors"
+                          >
+                            Profile
+                          </Link>
+                          <button
+                            title="Message pro"
+                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-brand hover:text-ink transition-colors"
+                          >
+                            <MessageSquare className="w-5 h-5" />
+                          </button>
+                          <button
+                            onClick={() => handleQuote(quote.id, 'DECLINED')}
+                            disabled={!!actioning}
+                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
+                          >
+                            <XCircle className="w-5 h-5" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   );

@@ -147,8 +147,12 @@ function OrdersList({ requests }: { requests: any[] }) {
                 <p className="font-semibold text-sm text-ink leading-snug truncate">{req.description}</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
-                {/* Dot only on mobile, full badge on sm+ */}
-                <span className={`w-2 h-2 rounded-full sm:hidden ${stage.dot}`} />
+                {/* Compact status on mobile */}
+                <div className="flex items-center gap-1 sm:hidden">
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${stage.dot}`} />
+                  <span className="text-[10px] font-semibold text-ink-sub whitespace-nowrap max-w-[64px] truncate">{stage.label}</span>
+                </div>
+                {/* Full badge on sm+ */}
                 <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-alt rounded-full border border-border-dim">
                   <span className={`w-1.5 h-1.5 rounded-full ${stage.dot}`} />
                   <span className="text-xs font-medium text-ink-sub whitespace-nowrap">{stage.label}</span>
@@ -160,19 +164,19 @@ function OrdersList({ requests }: { requests: any[] }) {
             {/* Expanded details */}
             {isOpen && (
               <div className="px-3 pb-4 sm:px-5 sm:pb-6 border-t border-border-dim pt-3">
-                <div className="flex items-center justify-between mb-3 sm:hidden">
+                <div className="flex items-center mb-2.5 sm:hidden">
                   <StatusBadge status={req.status} />
                 </div>
-                <p className="flex items-center gap-1.5 text-sm text-ink-sub mb-4">
+                <p className="flex items-center gap-1.5 text-sm text-ink-sub mb-3">
                   <MapPin className="w-4 h-4 shrink-0 text-ink-dim" /> {req.address}
                 </p>
 
-                <div className="py-3 mb-4 border-y border-border-dim">
+                <div className="py-2 mb-3">
                   <JobStepper step={stage.step} />
                 </div>
 
                 {quoteCount > 0 && topPro && (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 bg-surface-alt rounded-xl p-4 border border-border-dim">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 bg-surface-alt rounded-2xl p-3.5 sm:p-4 border border-border-dim">
                     <div className="flex items-center gap-3">
                       <img
                         src={topPro.user?.image || avatarUrl(topPro.user?.name, 80)}
@@ -199,20 +203,22 @@ function OrdersList({ requests }: { requests: any[] }) {
                   </div>
                 )}
 
-                <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">
+                <div className="flex items-center justify-between gap-3 pt-0.5">
+                  <span className="text-xs text-ink-dim">
                     {quoteCount > 0
-                      ? <span className="text-ink font-semibold">{quoteCount} quote{quoteCount > 1 ? 's' : ''}</span>
-                      : <span className="text-ink-dim">Waiting for professionals...</span>
+                      ? `${quoteCount} quote${quoteCount > 1 ? 's' : ''} received`
+                      : 'Waiting for quotes…'
                     }
-                  </div>
+                  </span>
                   <Link
                     href={`/requests/${req.id}`}
-                    className={`flex items-center gap-1.5 text-sm font-semibold transition-colors ${
-                      action.primary ? 'text-brand hover:text-brand-dark' : 'text-ink-sub hover:text-ink'
+                    className={`flex items-center gap-1 text-xs font-bold px-3.5 py-2.5 rounded-xl transition-all shrink-0 ${
+                      action.primary
+                        ? 'bg-brand text-white hover:bg-brand-dark'
+                        : 'bg-surface-alt text-ink hover:bg-border'
                     }`}
                   >
-                    {action.label} <ChevronRight className="w-4 h-4" />
+                    {action.label} <ChevronRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
               </div>
@@ -316,7 +322,7 @@ export default function DashboardPage() {
     <CustomerLayout notifications={notifications}>
 
       {/* ── Header ── */}
-      <div className="flex items-start justify-between mb-5">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-sm font-medium text-brand mb-0.5">{greeting},</p>
           <h1 className="text-2xl font-bold tracking-tight text-ink">{firstName}</h1>
@@ -336,9 +342,9 @@ export default function DashboardPage() {
           { value: totalQuotes,       label: 'Quotes',    highlight: totalQuotes > 0 },
           { value: completedCt,       label: 'Completed', highlight: false },
         ].map(({ value, label, highlight }) => (
-          <div key={label} className={`rounded-2xl p-3 text-center border ${highlight ? 'bg-brand border-brand/20' : 'bg-white border-border-dim'}`}>
-            <p className={`text-xl font-bold ${highlight ? 'text-white' : 'text-ink'}`}>{value}</p>
-            <p className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 ${highlight ? 'text-white/70' : 'text-ink-dim'}`}>{label}</p>
+          <div key={label} className={`rounded-2xl p-2.5 text-center border ${highlight ? 'bg-brand-muted border-brand/25' : 'bg-white border-border-dim'}`}>
+            <p className={`text-lg font-bold ${highlight ? 'text-brand' : 'text-ink'}`}>{value}</p>
+            <p className={`text-[10px] font-semibold uppercase tracking-wider mt-0.5 ${highlight ? 'text-brand/70' : 'text-ink-dim'}`}>{label}</p>
           </div>
         ))}
       </div>
@@ -395,17 +401,17 @@ export default function DashboardPage() {
       <div className="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:gap-8">
         {/* Orders */}
         <div className="w-full lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-bold tracking-tight text-ink">My Orders</h2>
             {requests.length > 0 && (
-              <span className="text-xs font-semibold text-ink-dim">{requests.length} total</span>
+              <span className="text-xs text-ink-dim">{requests.length} total</span>
             )}
           </div>
 
           {requests.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-border-dim p-10 text-center">
-              <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4 border border-border-dim">
-                <Inbox className="w-6 h-6 text-ink-dim" />
+            <div className="bg-white rounded-2xl border border-border-dim p-8 sm:p-10 text-center">
+              <div className="w-12 h-12 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Inbox className="w-5 h-5 text-ink-dim" />
               </div>
               <h3 className="text-base font-bold text-ink mb-1">No active projects yet</h3>
               <p className="text-sm text-ink-sub mb-5 max-w-xs mx-auto">Post your first job and get quotes from verified professionals in Vilnius.</p>
