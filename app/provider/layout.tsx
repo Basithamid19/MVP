@@ -310,7 +310,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           <div className="bg-white/90 backdrop-blur-xl border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.10)] pb-safe">
             <div className="flex items-center justify-around px-1 py-1.5">
               {([
-                { href: '/provider/dashboard',   label: 'Dashboard', Icon: LayoutDashboard, isActive: pathname === '/provider/dashboard' },
+                { href: '/provider/dashboard',   label: 'Dashboard', Icon: Inbox,          isActive: pathname === '/provider/dashboard' },
                 { href: '/provider/jobs',         label: 'Jobs',      Icon: Briefcase,      isActive: pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' },
                 { href: '/provider/performance',  label: 'Stats',     Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
                 { href: '/provider/settings',     label: 'Account',   Icon: Settings,       isActive: pathname === '/provider/settings' },
