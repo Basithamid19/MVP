@@ -89,7 +89,7 @@ export default function ProviderDashboardPage() {
       value: leads.length,
       sub: leads.length > 0 ? `${freshLeads.length} new today` : 'None yet',
       icon: Inbox,
-      color: 'bg-info-surface text-info',
+      color: 'bg-brand-muted text-brand',
       href: '/provider/leads',
       badge: urgentLeads.length > 0 ? urgentLeads.length : null,
     },
@@ -98,7 +98,7 @@ export default function ProviderDashboardPage() {
       value: activeJobs.length,
       sub: activeJobs.length > 0 ? `${activeJobs.filter((b: any) => b.status === 'IN_PROGRESS').length} in progress` : 'None scheduled',
       icon: Briefcase,
-      color: 'bg-orange-50 text-orange-600',
+      color: 'bg-brand-muted text-brand',
       href: '/provider/jobs',
       badge: null,
     },
@@ -107,7 +107,7 @@ export default function ProviderDashboardPage() {
       value: completedJobs.length,
       sub: 'All time',
       icon: CheckCircle2,
-      color: 'bg-green-50 text-green-600',
+      color: 'bg-brand-muted text-brand',
       href: '/provider/jobs',
       badge: null,
     },
@@ -116,7 +116,7 @@ export default function ProviderDashboardPage() {
       value: `€${totalEarnings.toFixed(0)}`,
       sub: 'This month',
       icon: DollarSign,
-      color: 'bg-purple-50 text-purple-600',
+      color: 'bg-brand-muted text-brand',
       href: '/provider/earnings',
       badge: null,
     },
@@ -150,19 +150,19 @@ export default function ProviderDashboardPage() {
 
       {/* Verification banner — shown when not verified */}
       {!isVerified && (
-        <div className="mb-6 bg-info-surface border border-info/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-          <div className="w-8 h-8 bg-info-surface rounded-xl flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-4 h-4 text-info" />
+        <div className="mb-6 bg-brand-muted border border-brand/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 text-brand" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-info">Complete verification to receive more leads</p>
-            <p className="text-xs text-info mt-0.5">
+            <p className="text-sm font-bold text-brand">Complete verification to receive more leads</p>
+            <p className="text-xs text-brand/70 mt-0.5">
               Verified providers get up to 3× more visibility in search results.
             </p>
           </div>
           <Link
             href="/provider/onboarding"
-            className="shrink-0 bg-info text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-info/90 transition-colors"
+            className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
           >
             Get Verified
           </Link>
@@ -183,7 +183,7 @@ export default function ProviderDashboardPage() {
             <div className="flex items-center gap-3 mt-2">
               <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                 profile?.verificationTier === 'TIER2_TRADE_VERIFIED' || profile?.verificationTier === 'TIER3_ENHANCED'
-                  ? 'bg-info-surface text-info'
+                  ? 'bg-brand-muted text-brand'
                   : 'bg-surface-alt text-ink-dim'
               }`}>
                 <ShieldCheck className="w-3.5 h-3.5" />
@@ -238,7 +238,9 @@ export default function ProviderDashboardPage() {
               </div>
               <div className="space-y-3">
                 {urgentLeads.slice(0, 2).map((lead: any) => (
-                  <LeadCard key={lead.id} lead={lead} urgent />
+                  <React.Fragment key={lead.id}>
+                    <LeadCard lead={lead} urgent />
+                  </React.Fragment>
                 ))}
               </div>
             </section>
@@ -263,7 +265,9 @@ export default function ProviderDashboardPage() {
             ) : (
               <div className="space-y-4">
                 {leads.slice(0, 4).map((lead: any) => (
-                  <LeadCard key={lead.id} lead={lead} />
+                  <React.Fragment key={lead.id}>
+                    <LeadCard lead={lead} />
+                  </React.Fragment>
                 ))}
               </div>
             )}
@@ -305,18 +309,21 @@ export default function ProviderDashboardPage() {
         {/* Right column */}
         <div className="space-y-5">
           {/* Quick actions */}
-          <div className="bg-brand text-white rounded-3xl p-6">
-            <h3 className="font-bold mb-4">Quick Actions</h3>
-            <div className="space-y-2">
+          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Quick Actions</p>
+            <div className="space-y-1">
               {[
                 { label: 'Browse Leads',    href: '/provider/leads',       icon: Inbox },
-                { label: 'Manage Schedule', href: '/provider/settings',    icon: Calendar },
+                { label: 'Manage Settings', href: '/provider/settings',    icon: Calendar },
                 { label: 'View Earnings',   href: '/provider/earnings',    icon: DollarSign },
-                { label: 'Performance',     href: '/provider/performance', icon: TrendingUp },
+                { label: 'Stats',           href: '/provider/performance', icon: TrendingUp },
               ].map(({ label, href, icon: Icon }) => (
-                <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 bg-white/10 hover:bg-white/20 rounded-xl text-sm font-semibold transition-all">
-                  <Icon className="w-4 h-4" />
+                <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
+                  <div className="w-7 h-7 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-brand" />
+                  </div>
                   {label}
+                  <ChevronRight className="w-3.5 h-3.5 ml-auto text-ink-dim" />
                 </Link>
               ))}
             </div>
@@ -325,8 +332,8 @@ export default function ProviderDashboardPage() {
           {/* Verification card (detail) */}
           <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-info-surface rounded-xl flex items-center justify-center">
-                <ShieldCheck className="w-5 h-5 text-info" />
+              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5 text-brand" />
               </div>
               <div>
                 <p className="font-bold text-sm">Verification</p>
@@ -335,11 +342,11 @@ export default function ProviderDashboardPage() {
             </div>
             <div className="w-full bg-surface-alt rounded-full h-1.5 mb-3">
               <div
-                className="bg-info h-1.5 rounded-full transition-all"
+                className="bg-brand h-1.5 rounded-full transition-all"
                 style={{ width: `${verificationProgress}%` }}
               />
             </div>
-            <Link href="/provider/onboarding" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+            <Link href="/provider/onboarding" className="text-xs font-bold text-brand hover:underline flex items-center gap-1">
               Complete verification <ChevronRight className="w-3 h-3" />
             </Link>
           </div>

@@ -312,7 +312,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
               {([
                 { href: '/provider/dashboard',   label: 'Dashboard', Icon: LayoutDashboard, isActive: pathname === '/provider/dashboard' },
                 { href: '/provider/jobs',         label: 'Jobs',      Icon: Briefcase,      isActive: pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' },
-                { href: '/provider/performance',  label: 'Earnings',  Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
+                { href: '/provider/performance',  label: 'Stats',     Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
                 { href: '/provider/settings',     label: 'Account',   Icon: Settings,       isActive: pathname === '/provider/settings' },
               ] as const).map(({ href, label, Icon, isActive }) => (
                 <Link
