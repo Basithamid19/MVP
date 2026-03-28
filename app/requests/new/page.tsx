@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import {
   ArrowLeft, ArrowRight, MapPin, Calendar,
   AlertCircle, Loader2, CheckCircle2, Send,
-  X, ImagePlus,
+  X, ImagePlus, Zap,
   Wrench, Hammer, Truck, Package
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
@@ -33,12 +33,15 @@ function ReviewRow({
   label, value, onEdit, multiline,
 }: { label: string; value: string; onEdit: () => void; multiline?: boolean }) {
   return (
-    <div className="flex items-start justify-between gap-4 pb-4 border-b border-border-dim last:border-0 last:pb-0">
+    <div className="flex items-start justify-between gap-4 py-3.5 border-b border-border-dim last:border-0 last:pb-0">
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{label}</p>
+        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1">{label}</p>
         <p className={`text-sm font-medium text-ink ${multiline ? 'whitespace-pre-wrap' : 'truncate'}`}>{value}</p>
       </div>
-      <button onClick={onEdit} className="text-xs font-bold text-ink-dim hover:text-ink transition-colors shrink-0 mt-0.5">
+      <button
+        onClick={onEdit}
+        className="text-xs font-bold text-brand hover:text-brand-dark transition-colors shrink-0 mt-0.5 px-2 py-0.5 rounded-md hover:bg-brand-muted"
+      >
         Edit
       </button>
     </div>
@@ -52,8 +55,6 @@ function NewRequestContent() {
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
 
-  // Step 1=category, 2=subcategory, 3=details, 4=schedule, 5=review
-  // Skip ahead based on URL params
   const startStep = initialSlug && initialSubcategory ? 3 : initialSlug ? 2 : 1;
   const [step, setStep] = useState(startStep);
   const [loading, setLoading] = useState(false);
@@ -74,7 +75,6 @@ function NewRequestContent() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Pre-fill saved address and urgent flag from home page
   useEffect(() => {
     const savedAddr = localStorage.getItem('vp_saved_address');
     if (savedAddr) setForm(f => ({ ...f, address: f.address || savedAddr }));
@@ -123,7 +123,7 @@ function NewRequestContent() {
 
   const canProceed = () => {
     if (step === 1) return !!form.categoryId;
-    if (step === 2) return true; // subcategory is optional
+    if (step === 2) return true;
     if (step === 3) return form.description.trim().length >= 10;
     if (step === 4) return !!form.address.trim() && !!form.dateWindow;
     return true;
@@ -165,43 +165,56 @@ function NewRequestContent() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Header */}
+
+      {/* ── Stepper header ── */}
       <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
-        <div className="max-w-2xl mx-auto px-4 h-16 flex items-center gap-4">
-          <button onClick={back} className="p-2 hover:bg-surface-alt rounded-full transition-colors shrink-0">
+        <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
+          <button
+            onClick={back}
+            className="p-1.5 hover:bg-surface-alt rounded-full transition-colors shrink-0"
+            aria-label="Go back"
+          >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex-1 flex items-center gap-1.5 min-w-0">
-            {STEPS.map((s, i) => (
-              <React.Fragment key={s}>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <div className={`w-6 h-6 rounded-full text-[11px] font-bold flex items-center justify-center transition-all ${
-                    i + 1 < step ? 'bg-brand text-white' :
-                    i + 1 === step ? 'bg-brand text-white' :
-                    'bg-surface-alt text-ink-dim'
-                  }`}>
-                    {i + 1 < step ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
+
+          {/* Step indicators */}
+          <div className="flex-1 flex items-center gap-1 min-w-0">
+            {STEPS.map((s, i) => {
+              const done    = i + 1 < step;
+              const current = i + 1 === step;
+              return (
+                <React.Fragment key={s}>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <div className={`flex items-center justify-center rounded-full font-bold transition-all ${
+                      current
+                        ? 'w-7 h-7 bg-brand text-white text-[11px] ring-4 ring-brand/15'
+                        : done
+                        ? 'w-6 h-6 bg-brand text-white text-[10px]'
+                        : 'w-6 h-6 bg-surface-alt text-ink-dim text-[10px]'
+                    }`}>
+                      {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
+                    </div>
+                    <span className={`text-xs font-bold hidden sm:block transition-colors ${current ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
                   </div>
-                  <span className={`text-xs font-bold hidden sm:block transition-colors ${i + 1 === step ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div className={`flex-1 h-px transition-colors ${i + 1 < step ? 'bg-brand' : 'bg-surface-alt'}`} />
-                )}
-              </React.Fragment>
-            ))}
+                  {i < STEPS.length - 1 && (
+                    <div className={`flex-1 h-px transition-colors ${done ? 'bg-brand' : 'bg-surface-alt'}`} />
+                  )}
+                </React.Fragment>
+              );
+            })}
           </div>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="max-w-2xl mx-auto px-4 py-8 pb-32">
+      {/* ── Content ── */}
+      <main className="max-w-2xl mx-auto px-4 pt-7 pb-36">
 
-        {/* Step 1: Category */}
+        {/* ── Step 1: Category ── */}
         {step === 1 && (
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">What do you need help with?</h1>
-            <p className="text-ink-sub text-base mb-8">Choose a service to get matched with the right pros.</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">What do you need help with?</h1>
+            <p className="text-ink-sub text-sm mb-7">Choose a service to get matched with local pros.</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {categories.map((cat) => {
                 const Icon = ICON_MAP[cat.slug] || Wrench;
                 const selected = form.categoryId === cat.id;
@@ -209,16 +222,16 @@ function NewRequestContent() {
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
-                    className={`p-6 rounded-[20px] border-2 text-center transition-all flex flex-col items-center justify-center h-full ${
-                      selected 
-                        ? 'border-brand bg-brand shadow-elevated -translate-y-1' 
-                        : 'border-transparent bg-white shadow-sm hover:shadow-elevated hover:border-brand-muted hover:-translate-y-1'
+                    className={`p-5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center active:scale-[0.97] ${
+                      selected
+                        ? 'border-brand bg-brand shadow-elevated ring-4 ring-brand/15'
+                        : 'border-transparent bg-white shadow-sm hover:shadow-elevated hover:border-brand-muted'
                     }`}
                   >
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 transition-colors ${
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${
                       selected ? 'bg-white/20 text-white' : 'bg-surface-alt text-ink-sub'
                     }`}>
-                      <Icon className="w-6 h-6" />
+                      <Icon className="w-5 h-5" />
                     </div>
                     <p className={`font-bold text-sm leading-tight ${selected ? 'text-white' : 'text-ink'}`}>{cat.name}</p>
                   </button>
@@ -228,16 +241,16 @@ function NewRequestContent() {
           </div>
         )}
 
-        {/* Step 2: Subcategory */}
+        {/* ── Step 2: Subcategory ── */}
         {step === 2 && (() => {
           const catData = SUBCATEGORIES[form.categorySlug];
           return (
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">
+              <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">
                 {catData?.description ?? 'What type of work do you need?'}
               </h1>
-              <p className="text-ink-sub text-base mb-8">Pick the closest match — or skip and describe in your own words.</p>
-              <div className="grid grid-cols-2 gap-3 mb-6">
+              <p className="text-ink-sub text-sm mb-6">Pick the closest match — or skip and describe it yourself.</p>
+              <div className="grid grid-cols-2 gap-2.5 mb-5">
                 {(catData?.items ?? []).map((item) => {
                   const Icon = item.Icon;
                   const selected = form.subcategorySlug === item.slug;
@@ -252,38 +265,42 @@ function NewRequestContent() {
                         }));
                         setStep(3);
                       }}
-                      className={`p-4 rounded-[20px] border-2 text-left transition-all flex flex-col gap-3 ${
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all flex flex-col gap-2.5 active:scale-[0.97] ${
                         selected
-                          ? 'border-brand bg-brand-muted'
+                          ? 'border-brand bg-brand-muted shadow-sm'
                           : 'border-border-dim bg-white hover:border-brand/40 hover:shadow-sm'
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
                         selected ? 'bg-brand text-white' : 'bg-surface-alt text-ink-sub'
                       }`}>
-                        <Icon className="w-5 h-5" strokeWidth={1.5} />
+                        <Icon className="w-4.5 h-4.5" strokeWidth={1.5} />
                       </div>
-                      <p className={`font-semibold text-sm leading-tight ${selected ? 'text-brand' : 'text-ink'}`}>{item.label}</p>
+                      <p className={`font-semibold text-sm leading-snug ${selected ? 'text-brand' : 'text-ink'}`}>{item.label}</p>
                     </button>
                   );
                 })}
               </div>
+              {/* "Something else" — intentionally secondary, still polished */}
               <button
                 onClick={() => setStep(3)}
-                className="w-full py-3 rounded-card border border-border-dim bg-white text-ink-sub text-sm font-semibold hover:bg-surface-alt transition-colors flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-2xl border border-border-dim bg-white text-ink-sub text-sm font-medium hover:bg-surface-alt hover:text-ink transition-all flex items-center justify-center gap-2"
               >
-                Something else <ArrowRight className="w-4 h-4" />
+                Something else
+                <ArrowRight className="w-4 h-4 text-ink-dim" />
               </button>
             </div>
           );
         })()}
 
-        {/* Step 3: Details */}
+        {/* ── Step 3: Details ── */}
         {step === 3 && (
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Describe the job</h1>
-            <p className="text-ink-sub text-base mb-8">More detail means better, faster quotes from pros.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">Describe the job</h1>
+            <p className="text-ink-sub text-sm mb-6">More detail means better, faster quotes from pros.</p>
             <div className="space-y-5">
+
+              {/* Textarea */}
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   What needs to be done?
@@ -291,20 +308,20 @@ function NewRequestContent() {
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                  rows={5}
-                  placeholder={`e.g. "Leaking pipe under kitchen sink, dripping for 2 days. The shutoff valve still works. Apartment on 3rd floor."`}
-                  className="w-full p-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
+                  rows={4}
+                  placeholder={`e.g. "Leaking pipe under kitchen sink, dripping for 2 days. Shutoff valve still works. 3rd floor apartment."`}
+                  className="w-full p-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-base leading-relaxed"
                 />
-                <div className="flex justify-between mt-1">
+                <div className="flex justify-between items-center mt-1.5">
                   <p className="text-xs text-ink-dim">{form.description.length} characters — aim for at least 50</p>
-                  {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-trust" />}
+                  {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-trust shrink-0" />}
                 </div>
               </div>
 
               {/* Photo upload */}
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
-                  Photos <span className="normal-case font-normal">(optional — helps pros give accurate quotes)</span>
+                  Photos <span className="normal-case font-normal text-ink-dim">(optional)</span>
                 </label>
                 <input
                   ref={fileInputRef}
@@ -314,9 +331,9 @@ function NewRequestContent() {
                   className="hidden"
                   onChange={handlePhotoSelect}
                 />
-                <div className="flex flex-wrap gap-3">
+                <div className="flex flex-wrap gap-2.5">
                   {photos.map(p => (
-                    <div key={p.preview} className="relative w-20 h-20 rounded-input overflow-hidden border border-border">
+                    <div key={p.preview} className="relative w-[76px] h-[76px] rounded-xl overflow-hidden border border-border">
                       <img src={p.preview} alt="Upload" className="w-full h-full object-cover" />
                       {!p.url && (
                         <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
@@ -336,10 +353,10 @@ function NewRequestContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="w-20 h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
+                    className="w-[76px] h-[76px] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand hover:bg-brand-muted/30 transition-all text-ink-dim hover:text-brand disabled:opacity-50"
                   >
                     <ImagePlus className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Add</span>
+                    <span className="text-[10px] font-bold">Add photo</span>
                   </button>
                 </div>
                 {photos.length > 0 && (
@@ -347,41 +364,55 @@ function NewRequestContent() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-caution-surface rounded-card border border-caution-edge">
+              {/* Urgency toggle — neutral when off, caution when on */}
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, isUrgent: !f.isUrgent }))}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${
+                  form.isUrgent
+                    ? 'bg-caution-surface border-caution/40'
+                    : 'bg-white border-border-dim hover:border-border'
+                }`}
+              >
                 <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-orange-500 shrink-0" />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    form.isUrgent ? 'bg-caution/15' : 'bg-surface-alt'
+                  }`}>
+                    <Zap className={`w-4 h-4 ${form.isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
+                  </div>
                   <div>
-                    <p className="font-bold text-sm text-orange-900">Mark as urgent</p>
-                    <p className="text-xs text-caution mt-0.5">Pros get an instant notification to respond faster.</p>
+                    <p className={`font-bold text-sm ${form.isUrgent ? 'text-orange-900' : 'text-ink'}`}>Mark as urgent</p>
+                    <p className={`text-xs mt-0.5 ${form.isUrgent ? 'text-caution' : 'text-ink-sub'}`}>
+                      {form.isUrgent ? 'Pros get instant notification to respond faster.' : 'Pros respond within a few hours.'}
+                    </p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setForm(f => ({ ...f, isUrgent: !f.isUrgent }))}
-                  className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${form.isUrgent ? 'bg-caution' : 'bg-border'}`}
-                >
-                  <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isUrgent ? 'left-6' : 'left-1'}`} />
-                </button>
-              </div>
+                {/* Toggle pill */}
+                <div className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ml-3 ${form.isUrgent ? 'bg-caution' : 'bg-border'}`}>
+                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isUrgent ? 'left-5' : 'left-0.5'}`} />
+                </div>
+              </button>
             </div>
           </div>
         )}
 
-        {/* Step 4: Schedule */}
+        {/* ── Step 4: Schedule ── */}
         {step === 4 && (
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Location & schedule</h1>
-            <p className="text-ink-sub text-base mb-8">Where is the job and when do you need it done?</p>
-            <div className="space-y-6">
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">Location & schedule</h1>
+            <p className="text-ink-sub text-sm mb-6">Where is the job and when do you need it done?</p>
+            <div className="space-y-5">
+
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Address in Vilnius</label>
                 <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim" />
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
                   <input
                     type="text"
                     value={form.address}
                     onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
                     placeholder="Street name, house number, apartment"
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
                   />
                 </div>
               </div>
@@ -389,30 +420,32 @@ function NewRequestContent() {
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Preferred date</label>
                 <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
                   <input
                     type="date"
                     value={form.dateWindow}
                     min={new Date().toISOString().split('T')[0]}
                     onChange={e => setForm(f => ({ ...f, dateWindow: e.target.value }))}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Time preference</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Time of day</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {TIME_PREFS.map(t => (
                     <button
                       key={t.id}
                       onClick={() => setForm(f => ({ ...f, timePreference: t.id }))}
-                      className={`p-3 rounded-input border-2 text-center transition-all ${
-                        form.timePreference === t.id ? 'border-brand bg-brand' : 'border-border bg-white hover:border-border'
+                      className={`py-3.5 px-2 rounded-xl border-2 text-center transition-all active:scale-[0.97] ${
+                        form.timePreference === t.id
+                          ? 'border-brand bg-brand shadow-sm'
+                          : 'border-border-dim bg-white shadow-sm hover:border-brand/40'
                       }`}
                     >
                       <p className={`font-bold text-xs ${form.timePreference === t.id ? 'text-white' : 'text-ink'}`}>{t.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${form.timePreference === t.id ? 'text-white/70' : 'text-ink-dim'}`}>{t.sub}</p>
+                      <p className={`text-[10px] mt-0.5 ${form.timePreference === t.id ? 'text-white/75' : 'text-ink-dim'}`}>{t.sub}</p>
                     </button>
                   ))}
                 </div>
@@ -423,64 +456,108 @@ function NewRequestContent() {
                   Budget estimate <span className="normal-case font-normal">(optional)</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-sm">€</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-base pointer-events-none">€</span>
                   <input
                     type="number"
                     value={form.budget}
                     onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
                     placeholder="e.g. 80"
-                    className="w-full pl-10 pr-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
+                    className="w-full pl-10 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
                   />
                 </div>
-                <p className="text-xs text-ink-dim mt-1">Helps pros calibrate their quotes. You&apos;re not locked in.</p>
+                <p className="text-xs text-ink-dim mt-1.5">Helps pros calibrate their quotes. You&apos;re not locked in.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 5: Review */}
+        {/* ── Step 5: Review ── */}
         {step === 5 && (
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-ink mb-2">Review your request</h1>
-            <p className="text-ink-sub text-base mb-8">Double-check everything before posting to local pros.</p>
-            <div className="bg-white rounded-panel border border-border-dim p-6 space-y-4 shadow-card mb-6">
-              <ReviewRow label="Service" value={form.categoryName} onEdit={() => setStep(1)} />
-              <ReviewRow label="Description" value={form.description} onEdit={() => setStep(3)} multiline />
-              {form.isUrgent && (
-                <div className="flex items-center gap-2 py-1">
-                  <span className="px-3 py-1 bg-caution-surface text-caution text-xs font-bold rounded-full uppercase tracking-wide">Urgent request</span>
-                </div>
-              )}
-              <ReviewRow label="Address" value={form.address} onEdit={() => setStep(4)} />
-              <ReviewRow label="Preferred date" value={new Date(form.dateWindow).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })} onEdit={() => setStep(4)} />
-              <ReviewRow label="Time preference" value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'} onEdit={() => setStep(4)} />
-              {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(4)} />}
-              {photos.length > 0 && (
-                <div className="pb-4 border-b border-border-dim last:border-0 last:pb-0">
-                  <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Photos</p>
-                  <div className="flex gap-2 flex-wrap">
-                    {photos.map(p => (
-                      <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-input object-cover border border-border-dim" />
-                    ))}
-                  </div>
-                </div>
-              )}
+            {/* Premium heading with trust signal */}
+            <div className="flex items-center gap-2.5 mb-1">
+              <CheckCircle2 className="w-6 h-6 text-brand shrink-0" />
+              <h1 className="text-2xl font-bold tracking-tight text-ink">Review your request</h1>
             </div>
-            <div className="p-4 bg-surface-alt rounded-card border border-border-dim text-sm text-ink-sub leading-relaxed">
-              Once posted, verified local pros will review your request and send competitive quotes. Most requests receive a response within <span className="font-bold text-ink">1 hour</span>.
+            <p className="text-ink-sub text-sm mb-6 pl-8">Looks good? Post it and get quotes from local pros.</p>
+
+            {/* Review card */}
+            <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden mb-4">
+              {/* Service pill header */}
+              <div className="px-5 py-4 border-b border-border-dim bg-surface-alt/50 flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 bg-brand-muted text-brand text-xs font-bold px-3 py-1.5 rounded-full">
+                  {form.categoryName}
+                </span>
+                <button
+                  onClick={() => setStep(1)}
+                  className="text-xs font-bold text-brand hover:text-brand-dark px-2 py-0.5 rounded-md hover:bg-brand-muted transition-all"
+                >
+                  Change
+                </button>
+              </div>
+
+              {/* Review rows */}
+              <div className="px-5 divide-y divide-border-dim">
+                <ReviewRow label="Description" value={form.description} onEdit={() => setStep(3)} multiline />
+                {form.isUrgent && (
+                  <div className="py-3.5 flex items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-caution-surface text-caution text-xs font-bold rounded-full">
+                      <Zap className="w-3 h-3" /> Urgent
+                    </span>
+                  </div>
+                )}
+                <ReviewRow label="Address" value={form.address} onEdit={() => setStep(4)} />
+                <ReviewRow
+                  label="Date"
+                  value={new Date(form.dateWindow).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  onEdit={() => setStep(4)}
+                />
+                <ReviewRow
+                  label="Time"
+                  value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'}
+                  onEdit={() => setStep(4)}
+                />
+                {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(4)} />}
+                {photos.length > 0 && (
+                  <div className="py-3.5">
+                    <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Photos</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {photos.map(p => (
+                        <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-xl object-cover border border-border-dim" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Trust callout */}
+            <div className="flex items-start gap-3 p-4 bg-brand-muted rounded-2xl border border-brand/15">
+              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                <Zap className="w-4 h-4 text-brand" />
+              </div>
+              <p className="text-sm text-ink-sub leading-relaxed">
+                Verified local pros will review and send quotes. Most requests get a response within{' '}
+                <span className="font-bold text-ink">1 hour</span>.
+              </p>
             </div>
           </div>
         )}
       </main>
 
-      {/* Bottom bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
-        <div className="max-w-2xl mx-auto">
+      {/* ── Sticky bottom CTA ── */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+        <div className="max-w-2xl mx-auto px-4 pt-3 pb-safe">
+          {/* Step indicator */}
+          <p className="text-center text-[11px] font-semibold text-ink-dim mb-2.5 tracking-wide">
+            Step {step} of {STEPS.length}
+          </p>
+
           {step < 5 ? (
             <button
               onClick={next}
               disabled={!canProceed()}
-              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -488,11 +565,14 @@ function NewRequestContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Post Request</>}
             </button>
           )}
+
+          {/* Extra safe area buffer below pb-safe on very old browsers */}
+          <div className="h-1 sm:h-0" />
         </div>
       </div>
     </div>
