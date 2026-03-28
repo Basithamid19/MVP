@@ -63,7 +63,7 @@ export default function BookingsPage() {
               <section>
                 <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">Ongoing</p>
                 <div className="space-y-2">
-                  {ongoing.map(b => <BookingCard key={b.id} b={b} />)}
+                  {ongoing.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
                 </div>
               </section>
             )}
@@ -72,7 +72,7 @@ export default function BookingsPage() {
               <section>
                 <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">Completed</p>
                 <div className="space-y-2">
-                  {completed.map(b => <BookingCard key={b.id} b={b} />)}
+                  {completed.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
                 </div>
               </section>
             )}

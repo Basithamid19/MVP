@@ -238,7 +238,9 @@ export default function ProviderDashboardPage() {
               </div>
               <div className="space-y-3">
                 {urgentLeads.slice(0, 2).map((lead: any) => (
-                  <LeadCard key={lead.id} lead={lead} urgent />
+                  <React.Fragment key={lead.id}>
+                    <LeadCard lead={lead} urgent />
+                  </React.Fragment>
                 ))}
               </div>
             </section>
@@ -263,7 +265,9 @@ export default function ProviderDashboardPage() {
             ) : (
               <div className="space-y-4">
                 {leads.slice(0, 4).map((lead: any) => (
-                  <LeadCard key={lead.id} lead={lead} />
+                  <React.Fragment key={lead.id}>
+                    <LeadCard lead={lead} />
+                  </React.Fragment>
                 ))}
               </div>
             )}

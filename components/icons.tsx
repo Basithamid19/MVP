@@ -1,5 +1,25 @@
 import React from 'react';
 
+export const AladdinIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 32 32" fill="currentColor" className={className} aria-hidden="true">
+    {/* Genie lamp body */}
+    <path d="M6 20 C4 19 3 17 3.5 15 C4 13 6 12 8 12.5 L10 13 L10 11 C10 9 11.5 8 13 8 L19 8 C20.5 8 22 9 22 11 L22 13 L24 12.5 C26 12 28 13 28.5 15 C29 17 28 19 26 20 Z" />
+    {/* Spout */}
+    <path d="M26 15.5 C27.5 15 29 15.5 29.5 16.5 C30 17.5 29 18.5 27.5 18.5 L26 18 Z" />
+    {/* Handle */}
+    <path d="M6 17 C3.5 17 2 18.5 2.5 20 C3 21.5 5 22 7 21 L8 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    {/* Pedestal base */}
+    <path d="M10 20 L22 20 L21 23 L11 23 Z" />
+    <path d="M9 23 L23 23 L23 24.5 L9 24.5 Z" />
+    {/* Smoke / genie rising */}
+    <path d="M16 8 C16 6.5 17.5 5.5 17 4 C16.5 2.5 15 2 14 3" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    <path d="M14 3 C13 4 13.5 5.5 15 6 C16.5 6.5 17.5 5 16.5 3.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    {/* Star sparkle */}
+    <circle cx="19" cy="4" r="0.8" />
+    <circle cx="13" cy="2" r="0.6" />
+  </svg>
+);
+
 export const BroomIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
