@@ -1,10 +1,10 @@
 import {
-  Wrench, Zap, Hammer, Truck, Paintbrush,
+  Wrench, Zap, Hammer, Truck, Package,
   Lightbulb, Tv, Plug, Shield, AlertTriangle,
   Droplets, Waves, Flame, Filter,
   Home, Key, Wind, Layers, Building2,
-  Image, DoorOpen, Package, Settings,
-  Archive, Star,
+  Image, DoorOpen, Settings,
+  Archive, Star, Sofa, RefreshCw,
 } from 'lucide-react';
 import type { ElementType } from 'react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
@@ -67,12 +67,12 @@ export const SUBCATEGORIES: Record<string, CategorySubcategories> = {
     description: 'What do you need fixed or assembled?',
     Icon: Hammer,
     items: [
-      { label: 'Furniture assembly', slug: 'furniture-assembly', Icon: Package },
       { label: 'Shelf / picture hanging', slug: 'shelf-hanging', Icon: Image },
       { label: 'Door repair', slug: 'door-repair', Icon: DoorOpen },
       { label: 'Appliance installation', slug: 'appliance-install', Icon: Plug },
       { label: 'Minor repairs', slug: 'minor-repairs', Icon: Hammer },
       { label: 'General maintenance', slug: 'general-maintenance', Icon: Settings },
+      { label: 'Other repairs', slug: 'other-repairs', Icon: RefreshCw },
     ],
   },
   'moving-help': {
@@ -88,17 +88,17 @@ export const SUBCATEGORIES: Record<string, CategorySubcategories> = {
       { label: 'Storage help', slug: 'storage', Icon: Archive },
     ],
   },
-  painting: {
-    label: 'Painting',
-    description: 'What painting work do you need?',
-    Icon: Paintbrush,
+  'furniture-assembly': {
+    label: 'Furniture Assembly',
+    description: 'What do you need assembled?',
+    Icon: Package,
     items: [
-      { label: 'Interior painting', slug: 'interior-painting', Icon: Home },
-      { label: 'Feature wall', slug: 'feature-wall', Icon: Layers },
-      { label: 'Ceiling painting', slug: 'ceiling-painting', Icon: Building2 },
-      { label: 'Exterior painting', slug: 'exterior-painting', Icon: Star },
-      { label: 'Fence painting', slug: 'fence-painting', Icon: Shield },
-      { label: 'Touch-up & repairs', slug: 'touch-up', Icon: Paintbrush },
+      { label: 'IKEA assembly', slug: 'ikea-assembly', Icon: Package },
+      { label: 'Wardrobe assembly', slug: 'wardrobe-assembly', Icon: Sofa },
+      { label: 'Bed frame assembly', slug: 'bed-assembly', Icon: Sofa },
+      { label: 'Office furniture', slug: 'office-furniture', Icon: Building2 },
+      { label: 'Shelving unit', slug: 'shelving-unit', Icon: Layers },
+      { label: 'Disassembly & pack', slug: 'disassembly', Icon: RefreshCw },
     ],
   },
 };

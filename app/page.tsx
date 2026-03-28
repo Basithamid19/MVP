@@ -11,7 +11,7 @@ import {
   ArrowRight, AlertCircle, Clock,
   ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush,
-  Wrench, Hammer, Truck, Paintbrush, Zap
+  Wrench, Hammer, Truck, Package, Zap
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
 import { avatarUrl } from '@/lib/avatar';
@@ -23,8 +23,8 @@ const categories = [
   { name: 'Electrician', slug: 'electrician',         icon: ElectricianIcon },
   { name: 'Cleaning',    slug: 'cleaning',            icon: BroomIcon },
   { name: 'Handyman',    slug: 'handyman',            icon: Hammer },
-  { name: 'Moving Help', slug: 'moving-help',         icon: Truck },
-  { name: 'Painting',    slug: 'painting',            icon: Paintbrush },
+  { name: 'Moving Help',          slug: 'moving-help',          icon: Truck },
+  { name: 'Furniture Assembly',   slug: 'furniture-assembly',   icon: Package },
 ];
 
 const HOW_IT_WORKS = [

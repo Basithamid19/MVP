@@ -18,7 +18,7 @@ const CATEGORIES = [
   { label: 'Cleaning', value: 'cleaning' },
   { label: 'Handyman', value: 'handyman' },
   { label: 'Moving Help', value: 'moving-help' },
-  { label: 'Painting', value: 'painting' },
+  { label: 'Furniture Assembly', value: 'furniture-assembly' },
 ];
 
 function BrowseContent() {

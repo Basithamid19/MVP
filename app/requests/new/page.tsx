@@ -6,7 +6,7 @@ import {
   ArrowLeft, ArrowRight, MapPin, Calendar,
   AlertCircle, Loader2, CheckCircle2, Send,
   X, ImagePlus,
-  Wrench, Hammer, Truck, Paintbrush, Box
+  Wrench, Hammer, Truck, Package
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { SUBCATEGORIES } from '@/lib/subcategories';
@@ -16,9 +16,8 @@ const ICON_MAP: Record<string, React.ElementType> = {
   electrician:          ElectricianIcon,
   cleaning:             BroomIcon,
   handyman:             Hammer,
-  'furniture-assembly': Box,
+  'furniture-assembly': Package,
   'moving-help':        Truck,
-  painting:             Paintbrush,
 };
 
 const STEPS = ['Service', 'Type', 'Details', 'Schedule', 'Review'];

@@ -8,7 +8,7 @@ import {
   ChevronRight, ChevronDown, Star, Loader2,
   Search, MapPin, Bell,
   Inbox, Users, Zap, ShieldCheck,
-  Wrench, Hammer, Truck, Paintbrush
+  Wrench, Hammer, Truck, Package
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { avatarUrl } from '@/lib/avatar';
@@ -22,8 +22,8 @@ const QUICK_JOBS = [
   { label: 'Electrical', slug: 'electrician', Icon: ElectricianIcon },
   { label: 'Cleaning',   slug: 'cleaning',    Icon: BroomIcon },
   { label: 'Handyman',   slug: 'handyman',    Icon: Hammer },
-  { label: 'Moving',     slug: 'moving-help', Icon: Truck },
-  { label: 'Painting',   slug: 'painting',    Icon: Paintbrush },
+  { label: 'Moving',     slug: 'moving-help',        Icon: Truck },
+  { label: 'Furniture',  slug: 'furniture-assembly', Icon: Package },
 ];
 
 const STATUS_STAGE: Record<string, { label: string; dot: string; step: number }> = {
@@ -67,9 +67,9 @@ function getCategoryIcon(slug?: string) {
     case 'plumber':     return <Wrench className="w-5 h-5 text-brand" />;
     case 'cleaning':    return <BroomIcon className="w-5 h-5 text-brand" />;
     case 'handyman':    return <Hammer className="w-5 h-5 text-brand" />;
-    case 'moving-help': return <Truck className="w-5 h-5 text-brand" />;
-    case 'painting':    return <Paintbrush className="w-5 h-5 text-brand" />;
-    default:            return <Inbox className="w-5 h-5 text-brand" />;
+    case 'moving-help':        return <Truck className="w-5 h-5 text-brand" />;
+    case 'furniture-assembly': return <Package className="w-5 h-5 text-brand" />;
+    default:                   return <Inbox className="w-5 h-5 text-brand" />;
   }
 }
 
