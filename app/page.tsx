@@ -167,17 +167,12 @@ export default function LandingPage() {
           </Link>
           <div className="flex items-center gap-3">
             {session ? (
-              <>
-                <Link href="/dashboard" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-                  My Account
-                </Link>
-                <Link
-                  href="/requests/new"
-                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
-                >
-                  Book a Pro
-                </Link>
-              </>
+              <Link
+                href="/requests/new"
+                className={buttonVariants({ variant: 'primary', size: 'sm' })}
+              >
+                Book a Pro
+              </Link>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
@@ -651,71 +646,90 @@ export default function LandingPage() {
 
       {/* ── 5. Why Aladdin ── */}
       <section className="bg-canvas py-16 sm:py-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Eyebrow + headline */}
-          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-[1.15] mb-8">
-            Built for trust,<br className="hidden sm:block" /> built for Vilnius.
-          </h2>
+        <div className="max-w-2xl lg:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
 
-          {/* Metric pills */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 sm:mb-8 sm:flex-wrap">
-            {[
-              { value: '2,400+', label: 'Reviews' },
-              { value: '100+',   label: 'Vetted Pros' },
-              { value: '<1 hr',  label: 'Avg. Response' },
-            ].map(m => (
-              <div key={m.label} className="shrink-0 flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
-                <span className="text-brand font-bold text-sm">{m.value}</span>
-                <span className="text-ink-sub text-sm">{m.label}</span>
+            {/* Left: Hero image (desktop only) */}
+            <div className="hidden lg:block">
+              <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-elevated border border-border-dim/50">
+                <img
+                  src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=1000&auto=format&fit=crop"
+                  alt="Professional at work"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Feature rows */}
-          <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
-            {[
-              {
-                icon: BadgeCheck,
-                title: 'Verified Experts',
-                desc: 'Every pro is ID-verified and trade-certified before joining.',
-              },
-              {
-                icon: Star,
-                title: 'Real Reviews Only',
-                desc: 'Only customers with completed bookings can leave reviews.',
-              },
-              {
-                icon: Zap,
-                title: 'Fast Response',
-                desc: 'Most requests get a reply from a local pro within 1 hour.',
-              },
-              {
-                icon: MessageCircle,
-                title: 'Direct Messaging',
-                desc: 'Chat with pros before booking to align on scope and price.',
-              },
-            ].map(({ icon: Icon, title, desc }, i) => (
-              <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-brand" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="font-bold text-ink text-sm mb-0.5">{title}</p>
-                  <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
-                </div>
+            {/* Right: Content */}
+            <div>
+              {/* Eyebrow + headline */}
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-[1.15] mb-8">
+                Built for trust,<br className="hidden sm:block" /> built for Vilnius.
+              </h2>
+
+              {/* Metric pills */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 sm:mb-8 sm:flex-wrap">
+                {[
+                  { value: '2,400+', label: 'Reviews' },
+                  { value: '100+',   label: 'Vetted Pros' },
+                  { value: '<1 hr',  label: 'Avg. Response' },
+                ].map(m => (
+                  <div key={m.label} className="shrink-0 flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
+                    <span className="text-brand font-bold text-sm">{m.value}</span>
+                    <span className="text-ink-sub text-sm">{m.label}</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
 
-          {/* CTA */}
-          <div className="mt-8">
-            <Link
-              href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' w-full sm:w-auto'}
-            >
-              Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
+              {/* Feature rows */}
+              <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
+                {[
+                  {
+                    icon: BadgeCheck,
+                    title: 'Verified Experts',
+                    desc: 'Every pro is ID-verified and trade-certified before joining.',
+                  },
+                  {
+                    icon: Star,
+                    title: 'Real Reviews Only',
+                    desc: 'Only customers with completed bookings can leave reviews.',
+                  },
+                  {
+                    icon: Zap,
+                    title: 'Fast Response',
+                    desc: 'Most requests get a reply from a local pro within 1 hour.',
+                  },
+                  {
+                    icon: MessageCircle,
+                    title: 'Direct Messaging',
+                    desc: 'Chat with pros before booking to align on scope and price.',
+                  },
+                ].map(({ icon: Icon, title, desc }, i) => (
+                  <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
+                      <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-brand" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-ink text-sm mb-0.5">{title}</p>
+                      <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <div className="mt-8">
+                <Link
+                  href="/browse"
+                  className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' w-full sm:w-auto'}
+                >
+                  Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
