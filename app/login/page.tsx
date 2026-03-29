@@ -33,7 +33,7 @@ export default function LoginPage() {
         const role = (session?.user as any)?.role;
         if (role === 'PROVIDER') router.push('/provider/dashboard');
         else if (role === 'ADMIN') router.push('/admin/dashboard');
-        else router.push('/dashboard');
+        else router.push('/');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
