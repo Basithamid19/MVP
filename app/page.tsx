@@ -10,7 +10,7 @@ import {
   Search, MapPin, Star, ShieldCheck,
   ArrowRight, AlertCircle, Clock,
   ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
-  BadgeCheck, MessageCircle, Brush,
+  BadgeCheck, MessageCircle, Brush, Shield,
   Wrench, Hammer, Truck, Package, Zap
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
@@ -220,7 +220,7 @@ export default function LandingPage() {
               </p>
 
               {/* Unified Search Bar */}
-              <form onSubmit={handleSearch} className="mb-8">
+              <form onSubmit={handleSearch} className="mb-5">
                 <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
                   <div className="flex-1 flex items-center px-4 py-2">
                     <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
@@ -251,6 +251,24 @@ export default function LandingPage() {
                   </button>
                 </div>
               </form>
+
+              {/* Trust Section */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 mb-6">
+                {[
+                  { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right if something goes wrong after the job.' },
+                  { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before you book. No surprise charges.' },
+                  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked and reviewed local pros.' },
+                  { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage during work can be covered up to €100.' },
+                ].map((item) => (
+                  <div key={item.title} className="bg-white/80 border border-border-dim rounded-card p-3.5 sm:p-4">
+                    <div className="w-8 h-8 bg-trust-surface rounded-input flex items-center justify-center mb-2">
+                      <item.icon className="w-4 h-4 text-trust" />
+                    </div>
+                    <p className="text-xs font-bold text-ink leading-snug">{item.title}</p>
+                    <p className="text-[11px] text-ink-dim leading-snug mt-0.5">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
 
               {/* Quick category pills & Urgency */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
