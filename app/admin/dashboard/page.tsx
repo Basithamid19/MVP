@@ -683,52 +683,57 @@ function CategoriesModule() {
 
   if (loading) return <ModuleLoader />;
 
+  const totalProviders = categories.reduce((sum: number, c: any) => sum + (c._count.providers ?? 0), 0);
+  const totalRequests = categories.reduce((sum: number, c: any) => sum + (c._count.requests ?? 0), 0);
+
   return (
     <div>
       <ModuleHeader
-        title="Category & Pricing Config"
-        description="Service taxonomy, provider counts, and platform fee rules."
+        title="Category Config"
+        description="Service taxonomy, supply coverage, and platform fee rules."
       />
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-2xl border border-border-dim p-5">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1">Platform Take Rate</p>
-          <p className="text-3xl font-bold">{PLATFORM_FEE}%</p>
-          <p className="text-xs text-ink-dim mt-1">Applied to all completed bookings</p>
+
+      {/* Platform settings */}
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+          <div className="text-lg font-bold tabular-nums text-ink">{PLATFORM_FEE}%</div>
+          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Take Rate</div>
         </div>
-        <div className="bg-white rounded-2xl border border-border-dim p-5">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1">Active Categories</p>
-          <p className="text-3xl font-bold">{categories.length}</p>
+        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+          <div className="text-lg font-bold tabular-nums text-ink">{categories.length}</div>
+          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Categories</div>
         </div>
-        <div className="bg-white rounded-2xl border border-border-dim p-5">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1">Booking Mode</p>
-          <p className="text-3xl font-bold">Quote</p>
-          <p className="text-xs text-ink-dim mt-1">Providers submit competitive quotes</p>
+        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+          <div className="text-lg font-bold text-ink">Quote</div>
+          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Mode</div>
         </div>
       </div>
-      <div className="space-y-3">
+
+      {/* Category rows */}
+      <div className="space-y-2.5">
         {categories.map((c) => (
-          <div key={c.id} className="bg-white rounded-2xl border border-border-dim p-5 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
-                <Tag className="w-5 h-5 text-ink-dim" />
+          <div key={c.id} className="bg-white rounded-xl border border-border-dim p-4">
+            <div className="flex items-start gap-3 mb-2.5">
+              <div className="w-8 h-8 bg-surface-alt rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                <Tag className="w-4 h-4 text-ink-dim" />
               </div>
-              <div>
-                <p className="font-bold">{c.name}</p>
-                <p className="text-xs text-ink-dim">{c.description || 'No description'}</p>
+              <div className="min-w-0 flex-1">
+                <p className="font-bold text-sm">{c.name}</p>
+                {c.description && <p className="text-xs text-ink-dim mt-0.5 line-clamp-1">{c.description}</p>}
               </div>
             </div>
-            <div className="flex items-center gap-6 shrink-0 text-right">
-              <div>
-                <p className="text-xs text-ink-dim">Providers</p>
-                <p className="font-bold">{c._count.providers}</p>
+            <div className="grid grid-cols-3 gap-2 ml-11">
+              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
+                <span className="text-sm font-bold tabular-nums text-ink">{c._count.providers}</span>
+                <span className="text-[10px] text-ink-dim ml-1">providers</span>
               </div>
-              <div>
-                <p className="text-xs text-ink-dim">Requests</p>
-                <p className="font-bold">{c._count.requests}</p>
+              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
+                <span className="text-sm font-bold tabular-nums text-ink">{c._count.requests}</span>
+                <span className="text-[10px] text-ink-dim ml-1">requests</span>
               </div>
-              <div>
-                <p className="text-xs text-ink-dim">Fee</p>
-                <p className="font-bold">{PLATFORM_FEE}%</p>
+              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
+                <span className="text-sm font-bold tabular-nums text-ink">{PLATFORM_FEE}%</span>
+                <span className="text-[10px] text-ink-dim ml-1">fee</span>
               </div>
             </div>
           </div>
