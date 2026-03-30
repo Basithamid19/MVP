@@ -9,7 +9,6 @@ import {
   ChevronRight, User, Receipt, Download, Star,
   Mail, MessageCircle, HelpCircle, LifeBuoy,
   MapPin, Heart, Clock, Bell, ShieldCheck, Camera,
-  Search,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 
@@ -315,22 +314,6 @@ export default function AccountPage() {
           <SettingsRow icon={Heart} label="Favourite Pros" sub="Bookmarked professionals" href="/browse" />
         </Section>
 
-        {/* Quick action — New Service Request (demoted) */}
-        <div className="px-4">
-          <Link
-            href="/requests/new"
-            className="flex items-center gap-3.5 bg-white border border-border-dim rounded-2xl px-4 py-3.5 active:bg-surface-alt transition-colors shadow-sm"
-          >
-            <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
-              <Search className="w-[18px] h-[18px] text-ink-sub" strokeWidth={1.8} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-ink">New Service Request</p>
-              <p className="text-[12px] text-ink-dim mt-0.5">Post a job and get quotes</p>
-            </div>
-            <ChevronRight className="w-4 h-4 text-ink-dim/40 shrink-0" />
-          </Link>
-        </div>
 
         {/* Support */}
         <Section title="Support">
