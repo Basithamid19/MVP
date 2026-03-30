@@ -272,34 +272,6 @@ export default function LandingPage() {
                 ))}
               </div>
 
-              {/* Quick category pills & Urgency */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
-                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">Popular:</span>
-                {categories.slice(0, 3).map(cat => {
-                  const Icon = cat.icon;
-                  return (
-                  <button
-                    key={cat.slug}
-                    onClick={() => handleCategoryRequest(cat.slug)}
-                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
-                  >
-                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-                    {cat.name}
-                  </button>
-                )})}
-                <div className="w-px h-4 bg-border-dim mx-0.5 shrink-0" />
-                <button
-                  onClick={() => setIsUrgent(!isUrgent)}
-                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
-                    isUrgent
-                      ? 'bg-caution-surface border-caution-edge text-caution'
-                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
-                  }`}
-                >
-                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
-                  {isUrgent ? 'Urgent' : 'Mark urgent'}
-                </button>
-              </div>
             </motion.div>
 
             {/* Hero right — Art Directed Image */}
