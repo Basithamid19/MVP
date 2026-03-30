@@ -874,77 +874,109 @@ function IncidentModule() {
   };
 
   const TICKET_COLORS: Record<string, string> = { OPEN: 'orange', RESOLVED: 'green', CLOSED: 'gray' };
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   if (loading) return <ModuleLoader />;
+
+  const openCount = tickets.filter(t => t.status === 'OPEN').length;
+  const resolvedCount = tickets.filter(t => t.status === 'RESOLVED').length;
+  const closedCount = tickets.filter(t => t.status === 'CLOSED').length;
+  const filteredTickets = statusFilter === 'ALL' ? tickets : tickets.filter(t => t.status === statusFilter);
 
   return (
     <div>
       <ModuleHeader
         title="Incident Log"
-        description="Record serious issues, safety concerns, repeat offenders, and escalations."
+        description="Safety concerns, escalations, and compliance tracking."
         action={
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all">
-            <Plus className="w-4 h-4" /> New Incident
+          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 bg-ink text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-ink/80 transition-all">
+            <Plus className="w-3.5 h-3.5" /> New
           </button>
         }
       />
+
+      {/* Summary strip */}
+      {tickets.length > 0 && (
+        <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
+          <span><span className="font-bold text-ink tabular-nums">{tickets.length}</span> total</span>
+          {openCount > 0 && <span className="text-caution font-semibold">{openCount} open</span>}
+          <span><span className="font-bold text-ink tabular-nums">{resolvedCount}</span> resolved</span>
+          <span><span className="font-bold text-ink tabular-nums">{closedCount}</span> closed</span>
+        </div>
+      )}
+
+      {/* Filter chips */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        <FilterChip label="All" active={statusFilter === 'ALL'} count={tickets.length} onClick={() => setStatusFilter('ALL')} />
+        <FilterChip label="Open" active={statusFilter === 'OPEN'} count={openCount} onClick={() => setStatusFilter('OPEN')} />
+        <FilterChip label="Resolved" active={statusFilter === 'RESOLVED'} count={resolvedCount} onClick={() => setStatusFilter('RESOLVED')} />
+        <FilterChip label="Closed" active={statusFilter === 'CLOSED'} count={closedCount} onClick={() => setStatusFilter('CLOSED')} />
+      </div>
+
+      {/* New incident form — compact, de-emphasized */}
       {showForm && (
-        <div className="bg-white rounded-2xl border border-border-dim p-6 mb-6 shadow-sm">
-          <h3 className="font-bold mb-4">Record New Incident</h3>
-          <div className="space-y-4">
-            <div>
-              <label className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1 block">Subject</label>
-              <input
-                value={form.subject}
-                onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-                placeholder="e.g. Safety complaint – Marius K."
-                className="w-full p-3 bg-surface-alt border border-border-dim rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1 block">Description</label>
-              <textarea
-                value={form.description}
-                onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={3}
-                placeholder="Describe the incident, evidence, and recommended action..."
-                className="w-full p-3 bg-surface-alt border border-border-dim rounded-xl text-sm outline-none focus:ring-2 focus:ring-brand resize-none"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 border border-border rounded-xl text-sm font-bold text-ink-dim hover:border-border">Cancel</button>
-              <button onClick={createTicket} disabled={submitting} className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-gray-800 disabled:opacity-50">
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+        <div className="bg-surface-alt rounded-xl border border-border-dim p-4 mb-5">
+          <p className="text-xs font-semibold text-ink mb-3">Record new incident</p>
+          <div className="space-y-2.5">
+            <input
+              value={form.subject}
+              onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
+              placeholder="Subject — e.g. Safety complaint – Marius K."
+              className="w-full p-2.5 bg-white border border-border-dim rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand"
+            />
+            <textarea
+              value={form.description}
+              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+              rows={2}
+              placeholder="Describe the incident, evidence, and recommended action..."
+              className="w-full p-2.5 bg-white border border-border-dim rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand resize-none"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setShowForm(false)} className="px-2.5 py-1.5 border border-border-dim rounded-lg text-xs font-semibold text-ink-dim hover:bg-white transition-colors">Cancel</button>
+              <button onClick={createTicket} disabled={submitting} className="flex items-center gap-1.5 bg-ink text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-ink/80 disabled:opacity-50 transition-colors">
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                 Submit
               </button>
             </div>
           </div>
         </div>
       )}
-      {tickets.length === 0 ? <AdminEmpty icon={FileWarning} title="No incidents recorded" description="Safety concerns and escalations will be tracked here." /> : (
-        <div className="space-y-3">
-          {tickets.map((t) => (
-            <div key={t.id} className="bg-white rounded-2xl border border-border-dim p-5">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-bold">{t.subject}</span>
+
+      {filteredTickets.length === 0 ? <AdminEmpty icon={FileWarning} title="No incidents recorded" description="Safety concerns and escalations will be tracked here." /> : (
+        <div className="space-y-2.5">
+          {filteredTickets.map((t) => {
+            const daysSince = Math.floor((Date.now() - new Date(t.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+            return (
+              <div key={t.id} className={`bg-white rounded-xl border p-4 ${t.status === 'CLOSED' ? 'border-border-dim opacity-60' : t.status === 'OPEN' ? 'border-caution-edge/50' : 'border-border-dim'}`}>
+                {/* Subject + Status */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    <span className="font-bold text-sm truncate">{t.subject}</span>
                     <Badge color={TICKET_COLORS[t.status] ?? 'gray'} label={t.status} />
                   </div>
-                  <p className="text-sm text-ink-dim mb-2">{t.description}</p>
-                  <p className="text-xs text-ink-dim">{new Date(t.createdAt).toLocaleDateString()} at {new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <span className="text-[11px] text-ink-dim tabular-nums shrink-0">{daysSince}d ago</span>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  {t.status === 'OPEN' && (
-                    <button onClick={() => updateStatus(t.id, 'RESOLVED')} className="px-3 py-1.5 bg-trust-surface text-trust rounded-xl text-xs font-bold hover:bg-green-200 transition-colors">Resolve</button>
-                  )}
-                  {t.status !== 'CLOSED' && (
-                    <button onClick={() => updateStatus(t.id, 'CLOSED')} className="px-3 py-1.5 bg-surface-alt text-ink-dim rounded-xl text-xs font-bold hover:bg-border transition-colors">Close</button>
-                  )}
+
+                {/* Description */}
+                <p className="text-xs text-ink-sub mb-2.5 leading-relaxed line-clamp-2">{t.description}</p>
+
+                {/* Actions */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-ink-dim tabular-nums">
+                    {new Date(t.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {t.status === 'OPEN' && (
+                      <button onClick={() => updateStatus(t.id, 'RESOLVED')} className="px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-semibold hover:bg-trust-surface/80 transition-colors">Resolve</button>
+                    )}
+                    {t.status !== 'CLOSED' && (
+                      <button onClick={() => updateStatus(t.id, 'CLOSED')} className="px-2.5 py-1.5 bg-surface-alt text-ink-dim border border-border-dim rounded-lg text-xs font-semibold hover:bg-border-dim transition-colors">Close</button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
