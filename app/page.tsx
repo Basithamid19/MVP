@@ -168,9 +168,6 @@ export default function LandingPage() {
           <div className="flex items-center gap-3">
             {session ? (
               <>
-                <Link href="/dashboard" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-                  My Account
-                </Link>
                 <Link
                   href="/requests/new"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
