@@ -258,6 +258,7 @@ function AnalyticsModule() {
 function ProvidersModule() {
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('ALL');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -280,53 +281,86 @@ function ProvidersModule() {
 
   if (loading) return <ModuleLoader />;
 
+  const needsReview = providers.filter(p => !p.isVerified);
+  const approved = providers.filter(p => p.isVerified);
+  const filtered = filter === 'ALL' ? providers
+    : filter === 'NEEDS_REVIEW' ? needsReview
+    : approved;
+
   return (
     <div>
       <ModuleHeader
-        title="Provider Approval Queue"
-        description="Review documents, approve, reject, suspend, or downgrade provider trust badges."
-        action={<button onClick={load} className="p-2 rounded-xl hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
+        title="Provider Queue"
+        description="Review trust status, approve, suspend, or change provider tiers."
+        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
       />
-      {providers.length === 0 ? <AdminEmpty icon={ShieldCheck} title="No providers found" description="Providers will appear here once they register on the platform." /> : (
-        <div className="space-y-3">
-          {providers.map((p) => (
-            <div key={p.id} className="bg-white rounded-2xl border border-border-dim p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-              <div className="flex items-center gap-4 flex-1 min-w-0">
+
+      {/* Summary strip */}
+      <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
+        <span><span className="font-bold text-ink tabular-nums">{providers.length}</span> total</span>
+        {needsReview.length > 0 && <span className="text-caution font-semibold">{needsReview.length} needs review</span>}
+        <span><span className="font-bold text-ink tabular-nums">{approved.length}</span> approved</span>
+      </div>
+
+      {/* Filter chips */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        <FilterChip label="All" active={filter === 'ALL'} count={providers.length} onClick={() => setFilter('ALL')} />
+        <FilterChip label="Needs Review" active={filter === 'NEEDS_REVIEW'} count={needsReview.length} onClick={() => setFilter('NEEDS_REVIEW')} />
+        <FilterChip label="Approved" active={filter === 'APPROVED'} count={approved.length} onClick={() => setFilter('APPROVED')} />
+      </div>
+
+      {filtered.length === 0 ? <AdminEmpty icon={ShieldCheck} title="No providers match this filter" description="Providers will appear here once they register on the platform." /> : (
+        <div className="space-y-2.5">
+          {filtered.map((p) => (
+            <div key={p.id} className="bg-white rounded-xl border border-border-dim p-4">
+              {/* Identity row */}
+              <div className="flex items-center gap-3 mb-3">
                 <img
                   src={p.user.image || `https://i.pravatar.cc/80?u=${p.id}`}
                   alt={p.user.name}
-                  className="w-10 h-10 rounded-xl object-cover shrink-0 grayscale"
+                  className="w-9 h-9 rounded-lg object-cover shrink-0 grayscale"
                 />
-                <div className="min-w-0">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold truncate">{p.user.name}</span>
+                    <span className="font-bold text-sm truncate">{p.user.name}</span>
                     <Badge color={p.isVerified ? 'green' : 'gray'} label={p.isVerified ? 'Active' : 'Unverified'} />
-                    <Badge color={TIER_COLORS[p.verificationTier] ?? 'gray'} label={TIER_LABELS[p.verificationTier] ?? p.verificationTier} />
                   </div>
-                  <p className="text-xs text-ink-dim mt-0.5 truncate">{p.categories.map((c: any) => c.name).join(', ')} · {p._count.bookings} bookings · {p._count.reviews} reviews</p>
+                  <p className="text-[11px] text-ink-dim truncate">{p.categories.map((c: any) => c.name).join(', ')}</p>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 shrink-0">
+
+              {/* Stats + Tier row */}
+              <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-border-dim">
+                <div className="flex items-center gap-4 text-xs text-ink-dim">
+                  <span><span className="font-semibold text-ink tabular-nums">{p._count.bookings}</span> jobs</span>
+                  <span><span className="font-semibold text-ink tabular-nums">{p._count.reviews}</span> reviews</span>
+                </div>
+                <Badge color={TIER_COLORS[p.verificationTier] ?? 'gray'} label={TIER_LABELS[p.verificationTier] ?? p.verificationTier} />
+              </div>
+
+              {/* Actions row */}
+              <div className="flex items-center gap-2 flex-wrap">
                 <select
                   defaultValue={p.verificationTier}
                   onChange={(e) => update(p.id, p.isVerified, e.target.value)}
-                  className="text-xs border border-border rounded-xl px-3 py-2 font-medium focus:ring-2 focus:ring-brand outline-none"
+                  className="text-xs border border-border-dim rounded-lg px-2.5 py-1.5 font-medium bg-surface-alt focus:ring-2 focus:ring-brand outline-none"
                 >
                   <option value="TIER0_BASIC">Tier 0 – Basic</option>
                   <option value="TIER1_ID_VERIFIED">Tier 1 – ID</option>
                   <option value="TIER2_TRADE_VERIFIED">Tier 2 – Trade</option>
                   <option value="TIER3_ENHANCED">Tier 3 – Enhanced</option>
                 </select>
+                <div className="flex-1" />
                 {!p.isVerified ? (
-                  <button onClick={() => update(p.id, true, p.verificationTier)} className="flex items-center gap-1 px-3 py-2 bg-trust-surface text-trust rounded-xl text-xs font-bold hover:bg-green-200 transition-colors">
+                  <button onClick={() => update(p.id, true, p.verificationTier)} className="flex items-center gap-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-semibold hover:bg-trust-surface/80 transition-colors">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Approve
                   </button>
                 ) : (
-                  <button onClick={() => update(p.id, false, 'TIER0_BASIC')} className="flex items-center gap-1 px-3 py-2 bg-caution-surface text-caution rounded-xl text-xs font-bold hover:bg-orange-200 transition-colors">
+                  <button onClick={() => update(p.id, false, 'TIER0_BASIC')} className="flex items-center gap-1 px-2.5 py-1.5 bg-caution-surface text-caution border border-caution-edge rounded-lg text-xs font-semibold hover:bg-caution-surface/80 transition-colors">
                     <AlertTriangle className="w-3.5 h-3.5" /> Suspend
                   </button>
                 )}
-                <button onClick={() => update(p.id, false, p.verificationTier)} className="flex items-center gap-1 px-3 py-2 bg-danger-surface text-danger rounded-xl text-xs font-bold hover:bg-red-200 transition-colors">
+                <button onClick={() => update(p.id, false, p.verificationTier)} className="flex items-center gap-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-semibold hover:bg-danger-surface/80 transition-colors">
                   <XCircle className="w-3.5 h-3.5" /> Reject
                 </button>
               </div>
