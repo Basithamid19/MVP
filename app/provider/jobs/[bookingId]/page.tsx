@@ -6,7 +6,7 @@ import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Phone, MessageSquare, CheckCircle2,
   Circle, Camera, Loader2, Navigation, Clock, X,
-  ImagePlus, AlertTriangle,
+  ImagePlus, AlertTriangle, DollarSign, Timer, ChevronRight,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
 
@@ -94,11 +94,60 @@ export default function ProviderJobDetailPage() {
   const address = booking.quote?.request?.address;
   const mapsUrl = address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : '#';
   const completedTasks = checklist.filter(Boolean).length;
+  const earnings = (booking.totalAmount * 0.88).toFixed(2);
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto pb-28">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto pb-28">
+
+      {/* ── Mobile: Unified header ── */}
+      <div className="sm:hidden">
+        {/* Back row */}
+        <div className="flex items-center gap-2 mb-3">
+          <Link href="/provider/jobs" className="p-1.5 -ml-1.5 hover:bg-surface-alt rounded-xl transition-colors">
+            <ArrowLeft className="w-5 h-5 text-ink-sub" />
+          </Link>
+          <span className="text-xs text-ink-dim">Back to jobs</span>
+        </div>
+
+        {/* Title + status + earnings hero */}
+        <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? 'Job'}</h1>
+              <p className="text-[10px] text-ink-dim mt-0.5 font-medium">ID: {booking.id.slice(0, 8)}…</p>
+            </div>
+            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0 ${flow.color}`}>
+              {flow.label}
+            </span>
+          </div>
+
+          {/* Key details strip */}
+          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-dim">
+            <div>
+              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Earnings</p>
+              <p className="text-base font-bold text-trust">€{earnings}</p>
+            </div>
+            <div>
+              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Scheduled</p>
+              <p className="text-xs font-semibold text-ink">
+                {new Date(booking.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+              </p>
+              <p className="text-[10px] text-ink-dim">
+                {new Date(booking.scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            {booking.quote?.estimatedHours && (
+              <div>
+                <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Duration</p>
+                <p className="text-xs font-semibold text-ink">~{booking.quote.estimatedHours}h</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Desktop: Original header ── */}
+      <div className="hidden sm:flex items-center gap-3 mb-6">
         <Link href="/provider/jobs" className="p-2 hover:bg-surface-alt rounded-full transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
@@ -111,9 +160,54 @@ export default function ProviderJobDetailPage() {
         </span>
       </div>
 
-      <div className="space-y-5">
-        {/* Customer + address */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+      <div className="space-y-3 sm:space-y-5">
+
+        {/* ── Mobile: Customer compact card ── */}
+        <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
+          <div className="flex items-center gap-3 p-3.5">
+            <img
+              src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
+              alt={customer?.user?.name}
+              className="w-10 h-10 rounded-xl object-cover shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-ink">{customer?.user?.name}</p>
+              {address && (
+                <p className="text-[11px] text-ink-dim flex items-center gap-1 mt-0.5 truncate">
+                  <MapPin className="w-3 h-3 shrink-0" /> {address}
+                </p>
+              )}
+            </div>
+          </div>
+          {/* Action row */}
+          <div className="border-t border-border-dim grid grid-cols-3 divide-x divide-border-dim">
+            <button onClick={() => setShowChat(true)}
+              className="flex items-center justify-center gap-1.5 py-2.5 bg-brand text-white text-xs font-semibold">
+              <MessageSquare className="w-3.5 h-3.5" /> Message
+            </button>
+            <button
+              onClick={() => {
+                const phone = customer?.phone;
+                if (phone) window.location.href = `tel:${phone}`;
+                else alert('Call masking active — your call will be connected through Aladdin.');
+              }}
+              className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5" /> Call
+            </button>
+            {address ? (
+              <a href={mapsUrl} target="_blank" rel="noreferrer"
+                className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors">
+                <Navigation className="w-3.5 h-3.5" /> Navigate
+              </a>
+            ) : (
+              <div className="flex items-center justify-center py-2.5 text-xs text-ink-dim">—</div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Desktop: Customer card (original) ── */}
+        <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
           <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Customer</p>
           <div className="flex items-center gap-3 mb-4">
             <img
@@ -142,7 +236,7 @@ export default function ProviderJobDetailPage() {
               <Phone className="w-4 h-4" /> Call
             </button>
             <button onClick={() => setShowChat(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-gray-800 transition-colors">
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors">
               <MessageSquare className="w-4 h-4" /> Message
             </button>
             {address && (
@@ -154,8 +248,8 @@ export default function ProviderJobDetailPage() {
           </div>
         </div>
 
-        {/* Booking details */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        {/* ── Desktop: Job details (original) ── */}
+        <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
           <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Job Details</p>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
@@ -166,7 +260,7 @@ export default function ProviderJobDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-ink-dim">Your earnings</span>
-              <span className="font-bold text-trust">€{(booking.totalAmount * 0.88).toFixed(2)}</span>
+              <span className="font-bold text-trust">€{earnings}</span>
             </div>
             {booking.quote?.estimatedHours && (
               <div className="flex justify-between">
@@ -183,37 +277,62 @@ export default function ProviderJobDetailPage() {
           )}
         </div>
 
-        {/* Checklist */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Job Checklist</p>
-            <span className="text-xs font-bold text-ink-dim">{completedTasks}/{DEFAULT_CHECKLIST.length}</span>
+        {/* ── Mobile: Job notes (if present) ── */}
+        {booking.quote?.notes && (
+          <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 shadow-sm">
+            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1.5">Job Notes</p>
+            <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
           </div>
-          <div className="w-full bg-surface-alt rounded-full h-1.5 mb-4">
-            <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${(completedTasks / DEFAULT_CHECKLIST.length) * 100}%` }} />
+        )}
+
+        {/* ── Checklist ── */}
+        <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
+          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
+            <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">Checklist</p>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+              completedTasks === DEFAULT_CHECKLIST.length
+                ? 'bg-trust-surface text-trust'
+                : 'bg-surface-alt text-ink-dim'
+            }`}>
+              {completedTasks}/{DEFAULT_CHECKLIST.length}
+            </span>
           </div>
-          <div className="space-y-2">
+          <div className="w-full bg-surface-alt rounded-full h-1 sm:h-1.5 mb-3 sm:mb-4">
+            <div className={`h-full rounded-full transition-all ${
+              completedTasks === DEFAULT_CHECKLIST.length ? 'bg-trust' : 'bg-brand'
+            }`} style={{ width: `${(completedTasks / DEFAULT_CHECKLIST.length) * 100}%` }} />
+          </div>
+          <div className="space-y-0.5 sm:space-y-2">
             {DEFAULT_CHECKLIST.map((task, i) => (
               <button
                 key={i}
                 onClick={() => setChecklist(prev => prev.map((v, j) => j === i ? !v : v))}
-                className={`w-full flex items-center gap-3 p-3 rounded-input text-sm text-left transition-all ${checklist[i] ? 'bg-green-50 text-trust' : 'hover:bg-surface-alt'}`}
+                className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl sm:rounded-input text-left transition-all ${
+                  checklist[i]
+                    ? 'bg-trust-surface/50'
+                    : 'hover:bg-surface-alt active:bg-surface-alt'
+                }`}
               >
                 {checklist[i]
-                  ? <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                  : <Circle className="w-5 h-5 text-ink-dim shrink-0" />
+                  ? <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
+                  : <div className="w-5 h-5 rounded-full border-2 border-border shrink-0" />
                 }
-                <span className={checklist[i] ? 'line-through text-trust' : 'font-medium text-ink-sub'}>{task}</span>
+                <span className={`text-[13px] sm:text-sm leading-snug ${
+                  checklist[i] ? 'line-through text-ink-dim' : 'font-medium text-ink'
+                }`}>{task}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Job photos */}
-        <div className="bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Photos</p>
-            <span className="text-xs text-ink-dim">{photos.length} uploaded</span>
+        {/* ── Photos / Documentation ── */}
+        <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
+              <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">Documentation</p>
+            </div>
+            <span className="text-[10px] font-medium text-ink-dim">{photos.length} photo{photos.length !== 1 ? 's' : ''}</span>
           </div>
           <input
             ref={fileRef}
@@ -222,51 +341,78 @@ export default function ProviderJobDetailPage() {
             className="hidden"
             onChange={handlePhotoUpload}
           />
-          <div className="flex flex-wrap gap-3">
-            {photos.map((p, i) => (
-              <div key={i} className="relative w-20 h-20 rounded-input overflow-hidden border border-border">
-                <img src={p.preview} alt={p.label} className="w-full h-full object-cover" />
-                <button
-                  onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                  className="absolute top-1 right-1 w-5 h-5 bg-brand/60 rounded-full flex items-center justify-center"
-                >
-                  <X className="w-3 h-3 text-white" />
-                </button>
-              </div>
-            ))}
+          {photos.length === 0 ? (
+            /* Empty state */
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploadingPhoto}
-              className="w-20 h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
+              className="w-full flex items-center gap-3 p-3 rounded-xl border border-dashed border-border hover:border-brand hover:bg-brand-muted/30 transition-all group"
             >
-              {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-5 h-5" /><span className="text-[10px] font-bold">Add</span></>}
+              <div className="w-10 h-10 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
+                {uploadingPhoto
+                  ? <Loader2 className="w-4 h-4 animate-spin text-ink-dim" />
+                  : <ImagePlus className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
+                }
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold text-ink">Add photos</p>
+                <p className="text-[11px] text-ink-dim">Before, during & after — document your work</p>
+              </div>
             </button>
-          </div>
+          ) : (
+            /* Photo grid */
+            <div className="flex flex-wrap gap-2 sm:gap-3">
+              {photos.map((p, i) => (
+                <div key={i} className="relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input overflow-hidden border border-border">
+                  <img src={p.preview} alt={p.label} className="w-full h-full object-cover" />
+                  <button
+                    onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm"
+                  >
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => fileRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
+              >
+                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-[9px] font-bold">Add</span></>}
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Issue report */}
+        {/* ── Issue / Support ── */}
         {!isCanceled && (
-          <div className="flex items-center gap-3 p-4 bg-surface-alt rounded-card border border-border-dim text-sm">
-            <AlertTriangle className="w-5 h-5 text-ink-dim shrink-0" />
-            <span className="text-ink-dim">Issue on the job?</span>
-            <Link href="/provider/disputes" className="ml-auto text-sm font-bold text-ink hover:underline">
-              Report issue
-            </Link>
-          </div>
+          <Link href="/provider/disputes"
+            className="flex items-center gap-3 p-3 sm:p-4 bg-white sm:bg-surface-alt rounded-xl sm:rounded-card border border-border-dim sm:border-border-dim text-sm group hover:border-caution-edge transition-all">
+            <div className="w-8 h-8 bg-surface-alt sm:bg-white rounded-lg flex items-center justify-center shrink-0 group-hover:bg-caution-surface transition-colors">
+              <AlertTriangle className="w-4 h-4 text-ink-dim group-hover:text-caution transition-colors" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-ink">Report an issue</p>
+              <p className="text-[10px] text-ink-dim">Problems, disputes or safety concerns</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+          </Link>
         )}
       </div>
 
       {/* Bottom action bar */}
       {!isCanceled && !isCompleted && flow.next && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
-          <div className="max-w-2xl mx-auto">
-            <button
-              onClick={() => updateStatus(flow.next)}
-              disabled={actioning}
-              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {flow.nextLabel}</>}
-            </button>
+        <div className="fixed bottom-0 left-0 right-0 z-40">
+          <div className="bg-white/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
+            <div className="max-w-2xl mx-auto">
+              <button
+                onClick={() => updateStatus(flow.next)}
+                disabled={actioning}
+                className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-2xl sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
+              >
+                {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {flow.nextLabel}</>}
+              </button>
+            </div>
           </div>
         </div>
       )}
