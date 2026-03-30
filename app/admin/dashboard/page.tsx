@@ -19,49 +19,65 @@ import {
 
 function ModuleLoader() {
   return (
-    <div className="flex items-center justify-center h-64">
-      <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
+    <div className="flex items-center justify-center h-48">
+      <Loader2 className="w-6 h-6 animate-spin text-ink-dim" />
     </div>
   );
 }
 
 function ModuleHeader({ title, description, action }: { title: string; description: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between mb-6 sm:mb-8">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink mb-1 sm:mb-2">{title}</h1>
-        <p className="text-ink-sub text-xs sm:text-sm font-medium">{description}</p>
+    <div className="flex items-start justify-between gap-3 mb-5 sm:mb-6">
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">{title}</h1>
+        <p className="text-ink-dim text-xs sm:text-sm mt-0.5">{description}</p>
       </div>
-      {action}
+      {action && <div className="shrink-0 flex items-center gap-2">{action}</div>}
     </div>
   );
 }
 
 function Badge({ color, label }: { color: string; label: string }) {
   const colors: Record<string, string> = {
-    green: 'bg-trust-surface text-trust',
-    red: 'bg-danger-surface text-danger',
-    blue: 'bg-info-surface text-info',
-    orange: 'bg-caution-surface text-caution',
-    gray: 'bg-surface-alt text-ink-dim',
-    yellow: 'bg-caution-surface text-caution',
-    purple: 'bg-brand-muted text-brand-dark',
+    green: 'bg-trust-surface text-trust border border-trust-edge',
+    red: 'bg-danger-surface text-danger border border-danger-edge',
+    blue: 'bg-info-surface text-info border border-info-edge',
+    orange: 'bg-caution-surface text-caution border border-caution-edge',
+    gray: 'bg-surface-alt text-ink-dim border border-border-dim',
+    yellow: 'bg-caution-surface text-caution border border-caution-edge',
+    purple: 'bg-brand-muted text-brand-dark border border-brand/20',
   };
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${colors[color] || colors.gray}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-chip text-[11px] font-semibold uppercase tracking-wide ${colors[color] || colors.gray}`}>
       {label}
     </span>
   );
 }
 
-function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
+function AdminEmpty({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
-        <Icon className="w-8 h-8 text-ink-dim" />
+    <div className="flex flex-col items-center justify-center py-10 text-center">
+      <div className="w-11 h-11 bg-surface-alt rounded-xl flex items-center justify-center mb-3">
+        <Icon className="w-5 h-5 text-ink-dim/60" />
       </div>
-      <p className="text-ink-dim font-medium">{message}</p>
+      <p className="text-sm font-semibold text-ink mb-0.5">{title}</p>
+      {description && <p className="text-xs text-ink-dim max-w-xs">{description}</p>}
     </div>
+  );
+}
+
+function FilterChip({ label, active, count, onClick }: { label: string; active: boolean; count?: number; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+        active
+          ? 'bg-ink text-white shadow-sm'
+          : 'bg-white border border-border-dim text-ink-sub hover:border-border hover:text-ink'
+      }`}
+    >
+      {label}{count != null ? ` (${count})` : ''}
+    </button>
   );
 }
 
@@ -187,7 +203,7 @@ function ProvidersModule() {
         description="Review documents, approve, reject, suspend, or downgrade provider trust badges."
         action={<button onClick={load} className="p-2 rounded-xl hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
       />
-      {providers.length === 0 ? <EmptyState icon={ShieldCheck} message="No providers found." /> : (
+      {providers.length === 0 ? <AdminEmpty icon={ShieldCheck} title="No providers found" description="Providers will appear here once they register on the platform." /> : (
         <div className="space-y-3">
           {providers.map((p) => (
             <div key={p.id} className="bg-white rounded-2xl border border-border-dim p-5 flex flex-col lg:flex-row lg:items-center gap-4">
@@ -263,18 +279,18 @@ function BookingsModule() {
   return (
     <div>
       <ModuleHeader title="Booking Operations Console" description="Every request, quote, booking, status event, and owner of each case." />
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELED'].map(s => (
-          <button
+          <FilterChip
             key={s}
+            label={s === 'ALL' ? 'All' : s.replace('_', ' ')}
+            active={filter === s}
+            count={s === 'ALL' ? bookings.length : bookings.filter(b => b.status === s).length}
             onClick={() => setFilter(s)}
-            className={`shrink-0 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${filter === s ? 'bg-brand text-white' : 'bg-white border border-border text-ink-dim hover:border-border'}`}
-          >
-            {s === 'ALL' ? `All (${bookings.length})` : `${s.replace('_', ' ')} (${bookings.filter(b => b.status === s).length})`}
-          </button>
+          />
         ))}
       </div>
-      {filtered.length === 0 ? <EmptyState icon={Briefcase} message="No bookings match this filter." /> : (
+      {filtered.length === 0 ? <AdminEmpty icon={Briefcase} title="No bookings match this filter" description="Try a different status filter or check back later." /> : (
         <div className="space-y-3">
           {filtered.map((b) => (
             <div key={b.id} className="bg-white rounded-2xl border border-border-dim p-5">
@@ -345,7 +361,7 @@ function DisputesModule() {
   return (
     <div>
       <ModuleHeader title="Refund & Dispute Center" description="Approve refunds, review evidence, and enforce policy consistently." />
-      {bookings.length === 0 ? <EmptyState icon={DollarSign} message="No disputes or refund requests at this time." /> : (
+      {bookings.length === 0 ? <AdminEmpty icon={DollarSign} title="No open disputes or refunds" description="Cancelled bookings and refund requests will surface here." /> : (
         <div className="space-y-3">
           {bookings.map((b) => (
             <div key={b.id} className="bg-white rounded-2xl border border-border-dim p-5 flex flex-col lg:flex-row lg:items-center gap-4">
@@ -407,7 +423,7 @@ function ReviewsModule() {
   return (
     <div>
       <ModuleHeader title="Review Moderation" description="Block fraudulent reviews, handle disputes, and preserve review integrity." />
-      {reviews.length === 0 ? <EmptyState icon={Star} message="No reviews yet." /> : (
+      {reviews.length === 0 ? <AdminEmpty icon={Star} title="No reviews to moderate" description="Reviews will appear here as customers leave feedback." /> : (
         <div className="space-y-3">
           {reviews.map((r) => (
             <div key={r.id} className={`bg-white rounded-2xl border p-5 transition-all ${r.isHidden ? 'border-red-100 opacity-60' : 'border-border-dim'}`}>
@@ -544,15 +560,15 @@ function CRMModule() {
   return (
     <div>
       <ModuleHeader title="CRM / Referral Controls" description="Issue credits, manage invitations, and track user activity." />
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-5 flex-wrap">
         {['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'].map(r => (
-          <button
+          <FilterChip
             key={r}
+            label={r === 'ALL' ? 'All' : r}
+            active={roleFilter === r}
+            count={r === 'ALL' ? users.length : users.filter(u => u.role === r).length}
             onClick={() => setRoleFilter(r)}
-            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${roleFilter === r ? 'bg-brand text-white' : 'bg-white border border-border text-ink-dim hover:border-border'}`}
-          >
-            {r === 'ALL' ? `All (${users.length})` : `${r} (${users.filter(u => u.role === r).length})`}
-          </button>
+          />
         ))}
       </div>
       {creditUser && (
@@ -689,7 +705,7 @@ function IncidentModule() {
           </div>
         </div>
       )}
-      {tickets.length === 0 ? <EmptyState icon={FileWarning} message="No incidents recorded." /> : (
+      {tickets.length === 0 ? <AdminEmpty icon={FileWarning} title="No incidents recorded" description="Safety concerns and escalations will be tracked here." /> : (
         <div className="space-y-3">
           {tickets.map((t) => (
             <div key={t.id} className="bg-white rounded-2xl border border-border-dim p-5">
@@ -890,7 +906,7 @@ export default function AdminDashboard() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-6 sm:py-8 md:py-12">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-10">
             {renderModule()}
           </div>
         </main>
