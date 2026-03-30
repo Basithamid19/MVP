@@ -561,6 +561,7 @@ function DisputesModule() {
 function ReviewsModule() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('ALL');
 
   const load = useCallback(() => {
     setLoading(true);
@@ -583,40 +584,79 @@ function ReviewsModule() {
 
   if (loading) return <ModuleLoader />;
 
+  const visible = reviews.filter(r => !r.isHidden);
+  const blocked = reviews.filter(r => r.isHidden);
+  const filtered = filter === 'ALL' ? reviews
+    : filter === 'VISIBLE' ? visible
+    : blocked;
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum: number, r: any) => sum + (r.rating ?? 0), 0) / reviews.length).toFixed(1)
+    : '—';
+
   return (
     <div>
-      <ModuleHeader title="Review Moderation" description="Block fraudulent reviews, handle disputes, and preserve review integrity." />
-      {reviews.length === 0 ? <AdminEmpty icon={Star} title="No reviews to moderate" description="Reviews will appear here as customers leave feedback." /> : (
-        <div className="space-y-3">
-          {reviews.map((r) => (
-            <div key={r.id} className={`bg-white rounded-2xl border p-5 transition-all ${r.isHidden ? 'border-red-100 opacity-60' : 'border-border-dim'}`}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <div className="flex items-center gap-1">
-                      {[1,2,3,4,5].map(i => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i <= r.rating ? 'text-brand fill-yellow-400' : 'text-ink-dim'}`} />
-                      ))}
-                    </div>
-                    {r.isHidden && <Badge color="red" label="Blocked" />}
+      <ModuleHeader
+        title="Review Moderation"
+        description="Maintain review integrity and handle flagged content."
+        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
+      />
+
+      {/* Summary strip */}
+      {reviews.length > 0 && (
+        <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
+          <span><span className="font-bold text-ink tabular-nums">{reviews.length}</span> total</span>
+          <span>Avg <span className="font-bold text-ink tabular-nums">{avgRating}</span> stars</span>
+          {blocked.length > 0 && <span className="text-danger font-semibold">{blocked.length} blocked</span>}
+        </div>
+      )}
+
+      {/* Filter chips */}
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        <FilterChip label="All" active={filter === 'ALL'} count={reviews.length} onClick={() => setFilter('ALL')} />
+        <FilterChip label="Visible" active={filter === 'VISIBLE'} count={visible.length} onClick={() => setFilter('VISIBLE')} />
+        <FilterChip label="Blocked" active={filter === 'BLOCKED'} count={blocked.length} onClick={() => setFilter('BLOCKED')} />
+      </div>
+
+      {filtered.length === 0 ? <AdminEmpty icon={Star} title="No reviews to moderate" description="Reviews will appear here as customers leave feedback." /> : (
+        <div className="space-y-2.5">
+          {filtered.map((r) => (
+            <div key={r.id} className={`bg-white rounded-xl border p-4 transition-all ${r.isHidden ? 'border-danger-edge/50 opacity-60' : 'border-border-dim'}`}>
+              {/* Rating + Action */}
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map(i => (
+                      <Star key={i} className={`w-3.5 h-3.5 ${i <= r.rating ? 'text-caution fill-caution' : 'text-border'}`} />
+                    ))}
                   </div>
-                  <p className="text-sm text-ink-sub mb-2 italic">&quot;{r.comment || '—'}&quot;</p>
-                  <p className="text-xs text-ink-dim">
-                    By <span className="font-semibold text-ink-sub">{r.customer?.user?.name}</span>
-                    &nbsp;for&nbsp;<span className="font-semibold text-ink-sub">{r.provider?.user?.name}</span>
-                    &nbsp;·&nbsp;{new Date(r.createdAt).toLocaleDateString()}
-                  </p>
+                  <span className="text-xs font-bold tabular-nums text-ink">{r.rating}/5</span>
+                  {r.isHidden && <Badge color="red" label="Blocked" />}
                 </div>
                 <button
                   onClick={() => toggle(r.id, r.isHidden)}
-                  className={`shrink-0 flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${
+                  className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                     r.isHidden
-                      ? 'bg-trust-surface text-trust hover:bg-green-200'
-                      : 'bg-danger-surface text-danger hover:bg-red-200'
+                      ? 'bg-trust-surface text-trust border border-trust-edge hover:bg-trust-surface/80'
+                      : 'bg-danger-surface text-danger border border-danger-edge hover:bg-danger-surface/80'
                   }`}
                 >
                   {r.isHidden ? <><Eye className="w-3.5 h-3.5" /> Restore</> : <><EyeOff className="w-3.5 h-3.5" /> Block</>}
                 </button>
+              </div>
+
+              {/* Review text */}
+              {r.comment && (
+                <p className="text-sm text-ink-sub mb-2 leading-relaxed line-clamp-2">&quot;{r.comment}&quot;</p>
+              )}
+
+              {/* Meta: reviewer → provider, date */}
+              <div className="flex items-center justify-between text-xs text-ink-dim">
+                <span>
+                  <span className="font-medium text-ink-sub">{r.customer?.user?.name}</span>
+                  <span className="mx-1">→</span>
+                  <span className="font-medium text-ink-sub">{r.provider?.user?.name}</span>
+                </span>
+                <span className="tabular-nums">{new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
               </div>
             </div>
           ))}
