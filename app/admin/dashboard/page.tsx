@@ -767,8 +767,8 @@ function CRMModule() {
 
   return (
     <div>
-      <ModuleHeader title="CRM / Referral Controls" description="Issue credits, manage invitations, and track user activity." />
-      <div className="flex gap-2 mb-5 flex-wrap">
+      <ModuleHeader title="CRM / Referrals" description="User operations, credits, and activity tracking." />
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'].map(r => (
           <FilterChip
             key={r}
@@ -779,41 +779,49 @@ function CRMModule() {
           />
         ))}
       </div>
+
+      {/* Credit panel */}
       {creditUser && (
-        <div className="mb-4 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-4">
-          <div className="flex-1">
-            <p className="font-bold text-sm mb-1">Issue Credit / Note to {creditUser.name}</p>
+        <div className="mb-4 bg-info-surface border border-info-edge rounded-xl p-3">
+          <p className="text-xs font-semibold text-info mb-2">Issue credit to {creditUser.name}</p>
+          <div className="flex items-center gap-2">
             <input
               value={creditNote}
               onChange={e => setCreditNote(e.target.value)}
-              placeholder="Note or credit description..."
-              className="w-full text-sm p-3 bg-white border border-border rounded-xl outline-none focus:ring-2 focus:ring-brand"
+              placeholder="Credit description..."
+              className="flex-1 text-xs p-2 bg-white border border-border-dim rounded-lg outline-none focus:ring-2 focus:ring-brand"
             />
-          </div>
-          <div className="flex gap-2 shrink-0">
-            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-3 py-2 border border-border rounded-xl text-xs font-bold text-ink-dim hover:border-border">Cancel</button>
-            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-3 py-2 bg-brand text-white rounded-xl text-xs font-bold hover:bg-gray-800">Confirm</button>
+            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-2.5 py-1.5 border border-border-dim rounded-lg text-xs font-semibold text-ink-dim hover:bg-surface-alt transition-colors">Cancel</button>
+            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-2.5 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-brand-dark transition-colors">Confirm</button>
           </div>
         </div>
       )}
-      <div className="space-y-3">
+
+      <div className="space-y-2.5">
         {filtered.map((u) => (
-          <div key={u.id} className="bg-white rounded-2xl border border-border-dim p-4 flex items-center gap-4">
-            <img src={u.image || `https://i.pravatar.cc/80?u=${u.id}`} alt={u.name} className="w-10 h-10 rounded-xl object-cover grayscale shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm">{u.name}</span>
-                <Badge color={ROLE_COLORS[u.role] ?? 'gray'} label={u.role} />
+          <div key={u.id} className="bg-white rounded-xl border border-border-dim p-4">
+            {/* Identity row */}
+            <div className="flex items-center gap-3 mb-2">
+              <img src={u.image || `https://i.pravatar.cc/80?u=${u.id}`} alt={u.name} className="w-8 h-8 rounded-lg object-cover grayscale shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-sm truncate">{u.name}</span>
+                  <Badge color={ROLE_COLORS[u.role] ?? 'gray'} label={u.role} />
+                </div>
+                <p className="text-[11px] text-ink-dim truncate">{u.email}</p>
               </div>
-              <p className="text-xs text-ink-dim truncate">{u.email}</p>
-              {u.providerProfile && (
-                <p className="text-xs text-ink-dim">{u.providerProfile.completedJobs} jobs · {u.providerProfile.ratingAvg?.toFixed(1)} avg rating</p>
-              )}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-xs text-ink-dim">Joined {new Date(u.createdAt).toLocaleDateString()}</span>
-              <button onClick={() => setCreditUser(u)} className="flex items-center gap-1 px-3 py-2 bg-blue-50 text-info rounded-xl text-xs font-bold hover:bg-info-surface transition-colors">
-                <Plus className="w-3.5 h-3.5" /> Credit
+
+            {/* Meta + Action row */}
+            <div className="flex items-center justify-between gap-3 text-xs text-ink-dim">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="tabular-nums">Joined {new Date(u.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}</span>
+                {u.providerProfile && (
+                  <span className="truncate">{u.providerProfile.completedJobs} jobs · {u.providerProfile.ratingAvg?.toFixed(1)} avg</span>
+                )}
+              </div>
+              <button onClick={() => setCreditUser(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-info-surface text-info border border-info-edge rounded-lg text-xs font-semibold hover:bg-info-surface/80 transition-colors">
+                <Plus className="w-3 h-3" /> Credit
               </button>
             </div>
           </div>
