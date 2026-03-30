@@ -120,49 +120,133 @@ function AnalyticsModule() {
 
   if (loading) return <ModuleLoader />;
   const s = data?.stats ?? {};
+  const pendingCount = (data?.pendingVerifications ?? []).length;
+  const canceledCount = s.canceledBookings ?? 0;
+  const cancellationRate = s.cancellationRate ?? 0;
 
-  const kpis = [
-    { label: 'Total Requests', value: s.totalRequests ?? 0, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'GMV (€)', value: `€${(s.gmv ?? 0).toFixed(0)}`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-    { label: 'Conversion Rate', value: `${s.conversionRate ?? 0}%`, icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { label: 'Quote Rate', value: `${s.quoteRate ?? 0}%`, icon: MessageSquare, color: 'text-orange-600', bg: 'bg-orange-50' },
-    { label: 'Cancellation Rate', value: `${s.cancellationRate ?? 0}%`, icon: XCircle, color: 'text-danger', bg: 'bg-red-50' },
-    { label: 'Total Providers', value: s.totalProviders ?? 0, icon: Users, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { label: 'Total Users', value: s.totalUsers ?? 0, icon: Activity, color: 'text-teal-600', bg: 'bg-teal-50' },
-    { label: 'Total Reviews', value: s.totalReviews ?? 0, icon: Star, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+  // Action items derived from real data
+  const actions = [
+    pendingCount > 0 && { label: `${pendingCount} provider${pendingCount > 1 ? 's' : ''} awaiting approval`, color: 'text-caution', bg: 'bg-caution-surface', icon: ShieldCheck },
+    canceledCount > 0 && { label: `${canceledCount} cancelled booking${canceledCount > 1 ? 's' : ''} to review`, color: 'text-danger', bg: 'bg-danger-surface', icon: AlertTriangle },
+    cancellationRate > 15 && { label: `Cancellation rate at ${cancellationRate}% — above threshold`, color: 'text-danger', bg: 'bg-danger-surface', icon: XCircle },
+    (s.quoteRate ?? 0) < 30 && (s.totalRequests ?? 0) > 0 && { label: `Quote rate low at ${s.quoteRate}% — supply may be thin`, color: 'text-caution', bg: 'bg-caution-surface', icon: MessageSquare },
+  ].filter(Boolean) as { label: string; color: string; bg: string; icon: React.ElementType }[];
+
+  // Primary KPIs — key decision metrics
+  const primaryKpis = [
+    { label: 'Requests', value: s.totalRequests ?? 0, icon: Package, accent: 'bg-info-surface text-info' },
+    { label: 'GMV', value: `€${(s.gmv ?? 0).toFixed(0)}`, icon: DollarSign, accent: 'bg-trust-surface text-trust' },
+    { label: 'Conversion', value: `${s.conversionRate ?? 0}%`, icon: TrendingUp, accent: 'bg-brand-muted text-brand' },
+    { label: 'Quote Rate', value: `${s.quoteRate ?? 0}%`, icon: MessageSquare, accent: 'bg-caution-surface text-caution' },
   ];
+
+  // Secondary KPIs — context metrics
+  const secondaryKpis = [
+    { label: 'Cancellation', value: `${s.cancellationRate ?? 0}%` },
+    { label: 'Providers', value: s.totalProviders ?? 0 },
+    { label: 'Users', value: s.totalUsers ?? 0 },
+    { label: 'Reviews', value: s.totalReviews ?? 0 },
+  ];
+
+  // Marketplace health derived from available data
+  const completionRate = (s.totalBookings ?? 0) > 0
+    ? Math.round(((s.completedBookings ?? 0) / s.totalBookings) * 100)
+    : 0;
+  const supplyRatio = (s.totalRequests ?? 0) > 0
+    ? ((s.totalProviders ?? 0) / s.totalRequests).toFixed(1)
+    : '—';
 
   return (
     <div>
-      <ModuleHeader title="Analytics Dashboard" description="Requests, quote rates, conversions, GMV, take rate, cancellation rate, and provider SLA." />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {kpis.map((k) => (
-          <div key={k.label} className="bg-white rounded-2xl border border-border-dim p-5">
-            <div className={`w-10 h-10 ${k.bg} ${k.color} rounded-xl flex items-center justify-center mb-3`}>
-              <k.icon className="w-5 h-5" />
+      <ModuleHeader title="Command Center" description="Marketplace overview and operational health." />
+
+      {/* ── Action Needed ── */}
+      {actions.length > 0 && (
+        <div className="mb-5">
+          <p className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2">Action needed</p>
+          <div className="space-y-1.5">
+            {actions.map((a, i) => (
+              <div key={i} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${a.bg}`}>
+                <a.icon className={`w-3.5 h-3.5 shrink-0 ${a.color}`} />
+                <span className={`text-xs font-semibold ${a.color}`}>{a.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Primary KPIs ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+        {primaryKpis.map((k) => (
+          <div key={k.label} className="bg-white rounded-xl border border-border-dim p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-7 h-7 ${k.accent} rounded-lg flex items-center justify-center`}>
+                <k.icon className="w-3.5 h-3.5" />
+              </div>
+              <span className="text-[11px] font-semibold text-ink-dim uppercase tracking-wide">{k.label}</span>
             </div>
-            <div className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-1">{k.label}</div>
-            <div className="text-2xl font-bold">{k.value}</div>
+            <div className="text-2xl font-bold tracking-tight tabular-nums">{k.value}</div>
           </div>
         ))}
       </div>
-      <div className="bg-white rounded-3xl border border-border-dim p-4 sm:p-6">
-        <h2 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Marketplace Activity (Last 7 Days)</h2>
-        <div className="h-48 sm:h-64">
+
+      {/* ── Secondary KPIs ── */}
+      <div className="grid grid-cols-4 gap-3 mb-6">
+        {secondaryKpis.map((k) => (
+          <div key={k.label} className="bg-white rounded-xl border border-border-dim px-3 py-3 text-center">
+            <div className="text-lg font-bold tabular-nums text-ink">{k.value}</div>
+            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide mt-0.5">{k.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Marketplace Activity Chart ── */}
+      <div className="bg-white rounded-xl border border-border-dim p-4 sm:p-5 mb-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold text-sm text-ink">Weekly Activity</h2>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-ink rounded-sm" /><span className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Requests</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-border rounded-sm" /><span className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Bookings</span></div>
+          </div>
+        </div>
+        <div className="h-44 sm:h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9ca3af' }} />
-              <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }} />
-              <Bar dataKey="requests" fill="#000" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="bookings" fill="#e5e7eb" radius={[6, 6, 0, 0]} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} width={28} />
+              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', fontSize: '12px' }} />
+              <Bar dataKey="requests" fill="#1a1f2e" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="bookings" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex gap-6 mt-4">
-          <div className="flex items-center gap-2"><div className="w-3 h-3 bg-brand rounded-full" /><span className="text-xs font-bold text-ink-dim uppercase tracking-widest">Requests</span></div>
-          <div className="flex items-center gap-2"><div className="w-3 h-3 bg-border rounded-full" /><span className="text-xs font-bold text-ink-dim uppercase tracking-widest">Bookings</span></div>
+      </div>
+
+      {/* ── Marketplace Health ── */}
+      <div className="bg-white rounded-xl border border-border-dim p-4 sm:p-5">
+        <h2 className="font-bold text-sm text-ink mb-3">Marketplace Health</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
+            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Demand</p>
+            <p className="text-sm font-bold text-ink mt-0.5">{s.totalRequests ?? 0} requests</p>
+            <p className="text-[11px] text-ink-dim">{s.totalBookings ?? 0} converted to bookings</p>
+          </div>
+          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
+            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Supply</p>
+            <p className="text-sm font-bold text-ink mt-0.5">{s.totalProviders ?? 0} providers</p>
+            <p className="text-[11px] text-ink-dim">{supplyRatio} providers per request</p>
+          </div>
+          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
+            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Fulfilment</p>
+            <p className="text-sm font-bold text-ink mt-0.5">{completionRate}% completed</p>
+            <p className="text-[11px] text-ink-dim">{canceledCount} cancelled</p>
+          </div>
+          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
+            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Trust</p>
+            <p className="text-sm font-bold text-ink mt-0.5">{s.totalReviews ?? 0} reviews</p>
+            <p className="text-[11px] text-ink-dim">{pendingCount} pending verification{pendingCount !== 1 ? 's' : ''}</p>
+          </div>
         </div>
       </div>
     </div>
