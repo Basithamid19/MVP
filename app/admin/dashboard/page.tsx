@@ -480,35 +480,76 @@ function DisputesModule() {
 
   if (loading) return <ModuleLoader />;
 
+  const refundedCount = bookings.filter(b => b.payment?.status === 'REFUNDED').length;
+  const pendingCount = bookings.filter(b => b.payment?.status !== 'REFUNDED').length;
+  const totalAmount = bookings.reduce((sum: number, b: any) => sum + (b.totalAmount ?? 0), 0);
+
   return (
     <div>
-      <ModuleHeader title="Refund & Dispute Center" description="Approve refunds, review evidence, and enforce policy consistently." />
+      <ModuleHeader
+        title="Refund & Disputes"
+        description="Review cases, approve refunds, and enforce policy."
+        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
+      />
+
+      {/* Summary strip */}
+      {bookings.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+            <div className="text-lg font-bold tabular-nums text-ink">{bookings.length}</div>
+            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Total Cases</div>
+          </div>
+          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+            <div className="text-lg font-bold tabular-nums text-caution">{pendingCount}</div>
+            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Pending</div>
+          </div>
+          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
+            <div className="text-lg font-bold tabular-nums text-trust">{refundedCount}</div>
+            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Refunded</div>
+          </div>
+        </div>
+      )}
+
       {bookings.length === 0 ? <AdminEmpty icon={DollarSign} title="No open disputes or refunds" description="Cancelled bookings and refund requests will surface here." /> : (
-        <div className="space-y-3">
-          {bookings.map((b) => (
-            <div key={b.id} className="bg-white rounded-2xl border border-border-dim p-5 flex flex-col lg:flex-row lg:items-center gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="font-bold text-sm">{b.quote?.request?.category?.name ?? 'Service'}</span>
-                  <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status} />
-                  {b.payment && <Badge color={b.payment.status === 'REFUNDED' ? 'green' : 'orange'} label={`Payment: ${b.payment.status}`} />}
+        <div className="space-y-2.5">
+          {bookings.map((b) => {
+            const isRefunded = b.payment?.status === 'REFUNDED';
+            const daysSince = Math.floor((Date.now() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+            return (
+              <div key={b.id} className={`bg-white rounded-xl border p-4 ${isRefunded ? 'border-border-dim opacity-70' : 'border-border-dim'}`}>
+                {/* Service + Amount */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                    <span className="font-bold text-sm truncate">{b.quote?.request?.category?.name ?? 'Service'}</span>
+                    <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status} />
+                    {b.payment && <Badge color={isRefunded ? 'green' : 'orange'} label={isRefunded ? 'Refunded' : b.payment.status} />}
+                  </div>
+                  <span className="font-bold text-sm tabular-nums shrink-0">€{b.totalAmount?.toFixed(2)}</span>
                 </div>
-                <p className="text-xs text-ink-dim">
-                  {b.customer?.user?.name} → {b.provider?.user?.name}
-                </p>
-                <p className="text-xs text-ink-dim mt-0.5">Booked: {new Date(b.createdAt).toLocaleDateString()}</p>
+
+                {/* Parties + Age + Action */}
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 text-xs text-ink-dim min-w-0">
+                    <span className="truncate">
+                      <span className="font-medium text-ink-sub">{b.customer?.user?.name}</span>
+                      <span className="mx-1">→</span>
+                      <span className="font-medium text-ink-sub">{b.provider?.user?.name}</span>
+                    </span>
+                    <span className="shrink-0 tabular-nums">{daysSince}d ago</span>
+                  </div>
+                  <div className="shrink-0">
+                    {!isRefunded && b.status !== 'CANCELED' ? (
+                      <button onClick={() => refund(b.id)} className="flex items-center gap-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-semibold hover:bg-danger-surface/80 transition-colors">
+                        <DollarSign className="w-3.5 h-3.5" /> Refund
+                      </button>
+                    ) : isRefunded ? (
+                      <span className="text-[11px] font-semibold text-trust">Resolved</span>
+                    ) : null}
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="font-bold">€{b.totalAmount?.toFixed(2)}</span>
-                {b.status !== 'CANCELED' && b.payment?.status !== 'REFUNDED' && (
-                  <button onClick={() => refund(b.id)} className="flex items-center gap-1 px-3 py-2 bg-danger-surface text-danger rounded-xl text-xs font-bold hover:bg-red-200 transition-colors">
-                    <DollarSign className="w-3.5 h-3.5" /> Issue Refund
-                  </button>
-                )}
-                {b.payment?.status === 'REFUNDED' && <Badge color="green" label="Refunded" />}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
