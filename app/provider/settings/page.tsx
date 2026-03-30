@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
   Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
+  Briefcase, Zap, Shield,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -23,6 +24,8 @@ export default function ProviderSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
+  const initialRef = useRef<string>('');
+  const [dirty, setDirty] = useState(false);
 
   // Profile state
   const [bio, setBio] = useState('');
@@ -45,6 +48,8 @@ export default function ProviderSettingsPage() {
   const [bufferMins, setBufferMins] = useState(30);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+
+  const getSnapshot = () => JSON.stringify({ bio, serviceArea, languages, responseTime, selectedCategories, instantBook, offerings, slots, blackoutDates, bufferMins });
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -70,9 +75,18 @@ export default function ProviderSettingsPage() {
         }
         if (Array.isArray(cats)) setCategories(cats);
         setLoading(false);
+        // Capture initial state after a tick so all setState calls settle
+        setTimeout(() => { initialRef.current = getSnapshot(); }, 0);
       }).catch(() => setLoading(false));
     }
   }, [status, router]);
+
+  // Track dirty state
+  useEffect(() => {
+    if (!loading && initialRef.current) {
+      setDirty(getSnapshot() !== initialRef.current);
+    }
+  }, [bio, serviceArea, languages, responseTime, selectedCategories, instantBook, offerings, slots, blackoutDates, bufferMins, loading]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -117,6 +131,8 @@ export default function ProviderSettingsPage() {
         }),
       });
       setSaved(true);
+      initialRef.current = getSnapshot();
+      setDirty(false);
       setTimeout(() => setSaved(false), 3000);
     } finally {
       setSaving(false);
@@ -125,17 +141,29 @@ export default function ProviderSettingsPage() {
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
 
+  // Profile completeness
+  const hasAvatar = !!(localAvatar || session?.user?.image);
+  const hasBio = bio.trim().length > 0;
+  const hasArea = serviceArea.trim().length > 0;
+  const hasCategories = selectedCategories.length > 0;
+  const hasOfferings = offerings.length > 0;
+  const completedSteps = [hasAvatar, hasBio, hasArea, hasCategories, hasOfferings].filter(Boolean).length;
+  const totalSteps = 5;
+  const completePct = Math.round((completedSteps / totalSteps) * 100);
+
   return (
-    <div className="p-6 lg:p-8 max-w-3xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto pb-28 sm:pb-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-8">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Settings</h1>
-          <p className="text-sm text-ink-sub mt-1">Manage your profile, services, and availability</p>
+          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Account</h1>
+          <p className="text-sm text-ink-sub mt-0.5 sm:mt-1">Profile, services & business settings</p>
         </div>
+        {/* Desktop save button */}
         <button
           onClick={handleSave}
           disabled={saving}
-          className={`w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 sm:py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
+          className={`hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
             saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
           } disabled:opacity-50`}
         >
@@ -143,11 +171,41 @@ export default function ProviderSettingsPage() {
         </button>
       </div>
 
+      {/* ── Mobile: Profile completeness ── */}
+      {completePct < 100 && (
+        <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 mb-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-ink">Profile completeness</p>
+            <span className="text-xs font-bold text-brand">{completePct}%</span>
+          </div>
+          <div className="w-full bg-surface-alt rounded-full h-1.5">
+            <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${completePct}%` }} />
+          </div>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+            {[
+              [hasAvatar, 'Photo'],
+              [hasBio, 'Bio'],
+              [hasArea, 'Area'],
+              [hasCategories, 'Categories'],
+              [hasOfferings, 'Services'],
+            ].map(([done, label]) => (
+              <span key={label as string} className={`text-[10px] font-medium ${done ? 'text-trust' : 'text-ink-dim'}`}>
+                {done ? '✓' : '○'} {label as string}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
-      <div className="flex gap-1 p-1.5 bg-white rounded-2xl border border-border-dim mb-6 sm:mb-8 overflow-x-auto">
+      <div className="flex gap-1 p-1 bg-surface-alt rounded-xl sm:rounded-2xl mb-4 sm:mb-8 overflow-x-auto">
         {TABS.map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={`flex-1 min-w-[100px] py-2 rounded-xl text-sm font-medium transition-all ${activeTab === tab ? 'bg-surface-alt text-ink shadow-sm border border-border-dim' : 'text-ink-sub hover:text-ink border border-transparent'}`}>
+            className={`flex-1 min-w-[90px] py-2 rounded-lg sm:rounded-xl text-sm transition-all ${
+              activeTab === tab
+                ? 'bg-white text-brand font-semibold shadow-card'
+                : 'text-ink-sub hover:text-ink font-medium'
+            }`}>
             {tab}
           </button>
         ))}
@@ -155,49 +213,49 @@ export default function ProviderSettingsPage() {
 
       {/* PROFILE TAB */}
       {activeTab === 'Profile' && (
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 space-y-5">
-
-            {/* Photo upload */}
-            <div>
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3 block">Profile Photo</label>
-              <div className="flex items-center gap-4">
-                <label className="relative w-20 h-20 shrink-0 cursor-pointer">
-                  <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-                  <div className="w-20 h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim flex items-center justify-center">
-                    {localAvatar || session?.user?.image
-                      ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
-                      : <User className="w-8 h-8 text-ink-dim" />
-                    }
-                  </div>
-                  {/* Always-visible camera badge */}
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-brand rounded-full flex items-center justify-center shadow-md">
-                    {avatarUploading
-                      ? <Loader2 className="w-4 h-4 text-white animate-spin" />
-                      : <Camera className="w-4 h-4 text-white" />
-                    }
-                  </div>
-                </label>
-                <div>
-                  <p className="text-sm font-semibold text-ink">
-                    {avatarUploading ? 'Uploading…' : (localAvatar || session?.user?.image) ? 'Photo uploaded' : 'No photo yet'}
-                  </p>
-                  <p className="text-xs text-ink-sub mt-0.5">Tap to upload · JPG or PNG · Square crop recommended</p>
+        <div className="space-y-3 sm:space-y-5">
+          {/* Photo + identity */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <div className="flex items-center gap-3.5 sm:gap-4">
+              <label className="relative shrink-0 cursor-pointer">
+                <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim flex items-center justify-center">
+                  {localAvatar || session?.user?.image
+                    ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
+                    : <User className="w-7 h-7 sm:w-8 sm:h-8 text-ink-dim" />
+                  }
                 </div>
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-brand rounded-full flex items-center justify-center shadow-md">
+                  {avatarUploading
+                    ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-white animate-spin" />
+                    : <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                  }
+                </div>
+              </label>
+              <div className="flex-1 min-w-0">
+                <p className="text-base sm:text-lg font-semibold text-ink truncate">{session?.user?.name ?? 'Provider'}</p>
+                <p className="text-xs text-ink-sub truncate">{session?.user?.email}</p>
+                <p className="text-[10px] text-ink-dim mt-0.5">Tap photo to change</p>
               </div>
             </div>
+          </div>
 
-            <div>
+          {/* Bio + Coverage + Languages + Response time — grouped */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
+            {/* Bio */}
+            <div className="p-4 sm:p-6">
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
               <textarea
                 value={bio}
                 onChange={e => setBio(e.target.value)}
-                rows={4}
+                rows={3}
                 placeholder="Tell customers about your experience, specialties, and what makes you stand out..."
-                className="w-full p-4 bg-surface-alt border border-border-dim rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
+                className="w-full p-3.5 sm:p-4 bg-surface-alt border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-[16px] sm:text-sm leading-relaxed"
               />
             </div>
-            <div>
+
+            {/* Coverage area */}
+            <div className="border-t border-border-dim p-4 sm:p-6">
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <MapPin className="w-3 h-3" /> Coverage area
               </label>
@@ -206,40 +264,42 @@ export default function ProviderSettingsPage() {
                 value={serviceArea}
                 onChange={e => setServiceArea(e.target.value)}
                 placeholder="e.g. Vilnius Center, Antakalnis, Žirmūnai"
-                className="w-full px-4 py-4 bg-surface-alt border border-border-dim rounded-2xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                className="w-full px-3.5 sm:px-4 py-3 sm:py-4 bg-surface-alt border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
               />
             </div>
-            <div>
+
+            {/* Languages */}
+            <div className="border-t border-border-dim p-4 sm:p-6">
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <Languages className="w-3 h-3" /> Languages
               </label>
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2">
                 {languages.map(l => (
-                  <span key={l} className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt rounded-xl text-sm font-medium">
+                  <span key={l} className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-muted text-brand rounded-full text-xs font-semibold">
                     {l}
-                    <button onClick={() => setLanguages(prev => prev.filter(x => x !== l))}><X className="w-3 h-3 text-ink-dim hover:text-ink" /></button>
+                    <button onClick={() => setLanguages(prev => prev.filter(x => x !== l))} className="hover:text-brand-dark"><X className="w-3 h-3" /></button>
                   </span>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={langInput}
-                  onChange={e => setLangInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && langInput.trim()) { setLanguages(p => [...p, langInput.trim()]); setLangInput(''); } }}
-                  placeholder="Add language and press Enter"
-                  className="flex-1 px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
-                />
-              </div>
+              <input
+                type="text"
+                value={langInput}
+                onChange={e => setLangInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && langInput.trim()) { setLanguages(p => [...p, langInput.trim()]); setLangInput(''); } }}
+                placeholder="Add language and press Enter"
+                className="w-full px-3.5 sm:px-4 py-2.5 sm:py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+              />
             </div>
-            <div>
+
+            {/* Response time */}
+            <div className="border-t border-border-dim p-4 sm:p-6">
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Typical response time
               </label>
               <select
                 value={responseTime}
                 onChange={e => setResponseTime(e.target.value)}
-                className="w-full px-4 py-4 bg-surface-alt border border-border-dim rounded-2xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                className="w-full px-3.5 sm:px-4 py-3 sm:py-4 bg-surface-alt border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
               >
                 <option>Usually responds in 30 minutes</option>
                 <option>Usually responds in 1 hour</option>
@@ -251,14 +311,14 @@ export default function ProviderSettingsPage() {
           </div>
 
           {/* Category selection */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Service categories</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3 sm:mb-4">Service categories</p>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
               {categories.map(cat => {
                 const sel = selectedCategories.includes(cat.id);
                 return (
                   <button key={cat.id} onClick={() => setSelectedCategories(prev => sel ? prev.filter(x => x !== cat.id) : [...prev, cat.id])}
-                    className={`p-3 rounded-xl border-2 text-left text-sm font-bold transition-all ${sel ? 'border-brand bg-brand text-white' : 'border-border bg-white hover:border-border'}`}>
+                    className={`p-2.5 sm:p-3 rounded-xl border-2 text-left text-xs sm:text-sm font-bold transition-all ${sel ? 'border-brand bg-brand text-white' : 'border-border bg-white hover:border-border'}`}>
                     {cat.name}
                   </button>
                 );
@@ -270,34 +330,51 @@ export default function ProviderSettingsPage() {
 
       {/* SERVICES TAB */}
       {activeTab === 'Services' && (
-        <div className="space-y-5">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-5">
-              <p className="font-bold">Service offerings</p>
+        <div className="space-y-3 sm:space-y-5">
+          {/* Service offerings */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <div className="flex items-center justify-between mb-4 sm:mb-5">
+              <div>
+                <p className="font-semibold text-sm sm:text-base">Service offerings</p>
+                {offerings.length > 0 && (
+                  <p className="text-[10px] text-ink-dim mt-0.5">{offerings.length} service{offerings.length !== 1 ? 's' : ''} listed</p>
+                )}
+              </div>
               <button
                 onClick={() => setOfferings(p => [...p, { name: '', price: '', priceType: 'HOURLY', description: '' }])}
-                className="flex items-center gap-1.5 text-sm font-bold text-ink border border-brand px-3 py-1.5 rounded-xl hover:bg-brand hover:text-white transition-all"
+                className="flex items-center gap-1.5 text-xs font-bold text-brand border border-brand/30 bg-brand-muted px-3 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all"
               >
-                <Plus className="w-3.5 h-3.5" /> Add service
+                <Plus className="w-3 h-3" /> Add
               </button>
             </div>
 
             {offerings.length === 0 ? (
-              <div className="text-center py-8 text-ink-dim">
-                <DollarSign className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No services added yet. Add your first service offering.</p>
+              <div className="text-center py-6 sm:py-8">
+                <div className="w-12 h-12 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <Briefcase className="w-5 h-5 text-ink-dim" />
+                </div>
+                <p className="font-semibold text-sm text-ink mb-1">No services added yet</p>
+                <p className="text-xs text-ink-dim max-w-[240px] mx-auto leading-relaxed">
+                  Add your service offerings so customers know what you provide and your pricing.
+                </p>
+                <button
+                  onClick={() => setOfferings(p => [...p, { name: '', price: '', priceType: 'HOURLY', description: '' }])}
+                  className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand px-4 py-2 rounded-full hover:bg-brand-dark transition-all"
+                >
+                  <Plus className="w-3 h-3" /> Add your first service
+                </button>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {offerings.map((o, i) => (
-                  <div key={i} className="p-4 bg-surface-alt rounded-2xl border border-border-dim space-y-3">
-                    <div className="flex items-start justify-between gap-3">
+                  <div key={i} className="p-3.5 sm:p-4 bg-surface-alt rounded-xl sm:rounded-2xl border border-border-dim space-y-2.5 sm:space-y-3">
+                    <div className="flex items-start justify-between gap-2 sm:gap-3">
                       <input
                         type="text"
                         value={o.name}
                         onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
                         placeholder="Service name (e.g. Pipe repair)"
-                        className="flex-1 px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm font-medium"
+                        className="flex-1 px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium"
                       />
                       <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="hidden sm:block text-ink-dim hover:text-red-500 transition-colors mt-1">
                         <X className="w-4 h-4" />
@@ -308,9 +385,9 @@ export default function ProviderSettingsPage() {
                       value={o.description}
                       onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x))}
                       placeholder="Short description (optional)"
-                      className="w-full px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                      className="w-full px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
                     />
-                    <div className="flex gap-3">
+                    <div className="flex gap-2 sm:gap-3">
                       <div className="relative flex-1">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-sm">€</span>
                         <input
@@ -318,7 +395,7 @@ export default function ProviderSettingsPage() {
                           value={o.price}
                           onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, price: e.target.value } : x))}
                           placeholder="0"
-                          className="w-full pl-7 pr-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm font-medium"
+                          className="w-full pl-7 pr-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium"
                         />
                       </div>
                       <select
@@ -331,8 +408,8 @@ export default function ProviderSettingsPage() {
                         <option value="FROM">from</option>
                       </select>
                     </div>
-                    <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="sm:hidden flex items-center gap-2 text-danger text-sm font-medium mt-2">
-                      <X className="w-4 h-4" /> Remove Service
+                    <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="sm:hidden flex items-center gap-2 text-danger text-xs font-medium">
+                      <X className="w-3.5 h-3.5" /> Remove
                     </button>
                   </div>
                 ))}
@@ -340,104 +417,117 @@ export default function ProviderSettingsPage() {
             )}
           </div>
 
-          {/* Instant book toggle */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6 flex items-center justify-between">
-            <div>
-              <p className="font-bold">Instant book</p>
-              <p className="text-sm text-ink-dim mt-0.5">Allow customers to book directly without waiting for your approval</p>
+          {/* Instant book + booking behavior */}
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim overflow-hidden">
+            <div className="p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Zap className="w-4 h-4 text-brand" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm">Instant book</p>
+                <p className="text-[11px] text-ink-dim mt-0.5 leading-relaxed">Let customers book without approval</p>
+              </div>
+              <button onClick={() => setInstantBook(!instantBook)} className="shrink-0">
+                {instantBook
+                  ? <ToggleRight className="w-9 h-9 sm:w-10 sm:h-10 text-brand" />
+                  : <ToggleLeft className="w-9 h-9 sm:w-10 sm:h-10 text-ink-dim" />
+                }
+              </button>
             </div>
-            <button onClick={() => setInstantBook(!instantBook)} className="shrink-0">
-              {instantBook
-                ? <ToggleRight className="w-10 h-10 text-ink" />
-                : <ToggleLeft className="w-10 h-10 text-ink-dim" />
-              }
-            </button>
           </div>
         </div>
       )}
 
       {/* AVAILABILITY TAB */}
       {activeTab === 'Availability' && (
-        <div className="space-y-5">
+        <div className="space-y-3 sm:space-y-5">
           {/* Working hours */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
-            <p className="font-bold mb-5 flex items-center gap-2"><Calendar className="w-4 h-4" /> Working hours</p>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-5 flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-ink-dim" /> Working hours
+            </p>
+            <div className="space-y-1.5 sm:space-y-3">
               {slots.map((slot, i) => (
-                <div key={i} className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl transition-all ${slot.enabled ? 'bg-surface-alt' : 'opacity-40'}`}>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
-                      className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
-                    >
-                      <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
-                    </button>
-                    <span className="w-10 text-sm font-bold text-ink-sub shrink-0">{DAYS[i]}</span>
-                  </div>
-                  <div className="flex items-center gap-2 w-full sm:w-auto flex-1">
-                    <select
-                      value={slot.startTime}
-                      disabled={!slot.enabled}
-                      onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
-                      className="flex-1 px-3 py-2 sm:py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
-                    >
-                      {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                    <span className="text-ink-dim text-sm">–</span>
-                    <select
-                      value={slot.endTime}
-                      disabled={!slot.enabled}
-                      onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
-                      className="flex-1 px-3 py-2 sm:py-1.5 bg-white border border-border rounded-xl text-sm outline-none disabled:opacity-40"
-                    >
-                      {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
+                <div key={i} className={`flex items-center gap-2.5 sm:gap-3 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl transition-all ${slot.enabled ? 'bg-surface-alt' : 'bg-transparent'}`}>
+                  <button
+                    onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
+                    className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
+                  </button>
+                  <span className={`w-8 sm:w-10 text-xs sm:text-sm font-bold shrink-0 ${slot.enabled ? 'text-ink' : 'text-ink-dim'}`}>{DAYS[i]}</span>
+                  {slot.enabled ? (
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+                      <select
+                        value={slot.startTime}
+                        onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
+                        className="flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-border rounded-lg sm:rounded-xl text-xs sm:text-sm outline-none"
+                      >
+                        {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                      <span className="text-ink-dim text-xs">–</span>
+                      <select
+                        value={slot.endTime}
+                        onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
+                        className="flex-1 min-w-0 px-2 sm:px-3 py-1.5 sm:py-2 bg-white border border-border rounded-lg sm:rounded-xl text-xs sm:text-sm outline-none"
+                      >
+                        {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-ink-dim">Off</span>
+                  )}
                 </div>
               ))}
             </div>
           </div>
 
           {/* Buffer time */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
-            <p className="font-bold mb-4 flex items-center gap-2"><Clock className="w-4 h-4" /> Buffer time between jobs</p>
-            <div className="flex gap-2 flex-wrap">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
+              <Clock className="w-4 h-4 text-ink-dim" /> Buffer between jobs
+            </p>
+            <div className="flex gap-1.5 sm:gap-2 flex-wrap">
               {[0, 15, 30, 45, 60].map(mins => (
                 <button
                   key={mins}
                   onClick={() => setBufferMins(mins)}
-                  className={`px-4 py-2 rounded-xl border-2 text-sm font-bold transition-all ${bufferMins === mins ? 'border-brand bg-brand text-white' : 'border-border hover:border-border'}`}
+                  className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all ${
+                    bufferMins === mins ? 'bg-brand text-white shadow-sm' : 'bg-surface-alt text-ink-sub border border-border-dim hover:border-border'
+                  }`}
                 >
-                  {mins === 0 ? 'None' : `${mins} min`}
+                  {mins === 0 ? 'None' : `${mins}m`}
                 </button>
               ))}
             </div>
           </div>
 
           {/* Blackout dates */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-5 sm:p-6">
-            <p className="font-bold mb-4 flex items-center gap-2"><X className="w-4 h-4" /> Blackout dates</p>
-            <div className="flex gap-2 mb-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
+            <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
+              <Shield className="w-4 h-4 text-ink-dim" /> Blackout dates
+            </p>
+            <div className="flex gap-2 mb-3 sm:mb-4">
               <input
                 type="date"
                 value={blackoutInput}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => setBlackoutInput(e.target.value)}
-                className="flex-1 px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                className="flex-1 px-3 sm:px-4 py-2.5 sm:py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
               />
               <button
                 onClick={() => { if (blackoutInput && !blackoutDates.includes(blackoutInput)) { setBlackoutDates(p => [...p, blackoutInput].sort()); setBlackoutInput(''); }}}
-                className="px-4 py-3 bg-brand text-white rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors"
+                className="px-4 py-2.5 sm:py-3 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-colors"
               >
                 Add
               </button>
             </div>
             {blackoutDates.length === 0 ? (
-              <p className="text-sm text-ink-dim">No blackout dates set.</p>
+              <p className="text-xs text-ink-dim">No blackout dates. Add dates when you're unavailable.</p>
             ) : (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {blackoutDates.map(d => (
-                  <span key={d} className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-100 text-danger rounded-xl text-sm font-medium">
+                  <span key={d} className="flex items-center gap-1.5 px-2.5 py-1 bg-caution-surface border border-caution-edge text-caution rounded-full text-xs font-medium">
                     {new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     <button onClick={() => setBlackoutDates(p => p.filter(x => x !== d))}><X className="w-3 h-3" /></button>
                   </span>
@@ -448,14 +538,31 @@ export default function ProviderSettingsPage() {
         </div>
       )}
 
-      {/* Logout — mobile only */}
-      <div className="md:hidden pt-4 pb-8">
+      {/* ── Account actions (mobile) ── */}
+      <div className="sm:hidden mt-6">
+        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2.5 px-1">Account</p>
         <button
           onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center justify-center gap-2 py-4 border border-border-dim rounded-2xl text-sm font-bold text-ink-sub hover:border-red-200 hover:text-danger transition-all"
+          className="w-full flex items-center gap-3 p-3.5 bg-white rounded-xl border border-border-dim text-left hover:border-caution-edge transition-all"
         >
-          <LogOut className="w-4 h-4" /> Log Out
+          <LogOut className="w-4 h-4 text-ink-dim" />
+          <span className="text-sm font-medium text-ink-sub">Log out</span>
         </button>
+      </div>
+
+      {/* ── Mobile: Sticky save bar ── */}
+      <div className={`sm:hidden fixed bottom-16 left-0 right-0 z-40 transition-all duration-200 ${dirty || saving || saved ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
+        <div className="mx-4 mb-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm shadow-elevated transition-all ${
+              saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
+            } disabled:opacity-50`}
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
+          </button>
+        </div>
       </div>
     </div>
   );

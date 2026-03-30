@@ -8,7 +8,7 @@ import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
-  MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp,
+  MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp, UserCircle2,
 } from 'lucide-react';
 
 const NAV_GROUPS = [
@@ -313,7 +313,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 { href: '/provider/dashboard',   label: 'Dashboard', Icon: Inbox,          isActive: pathname === '/provider/dashboard' },
                 { href: '/provider/jobs',         label: 'Jobs',      Icon: Briefcase,      isActive: pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' },
                 { href: '/provider/performance',  label: 'Stats',     Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
-                { href: '/provider/settings',     label: 'Account',   Icon: Settings,       isActive: pathname === '/provider/settings' },
+                { href: '/provider/settings',     label: 'Account',   Icon: UserCircle2,    isActive: pathname === '/provider/settings' },
               ] as const).map(({ href, label, Icon, isActive }) => (
                 <Link
                   key={href}
