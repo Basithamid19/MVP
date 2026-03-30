@@ -396,7 +396,7 @@ function BookingsModule() {
 
   return (
     <div>
-      <ModuleHeader title="Booking Operations Console" description="Every request, quote, booking, status event, and owner of each case." />
+      <ModuleHeader title="Booking Console" description="Track every booking, status, and case owner." />
       <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         {['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELED'].map(s => (
           <FilterChip
@@ -409,32 +409,36 @@ function BookingsModule() {
         ))}
       </div>
       {filtered.length === 0 ? <AdminEmpty icon={Briefcase} title="No bookings match this filter" description="Try a different status filter or check back later." /> : (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {filtered.map((b) => (
-            <div key={b.id} className="bg-white rounded-2xl border border-border-dim p-5">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <span className="font-bold text-sm">{b.quote?.request?.category?.name ?? 'Service'}</span>
-                    <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status.replace('_', ' ')} />
-                    {b.quote?.request?.isUrgent && <Badge color="orange" label="Urgent" />}
-                  </div>
-                  <p className="text-xs text-ink-dim">
-                    Customer: <span className="font-semibold text-ink-sub">{b.customer?.user?.name}</span>
-                    &nbsp;→&nbsp;Provider: <span className="font-semibold text-ink-sub">{b.provider?.user?.name}</span>
-                  </p>
-                  {b.scheduledAt && (
-                    <p className="text-xs text-ink-dim mt-0.5">
-                      <Clock className="w-3 h-3 inline mr-1" />
-                      {new Date(b.scheduledAt).toLocaleDateString()} at {new Date(b.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  )}
+            <div key={b.id} className="bg-white rounded-xl border border-border-dim p-4">
+              {/* Service + Status */}
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2 min-w-0 flex-wrap">
+                  <span className="font-bold text-sm truncate">{b.quote?.request?.category?.name ?? 'Service'}</span>
+                  <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status.replace('_', ' ')} />
+                  {b.quote?.request?.isUrgent && <Badge color="orange" label="Urgent" />}
                 </div>
-                <div className="flex items-center gap-4 shrink-0">
-                  <div className="text-right">
-                    <div className="font-bold">€{b.totalAmount?.toFixed(2)}</div>
-                    {b.payment && <div className="text-xs text-ink-dim">{b.payment.status}</div>}
-                  </div>
+                <div className="text-right shrink-0">
+                  <span className="font-bold text-sm tabular-nums">€{b.totalAmount?.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Parties + Meta */}
+              <div className="flex items-center justify-between gap-3 text-xs text-ink-dim">
+                <div className="min-w-0">
+                  <span className="font-medium text-ink-sub">{b.customer?.user?.name}</span>
+                  <span className="mx-1.5">→</span>
+                  <span className="font-medium text-ink-sub">{b.provider?.user?.name}</span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  {b.payment && <span className="tabular-nums">{b.payment.status}</span>}
+                  {b.scheduledAt && (
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(b.scheduledAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
