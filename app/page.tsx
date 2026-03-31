@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import { useSession } from 'next-auth/react';
 import {
   Search, MapPin, Star, ShieldCheck,
   ArrowRight, AlertCircle, Clock,
-  ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
+  ChevronLeft, ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush, Shield,
   Wrench, Hammer, Truck, Package, Zap
 } from 'lucide-react';
@@ -114,6 +114,127 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
   COMPLETED:   'bg-trust-surface text-trust',
   CANCELED:    'bg-danger-surface text-danger',
 };
+
+/* ─── Trust Carousel ─── */
+
+const trustItems = [
+  { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
+  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
+  { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
+  { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
+];
+
+function TrustCarousel() {
+  const [active, setActive] = useState(0);
+  const total = trustItems.length;
+
+  const prev = useCallback(() => setActive(i => (i - 1 + total) % total), [total]);
+  const next = useCallback(() => setActive(i => (i + 1) % total), [total]);
+
+  // Auto-advance
+  useEffect(() => {
+    const id = setInterval(next, 5000);
+    return () => clearInterval(id);
+  }, [next]);
+
+  // Touch swipe support
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const diff = touchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+    setTouchStart(null);
+  };
+
+  const item = trustItems[active];
+  const Icon = item.icon;
+
+  return (
+    <div className="my-3">
+      <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2.5">Why customers trust Aladdin</p>
+
+      {/* Mobile: single-card carousel */}
+      <div className="md:hidden">
+        <div className="relative flex items-center">
+          {/* Left arrow */}
+          <button
+            onClick={prev}
+            className="absolute -left-1 z-10 w-7 h-7 rounded-full bg-white border border-border-dim shadow-card flex items-center justify-center text-ink-dim hover:text-ink transition-colors"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Card */}
+          <div
+            className="w-full overflow-hidden mx-6"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="bg-surface-alt border border-border-dim/60 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-card"
+            >
+              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Icon className="w-4 h-4 text-brand" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-ink leading-snug">{item.title}</p>
+                <p className="text-xs text-ink-sub leading-relaxed mt-0.5">{item.desc}</p>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right arrow */}
+          <button
+            onClick={next}
+            className="absolute -right-1 z-10 w-7 h-7 rounded-full bg-white border border-border-dim shadow-card flex items-center justify-center text-ink-dim hover:text-ink transition-colors"
+            aria-label="Next"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-2.5">
+          {trustItems.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === active ? 'w-4 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-border'
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: 4-column grid */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3">
+        {trustItems.map((t) => {
+          const TIcon = t.icon;
+          return (
+            <div key={t.title} className="bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+              <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+                <TIcon className="w-3.5 h-3.5 text-brand" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
+                <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const { data: session } = useSession();
@@ -252,28 +373,8 @@ export default function LandingPage() {
                 </div>
               </form>
 
-              {/* Trust Strip */}
-              <div className="my-2">
-                <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2">Why customers trust Aladdin</p>
-                <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none -mr-4 pr-4 md:mr-0 md:pr-0">
-                  {[
-                    { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
-                    { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
-                    { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
-                    { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage covered.' },
-                  ].map((item) => (
-                    <div key={item.title} className="shrink-0 snap-start w-[74vw] max-w-[280px] md:w-auto md:max-w-none bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
-                      <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
-                        <item.icon className="w-3.5 h-3.5 text-brand" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-semibold text-ink leading-tight">{item.title}</p>
-                        <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              {/* Trust Carousel */}
+              <TrustCarousel />
 
             </motion.div>
 
