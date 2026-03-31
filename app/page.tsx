@@ -768,24 +768,24 @@ export default function LandingPage() {
           <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
             {[
               {
+                icon: CheckCircle2,
+                title: '30-Day Guarantee',
+                desc: 'If something is not right after the job, we\u2019ll help make it right within 30 days.',
+              },
+              {
+                icon: FileText,
+                title: 'Transparent Pricing',
+                desc: 'Compare clear quotes before booking so you know the expected cost upfront.',
+              },
+              {
                 icon: BadgeCheck,
-                title: 'Verified Experts',
-                desc: 'Every pro is ID-verified and trade-certified before joining.',
+                title: 'Verified Professionals',
+                desc: 'Every provider is ID-checked and reviewed before joining the platform.',
               },
               {
-                icon: Star,
-                title: 'Real Reviews Only',
-                desc: 'Only customers with completed bookings can leave reviews.',
-              },
-              {
-                icon: Zap,
-                title: 'Fast Response',
-                desc: 'Most requests get a reply from a local pro within 1 hour.',
-              },
-              {
-                icon: MessageCircle,
-                title: 'Direct Messaging',
-                desc: 'Chat with pros before booking to align on scope and price.',
+                icon: Shield,
+                title: 'Damage Cover up to \u20AC100',
+                desc: 'Eligible accidental damage during covered work can be reimbursed up to \u20AC100.',
               },
             ].map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
