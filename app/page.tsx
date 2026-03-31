@@ -889,7 +889,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── 7. Join as a Professional ── */}
-      <section className="py-12 sm:py-16 bg-canvas">
+      <section className="py-10 sm:py-14 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-4">
             For professionals
@@ -897,14 +897,14 @@ export default function LandingPage() {
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
             Get more local jobs in Vilnius
           </h2>
-          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-6 max-w-md mx-auto">
+          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-5 max-w-md mx-auto">
             Receive verified leads, build trust with customers, and get paid on time.
           </p>
 
           {/* Benefit pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-6">
             {['Verified local leads', 'Trust-building badge', 'Fast weekly payouts'].map(b => (
-              <div key={b} className="shrink-0 flex items-center gap-1.5 bg-brand-muted rounded-full px-4 py-2">
+              <div key={b} className="shrink-0 flex items-center gap-1.5 bg-brand-muted rounded-full px-3.5 py-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-brand" />
                 <span className="text-sm text-ink font-medium">{b}</span>
               </div>
@@ -912,7 +912,7 @@ export default function LandingPage() {
           </div>
 
           {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
             <Link
               href="/register"
               className={buttonVariants({ variant: 'primary', size: 'lg' })}
