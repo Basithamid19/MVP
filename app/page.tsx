@@ -262,7 +262,7 @@ export default function LandingPage() {
                     { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
                     { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage covered.' },
                   ].map((item) => (
-                    <div key={item.title} className="shrink-0 snap-start w-[74vw] max-w-[280px] md:w-auto md:max-w-none bg-white border border-border-dim rounded-2xl px-3.5 py-3 flex items-center gap-3">
+                    <div key={item.title} className="shrink-0 snap-start w-[74vw] max-w-[280px] md:w-auto md:max-w-none bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
                       <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
                         <item.icon className="w-3.5 h-3.5 text-brand" />
                       </div>
