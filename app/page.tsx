@@ -889,30 +889,39 @@ export default function LandingPage() {
       </section>
 
       {/* ── 7. Join as a Professional ── */}
-      <section className="py-10 sm:py-14 bg-canvas">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-3">
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-xl mx-auto px-5 sm:px-6">
+          {/* Eyebrow */}
+          <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-5">
             For professionals
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-2">
-            Get more local jobs in Vilnius
+          </p>
+
+          {/* Headline */}
+          <h2 className="text-[28px] sm:text-[36px] font-bold tracking-tight text-ink leading-[1.1] mb-3">
+            Get more local jobs<br className="sm:hidden" /> in Vilnius
           </h2>
-          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-4 max-w-md mx-auto">
+
+          {/* Supporting copy */}
+          <p className="text-ink-sub text-[15px] sm:text-base leading-relaxed mb-8 max-w-sm">
             Receive verified leads, build trust with customers, and get paid on time.
           </p>
 
-          {/* Benefit pills */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
-            {['Verified local leads', 'Trust-building badge', 'Fast weekly payouts'].map(b => (
-              <div key={b} className="shrink-0 flex items-center gap-1.5 bg-brand-muted rounded-full px-3.5 py-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-brand" />
-                <span className="text-[13px] text-ink font-medium">{b}</span>
+          {/* Benefit pills — single row on desktop, wrapped on mobile */}
+          <div className="flex flex-wrap gap-2.5 mb-8">
+            {[
+              { icon: CheckCircle2, label: 'Verified local leads' },
+              { icon: BadgeCheck,   label: 'Trust-building badge' },
+              { icon: Zap,          label: 'Fast weekly payouts' },
+            ].map(({ icon: PillIcon, label }) => (
+              <div key={label} className="inline-flex items-center gap-2 border border-border-dim bg-canvas rounded-full px-4 py-2">
+                <PillIcon className="w-3.5 h-3.5 text-brand shrink-0" strokeWidth={2} />
+                <span className="text-[13px] font-medium text-ink">{label}</span>
               </div>
             ))}
           </div>
 
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+          {/* CTAs */}
+          <div className="flex items-center gap-5">
             <Link
               href="/register"
               className={buttonVariants({ variant: 'primary', size: 'lg' })}
@@ -921,22 +930,22 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/provider/onboarding"
-              className="text-sm font-semibold text-brand hover:text-brand/80 transition-colors sm:ml-1"
+              className="text-[13px] font-semibold text-ink-sub hover:text-ink transition-colors"
             >
-              How it works &rarr;
+              How it works <span className="ml-0.5">&rarr;</span>
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── 8. Final CTA ── */}
-      <section className="py-8 sm:py-14 bg-canvas">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <div className="bg-white rounded-2xl border border-border-dim shadow-card px-6 py-8 sm:px-10 sm:py-10 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-2">
+      <section className="pb-14 sm:pb-20 pt-2 sm:pt-4 bg-white">
+        <div className="max-w-xl mx-auto px-5 sm:px-6">
+          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
+            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
               Book a trusted pro in minutes
             </h2>
-            <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-6 max-w-md mx-auto">
+            <p className="text-ink-sub text-[14px] sm:text-[15px] leading-relaxed mb-6 max-w-sm mx-auto">
               Compare verified professionals, get clear quotes, and book with confidence.
             </p>
             <Link
@@ -945,13 +954,13 @@ export default function LandingPage() {
             >
               <Search className="w-4 h-4" /> Find a Professional
             </Link>
-            <p className="mt-3 text-sm font-semibold">
-              <span className="text-ink-sub">or </span>
-              <Link href="/requests/new" className="text-brand hover:text-brand/80 transition-colors">
+            <p className="mt-3.5 text-[13px] font-medium">
+              <span className="text-ink-dim">or </span>
+              <Link href="/requests/new" className="text-ink-sub hover:text-ink font-semibold transition-colors">
                 post a job &rarr;
               </Link>
             </p>
-            <p className="text-xs text-ink-dim mt-5">Free to post · No commitment · Fast quotes</p>
+            <p className="text-[11px] text-ink-dim mt-5 tracking-wide">Free to post · No commitment · Fast quotes</p>
           </div>
         </div>
       </section>
