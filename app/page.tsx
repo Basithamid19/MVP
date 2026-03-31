@@ -119,8 +119,8 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
 
 const trustItems = [
   { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
-  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
   { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
+  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
   { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
 ];
 
@@ -131,11 +131,11 @@ function TrustCarousel() {
   const prev = useCallback(() => setActive(i => (i - 1 + total) % total), [total]);
   const next = useCallback(() => setActive(i => (i + 1) % total), [total]);
 
-  // Auto-advance
+  // Auto-advance — reset timer on manual interaction
   useEffect(() => {
     const id = setInterval(next, 5000);
     return () => clearInterval(id);
-  }, [next]);
+  }, [next, active]);
 
   // Touch swipe support
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -152,40 +152,39 @@ function TrustCarousel() {
 
   return (
     <div className="my-3">
-      <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2.5">Why customers trust Aladdin</p>
+      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-2">Why customers trust Aladdin</p>
 
       {/* Mobile: single-card carousel */}
       <div className="md:hidden">
-        <div className="relative flex items-center">
+        <div className="relative flex items-center px-5">
           {/* Left arrow */}
           <button
             onClick={prev}
-            className="absolute -left-1 z-10 w-7 h-7 rounded-full bg-white border border-border-dim shadow-card flex items-center justify-center text-ink-dim hover:text-ink transition-colors"
+            className="absolute left-0 z-10 w-8 h-8 rounded-full bg-white/90 border border-border-dim/50 shadow-card backdrop-blur-sm flex items-center justify-center text-ink-dim hover:text-ink active:scale-95 transition-all"
             aria-label="Previous"
           >
-            <ChevronLeft className="w-3.5 h-3.5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
-          {/* Card */}
+          {/* Card — fixed height prevents layout jump */}
           <div
-            className="w-full overflow-hidden mx-6"
+            className="w-full overflow-hidden"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             <motion.div
               key={active}
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="bg-surface-alt border border-border-dim/60 rounded-2xl px-4 py-3.5 flex items-center gap-3.5 shadow-card"
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="bg-white border border-border-dim/60 rounded-2xl p-4 flex items-center gap-4 shadow-card min-h-[64px]"
             >
-              <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                <Icon className="w-4 h-4 text-brand" />
+              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Icon className="w-[18px] h-[18px] text-brand" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink leading-snug">{item.title}</p>
-                <p className="text-xs text-ink-sub leading-relaxed mt-0.5">{item.desc}</p>
+                <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
+                <p className="text-xs text-ink-sub leading-snug mt-0.5">{item.desc}</p>
               </div>
             </motion.div>
           </div>
@@ -193,21 +192,21 @@ function TrustCarousel() {
           {/* Right arrow */}
           <button
             onClick={next}
-            className="absolute -right-1 z-10 w-7 h-7 rounded-full bg-white border border-border-dim shadow-card flex items-center justify-center text-ink-dim hover:text-ink transition-colors"
+            className="absolute right-0 z-10 w-8 h-8 rounded-full bg-white/90 border border-border-dim/50 shadow-card backdrop-blur-sm flex items-center justify-center text-ink-dim hover:text-ink active:scale-95 transition-all"
             aria-label="Next"
           >
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-2.5">
+        <div className="flex items-center justify-center gap-1.5 mt-3">
           {trustItems.map((_, i) => (
             <button
               key={i}
               onClick={() => setActive(i)}
               className={`rounded-full transition-all duration-300 ${
-                i === active ? 'w-4 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-border'
+                i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
               }`}
               aria-label={`Go to slide ${i + 1}`}
             />
