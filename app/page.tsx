@@ -152,7 +152,7 @@ function TrustCarousel() {
 
   return (
     <div className="my-3">
-      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-2">Why customers trust Aladdin</p>
+      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-3.5">Why customers trust Aladdin</p>
 
       {/* Mobile: single-card carousel */}
       <div className="md:hidden">
