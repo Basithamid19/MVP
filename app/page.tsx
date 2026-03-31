@@ -151,7 +151,7 @@ function TrustCarousel() {
   const Icon = item.icon;
 
   return (
-    <div className="my-3 pt-1 pb-2">
+    <div className="mt-3 mb-0 pt-1">
       <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-6">Why customers trust Aladdin</p>
 
       {/* Mobile: single-card carousel */}
@@ -313,7 +313,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-8 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-4 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
