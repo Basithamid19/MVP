@@ -930,29 +930,29 @@ export default function LandingPage() {
       </section>
 
       {/* ── 8. Final CTA ── */}
-      <section className="py-12 sm:py-24 bg-canvas">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">
-            Ready to get your job done?
-          </h2>
-          <p className="text-ink-sub text-base sm:text-lg mb-8 sm:mb-10 leading-relaxed">
-            Find a trusted professional in minutes or post your job and receive quotes today.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <section className="py-8 sm:py-14 bg-canvas">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6">
+          <div className="bg-white rounded-2xl border border-border-dim shadow-card px-6 py-8 sm:px-10 sm:py-10 text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-2">
+              Book a trusted pro in minutes
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-6 max-w-md mx-auto">
+              Compare verified professionals, get clear quotes, and book with confidence.
+            </p>
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'xl' })}
+              className={buttonVariants({ variant: 'primary', size: 'lg' })}
             >
-              <Search className="w-5 h-5" /> Find a Professional
+              <Search className="w-4 h-4" /> Find a Professional
             </Link>
-            <Link
-              href="/requests/new"
-              className={buttonVariants({ variant: 'outline', size: 'xl' })}
-            >
-              Post a Job <ArrowRight className="w-5 h-5" />
-            </Link>
+            <p className="mt-3 text-sm font-semibold">
+              <span className="text-ink-sub">or </span>
+              <Link href="/requests/new" className="text-brand hover:text-brand/80 transition-colors">
+                post a job &rarr;
+              </Link>
+            </p>
+            <p className="text-xs text-ink-dim mt-5">Free to post · No commitment · Fast quotes</p>
           </div>
-          <p className="text-xs text-ink-dim mt-6">Free to post · No commitment · Instant quotes</p>
         </div>
       </section>
 
