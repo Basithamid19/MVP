@@ -891,22 +891,22 @@ export default function LandingPage() {
       {/* ── 7. Join as a Professional ── */}
       <section className="py-10 sm:py-14 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-4">
+          <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-3">
             For professionals
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-2">
             Get more local jobs in Vilnius
           </h2>
-          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-5 max-w-md mx-auto">
+          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-4 max-w-md mx-auto">
             Receive verified leads, build trust with customers, and get paid on time.
           </p>
 
           {/* Benefit pills */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-6">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
             {['Verified local leads', 'Trust-building badge', 'Fast weekly payouts'].map(b => (
               <div key={b} className="shrink-0 flex items-center gap-1.5 bg-brand-muted rounded-full px-3.5 py-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5 text-brand" />
-                <span className="text-sm text-ink font-medium">{b}</span>
+                <span className="text-[13px] text-ink font-medium">{b}</span>
               </div>
             ))}
           </div>
@@ -921,7 +921,7 @@ export default function LandingPage() {
             </Link>
             <Link
               href="/provider/onboarding"
-              className="text-sm font-semibold text-brand hover:text-brand/80 transition-colors"
+              className="text-sm font-semibold text-brand hover:text-brand/80 transition-colors sm:ml-1"
             >
               How it works &rarr;
             </Link>
