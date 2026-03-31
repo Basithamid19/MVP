@@ -151,8 +151,8 @@ function TrustCarousel() {
   const Icon = item.icon;
 
   return (
-    <div className="my-3">
-      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-5">Why customers trust Aladdin</p>
+    <div className="my-3 py-2">
+      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-8">Why customers trust Aladdin</p>
 
       {/* Mobile: single-card carousel */}
       <div className="md:hidden">
@@ -200,7 +200,7 @@ function TrustCarousel() {
         </div>
 
         {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-3">
+        <div className="flex items-center justify-center gap-1.5 mt-4">
           {trustItems.map((_, i) => (
             <button
               key={i}
