@@ -156,19 +156,19 @@ function TrustCarousel() {
 
       {/* Mobile: single-card carousel */}
       <div className="md:hidden">
-        <div className="relative flex items-center px-5">
-          {/* Left arrow */}
+        <div className="relative flex items-center">
+          {/* Left arrow — minimal icon, generous tap target */}
           <button
             onClick={prev}
-            className="absolute left-0 z-10 w-8 h-8 rounded-full bg-white/90 border border-border-dim/50 shadow-card backdrop-blur-sm flex items-center justify-center text-ink-dim hover:text-ink active:scale-95 transition-all"
+            className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
             aria-label="Previous"
           >
-            <ChevronLeft className="w-4 h-4" />
+            <ChevronLeft className="w-5 h-5" />
           </button>
 
           {/* Card — fixed height prevents layout jump */}
           <div
-            className="w-full overflow-hidden"
+            className="w-full overflow-hidden mx-7"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
@@ -189,13 +189,13 @@ function TrustCarousel() {
             </motion.div>
           </div>
 
-          {/* Right arrow */}
+          {/* Right arrow — minimal icon, generous tap target */}
           <button
             onClick={next}
-            className="absolute right-0 z-10 w-8 h-8 rounded-full bg-white/90 border border-border-dim/50 shadow-card backdrop-blur-sm flex items-center justify-center text-ink-dim hover:text-ink active:scale-95 transition-all"
+            className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
             aria-label="Next"
           >
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
