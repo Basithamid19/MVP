@@ -220,7 +220,7 @@ export default function LandingPage() {
               </p>
 
               {/* Unified Search Bar */}
-              <form onSubmit={handleSearch} className="mb-5">
+              <form onSubmit={handleSearch} className="mb-4">
                 <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
                   <div className="flex-1 flex items-center px-4 py-2">
                     <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
@@ -253,22 +253,22 @@ export default function LandingPage() {
               </form>
 
               {/* Trust Strip */}
-              <div className="mb-2">
-                <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-3">Why customers trust Aladdin</p>
-                <div className="flex md:grid md:grid-cols-4 gap-2.5 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-1 px-1 pb-0.5">
+              <div className="mb-3">
+                <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2.5">Why customers trust Aladdin</p>
+                <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none -mr-4 pr-4 md:mr-0 md:pr-0">
                   {[
                     { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
                     { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
                     { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
-                    { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
+                    { icon: Shield, title: 'Cover up to €100', desc: 'Eligible accidental damage can be covered.' },
                   ].map((item) => (
-                    <div key={item.title} className="shrink-0 snap-start w-[78vw] max-w-[320px] md:w-auto md:max-w-none bg-white border border-border-dim rounded-2xl p-4 flex items-start gap-3">
-                      <div className="w-8 h-8 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
-                        <item.icon className="w-4 h-4 text-brand" />
+                    <div key={item.title} className="shrink-0 snap-start w-[74vw] max-w-[280px] md:w-auto md:max-w-none bg-white border border-border-dim rounded-2xl px-3.5 py-3 flex items-center gap-3">
+                      <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+                        <item.icon className="w-3.5 h-3.5 text-brand" />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink leading-snug">{item.title}</p>
-                        <p className="text-xs text-ink-sub leading-relaxed mt-0.5">{item.desc}</p>
+                        <p className="text-[13px] font-semibold text-ink leading-tight">{item.title}</p>
+                        <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
                       </div>
                     </div>
                   ))}
