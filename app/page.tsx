@@ -253,8 +253,8 @@ export default function LandingPage() {
               </form>
 
               {/* Trust Strip */}
-              <div className="mb-3 -mt-1">
-                <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2">Book with confidence</p>
+              <div className="my-2">
+                <p className="text-[11px] font-semibold text-ink-dim uppercase tracking-widest mb-2">Why customers trust Aladdin</p>
                 <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none -mr-4 pr-4 md:mr-0 md:pr-0">
                   {[
                     { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
