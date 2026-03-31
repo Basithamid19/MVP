@@ -889,53 +889,42 @@ export default function LandingPage() {
       </section>
 
       {/* ── 7. Join as a Professional ── */}
-      <section className="py-12 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-5">
-                For professionals
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-5">
-                Are you a professional?<br />Get new customers in Vilnius.
-              </h2>
-              <p className="text-ink-sub text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
-                Join hundreds of local pros already growing their business on Aladdin.
-                Receive verified leads, manage bookings, and build your reputation.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/register"
-                  className={buttonVariants({ variant: 'primary', size: 'lg' })}
-                >
-                  Join as a Pro <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/browse"
-                  className={buttonVariants({ variant: 'outline', size: 'lg' })}
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
+      <section className="py-12 sm:py-16 bg-canvas">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
+          <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-4">
+            For professionals
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+            Get more local jobs in Vilnius
+          </h2>
+          <p className="text-ink-sub text-sm sm:text-base leading-relaxed mb-6 max-w-md mx-auto">
+            Receive verified leads, build trust with customers, and get paid on time.
+          </p>
 
-            {/* Feature cards — off-white on canvas background */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: Brush,        title: 'Your own profile',    desc: 'Showcase your skills, certifications, and reviews.' },
-                { icon: Zap,          title: 'Instant leads',       desc: 'Get notified the moment a relevant job is posted.' },
-                { icon: ShieldCheck,  title: 'Verified badge',      desc: 'Build trust with a verified professional badge.' },
-                { icon: CheckCircle2, title: 'Secure payments',     desc: 'Get paid on time, every time — no chasing invoices.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-white rounded-input flex items-center justify-center mb-4 shadow-sm text-brand border border-border-dim">
-                    <Icon className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  <p className="font-bold text-base text-ink mb-1.5">{title}</p>
-                  <p className="text-sm text-ink-sub leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
+          {/* Benefit pills */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+            {['Verified local leads', 'Trust-building badge', 'Fast weekly payouts'].map(b => (
+              <div key={b} className="shrink-0 flex items-center gap-1.5 bg-brand-muted rounded-full px-4 py-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-brand" />
+                <span className="text-sm text-ink font-medium">{b}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/register"
+              className={buttonVariants({ variant: 'primary', size: 'lg' })}
+            >
+              Join as a Pro <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/provider/onboarding"
+              className="text-sm font-semibold text-brand hover:text-brand/80 transition-colors"
+            >
+              How it works &rarr;
+            </Link>
           </div>
         </div>
       </section>
