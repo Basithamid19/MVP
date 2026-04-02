@@ -50,15 +50,13 @@ export default function LoginPage() {
       {/* Left Side - Form */}
       <div className="flex-1 flex flex-col justify-center px-8 lg:px-24 py-12 relative z-10">
         <div className="max-w-md w-full mx-auto">
-          <Link href="/" className="flex items-center gap-2 mb-12">
-            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
-          </Link>
-
-          <div className="flex items-center justify-between mb-12">
-            <div />
+          <div className="flex items-center justify-between mb-10">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+                <AladdinIcon className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
+            </Link>
             <LanguageSwitcher />
           </div>
 
