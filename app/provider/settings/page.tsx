@@ -38,6 +38,7 @@ export default function ProviderSettingsPage() {
 
   // Services state
   const [offerings, setOfferings] = useState<{name: string; price: string; priceType: string; description: string}[]>([]);
+  const [offeringErrors, setOfferingErrors] = useState<Record<number, string>>({});
 
   // Availability state
   const [slots, setSlots] = useState<{dayOfWeek: number; startTime: string; endTime: string; enabled: boolean}[]>(
@@ -118,6 +119,23 @@ export default function ProviderSettingsPage() {
   };
 
   const handleSave = async () => {
+    // Validate offerings before saving
+    const errors: Record<number, string> = {};
+    offerings.forEach((o, i) => {
+      const name = o.name.trim();
+      const desc = o.description.trim();
+      if (name.length < 3) {
+        errors[i] = 'Service name must be at least 3 characters.';
+      } else if (desc.length > 0 && desc.length < 20) {
+        errors[i] = 'Description must be at least 20 characters if provided.';
+      }
+    });
+    setOfferingErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setActiveTab('Services');
+      return;
+    }
+
     setSaving(true);
     try {
       await fetch('/api/provider/profile', {
@@ -367,26 +385,29 @@ export default function ProviderSettingsPage() {
             ) : (
               <div className="space-y-3 sm:space-y-4">
                 {offerings.map((o, i) => (
-                  <div key={i} className="p-3.5 sm:p-4 bg-surface-alt rounded-xl sm:rounded-2xl border border-border-dim space-y-2.5 sm:space-y-3">
+                  <div key={i} className={`p-3.5 sm:p-4 bg-surface-alt rounded-xl sm:rounded-2xl border ${offeringErrors[i] ? 'border-danger' : 'border-border-dim'} space-y-2.5 sm:space-y-3`}>
                     <div className="flex items-start justify-between gap-2 sm:gap-3">
                       <input
                         type="text"
                         value={o.name}
-                        onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                        placeholder="Service name (e.g. Pipe repair)"
-                        className="flex-1 px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium"
+                        onChange={e => { setOfferings(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x)); setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; }); }}
+                        placeholder="Service name (e.g. TV Installation, Pipe Repair)"
+                        className={`flex-1 px-3 py-2 bg-white border ${offeringErrors[i]?.includes('name') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium`}
                       />
-                      <button onClick={() => setOfferings(p => p.filter((_, j) => j !== i))} className="hidden sm:block text-ink-dim hover:text-red-500 transition-colors mt-1">
+                      <button onClick={() => { setOfferings(p => p.filter((_, j) => j !== i)); setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; }); }} className="hidden sm:block text-ink-dim hover:text-red-500 transition-colors mt-1">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <input
-                      type="text"
+                    <textarea
                       value={o.description}
-                      onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x))}
-                      placeholder="Short description (optional)"
-                      className="w-full px-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                      onChange={e => { setOfferings(prev => prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x)); setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; }); }}
+                      placeholder="Describe what's included, typical duration, and any requirements (min. 20 characters)"
+                      rows={2}
+                      className={`w-full px-3 py-2 bg-white border ${offeringErrors[i]?.includes('escription') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm resize-none`}
                     />
+                    {offeringErrors[i] && (
+                      <p className="text-xs text-danger font-medium">{offeringErrors[i]}</p>
+                    )}
                     <div className="flex gap-2 sm:gap-3">
                       <div className="relative flex-1">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-sm">€</span>

@@ -52,13 +52,29 @@ export async function PATCH(request: Request) {
   });
 
   if (offerings) {
+    // Validate offerings
+    for (const o of offerings) {
+      const name = (o.name ?? '').trim();
+      if (name.length < 3) {
+        return NextResponse.json({ error: 'Service name must be at least 3 characters.' }, { status: 400 });
+      }
+      const desc = (o.description ?? '').trim();
+      if (desc.length > 0 && desc.length < 20) {
+        return NextResponse.json({ error: 'Service description must be at least 20 characters if provided.' }, { status: 400 });
+      }
+      const price = parseFloat(o.price);
+      if (isNaN(price) || price < 0) {
+        return NextResponse.json({ error: 'Service price must be a valid positive number.' }, { status: 400 });
+      }
+    }
+
     await prisma.serviceOffering.deleteMany({ where: { providerProfileId: profile.id } });
     for (const o of offerings) {
       await prisma.serviceOffering.create({
         data: {
           providerProfileId: profile.id,
-          name: o.name,
-          description: o.description ?? null,
+          name: (o.name ?? '').trim(),
+          description: (o.description ?? '').trim() || null,
           price: parseFloat(o.price),
           priceType: o.priceType ?? 'HOURLY',
         },
