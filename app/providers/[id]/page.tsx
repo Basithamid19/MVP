@@ -404,7 +404,28 @@ export default function ProviderProfilePage() {
               Send Service Request
             </Link>
 
-            <button className="w-full bg-surface-alt text-ink text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim text-sm sm:text-base">
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch('/api/chat/start', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ providerId: provider.id }),
+                  });
+                  if (!res.ok) {
+                    const data = await res.json();
+                    if (res.status === 401) { router.push('/login'); return; }
+                    alert(data.error || 'Could not start chat');
+                    return;
+                  }
+                  const { threadId } = await res.json();
+                  router.push(`/messages?thread=${threadId}`);
+                } catch {
+                  alert('Something went wrong. Please try again.');
+                }
+              }}
+              className="w-full bg-surface-alt text-ink text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim text-sm sm:text-base"
+            >
               <MessageSquare className="w-4 h-4" />
               Chat with Pro
             </button>
