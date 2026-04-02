@@ -397,12 +397,29 @@ export default function ProviderDashboardPage() {
               </Link>
             </div>
             {leads.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-border-dim p-6 sm:p-12 text-center shadow-sm">
-                <div className="w-10 h-10 sm:w-16 sm:h-16 bg-brand-muted rounded-2xl sm:rounded-full flex items-center justify-center mx-auto mb-2.5 sm:mb-4">
-                  <Inbox className="w-4 h-4 sm:w-6 sm:h-6 text-brand" />
+              <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                    <Inbox className="w-4 h-4 text-brand" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-ink">Complete your profile to start receiving leads</p>
+                    <p className="text-xs text-ink-sub mt-0.5">Leads are matched based on your services and area.</p>
+                  </div>
                 </div>
-                <p className="font-semibold text-sm sm:text-base text-ink mb-1">No leads yet</p>
-                <p className="text-xs sm:text-sm text-ink-sub max-w-[240px] mx-auto">New service requests matching your profile will appear here automatically.</p>
+                <div className="space-y-2 mb-4">
+                  {completenessSteps.map(({ done, label }) => (
+                    <div key={label} className="flex items-center gap-2.5 text-xs">
+                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${done ? 'text-brand' : 'text-ink-dim/30'}`} />
+                      <span className={done ? 'text-ink-sub line-through' : 'text-ink font-medium'}>{label}</span>
+                    </div>
+                  ))}
+                </div>
+                {completePct < 100 && (
+                  <Link href="/provider/settings" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors">
+                    Complete your profile <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="space-y-2.5 sm:space-y-4">
@@ -424,12 +441,19 @@ export default function ProviderDashboardPage() {
               </Link>
             </div>
             {activeJobs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 text-center shadow-sm">
-                <div className="w-10 h-10 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-2.5 sm:hidden">
-                  <Briefcase className="w-4 h-4 text-ink-dim" />
+              <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 bg-surface-alt rounded-2xl flex items-center justify-center shrink-0">
+                    <Briefcase className="w-4 h-4 text-ink-dim" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-sm text-ink">No active jobs right now</p>
+                    <p className="text-xs text-ink-sub mt-0.5">Jobs appear here when customers accept your quotes.</p>
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-ink-sub">No active jobs right now</p>
-                <p className="text-xs text-ink-dim mt-0.5 sm:hidden">Accepted quotes will appear here as scheduled work.</p>
+                <Link href="/provider/leads" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors mt-2">
+                  Browse available leads <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
               </div>
             ) : (
               <div className="space-y-2.5 sm:space-y-4">

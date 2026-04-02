@@ -43,9 +43,9 @@ export default function ProviderJobsPage() {
   });
 
   const emptyState = {
-    active: { title: 'No active jobs', desc: 'Accepted quotes will appear here as scheduled work', showCta: true },
-    completed: { title: 'No completed jobs yet', desc: 'Finished work will appear here after completion', showCta: false },
-    all: { title: 'No jobs yet', desc: 'Jobs from accepted quotes will appear here', showCta: true },
+    active: { title: 'No active jobs', desc: 'Jobs appear here when customers accept your quotes. Browse leads and send quotes to get started.', showCta: true },
+    completed: { title: 'No completed jobs yet', desc: 'Finished work will appear here after you complete a job. Active jobs can be marked complete from the job detail page.', showCta: false },
+    all: { title: 'No jobs yet', desc: 'Jobs appear here when customers accept your quotes. Browse available leads and send your first quote to get started.', showCta: true },
   }[filter];
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;

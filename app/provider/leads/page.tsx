@@ -129,11 +129,16 @@ export default function ProviderLeadsPage() {
             <Inbox className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
           </div>
           <p className="font-semibold text-base mb-1 text-ink">{leads.length === 0 ? 'No leads yet' : 'No matches'}</p>
-          <p className="text-sm text-ink-sub">
+          <p className="text-sm text-ink-sub mb-4">
             {leads.length === 0
-              ? 'Your matched leads will appear here automatically.'
+              ? 'Leads are matched based on your service categories and area. Make sure your profile is complete to start receiving leads.'
               : 'Try changing your filter or search term.'}
           </p>
+          {leads.length === 0 && (
+            <Link href="/provider/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark transition-colors">
+              Check your profile <ChevronRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       ) : (
         <div className="space-y-2.5 sm:space-y-3">
