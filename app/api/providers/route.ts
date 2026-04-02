@@ -48,12 +48,17 @@ export async function GET(request: Request) {
     return NextResponse.json(provider);
   }
 
+  const homepage = searchParams.get('homepage');
   const where: any = {};
   if (category) {
     where.categories = { some: { slug: category } };
   }
   if (verified === 'true') {
     where.isVerified = true;
+  }
+  // Homepage: only show pros with ≥5 completed jobs
+  if (homepage === 'true') {
+    where.completedJobs = { gte: 5 };
   }
 
   const providers = await prisma.providerProfile.findMany({
@@ -71,6 +76,16 @@ export async function GET(request: Request) {
     },
     orderBy: { ratingAvg: 'desc' },
   });
+
+  // Homepage: sort by verified first, then weighted score (rating × completedJobs)
+  if (homepage === 'true') {
+    providers.sort((a, b) => {
+      if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
+      const scoreA = (a.ratingAvg ?? 0) * (a.completedJobs ?? 0);
+      const scoreB = (b.ratingAvg ?? 0) * (b.completedJobs ?? 0);
+      return scoreB - scoreA;
+    });
+  }
 
   // Auto-fix any providers missing an image
   const fixPromises = providers

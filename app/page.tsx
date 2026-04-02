@@ -248,9 +248,9 @@ export default function LandingPage() {
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
     if (addr) setSavedAddress(addr);
-    fetch('/api/providers')
+    fetch('/api/providers?homepage=true')
       .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setTopPros(d.slice(0, 4)); })
+      .then(d => { if (Array.isArray(d)) setTopPros(d.slice(0, 6)); })
       .catch(() => {})
       .finally(() => setProsLoading(false));
   }, []);
@@ -618,15 +618,16 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. Top Rated Professionals ── */}
+      {/* ── 4. Meet Our Pros ── */}
+      {(!prosLoading && topPros.length < 3) ? null : (
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
           <div>
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
+            <h2 className="text-3xl font-bold tracking-tight text-ink">Meet Our Pros</h2>
           </div>
           <Link href="/browse" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-dark transition-colors">
-            See all <ArrowRight className="w-4 h-4" />
+            View all pros <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -736,10 +737,11 @@ export default function LandingPage() {
         {/* Mobile See All link */}
         <div className="px-4 sm:hidden mt-2">
           <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
-            See all pros <ArrowRight className="w-4 h-4" />
+            View all pros <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
+      )}
 
       {/* ── 5. Why Aladdin ── */}
       <section className="bg-canvas py-16 sm:py-20">
