@@ -24,8 +24,8 @@ export async function POST(request: Request) {
 
   const serviceRequest = await prisma.serviceRequest.findUnique({
     where: { id: requestId },
-    select: { categoryId: true },
-  });
+    select: { categoryId: true, customerId: true },
+    });
 
   if (!serviceRequest) {
     return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
@@ -54,6 +54,36 @@ export async function POST(request: Request) {
     where: { id: requestId },
     data: { status: 'QUOTED' },
   });
+
+  // Auto-create chat thread between provider and customer (if not exists)
+  const providerUserId = (session.user as any).id;
+  const customerProfile = await prisma.customerProfile.findUnique({
+    where: { id: serviceRequest.customerId },
+    select: { userId: true },
+  });
+
+  if (customerProfile) {
+    const existingThread = await prisma.chatThread.findFirst({
+      where: {
+        requestId,
+        AND: [
+          { participants: { some: { id: providerUserId } } },
+          { participants: { some: { id: customerProfile.userId } } },
+        ],
+      },
+    });
+
+    if (!existingThread) {
+      await prisma.chatThread.create({
+        data: {
+          requestId,
+          participants: {
+            connect: [{ id: providerUserId }, { id: customerProfile.userId }],
+          },
+        },
+      });
+    }
+  }
 
   return NextResponse.json(quote);
 }

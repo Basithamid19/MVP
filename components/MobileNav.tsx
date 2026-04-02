@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Inbox, UserCircle2 } from 'lucide-react';
+import { Home, Search, MessageCircle, Inbox, UserCircle2 } from 'lucide-react';
 
 const TABS = [
-  { href: '/',          label: 'Home',      icon: Home,        active: (p: string) => p === '/' },
-  { href: '/browse',    label: 'Find Pros',  icon: Search,      active: (p: string) => p === '/browse' || p.startsWith('/providers') },
-  { href: '/dashboard', label: 'Dashboard',  icon: Inbox,       active: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests') },
-  { href: '/account',   label: 'Account',    icon: UserCircle2, active: (p: string) => p === '/account' },
+  { href: '/',          label: 'Home',      icon: Home,          active: (p: string) => p === '/' },
+  { href: '/browse',    label: 'Find Pros',  icon: Search,       active: (p: string) => p === '/browse' || p.startsWith('/providers') },
+  { href: '/messages',  label: 'Messages',   icon: MessageCircle, active: (p: string) => p.startsWith('/messages') },
+  { href: '/dashboard', label: 'Dashboard',  icon: Inbox,        active: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests') },
+  { href: '/account',   label: 'Account',    icon: UserCircle2,  active: (p: string) => p === '/account' },
 ];
 
 export default function MobileNav() {
