@@ -246,10 +246,6 @@ export default function DashboardPage() {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status !== 'authenticated') return;
 
-    const role = (session?.user as any)?.role;
-    if (role === 'ADMIN')    { router.push('/admin/dashboard'); return; }
-    if (role === 'PROVIDER') { router.push('/provider/dashboard'); return; }
-
     Promise.all([
       fetch('/api/requests').then(r => r.json()),
       fetch('/api/bookings').then(r => r.json()),
