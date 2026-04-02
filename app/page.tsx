@@ -297,17 +297,12 @@ export default function LandingPage() {
                 </Link>
               </>
             ) : (
-              <>
-                <Link href="/login" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-                  {t.nav.logIn}
-                </Link>
-                <Link
-                  href="/register"
-                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
-                >
-                  {t.nav.signUp}
-                </Link>
-              </>
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: 'primary', size: 'sm' })}
+              >
+                {t.nav.logIn}
+              </Link>
             )}
           </div>
         </div>
