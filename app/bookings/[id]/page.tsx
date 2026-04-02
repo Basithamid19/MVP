@@ -334,14 +334,34 @@ export default function BookingPage() {
               <span className="font-bold text-lg">€{booking.totalAmount?.toFixed(2)}</span>
             </div>
           </div>
-          <div className={`flex items-center gap-2 px-3 py-2 rounded-input text-xs font-bold ${
-            booking.payment?.status === 'PAID' ? 'bg-trust-surface text-trust' :
-            booking.payment?.status === 'REFUNDED' ? 'bg-surface-alt text-ink-sub' :
-            'bg-caution-surface text-caution'
-          }`}>
-            <DollarSign className="w-3.5 h-3.5" />
-            {booking.payment?.status ?? 'Payment pending'}
-          </div>
+          {(() => {
+            const payStatus = booking.payment?.status;
+            const isCompleted = booking.status === 'COMPLETED';
+            const label = payStatus === 'PAID' ? 'Paid'
+              : payStatus === 'REFUNDED' ? 'Refunded'
+              : payStatus === 'PROCESSING' || isCompleted ? 'Processing'
+              : 'Awaiting completion';
+            const style = payStatus === 'PAID' ? 'bg-trust-surface text-trust'
+              : payStatus === 'REFUNDED' ? 'bg-surface-alt text-ink-sub'
+              : payStatus === 'PROCESSING' || isCompleted ? 'bg-info-surface text-info'
+              : 'bg-surface-alt text-ink-sub';
+            return (
+              <div>
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-input text-xs font-bold ${style}`}>
+                  <DollarSign className="w-3.5 h-3.5" />
+                  {label}
+                  {payStatus === 'PAID' && booking.payment?.createdAt && (
+                    <span className="font-normal ml-1">· {new Date(booking.payment.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
+                  )}
+                </div>
+                {(payStatus === 'PROCESSING' || (isCompleted && !payStatus)) && (
+                  <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
+                    Payment is confirmed after job completion. You&apos;ll receive a receipt by email within 24 hours.
+                  </p>
+                )}
+              </div>
+            );
+          })()}
           <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim text-xs text-ink-sub leading-relaxed">
             <span className="font-bold text-ink-sub">Cancellation policy: </span>
             Free cancellation up to 24h before the scheduled time. Late cancellations may incur a fee of up to €10.

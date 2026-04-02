@@ -72,6 +72,18 @@ export async function PATCH(request: Request) {
       where: { id: booking.providerId },
       data: { completedJobs: { increment: 1 } },
     });
+
+    // Auto-create payment record as PROCESSING
+    const existingPayment = await prisma.payment.findUnique({ where: { bookingId } });
+    if (!existingPayment) {
+      await prisma.payment.create({
+        data: {
+          bookingId,
+          amount: booking.totalAmount,
+          status: 'PROCESSING',
+        },
+      });
+    }
   }
 
   return NextResponse.json(booking);

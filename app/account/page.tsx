@@ -229,7 +229,17 @@ export default function AccountPage() {
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-lg font-bold text-ink leading-tight">€{b.totalAmount?.toFixed(2)}</p>
-                              <span className="text-[9px] font-bold uppercase bg-trust-surface text-trust px-1.5 py-0.5 rounded-full">Paid</span>
+                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${
+                                b.payment?.status === 'PAID' ? 'bg-trust-surface text-trust'
+                                : b.payment?.status === 'REFUNDED' ? 'bg-surface-alt text-ink-sub'
+                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'bg-info-surface text-info'
+                                : 'bg-surface-alt text-ink-sub'
+                              }`}>{
+                                b.payment?.status === 'PAID' ? 'Paid'
+                                : b.payment?.status === 'REFUNDED' ? 'Refunded'
+                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'Processing'
+                                : 'Pending'
+                              }</span>
                             </div>
                           </div>
                           {/* Details — clean and simple */}
