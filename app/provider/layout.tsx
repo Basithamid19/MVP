@@ -173,7 +173,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
 
         <div className="p-4 lg:p-6 space-y-1">
           <Link
-            href="/provider/onboarding"
+            href="/provider/verification"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-info hover:bg-info-surface transition-all"
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />

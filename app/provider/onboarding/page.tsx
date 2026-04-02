@@ -39,18 +39,21 @@ export default function OnboardingPage() {
   const [businessType, setBusinessType] = useState('sole_trader');
   const [companyName, setCompanyName] = useState('');
   const [vatNumber, setVatNumber] = useState('');
-  const [docs, setDocs] = useState<Record<string, { file: File; preview: string; uploaded: boolean }>>({});
+  const [docs, setDocs] = useState<Record<string, { file: File; preview: string; uploaded: boolean; url: string }>>({});
   const [selfie, setSelfie] = useState<{ file: File; preview: string } | null>(null);
   const selfieRef = useRef<HTMLInputElement>(null);
 
   const handleDocSelect = async (docType: string, file: File) => {
     const preview = URL.createObjectURL(file);
-    setDocs(prev => ({ ...prev, [docType]: { file, preview, uploaded: false } }));
+    setDocs(prev => ({ ...prev, [docType]: { file, preview, uploaded: false, url: '' } }));
     const fd = new FormData();
     fd.append('file', file);
     try {
       const res = await fetch('/api/uploads', { method: 'POST', body: fd });
-      if (res.ok) setDocs(prev => ({ ...prev, [docType]: { ...prev[docType], uploaded: true } }));
+      if (res.ok) {
+        const data = await res.json();
+        setDocs(prev => ({ ...prev, [docType]: { ...prev[docType], uploaded: true, url: data.url } }));
+      }
     } catch {}
   };
 
@@ -61,11 +64,38 @@ export default function OnboardingPage() {
   const handleFinish = async () => {
     setSaving(true);
     try {
-      await fetch('/api/provider/profile', {
-        method: 'PATCH',
+      // Upload selfie first
+      let selfieUrl = '';
+      if (selfie) {
+        const fd = new FormData();
+        fd.append('file', selfie.file);
+        const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+        if (res.ok) {
+          const data = await res.json();
+          selfieUrl = data.url;
+        }
+      }
+
+      // Build document list for verification records
+      const docTypeMap: Record<string, string> = {
+        id_card: 'ID', passport: 'ID', certificate: 'CERTIFICATE', insurance: 'INSURANCE',
+      };
+      const documents = Object.entries(docs)
+        .filter(([, d]) => d.uploaded && d.url)
+        .map(([key, d]) => ({ docType: docTypeMap[key] || 'ID', docUrl: d.url }));
+
+      if (selfieUrl) {
+        documents.push({ docType: 'SELFIE', docUrl: selfieUrl });
+      }
+
+      // Submit verification documents to DB
+      await fetch('/api/provider/verification', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          bio: `${businessType === 'company' ? companyName + ' · ' : ''}Verified ${BUSINESS_TYPES.find(b => b.id === businessType)?.label}`,
+          documents,
+          identity: { fullName: identity.fullName, phone: identity.phone, companyName },
+          businessType,
         }),
       });
     } catch {}
