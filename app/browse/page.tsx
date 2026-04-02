@@ -213,9 +213,12 @@ function BrowseContent() {
                     )}
                   </div>
 
-                  {p.bio && (
-                    <p className="text-[11px] text-ink-sub mt-1.5 line-clamp-1 leading-relaxed">{p.bio}</p>
-                  )}
+                  <p className="text-[11px] text-ink-sub mt-1.5 line-clamp-1 leading-relaxed">
+                    {p.bio && p.bio.trim().length >= 20
+                      ? p.bio
+                      : `${p.categories?.map((c: any) => c.name).join(', ') || 'Professional'} in ${p.serviceArea || 'Vilnius'}`
+                    }
+                  </p>
                 </div>
               </Link>
             );

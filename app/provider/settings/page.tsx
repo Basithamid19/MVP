@@ -161,7 +161,7 @@ export default function ProviderSettingsPage() {
 
   // Profile completeness
   const hasAvatar = !!(localAvatar || session?.user?.image);
-  const hasBio = bio.trim().length > 0;
+  const hasBio = bio.trim().length >= 50;
   const hasArea = serviceArea.trim().length > 0;
   const hasCategories = selectedCategories.length > 0;
   const hasOfferings = offerings.length > 0;
@@ -267,9 +267,19 @@ export default function ProviderSettingsPage() {
                 value={bio}
                 onChange={e => setBio(e.target.value)}
                 rows={3}
-                placeholder="Tell customers about your experience, specialties, and what makes you stand out..."
-                className="w-full p-3.5 sm:p-4 bg-surface-alt border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-[16px] sm:text-sm leading-relaxed"
+                placeholder="Tell customers about your experience, specialties, and what makes you different. Example: 'Licensed electrician with 8 years of experience in Vilnius. I specialize in residential wiring, smart home installations, and lighting upgrades.'"
+                className={`w-full p-3.5 sm:p-4 bg-surface-alt border ${bio.trim().length > 0 && bio.trim().length < 50 ? 'border-caution' : 'border-border-dim'} rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-[16px] sm:text-sm leading-relaxed`}
               />
+              <div className="flex items-center justify-between mt-1.5">
+                {bio.trim().length > 0 && bio.trim().length < 50 ? (
+                  <p className="text-[11px] text-caution font-medium">Minimum 50 characters for a strong profile</p>
+                ) : (
+                  <span />
+                )}
+                <p className={`text-[11px] ${bio.trim().length >= 50 ? 'text-ink-dim' : bio.trim().length > 0 ? 'text-caution' : 'text-ink-dim'}`}>
+                  {bio.trim().length}/50 min
+                </p>
+              </div>
             </div>
 
             {/* Coverage area */}

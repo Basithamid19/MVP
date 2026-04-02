@@ -160,7 +160,10 @@ export default function ProviderProfilePage() {
 
                 {/* Bio — desktop only (shown inline) */}
                 <p className="hidden sm:block text-ink-sub leading-relaxed mb-5">
-                  {provider.bio}
+                  {provider.bio && provider.bio.trim().length >= 20
+                    ? provider.bio
+                    : `${provider.categories?.map((c: any) => c.name).join(', ') || 'Professional'} in ${provider.serviceArea || 'Vilnius'}`
+                  }
                 </p>
 
                 {/* Stat tiles — desktop only */}
@@ -189,7 +192,10 @@ export default function ProviderProfilePage() {
 
             {/* Mobile only: bio + compact stat tiles below the row */}
             <p className="sm:hidden text-sm text-ink-sub leading-relaxed mt-3.5 mb-4">
-              {provider.bio}
+              {provider.bio && provider.bio.trim().length >= 20
+                ? provider.bio
+                : `${provider.categories?.map((c: any) => c.name).join(', ') || 'Professional'} in ${provider.serviceArea || 'Vilnius'}`
+              }
             </p>
             <div className="sm:hidden grid grid-cols-3 gap-2">
               <div className="p-3 bg-surface-alt rounded-2xl text-center">

@@ -35,7 +35,7 @@ export async function PATCH(request: Request) {
   const profile = await prisma.providerProfile.upsert({
     where: { userId: (session.user as any).id },
     update: {
-      ...(bio !== undefined && { bio }),
+      ...(bio !== undefined && { bio: bio.trim() }),
       ...(serviceArea !== undefined && { serviceArea }),
       ...(languages !== undefined && { languages }),
       ...(responseTime !== undefined && { responseTime }),
