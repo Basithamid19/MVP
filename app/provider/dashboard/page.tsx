@@ -72,6 +72,23 @@ export default function ProviderDashboardPage() {
   const totalEarnings = completedJobs.reduce((s: number, b: any) => s + (b.totalAmount ?? 0) * 0.88, 0);
 
   const isVerified = profile?.verificationTier && profile.verificationTier !== 'TIER0_BASIC';
+
+  // Profile completeness
+  const hasAvatar = !!session?.user?.image;
+  const hasBio = (profile?.bio ?? '').trim().length >= 50;
+  const hasArea = (profile?.serviceArea ?? '').trim().length > 0;
+  const hasCategories = (profile?.categories ?? []).length > 0;
+  const hasOfferings = (profile?.offerings ?? []).length > 0;
+  const completenessSteps = [
+    { done: hasAvatar, label: 'Add a profile photo' },
+    { done: hasBio, label: 'Write a bio (50+ chars)' },
+    { done: hasArea, label: 'Set your service area' },
+    { done: hasCategories, label: 'Choose service categories' },
+    { done: hasOfferings, label: 'Add service offerings' },
+  ];
+  const completedCount = completenessSteps.filter(s => s.done).length;
+  const completePct = Math.round((completedCount / completenessSteps.length) * 100);
+  const nextStep = completenessSteps.find(s => !s.done);
   const verificationProgress =
     profile?.verificationTier === 'TIER3_ENHANCED' ? 100 :
     profile?.verificationTier === 'TIER2_TRADE_VERIFIED' ? 75 :
@@ -187,6 +204,25 @@ export default function ProviderDashboardPage() {
             <ChevronRight className="w-3.5 h-3.5 text-brand shrink-0 group-hover:translate-x-0.5 transition-transform" />
           </Link>
         )}
+
+        {/* Profile completeness nudge */}
+        {completePct < 100 && (
+          <Link href="/provider/settings" className="flex items-center gap-2.5 bg-surface-alt border border-border-dim rounded-xl px-3 py-2.5 mb-3 group">
+            <div className="relative w-8 h-8 shrink-0">
+              <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" className="text-border-dim" strokeWidth="3" />
+                <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" className="text-brand" strokeWidth="3"
+                  strokeDasharray={`${completePct * 0.8168} 81.68`} strokeLinecap="round" />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-brand">{completePct}%</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-bold text-ink">Profile {completePct}% complete</p>
+              {nextStep && <p className="text-[10px] text-ink-sub mt-0.5">Next: {nextStep.label}</p>}
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-ink-dim shrink-0 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        )}
       </div>
 
       {/* ── Desktop: Original header ── */}
@@ -231,6 +267,32 @@ export default function ProviderDashboardPage() {
               className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
             >
               Get Verified
+            </Link>
+          </div>
+        )}
+
+        {/* Profile completeness banner */}
+        {completePct < 100 && (
+          <div className="mb-6 bg-surface-alt border border-border-dim rounded-2xl px-4 py-3 flex items-center gap-3">
+            <div className="relative w-10 h-10 shrink-0">
+              <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
+                <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-border-dim" strokeWidth="3" />
+                <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-brand" strokeWidth="3"
+                  strokeDasharray={`${completePct * 1.005} 100.5`} strokeLinecap="round" />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-brand">{completePct}%</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-ink">Your profile is {completePct}% complete</p>
+              <p className="text-xs text-ink-sub mt-0.5">
+                {nextStep ? `Next step: ${nextStep.label}` : 'Almost there!'} — complete profiles attract more customers.
+              </p>
+            </div>
+            <Link
+              href="/provider/settings"
+              className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
+            >
+              Complete Profile
             </Link>
           </div>
         )}
