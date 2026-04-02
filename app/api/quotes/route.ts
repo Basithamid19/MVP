@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
   const serviceRequest = await prisma.serviceRequest.findUnique({
     where: { id: requestId },
     select: { categoryId: true, customerId: true },
-    });
+  });
 
   if (!serviceRequest) {
     return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
@@ -55,13 +56,24 @@ export async function POST(request: Request) {
     data: { status: 'QUOTED' },
   });
 
-  // Auto-create chat thread between provider and customer (if not exists)
+  // Notify customer about new quote
   const providerUserId = (session.user as any).id;
   const customerProfile = await prisma.customerProfile.findUnique({
     where: { id: serviceRequest.customerId },
     select: { userId: true },
   });
+  if (customerProfile) {
+    const providerUser = await prisma.user.findUnique({ where: { id: providerUserId }, select: { name: true } });
+    createNotification({
+      userId: customerProfile.userId,
+      type: 'quote',
+      title: 'New quote received',
+      body: `${providerUser?.name ?? 'A pro'} sent you a quote for €${parseFloat(price).toFixed(0)}`,
+      href: `/requests/${requestId}`,
+    });
+  }
 
+  // Auto-create chat thread between provider and customer (if not exists)
   if (customerProfile) {
     const existingThread = await prisma.chatThread.findFirst({
       where: {
@@ -127,6 +139,25 @@ export async function PATCH(request: Request) {
         status: 'SCHEDULED',
       },
     });
+
+    // Notify provider that their quote was accepted
+    const providerProfile = await prisma.providerProfile.findUnique({
+      where: { id: quote.providerId },
+      select: { userId: true },
+    });
+    if (providerProfile) {
+      const customerUser = await prisma.user.findFirst({
+        where: { customerProfile: { id: quote.request.customerId } },
+        select: { name: true },
+      });
+      createNotification({
+        userId: providerProfile.userId,
+        type: 'booking',
+        title: 'Quote accepted!',
+        body: `${customerUser?.name ?? 'A customer'} accepted your quote for €${quote.price.toFixed(0)}. Job is scheduled.`,
+        href: `/provider/jobs`,
+      });
+    }
 
     return NextResponse.json({ ...updatedQuote, bookingId: booking.id });
   }

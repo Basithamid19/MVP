@@ -42,8 +42,6 @@ export default function ProviderDashboardPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
-      const role = (session?.user as any)?.role;
-      if (role !== 'PROVIDER') { router.push('/dashboard'); return; }
       Promise.all([
         fetch('/api/provider/profile').then(r => r.json()),
         fetch('/api/provider/leads').then(r => r.json()),

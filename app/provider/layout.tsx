@@ -10,6 +10,7 @@ import {
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
   MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp, UserCircle2,
 } from 'lucide-react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const NAV_GROUPS = [
   {
@@ -43,11 +44,12 @@ const NAV_GROUPS = [
 
 interface Notification {
   id: string;
-  type: 'message' | 'lead' | 'booking';
+  type: string;
   title: string;
   body: string;
-  time: string;
   href: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 function timeAgo(date: string) {
@@ -64,12 +66,20 @@ const NOTIF_ICON: Record<string, React.ElementType> = {
   message: MessageSquare,
   lead: Users,
   booking: CheckCircle2,
+  quote: Users,
+  payment: DollarSign,
+  status: CheckCircle2,
+  review: CheckCircle2,
 };
 
 const NOTIF_COLOR: Record<string, string> = {
   message: 'bg-blue-50 text-blue-600',
   lead: 'bg-orange-50 text-orange-600',
   booking: 'bg-green-50 text-green-600',
+  quote: 'bg-orange-50 text-orange-600',
+  payment: 'bg-green-50 text-green-600',
+  status: 'bg-yellow-50 text-yellow-600',
+  review: 'bg-blue-50 text-blue-600',
 };
 
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
@@ -77,55 +87,22 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
   const { data: session } = useSession();
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Fetch notifications (messages + leads) on mount and periodically
+  // Fetch notifications from persistent API
   useEffect(() => {
     if (!session) return;
-
     const fetchNotifs = async () => {
-      const notifs: Notification[] = [];
-
       try {
-        const [leadsRes, bookingsRes] = await Promise.all([
-          fetch('/api/provider/leads').then(r => r.ok ? r.json() : []).catch(() => []),
-          fetch('/api/bookings').then(r => r.ok ? r.json() : []).catch(() => []),
-        ]);
-
-        if (Array.isArray(leadsRes)) {
-          for (const l of leadsRes.slice(0, 5)) {
-            notifs.push({
-              id: `lead-${l.id}`,
-              type: 'lead',
-              title: `New lead: ${l.category?.name ?? 'Service'}`,
-              body: l.description?.slice(0, 60) + (l.description?.length > 60 ? '…' : ''),
-              time: l.createdAt,
-              href: `/provider/leads`,
-            });
-          }
+        const res = await fetch('/api/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data);
         }
-
-        if (Array.isArray(bookingsRes)) {
-          for (const b of bookingsRes.filter((b: any) => b.status === 'SCHEDULED').slice(0, 3)) {
-            notifs.push({
-              id: `book-${b.id}`,
-              type: 'booking',
-              title: 'Upcoming booking',
-              body: `Scheduled for ${new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
-              time: b.createdAt,
-              href: `/provider/jobs/${b.id}`,
-            });
-          }
-        }
-
-        notifs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-        setNotifications(notifs);
       } catch {}
     };
-
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 30000);
+    const interval = setInterval(fetchNotifs, 15000);
     return () => clearInterval(interval);
   }, [session]);
 
@@ -142,8 +119,17 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
 
   if (pathname?.startsWith('/provider/onboarding')) return <>{children}</>;
 
-  const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
-  const unreadCount = visibleNotifs.length;
+  const visibleNotifs = notifications;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const markRead = async (ids: string[]) => {
+    setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, isRead: true } : n));
+    try { await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) }); } catch {}
+  };
+  const markAllRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try { await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markAllRead: true }) }); } catch {}
+  };
 
   return (
     <div className="min-h-screen bg-canvas flex">
@@ -187,7 +173,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
 
         <div className="p-4 lg:p-6 space-y-1">
           <Link
-            href="/provider/onboarding"
+            href="/provider/verification"
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-info hover:bg-info-surface transition-all"
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
@@ -214,6 +200,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
+          <LanguageSwitcher className="hidden sm:flex" />
           {/* Notifications bell + dropdown */}
           <div className="relative" ref={panelRef}>
             <button
@@ -233,9 +220,9 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
                   <h3 className="font-semibold text-base text-ink">Notifications</h3>
-                  {visibleNotifs.length > 0 && (
+                  {unreadCount > 0 && (
                     <button
-                      onClick={() => setDismissed(new Set(notifications.map(n => n.id)))}
+                      onClick={markAllRead}
                       className="text-xs font-medium text-ink-dim hover:text-brand transition-colors"
                     >
                       Mark all read
@@ -254,31 +241,33 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                     </div>
                   ) : (
                     visibleNotifs.slice(0, 10).map(n => {
-                      const Icon = NOTIF_ICON[n.type];
-                      const color = NOTIF_COLOR[n.type];
+                      const Icon = NOTIF_ICON[n.type] ?? Bell;
+                      const color = NOTIF_COLOR[n.type] ?? 'bg-gray-50 text-gray-600';
                       return (
                         <Link
                           key={n.id}
                           href={n.href}
-                          onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
-                          className="flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
+                          onClick={() => { if (!n.isRead) markRead([n.id]); setShowNotifs(false); }}
+                          className={`flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0 ${!n.isRead ? 'bg-brand-muted/30' : ''}`}
                         >
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${color}`}>
                             <Icon className="w-4 h-4" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-ink mb-0.5">{n.title}</p>
+                            <p className={`text-sm ${!n.isRead ? 'font-bold' : 'font-medium'} text-ink mb-0.5`}>{n.title}</p>
                             <p className="text-xs text-ink-sub truncate">{n.body}</p>
                             <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> {timeAgo(n.time)}
+                              <Clock className="w-3 h-3" /> {timeAgo(n.createdAt)}
                             </p>
                           </div>
-                          <button
-                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDismissed(prev => new Set(prev).add(n.id)); }}
-                            className="shrink-0 p-1 text-ink-dim hover:text-ink-sub transition-colors"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
+                          {!n.isRead && (
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); markRead([n.id]); }}
+                              className="shrink-0 p-1 text-ink-dim hover:text-ink-sub transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                         </Link>
                       );
                     })
@@ -286,13 +275,13 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                 </div>
 
                 {/* Footer */}
-                {visibleNotifs.length > 0 && (
+                {unreadCount > 0 && (
                   <div className="px-5 py-3 border-t border-border-dim bg-surface-alt text-center">
                     <button
-                      onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }}
+                      onClick={() => { markAllRead(); setShowNotifs(false); }}
                       className="text-xs font-medium text-ink-sub hover:text-ink transition-colors"
                     >
-                      Dismiss all
+                      Mark all as read
                     </button>
                   </div>
                 )}

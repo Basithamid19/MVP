@@ -46,14 +46,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).role = token.role;
         (session.user as any).id = token.id;
-        // Always load the latest image from DB so uploads persist on refresh
+        // Always load the latest role and image from DB to prevent stale JWT data
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { image: true },
+          select: { image: true, role: true },
         });
-        if (dbUser) session.user.image = dbUser.image;
+        if (dbUser) {
+          session.user.image = dbUser.image;
+          (session.user as any).role = dbUser.role;
+        } else {
+          (session.user as any).role = token.role;
+        }
       }
       return session;
     },

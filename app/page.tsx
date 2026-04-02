@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
 import { useRouter } from 'next/navigation';
@@ -9,13 +9,15 @@ import { useSession } from 'next-auth/react';
 import {
   Search, MapPin, Star, ShieldCheck,
   ArrowRight, AlertCircle, Clock,
-  ChevronLeft, ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
-  BadgeCheck, MessageCircle, Brush, Shield,
+  ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
+  BadgeCheck, MessageCircle, Brush,
   Wrench, Hammer, Truck, Package, Zap
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
 import { avatarUrl } from '@/lib/avatar';
 import { AladdinIcon, BroomIcon, ElectricianIcon } from '@/components/icons';
+import { useTranslation } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 /* ─── Static data ─── */
 const categories = [
@@ -115,129 +117,10 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
   CANCELED:    'bg-danger-surface text-danger',
 };
 
-/* ─── Trust Carousel ─── */
-
-const trustItems = [
-  { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
-  { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
-  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
-  { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
-];
-
-function TrustCarousel() {
-  const [active, setActive] = useState(0);
-  const total = trustItems.length;
-
-  const prev = useCallback(() => setActive(i => (i - 1 + total) % total), [total]);
-  const next = useCallback(() => setActive(i => (i + 1) % total), [total]);
-
-  // Auto-advance — reset timer on manual interaction
-  useEffect(() => {
-    const id = setInterval(next, 5000);
-    return () => clearInterval(id);
-  }, [next, active]);
-
-  // Touch swipe support
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX);
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const diff = touchStart - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
-    setTouchStart(null);
-  };
-
-  const item = trustItems[active];
-  const Icon = item.icon;
-
-  return (
-    <div className="mt-3 mb-0 pt-1">
-      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-6">Why customers trust Aladdin</p>
-
-      {/* Mobile: single-card carousel */}
-      <div className="md:hidden">
-        <div className="relative flex items-center mt-4">
-          {/* Left arrow — minimal icon, generous tap target */}
-          <button
-            onClick={prev}
-            className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          {/* Card — fixed height prevents layout jump */}
-          <div
-            className="w-full overflow-hidden mx-7"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            <motion.div
-              key={active}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-              className="bg-white border border-border-dim/60 rounded-2xl p-4 flex items-center gap-4 shadow-card min-h-[64px]"
-            >
-              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                <Icon className="w-[18px] h-[18px] text-brand" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
-                <p className="text-xs text-ink-sub leading-snug mt-0.5">{item.desc}</p>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Right arrow — minimal icon, generous tap target */}
-          <button
-            onClick={next}
-            className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-            aria-label="Next"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-3">
-          {trustItems.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              className={`rounded-full transition-all duration-300 ${
-                i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
-              }`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Desktop: 4-column grid */}
-      <div className="hidden md:grid md:grid-cols-4 gap-3">
-        {trustItems.map((t) => {
-          const TIcon = t.icon;
-          return (
-            <div key={t.title} className="bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
-              <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
-                <TIcon className="w-3.5 h-3.5 text-brand" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
-                <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 export default function LandingPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [searchQuery, setSearchQuery]   = useState('');
   const [isUrgent, setIsUrgent]         = useState(false);
   const [savedAddress, setSavedAddress] = useState('');
@@ -248,9 +131,9 @@ export default function LandingPage() {
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
     if (addr) setSavedAddress(addr);
-    fetch('/api/providers?homepage=true')
+    fetch('/api/providers')
       .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setTopPros(d.slice(0, 6)); })
+      .then(d => { if (Array.isArray(d)) setTopPros(d.slice(0, 4)); })
       .catch(() => {})
       .finally(() => setProsLoading(false));
   }, []);
@@ -286,25 +169,26 @@ export default function LandingPage() {
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {session ? (
               <>
                 <Link
                   href="/requests/new"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
                 >
-                  Book a Pro
+                  {t.nav.bookAPro}
                 </Link>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-                  Log in
+                  {t.nav.logIn}
                 </Link>
                 <Link
                   href="/register"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
                 >
-                  Sign up
+                  {t.nav.signUp}
                 </Link>
               </>
             )}
@@ -313,7 +197,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-4 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-8 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
@@ -324,23 +208,22 @@ export default function LandingPage() {
               {/* Eyebrow */}
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Trusted local pros in Vilnius
+                {t.hero.eyebrow}
               </span>
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight leading-[1.05] mb-6 text-ink">
-                Premium home services, <br className="hidden lg:block" />
-                <span className="text-brand">delivered with trust.</span>
+                {t.hero.headline} <br className="hidden lg:block" />
+                <span className="text-brand">{t.hero.headlineHighlight}</span>
               </h1>
 
               {/* Sub-headline */}
               <p className="text-base sm:text-lg text-ink-sub mb-10 leading-relaxed max-w-xl">
-                Find and book verified plumbers, electricians, and cleaners. 
-                Transparent pricing, real reviews, and exceptional quality.
+                {t.hero.subheadline}
               </p>
 
               {/* Unified Search Bar */}
-              <form onSubmit={handleSearch} className="mb-4">
+              <form onSubmit={handleSearch} className="mb-8">
                 <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
                   <div className="flex-1 flex items-center px-4 py-2">
                     <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
@@ -348,7 +231,7 @@ export default function LandingPage() {
                       type="text"
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="What do you need?"
+                      placeholder={t.hero.searchPlaceholder}
                       className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
@@ -359,7 +242,7 @@ export default function LandingPage() {
                       type="text"
                       value={savedAddress}
                       onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
-                      placeholder="Your address"
+                      placeholder={t.hero.addressPlaceholder}
                       className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
@@ -367,14 +250,39 @@ export default function LandingPage() {
                     type="submit"
                     className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' sm:w-auto w-full rounded-input'}
                   >
-                    Search
+                    {t.hero.search}
                   </button>
                 </div>
               </form>
 
-              {/* Trust Carousel */}
-              <TrustCarousel />
-
+              {/* Quick category pills & Urgency */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
+                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">{t.hero.popular}</span>
+                {categories.slice(0, 3).map(cat => {
+                  const Icon = cat.icon;
+                  return (
+                  <button
+                    key={cat.slug}
+                    onClick={() => handleCategoryRequest(cat.slug)}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
+                  >
+                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
+                    {cat.name}
+                  </button>
+                )})}
+                <div className="w-px h-4 bg-border-dim mx-0.5 shrink-0" />
+                <button
+                  onClick={() => setIsUrgent(!isUrgent)}
+                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
+                    isUrgent
+                      ? 'bg-caution-surface border-caution-edge text-caution'
+                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
+                  }`}
+                >
+                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
+                  {isUrgent ? t.hero.urgent : t.hero.markUrgent}
+                </button>
+              </div>
             </motion.div>
 
             {/* Hero right — Art Directed Image */}
@@ -399,8 +307,8 @@ export default function LandingPage() {
                   <ShieldCheck className="w-6 h-6 text-trust" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-ink">100% Verified</p>
-                  <p className="text-xs text-ink-dim">Professionals in Vilnius</p>
+                  <p className="text-sm font-bold text-ink">{t.hero.verified}</p>
+                  <p className="text-xs text-ink-dim">{t.hero.professionalsInVilnius}</p>
                 </div>
               </div>
 
@@ -422,7 +330,7 @@ export default function LandingPage() {
                     <Star className="w-3.5 h-3.5 fill-current" />
                     <span className="text-ink font-bold text-xs">4.9</span>
                   </div>
-                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">Top Rated</p>
+                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">{t.hero.topRated}</p>
                 </div>
               </div>
             </motion.div>
@@ -436,11 +344,11 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-bold text-ink tracking-tight">Recent Bookings</h2>
-                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off</p>
+                <h2 className="text-sm font-bold text-ink tracking-tight">{t.bookings.recentBookings}</h2>
+                <p className="text-xs text-ink-dim mt-0.5">{t.bookings.pickUpWhereYouLeftOff}</p>
               </div>
               <Link href="/dashboard" className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
-                View all <ChevronRight className="w-3.5 h-3.5" />
+                {t.bookings.viewAll} <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
@@ -487,12 +395,12 @@ export default function LandingPage() {
         {/* Header */}
         <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-4 lg:mb-8">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
-            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
-            <p className="text-sm text-ink-sub mt-1">Whatever you need, we have a pro for that.</p>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">{t.services.label}</p>
+            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">{t.services.title}</h2>
+            <p className="text-sm text-ink-sub mt-1">{t.services.subtitle}</p>
           </div>
           <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
-            View all <ArrowRight className="w-4 h-4" />
+            {t.services.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -515,7 +423,7 @@ export default function LandingPage() {
                   <p className="text-[11px] text-ink-sub mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
                 <div className="mt-2 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">Book now</span>
+                  <span className="text-[11px] font-semibold">{t.services.bookNow}</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
@@ -542,7 +450,7 @@ export default function LandingPage() {
                   <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">Explore</span>
+                  <span className="text-[11px] font-semibold">{t.services.explore}</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
@@ -555,10 +463,10 @@ export default function LandingPage() {
       <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">Three steps to getting it done</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              From posting a job to booking a professional — it takes less than 5 minutes.
+              {t.howItWorks.subtitle}
             </p>
           </div>
 
@@ -573,7 +481,7 @@ export default function LandingPage() {
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-1.5 block">
-                  Step {step}
+                  {t.howItWorks.step} {step}
                 </span>
                 <h3 className="text-sm font-bold text-ink mb-2 leading-snug">{title}</h3>
                 <p className="text-ink-sub text-xs leading-relaxed">{desc}</p>
@@ -599,7 +507,7 @@ export default function LandingPage() {
                   <Icon className="w-7 h-7" />
                 </div>
                 <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-2 block">
-                  Step {step}
+                  {t.howItWorks.step} {step}
                 </span>
                 <h3 className="text-lg font-bold text-ink mb-3">{title}</h3>
                 <p className="text-ink-sub text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
@@ -618,16 +526,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 4. Meet Our Pros ── */}
-      {(!prosLoading && topPros.length < 3) ? null : (
+      {/* ── 4. Top Rated Professionals ── */}
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink">Meet Our Pros</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">{t.meetPros.label}</p>
+            <h2 className="text-3xl font-bold tracking-tight text-ink">{t.meetPros.title}</h2>
           </div>
           <Link href="/browse" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-dark transition-colors">
-            View all pros <ArrowRight className="w-4 h-4" />
+            {t.meetPros.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -684,7 +591,7 @@ export default function LandingPage() {
                       <div className="flex items-center gap-1.5">
                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                         <span className="text-sm font-bold text-white">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                        <span className="text-xs text-white/70">· {pro.completedJobs ?? 0} jobs</span>
+                        <span className="text-xs text-white/70">· {pro.completedJobs ?? 0} {t.meetPros.jobs}</span>
                       </div>
                     </div>
                   </div>
@@ -698,7 +605,7 @@ export default function LandingPage() {
                       </div>
                     )}
                     <div className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white text-sm font-bold py-3 sm:py-3.5 rounded-input group-hover:bg-brand-dark transition-colors">
-                      View Profile <ChevronRight className="w-4 h-4" />
+                      {t.meetPros.viewProfile} <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
                 </Link>
@@ -737,11 +644,10 @@ export default function LandingPage() {
         {/* Mobile See All link */}
         <div className="px-4 sm:hidden mt-2">
           <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
-            View all pros <ArrowRight className="w-4 h-4" />
+            {t.meetPros.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
-      )}
 
       {/* ── 5. Why Aladdin ── */}
       <section className="bg-canvas py-16 sm:py-20">
@@ -770,24 +676,24 @@ export default function LandingPage() {
           <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
             {[
               {
-                icon: CheckCircle2,
-                title: '30-Day Guarantee',
-                desc: 'If something is not right after the job, we\u2019ll help make it right within 30 days.',
-              },
-              {
-                icon: FileText,
-                title: 'Transparent Pricing',
-                desc: 'Compare clear quotes before booking so you know the expected cost upfront.',
-              },
-              {
                 icon: BadgeCheck,
-                title: 'Verified Professionals',
-                desc: 'Every provider is ID-checked and reviewed before joining the platform.',
+                title: 'Verified Experts',
+                desc: 'Every pro is ID-verified and trade-certified before joining.',
               },
               {
-                icon: Shield,
-                title: 'Damage Cover up to \u20AC100',
-                desc: 'Eligible accidental damage during covered work can be reimbursed up to \u20AC100.',
+                icon: Star,
+                title: 'Real Reviews Only',
+                desc: 'Only customers with completed bookings can leave reviews.',
+              },
+              {
+                icon: Zap,
+                title: 'Fast Response',
+                desc: 'Most requests get a reply from a local pro within 1 hour.',
+              },
+              {
+                icon: MessageCircle,
+                title: 'Direct Messaging',
+                desc: 'Chat with pros before booking to align on scope and price.',
               },
             ].map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
@@ -819,8 +725,8 @@ export default function LandingPage() {
       <section className="py-12 sm:py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-16 px-4 sm:px-6 lg:px-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer Stories</p>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">What Customers Say</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">{t.testimonials.title}</h2>
             <p className="text-ink-sub text-sm sm:text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
           </div>
 
@@ -890,30 +796,82 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. Final CTA ── */}
-      <section className="py-14 sm:py-20 bg-white">
-        <div className="max-w-xl mx-auto px-5 sm:px-6">
-          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
-            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
-              Book a trusted pro in minutes
-            </h2>
-            <p className="text-ink-sub text-[14px] sm:text-[15px] leading-relaxed mb-6 max-w-sm mx-auto">
-              Compare verified professionals, get clear quotes, and book with confidence.
-            </p>
+      {/* ── 7. Join as a Professional ── */}
+      <section className="py-12 sm:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-14 items-center">
+            <div>
+              <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-5">
+                For professionals
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-5">
+                Are you a professional?<br />Get new customers in Vilnius.
+              </h2>
+              <p className="text-ink-sub text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
+                Join hundreds of local pros already growing their business on Aladdin.
+                Receive verified leads, manage bookings, and build your reputation.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/register"
+                  className={buttonVariants({ variant: 'primary', size: 'lg' })}
+                >
+                  Join as a Pro <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/browse"
+                  className={buttonVariants({ variant: 'outline', size: 'lg' })}
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
+
+            {/* Feature cards — off-white on canvas background */}
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { icon: Brush,        title: 'Your own profile',    desc: 'Showcase your skills, certifications, and reviews.' },
+                { icon: Zap,          title: 'Instant leads',       desc: 'Get notified the moment a relevant job is posted.' },
+                { icon: ShieldCheck,  title: 'Verified badge',      desc: 'Build trust with a verified professional badge.' },
+                { icon: CheckCircle2, title: 'Secure payments',     desc: 'Get paid on time, every time — no chasing invoices.' },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md transition-shadow">
+                  <div className="w-10 h-10 bg-white rounded-input flex items-center justify-center mb-4 shadow-sm text-brand border border-border-dim">
+                    <Icon className="w-5 h-5" strokeWidth={1.5} />
+                  </div>
+                  <p className="font-bold text-base text-ink mb-1.5">{title}</p>
+                  <p className="text-sm text-ink-sub leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. Final CTA ── */}
+      <section className="py-12 sm:py-24 bg-canvas">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">
+            {t.cta.title}
+          </h2>
+          <p className="text-ink-sub text-base sm:text-lg mb-8 sm:mb-10 leading-relaxed">
+            {t.cta.subtitle}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' })}
+              className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              <Search className="w-4 h-4" /> Find a Professional
+              <Search className="w-5 h-5" /> Find a Professional
             </Link>
-            <p className="mt-3.5 text-[13px] font-medium">
-              <span className="text-ink-dim">or </span>
-              <Link href="/requests/new" className="text-ink-sub hover:text-ink font-semibold transition-colors">
-                post a job &rarr;
-              </Link>
-            </p>
-            <p className="text-[11px] text-ink-dim mt-5 tracking-wide">Free to post · No commitment · Fast quotes</p>
+            <Link
+              href="/requests/new"
+              className={buttonVariants({ variant: 'outline', size: 'xl' })}
+            >
+              Post a Job <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
+          <p className="text-xs text-ink-dim mt-6">Free to post · No commitment · Instant quotes</p>
         </div>
       </section>
 
@@ -949,7 +907,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
+                <li><Link href="/register"            className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
                 <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
@@ -977,8 +935,11 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-ink-dim">© 2026 Aladdin Marketplace. All rights reserved.</p>
-            <p className="text-xs text-ink-dim">Vilnius, Lithuania · English / Lietuvių</p>
+            <p className="text-xs text-ink-dim">© 2026 {t.footer.copyright}</p>
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-ink-dim">Vilnius, Lithuania</p>
+              <LanguageSwitcher />
+            </div>
           </div>
 
         </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -118,6 +119,14 @@ export async function GET(request: Request) {
     return NextResponse.json(categories);
   }
 
+  if (section === 'verifications') {
+    const verifications = await prisma.providerVerification.findMany({
+      include: { provider: { include: { user: { select: { name: true, email: true, image: true } } } } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return NextResponse.json(verifications);
+  }
+
   if (section === 'tickets') {
     const tickets = await prisma.adminTicket.findMany({
       orderBy: { createdAt: 'desc' },
@@ -135,19 +144,43 @@ export async function PATCH(request: Request) {
   const body = await request.json();
   const { action } = body;
 
-  // Legacy / verify provider document
+  // Verify provider document
   if (!action || action === 'verify') {
     const { verificationId, status, tier } = body;
     const verification = await prisma.providerVerification.update({
       where: { id: verificationId },
       data: { status },
     });
+
+    const provider = await prisma.providerProfile.findUnique({
+      where: { id: verification.providerProfileId },
+      select: { userId: true },
+    });
+
     if (status === 'APPROVED') {
       await prisma.providerProfile.update({
         where: { id: verification.providerProfileId },
         data: { isVerified: true, verificationTier: tier || 'TIER1_ID_VERIFIED' },
       });
+      if (provider) {
+        createNotification({
+          userId: provider.userId,
+          type: 'status',
+          title: 'Verification approved!',
+          body: 'Your document has been approved. You now have a verified badge on your profile.',
+          href: '/provider/verification',
+        });
+      }
+    } else if (status === 'REJECTED' && provider) {
+      createNotification({
+        userId: provider.userId,
+        type: 'status',
+        title: 'Verification update',
+        body: 'A submitted document was not approved. Please resubmit with a clearer image.',
+        href: '/provider/verification',
+      });
     }
+
     return NextResponse.json(verification);
   }
 

@@ -8,7 +8,7 @@ import {
   Settings, Users, FileWarning, LogOut, CheckCircle2,
   XCircle, Loader2, TrendingUp, Eye, EyeOff, Plus,
   Clock, DollarSign, Package, Activity, RefreshCcw,
-  ChevronRight, MessageSquare, ArrowUpRight, X, Tag, Menu,
+  ChevronRight, MessageSquare, ArrowUpRight, X, Tag, Menu, FileText,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -983,10 +983,131 @@ function IncidentModule() {
   );
 }
 
+// ─── Verifications Module ─────────────────────────────────────────────────────
+
+function VerificationsModule() {
+  const [docs, setDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('PENDING');
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetch('/api/admin?section=verifications')
+      .then(r => r.json())
+      .then(d => { setDocs(Array.isArray(d) ? d : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleVerify = async (verificationId: string, status: string, tier?: string) => {
+    await fetch('/api/admin', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'verify', verificationId, status, tier }),
+    });
+    load();
+  };
+
+  if (loading) return <ModuleLoader />;
+
+  const pendingCount = docs.filter(d => d.status === 'PENDING').length;
+  const approvedCount = docs.filter(d => d.status === 'APPROVED').length;
+  const rejectedCount = docs.filter(d => d.status === 'REJECTED').length;
+  const filtered = filter === 'ALL' ? docs : docs.filter(d => d.status === filter);
+
+  const DOC_LABELS: Record<string, string> = { ID: 'Identity', CERTIFICATE: 'Certificate', INSURANCE: 'Insurance', SELFIE: 'Selfie' };
+
+  return (
+    <div>
+      <ModuleHeader
+        title="Verification Queue"
+        description="Review submitted provider documents and approve or reject them."
+        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
+      />
+
+      <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
+        <span><span className="font-bold text-ink tabular-nums">{docs.length}</span> total</span>
+        {pendingCount > 0 && <span className="text-caution font-semibold">{pendingCount} pending</span>}
+        <span><span className="font-bold text-ink tabular-nums">{approvedCount}</span> approved</span>
+        <span><span className="font-bold text-ink tabular-nums">{rejectedCount}</span> rejected</span>
+      </div>
+
+      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
+        <FilterChip label="Pending" active={filter === 'PENDING'} count={pendingCount} onClick={() => setFilter('PENDING')} />
+        <FilterChip label="All" active={filter === 'ALL'} count={docs.length} onClick={() => setFilter('ALL')} />
+        <FilterChip label="Approved" active={filter === 'APPROVED'} count={approvedCount} onClick={() => setFilter('APPROVED')} />
+        <FilterChip label="Rejected" active={filter === 'REJECTED'} count={rejectedCount} onClick={() => setFilter('REJECTED')} />
+      </div>
+
+      {filtered.length === 0 ? (
+        <AdminEmpty icon={ShieldCheck} title="No documents to review" description="Submitted verification documents will appear here." />
+      ) : (
+        <div className="space-y-2.5">
+          {filtered.map(doc => (
+            <div key={doc.id} className="bg-white rounded-xl border border-border-dim p-4">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
+                  {doc.provider?.user?.image ? (
+                    <img src={doc.provider.user.image} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
+                      {doc.provider?.user?.name?.charAt(0) ?? '?'}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-sm text-ink truncate">{doc.provider?.user?.name ?? 'Unknown'}</p>
+                  <p className="text-xs text-ink-dim">{doc.provider?.user?.email}</p>
+                </div>
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  doc.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700' :
+                  doc.status === 'APPROVED' ? 'bg-green-50 text-green-700' :
+                  'bg-red-50 text-red-700'
+                }`}>{doc.status}</span>
+              </div>
+
+              <div className="flex items-center gap-3 mb-3 p-3 bg-surface-alt rounded-lg">
+                <div className="w-16 h-12 rounded-lg overflow-hidden border border-border-dim shrink-0 bg-white">
+                  <img src={doc.docUrl} alt={doc.docType} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-ink">{DOC_LABELS[doc.docType] ?? doc.docType}</p>
+                  <p className="text-xs text-ink-dim">
+                    Submitted {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+
+              {doc.status === 'PENDING' && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleVerify(doc.id, 'APPROVED', 'TIER1_ID_VERIFIED')}
+                    className="flex-1 px-3 py-2 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-bold hover:bg-trust-surface/80 transition-colors"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={() => handleVerify(doc.id, 'REJECTED')}
+                    className="flex-1 px-3 py-2 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-bold hover:bg-danger-surface/80 transition-colors"
+                  >
+                    Reject
+                  </button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Sidebar Navigation ───────────────────────────────────────────────────────
 
 const MODULES = [
   { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+  { id: 'verifications', label: 'Verification Queue', icon: FileText },
   { id: 'providers', label: 'Provider Queue', icon: ShieldCheck },
   { id: 'bookings', label: 'Booking Console', icon: Briefcase },
   { id: 'disputes', label: 'Refund & Disputes', icon: DollarSign },
@@ -1023,8 +1144,9 @@ export default function AdminDashboard() {
 
   const renderModule = () => {
     switch (active) {
-      case 'analytics':  return <AnalyticsModule />;
-      case 'providers':  return <ProvidersModule />;
+      case 'analytics':      return <AnalyticsModule />;
+      case 'verifications': return <VerificationsModule />;
+      case 'providers':     return <ProvidersModule />;
       case 'bookings':   return <BookingsModule />;
       case 'disputes':   return <DisputesModule />;
       case 'reviews':    return <ReviewsModule />;
