@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import MobileNav from '@/components/MobileNav';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import {
   Home, Search, LayoutDashboard, Users, LogOut,
   Bell, Clock, Calendar, CheckCircle2, X,
@@ -156,6 +157,7 @@ export default function CustomerLayout({
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
+          <LanguageSwitcher className="hidden sm:flex" />
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}

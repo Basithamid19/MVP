@@ -16,6 +16,8 @@ import {
 import { buttonVariants } from '@/components/ui';
 import { avatarUrl } from '@/lib/avatar';
 import { AladdinIcon, BroomIcon, ElectricianIcon } from '@/components/icons';
+import { useTranslation } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 /* ─── Static data ─── */
 const categories = [
@@ -118,6 +120,7 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
 export default function LandingPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [searchQuery, setSearchQuery]   = useState('');
   const [isUrgent, setIsUrgent]         = useState(false);
   const [savedAddress, setSavedAddress] = useState('');
@@ -166,25 +169,26 @@ export default function LandingPage() {
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             {session ? (
               <>
                 <Link
                   href="/requests/new"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
                 >
-                  Book a Pro
+                  {t.nav.bookAPro}
                 </Link>
               </>
             ) : (
               <>
                 <Link href="/login" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-                  Log in
+                  {t.nav.logIn}
                 </Link>
                 <Link
                   href="/register"
                   className={buttonVariants({ variant: 'primary', size: 'sm' })}
                 >
-                  Sign up
+                  {t.nav.signUp}
                 </Link>
               </>
             )}
@@ -204,19 +208,18 @@ export default function LandingPage() {
               {/* Eyebrow */}
               <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                Trusted local pros in Vilnius
+                {t.hero.eyebrow}
               </span>
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight leading-[1.05] mb-6 text-ink">
-                Premium home services, <br className="hidden lg:block" />
-                <span className="text-brand">delivered with trust.</span>
+                {t.hero.headline} <br className="hidden lg:block" />
+                <span className="text-brand">{t.hero.headlineHighlight}</span>
               </h1>
 
               {/* Sub-headline */}
               <p className="text-base sm:text-lg text-ink-sub mb-10 leading-relaxed max-w-xl">
-                Find and book verified plumbers, electricians, and cleaners. 
-                Transparent pricing, real reviews, and exceptional quality.
+                {t.hero.subheadline}
               </p>
 
               {/* Unified Search Bar */}
@@ -228,7 +231,7 @@ export default function LandingPage() {
                       type="text"
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
-                      placeholder="What do you need?"
+                      placeholder={t.hero.searchPlaceholder}
                       className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
@@ -239,7 +242,7 @@ export default function LandingPage() {
                       type="text"
                       value={savedAddress}
                       onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
-                      placeholder="Your address"
+                      placeholder={t.hero.addressPlaceholder}
                       className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
@@ -247,14 +250,14 @@ export default function LandingPage() {
                     type="submit"
                     className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' sm:w-auto w-full rounded-input'}
                   >
-                    Search
+                    {t.hero.search}
                   </button>
                 </div>
               </form>
 
               {/* Quick category pills & Urgency */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
-                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">Popular:</span>
+                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">{t.hero.popular}</span>
                 {categories.slice(0, 3).map(cat => {
                   const Icon = cat.icon;
                   return (
@@ -277,7 +280,7 @@ export default function LandingPage() {
                   }`}
                 >
                   <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
-                  {isUrgent ? 'Urgent' : 'Mark urgent'}
+                  {isUrgent ? t.hero.urgent : t.hero.markUrgent}
                 </button>
               </div>
             </motion.div>
@@ -304,8 +307,8 @@ export default function LandingPage() {
                   <ShieldCheck className="w-6 h-6 text-trust" />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-ink">100% Verified</p>
-                  <p className="text-xs text-ink-dim">Professionals in Vilnius</p>
+                  <p className="text-sm font-bold text-ink">{t.hero.verified}</p>
+                  <p className="text-xs text-ink-dim">{t.hero.professionalsInVilnius}</p>
                 </div>
               </div>
 
@@ -327,7 +330,7 @@ export default function LandingPage() {
                     <Star className="w-3.5 h-3.5 fill-current" />
                     <span className="text-ink font-bold text-xs">4.9</span>
                   </div>
-                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">Top Rated</p>
+                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">{t.hero.topRated}</p>
                 </div>
               </div>
             </motion.div>
@@ -341,11 +344,11 @@ export default function LandingPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-bold text-ink tracking-tight">Recent Bookings</h2>
-                <p className="text-xs text-ink-dim mt-0.5">Pick up where you left off</p>
+                <h2 className="text-sm font-bold text-ink tracking-tight">{t.bookings.recentBookings}</h2>
+                <p className="text-xs text-ink-dim mt-0.5">{t.bookings.pickUpWhereYouLeftOff}</p>
               </div>
               <Link href="/dashboard" className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors flex items-center gap-1">
-                View all <ChevronRight className="w-3.5 h-3.5" />
+                {t.bookings.viewAll} <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
             <div className="flex flex-col gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
@@ -392,12 +395,12 @@ export default function LandingPage() {
         {/* Header */}
         <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-4 lg:mb-8">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Services</p>
-            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">Popular Services</h2>
-            <p className="text-sm text-ink-sub mt-1">Whatever you need, we have a pro for that.</p>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">{t.services.label}</p>
+            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">{t.services.title}</h2>
+            <p className="text-sm text-ink-sub mt-1">{t.services.subtitle}</p>
           </div>
           <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
-            View all <ArrowRight className="w-4 h-4" />
+            {t.services.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -420,7 +423,7 @@ export default function LandingPage() {
                   <p className="text-[11px] text-ink-sub mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
                 <div className="mt-2 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">Book now</span>
+                  <span className="text-[11px] font-semibold">{t.services.bookNow}</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
@@ -447,7 +450,7 @@ export default function LandingPage() {
                   <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
                 <div className="mt-3 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">Explore</span>
+                  <span className="text-[11px] font-semibold">{t.services.explore}</span>
                   <ChevronRight className="w-3 h-3" />
                 </div>
               </button>
@@ -460,10 +463,10 @@ export default function LandingPage() {
       <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">Three steps to getting it done</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              From posting a job to booking a professional — it takes less than 5 minutes.
+              {t.howItWorks.subtitle}
             </p>
           </div>
 
@@ -478,7 +481,7 @@ export default function LandingPage() {
                   <Icon className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-1.5 block">
-                  Step {step}
+                  {t.howItWorks.step} {step}
                 </span>
                 <h3 className="text-sm font-bold text-ink mb-2 leading-snug">{title}</h3>
                 <p className="text-ink-sub text-xs leading-relaxed">{desc}</p>
@@ -504,7 +507,7 @@ export default function LandingPage() {
                   <Icon className="w-7 h-7" />
                 </div>
                 <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-2 block">
-                  Step {step}
+                  {t.howItWorks.step} {step}
                 </span>
                 <h3 className="text-lg font-bold text-ink mb-3">{title}</h3>
                 <p className="text-ink-sub text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
@@ -527,11 +530,11 @@ export default function LandingPage() {
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">Our Pros</p>
-            <h2 className="text-3xl font-bold tracking-tight text-ink">Top Rated Professionals</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">{t.meetPros.label}</p>
+            <h2 className="text-3xl font-bold tracking-tight text-ink">{t.meetPros.title}</h2>
           </div>
           <Link href="/browse" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-dark transition-colors">
-            See all <ArrowRight className="w-4 h-4" />
+            {t.meetPros.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
 
@@ -588,7 +591,7 @@ export default function LandingPage() {
                       <div className="flex items-center gap-1.5">
                         <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                         <span className="text-sm font-bold text-white">{pro.ratingAvg?.toFixed(1) ?? '—'}</span>
-                        <span className="text-xs text-white/70">· {pro.completedJobs ?? 0} jobs</span>
+                        <span className="text-xs text-white/70">· {pro.completedJobs ?? 0} {t.meetPros.jobs}</span>
                       </div>
                     </div>
                   </div>
@@ -602,7 +605,7 @@ export default function LandingPage() {
                       </div>
                     )}
                     <div className="mt-auto w-full flex items-center justify-center gap-2 bg-brand text-white text-sm font-bold py-3 sm:py-3.5 rounded-input group-hover:bg-brand-dark transition-colors">
-                      View Profile <ChevronRight className="w-4 h-4" />
+                      {t.meetPros.viewProfile} <ChevronRight className="w-4 h-4" />
                     </div>
                   </div>
                 </Link>
@@ -641,7 +644,7 @@ export default function LandingPage() {
         {/* Mobile See All link */}
         <div className="px-4 sm:hidden mt-2">
           <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
-            See all pros <ArrowRight className="w-4 h-4" />
+            {t.meetPros.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
@@ -722,8 +725,8 @@ export default function LandingPage() {
       <section className="py-12 sm:py-24 bg-white overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-8 sm:mb-16 px-4 sm:px-6 lg:px-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Customer Stories</p>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">What Customers Say</h2>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">{t.testimonials.title}</h2>
             <p className="text-ink-sub text-sm sm:text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
           </div>
 
@@ -849,10 +852,10 @@ export default function LandingPage() {
       <section className="py-12 sm:py-24 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">
-            Ready to get your job done?
+            {t.cta.title}
           </h2>
           <p className="text-ink-sub text-base sm:text-lg mb-8 sm:mb-10 leading-relaxed">
-            Find a trusted professional in minutes or post your job and receive quotes today.
+            {t.cta.subtitle}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
@@ -932,8 +935,11 @@ export default function LandingPage() {
 
           {/* Bottom bar */}
           <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-xs text-ink-dim">© 2026 Aladdin Marketplace. All rights reserved.</p>
-            <p className="text-xs text-ink-dim">Vilnius, Lithuania · English / Lietuvių</p>
+            <p className="text-xs text-ink-dim">© 2026 {t.footer.copyright}</p>
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-ink-dim">Vilnius, Lithuania</p>
+              <LanguageSwitcher />
+            </div>
           </div>
 
         </div>

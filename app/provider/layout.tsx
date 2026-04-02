@@ -10,6 +10,7 @@ import {
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
   MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp, UserCircle2,
 } from 'lucide-react';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const NAV_GROUPS = [
   {
@@ -199,6 +200,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
+          <LanguageSwitcher className="hidden sm:flex" />
           {/* Notifications bell + dropdown */}
           <div className="relative" ref={panelRef}>
             <button

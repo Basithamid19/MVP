@@ -6,6 +6,8 @@ import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowRight } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -13,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const t = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +57,13 @@ export default function LoginPage() {
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
-          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">Welcome back.</h1>
-          <p className="text-ink-sub mb-10">Log in to manage your requests and bookings.</p>
+          <div className="flex items-center justify-between mb-12">
+            <div />
+            <LanguageSwitcher />
+          </div>
+
+          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.auth.loginTitle}.</h1>
+          <p className="text-ink-sub mb-10">{t.auth.loginSubtitle}.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
@@ -65,7 +73,7 @@ export default function LoginPage() {
             )}
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Email Address</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.email}</label>
               <input 
                 type="email" 
                 required
@@ -77,7 +85,7 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Password</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.password}</label>
               <input 
                 type="password" 
                 required
@@ -93,14 +101,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Log In'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.auth.loginButton}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border-dim text-center">
             <p className="text-sm text-ink-sub">
-              Don&apos;t have an account? <Link href="/register" className="text-brand font-bold hover:underline">Sign up for free</Link>
+              {t.auth.noAccount} <Link href="/register" className="text-brand font-bold hover:underline">{t.auth.signUpLink}</Link>
             </p>
           </div>
         </div>

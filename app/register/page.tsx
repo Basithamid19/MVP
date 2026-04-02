@@ -5,6 +5,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowRight, User, Briefcase } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function RegisterPage() {
   const [role, setRole] = useState<'CUSTOMER' | 'PROVIDER'>('CUSTOMER');
@@ -16,6 +18,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const t = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,27 +56,32 @@ export default function RegisterPage() {
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
-          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">Create account.</h1>
-          <p className="text-ink-sub mb-10">Join the Aladdin community today.</p>
+          <div className="flex items-center justify-between mb-12">
+            <div />
+            <LanguageSwitcher />
+          </div>
+
+          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.auth.registerTitle}.</h1>
+          <p className="text-ink-sub mb-10">{t.auth.registerSubtitle}.</p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
-            <button 
+            <button
               onClick={() => setRole('CUSTOMER')}
               className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
                 role === 'CUSTOMER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
               }`}
             >
               <User className="w-6 h-6" />
-              <span className="text-xs font-bold uppercase tracking-widest">Customer</span>
+              <span className="text-xs font-bold uppercase tracking-widest">{t.auth.customerRole}</span>
             </button>
-            <button 
+            <button
               onClick={() => setRole('PROVIDER')}
               className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
                 role === 'PROVIDER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
               }`}
             >
               <Briefcase className="w-6 h-6" />
-              <span className="text-xs font-bold uppercase tracking-widest">Provider</span>
+              <span className="text-xs font-bold uppercase tracking-widest">{t.auth.providerRole}</span>
             </button>
           </div>
 
@@ -85,7 +93,7 @@ export default function RegisterPage() {
             )}
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Full Name</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.name}</label>
               <input 
                 type="text" 
                 required
@@ -97,7 +105,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Email Address</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.email}</label>
               <input 
                 type="email" 
                 required
@@ -109,7 +117,7 @@ export default function RegisterPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">Password</label>
+              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.password}</label>
               <input 
                 type="password" 
                 required
@@ -125,14 +133,14 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Create Account'}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.auth.registerButton}
               {!loading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border-dim text-center">
             <p className="text-sm text-ink-sub">
-              Already have an account? <Link href="/login" className="text-brand font-bold hover:underline">Log in</Link>
+              {t.auth.haveAccount} <Link href="/login" className="text-brand font-bold hover:underline">{t.auth.loginLink}</Link>
             </p>
           </div>
         </div>
