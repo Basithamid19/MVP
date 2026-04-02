@@ -7,6 +7,7 @@ import Link from 'next/link';
 import {
   Loader2, ArrowLeft, MessageCircle, Send, User,
 } from 'lucide-react';
+import MobileNav from '@/components/MobileNav';
 
 function avatarUrl(name?: string | null, size = 40) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name ?? '?')}&size=${size}&background=e8f5e9&color=1B7A5A&bold=true`;
@@ -307,6 +308,8 @@ function MessagesContent() {
           </div>
         </div>
       )}
+
+      <MobileNav />
     </div>
   );
 }

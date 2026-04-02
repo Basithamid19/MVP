@@ -24,6 +24,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/provider/leads',    label: 'Leads',    icon: Inbox },
       { href: '/provider/jobs',     label: 'Jobs',     icon: Briefcase },
+      { href: '/messages',          label: 'Messages', icon: MessageSquare },
     ],
   },
   {
