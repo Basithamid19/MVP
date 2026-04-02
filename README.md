@@ -1,4 +1,4 @@
-# Dispatch Marketplace MVP
+# Aladdin Marketplace MVP
 
 A production-ready two-sided services marketplace for local professionals in Vilnius, Lithuania.
 

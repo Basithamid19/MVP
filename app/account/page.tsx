@@ -310,10 +310,10 @@ export default function AccountPage() {
 
         {/* Support */}
         <Section title="Support">
-          <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:support@dispatch.com" />
+          <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:aladdin@gmail.com" />
           <SettingsRow icon={HelpCircle}    label="Help Centre"      sub="FAQs and how-to guides"     href="/account" />
           <SettingsRow icon={LifeBuoy}      label="Dispute a booking" sub="Report an issue with a job" href="/bookings" />
-          <SettingsRow icon={Mail}          label="Email us"          sub="support@dispatch.com"       href="mailto:support@dispatch.com" muted />
+          <SettingsRow icon={Mail}          label="Email us"          sub="aladdin@gmail.com"          href="mailto:aladdin@gmail.com" muted />
         </Section>
 
         {/* Quick action — visually demoted */}
