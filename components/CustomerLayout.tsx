@@ -13,20 +13,23 @@ import {
 
 interface Notification {
   id: string;
-  type: 'quote' | 'booking' | 'status';
+  type: string;
   title: string;
   body: string;
-  time: string;
   href: string;
+  isRead: boolean;
+  createdAt: string;
 }
 
 const NOTIF_ICON: Record<string, React.ElementType> = {
-  quote: Users, booking: Calendar, status: CheckCircle2,
+  quote: Users, booking: Calendar, status: CheckCircle2, payment: CheckCircle2, review: CheckCircle2,
 };
 const NOTIF_COLOR: Record<string, string> = {
   quote:   'bg-trust-surface text-trust',
   booking: 'bg-trust-surface text-trust',
   status:  'bg-caution-surface text-caution',
+  payment: 'bg-green-50 text-green-600',
+  review:  'bg-blue-50 text-blue-600',
 };
 
 function timeAgo(date: string) {
@@ -48,27 +51,35 @@ const NAV_ITEMS = [
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
-  notifications?: Notification[];
   maxWidth?: string;
 }
 
 export default function CustomerLayout({
   children,
-  notifications: externalNotifications,
   maxWidth = 'max-w-5xl',
 }: CustomerLayoutProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [showNotifs, setShowNotifs] = useState(false);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
 
+  // Fetch notifications from API
   useEffect(() => {
-    if (externalNotifications) {
-      setNotifications(externalNotifications);
-    }
-  }, [externalNotifications]);
+    if (!session) return;
+    const fetchNotifs = async () => {
+      try {
+        const res = await fetch('/api/notifications');
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(data);
+        }
+      } catch {}
+    };
+    fetchNotifs();
+    const interval = setInterval(fetchNotifs, 15000);
+    return () => clearInterval(interval);
+  }, [session]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -78,8 +89,17 @@ export default function CustomerLayout({
     return () => document.removeEventListener('mousedown', handler);
   }, [showNotifs]);
 
-  const visibleNotifs = notifications.filter(n => !dismissed.has(n.id));
-  const unreadCount = visibleNotifs.length;
+  const visibleNotifs = notifications;
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const markRead = async (ids: string[]) => {
+    setNotifications(prev => prev.map(n => ids.includes(n.id) ? { ...n, isRead: true } : n));
+    try { await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) }); } catch {}
+  };
+  const markAllRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    try { await fetch('/api/notifications', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ markAllRead: true }) }); } catch {}
+  };
 
   return (
     <div className="min-h-screen w-full max-w-full bg-canvas flex font-sans">
@@ -153,8 +173,8 @@ export default function CustomerLayout({
               <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden z-50">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
                   <h3 className="font-semibold text-base text-ink">Notifications</h3>
-                  {visibleNotifs.length > 0 && (
-                    <button onClick={() => setDismissed(new Set(notifications.map(n => n.id)))} className="text-xs font-medium text-ink-dim hover:text-brand transition-colors">
+                  {unreadCount > 0 && (
+                    <button onClick={markAllRead} className="text-xs font-medium text-ink-dim hover:text-brand transition-colors">
                       Mark all read
                     </button>
                   )}
@@ -168,34 +188,36 @@ export default function CustomerLayout({
                       <p className="text-sm font-medium text-ink-sub">You&apos;re all caught up</p>
                     </div>
                   ) : visibleNotifs.slice(0, 10).map(n => {
-                    const Icon = NOTIF_ICON[n.type];
-                    const clr = NOTIF_COLOR[n.type];
+                    const Icon = NOTIF_ICON[n.type] ?? Bell;
+                    const clr = NOTIF_COLOR[n.type] ?? 'bg-surface-alt text-ink-sub';
                     return (
                       <Link
                         key={n.id} href={n.href}
-                        onClick={() => { setDismissed(prev => new Set(prev).add(n.id)); setShowNotifs(false); }}
-                        className="flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0"
+                        onClick={() => { if (!n.isRead) markRead([n.id]); setShowNotifs(false); }}
+                        className={`flex items-start gap-3 px-5 py-4 hover:bg-surface-alt transition-colors border-b border-border-dim last:border-0 ${!n.isRead ? 'bg-brand-muted/30' : ''}`}
                       >
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${clr}`}><Icon className="w-4 h-4" /></div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-ink">{n.title}</p>
+                          <p className={`text-sm ${!n.isRead ? 'font-semibold' : 'font-medium'} text-ink`}>{n.title}</p>
                           <p className="text-xs text-ink-sub truncate mt-0.5">{n.body}</p>
-                          <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.time)}</p>
+                          <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.createdAt)}</p>
                         </div>
-                        <button
-                          onClick={e => { e.preventDefault(); e.stopPropagation(); setDismissed(prev => new Set(prev).add(n.id)); }}
-                          className="shrink-0 p-1 text-ink-dim hover:text-ink-sub transition-colors"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
+                        {!n.isRead && (
+                          <button
+                            onClick={e => { e.preventDefault(); e.stopPropagation(); markRead([n.id]); }}
+                            className="shrink-0 p-1 text-ink-dim hover:text-ink-sub transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </Link>
                     );
                   })}
                 </div>
-                {visibleNotifs.length > 0 && (
+                {unreadCount > 0 && (
                   <div className="px-5 py-3 border-t border-border-dim bg-surface-alt text-center">
-                    <button onClick={() => { setDismissed(new Set(notifications.map(n => n.id))); setShowNotifs(false); }} className="text-xs font-medium text-ink-sub hover:text-ink transition-colors">
-                      Dismiss all
+                    <button onClick={() => { markAllRead(); setShowNotifs(false); }} className="text-xs font-medium text-ink-sub hover:text-ink transition-colors">
+                      Mark all as read
                     </button>
                   </div>
                 )}

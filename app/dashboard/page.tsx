@@ -36,15 +36,6 @@ const STATUS_STAGE: Record<string, { label: string; dot: string; step: number }>
   COMPLETED:{ label: 'Completed',          dot: 'bg-border',    step: 3 },
 };
 
-interface Notification {
-  id: string;
-  type: 'quote' | 'booking' | 'status';
-  title: string;
-  body: string;
-  time: string;
-  href: string;
-}
-
 /* ─── Helpers ─────────────────────────────────────────────── */
 
 function capitalize(s?: string | null) {
@@ -248,7 +239,6 @@ export default function DashboardPage() {
   const [bookings, setBookings]       = useState<any[]>([]);
   const [topPros, setTopPros]         = useState<any[]>([]);
   const [loading, setLoading]         = useState(true);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [mobileTab, setMobileTab]     = useState<'overview' | 'requests'>('overview');
   const [reqFilter, setReqFilter]     = useState<'active' | 'booked' | 'all'>('all');
 
@@ -271,27 +261,6 @@ export default function DashboardPage() {
       setBookings(books);
       setTopPros(Array.isArray(prosData) ? prosData.slice(0, 4) : []);
 
-      const notifs: Notification[] = [];
-      for (const req of reqs) {
-        const qc = req.quotes?.length ?? 0;
-        if (qc > 0) notifs.push({
-          id: `q-${req.id}`, type: 'quote',
-          title: `${qc} quote${qc > 1 ? 's' : ''} received`,
-          body: `${req.category?.name ?? 'Service'}: ${req.description?.slice(0, 50)}${(req.description?.length ?? 0) > 50 ? '…' : ''}`,
-          time: req.quotes[qc - 1]?.createdAt ?? req.createdAt,
-          href: `/requests/${req.id}`,
-        });
-      }
-      for (const b of books) {
-        if (b.status === 'SCHEDULED')
-          notifs.push({ id: `b-${b.id}`, type: 'booking', title: 'Upcoming booking', body: `${new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · €${b.totalAmount?.toFixed(0)}`, time: b.createdAt, href: `/bookings/${b.id}` });
-        else if (b.status === 'IN_PROGRESS')
-          notifs.push({ id: `p-${b.id}`, type: 'status', title: 'Job in progress', body: 'Being worked on right now', time: b.createdAt, href: `/bookings/${b.id}` });
-        else if (b.status === 'COMPLETED')
-          notifs.push({ id: `d-${b.id}`, type: 'status', title: 'Job completed', body: `€${b.totalAmount?.toFixed(0)} · leave a review`, time: b.createdAt, href: `/bookings/${b.id}` });
-      }
-      notifs.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
-      setNotifications(notifs);
     }).catch(console.error).finally(() => setLoading(false));
   }, [status, session, router]);
 
@@ -334,7 +303,7 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <CustomerLayout notifications={notifications}>
+    <CustomerLayout>
 
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">

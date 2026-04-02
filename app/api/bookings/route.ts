@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,10 +68,62 @@ export async function PATCH(request: Request) {
     data: { status },
   });
 
+  // Fetch related data for notifications
+  const fullBooking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      customer: { include: { user: { select: { id: true, name: true } } } },
+      provider: { include: { user: { select: { id: true, name: true } } } },
+    },
+  });
+
   if (status === 'COMPLETED') {
     await prisma.providerProfile.update({
       where: { id: booking.providerId },
       data: { completedJobs: { increment: 1 } },
+    });
+
+    // Auto-create payment record as PROCESSING
+    const existingPayment = await prisma.payment.findUnique({ where: { bookingId } });
+    if (!existingPayment) {
+      await prisma.payment.create({
+        data: {
+          bookingId,
+          amount: booking.totalAmount,
+          status: 'PROCESSING',
+        },
+      });
+    }
+
+    // Notify customer: job completed
+    if (fullBooking?.customer?.user) {
+      createNotification({
+        userId: fullBooking.customer.user.id,
+        type: 'status',
+        title: 'Job completed',
+        body: `Your job with ${fullBooking.provider?.user?.name ?? 'your pro'} has been marked complete. Payment is processing.`,
+        href: `/bookings/${bookingId}`,
+      });
+    }
+    // Notify provider: payment processing
+    if (fullBooking?.provider?.user) {
+      createNotification({
+        userId: fullBooking.provider.user.id,
+        type: 'payment',
+        title: 'Payment processing',
+        body: `€${booking.totalAmount.toFixed(2)} is being processed for your completed job.`,
+        href: `/provider/earnings`,
+      });
+    }
+  }
+
+  if (status === 'IN_PROGRESS' && fullBooking?.customer?.user) {
+    createNotification({
+      userId: fullBooking.customer.user.id,
+      type: 'booking',
+      title: 'Job started',
+      body: `${fullBooking.provider?.user?.name ?? 'Your pro'} has started working on your job.`,
+      href: `/bookings/${bookingId}`,
     });
   }
 
