@@ -890,58 +890,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. Join as a Professional ── */}
+      {/* ── 7. Final CTA ── */}
       <section className="py-14 sm:py-20 bg-white">
-        <div className="max-w-xl mx-auto px-5 sm:px-6">
-          {/* Eyebrow */}
-          <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-5">
-            For professionals
-          </p>
-
-          {/* Headline */}
-          <h2 className="text-[28px] sm:text-[36px] font-bold tracking-tight text-ink leading-[1.1] mb-3">
-            Get more local jobs<br className="sm:hidden" /> in Vilnius
-          </h2>
-
-          {/* Supporting copy */}
-          <p className="text-ink-sub text-[15px] sm:text-base leading-relaxed mb-8 max-w-sm">
-            Receive verified leads, build trust with customers, and get paid on time.
-          </p>
-
-          {/* Benefit pills — single row on desktop, wrapped on mobile */}
-          <div className="flex flex-wrap gap-2.5 mb-8">
-            {[
-              { icon: CheckCircle2, label: 'Verified local leads' },
-              { icon: BadgeCheck,   label: 'Trust-building badge' },
-              { icon: Zap,          label: 'Fast weekly payouts' },
-            ].map(({ icon: PillIcon, label }) => (
-              <div key={label} className="inline-flex items-center gap-2 border border-border-dim bg-canvas rounded-full px-4 py-2">
-                <PillIcon className="w-3.5 h-3.5 text-brand shrink-0" strokeWidth={2} />
-                <span className="text-[13px] font-medium text-ink">{label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* CTAs */}
-          <div className="flex items-center gap-5">
-            <Link
-              href="/register"
-              className={buttonVariants({ variant: 'primary', size: 'lg' })}
-            >
-              Join as a Pro <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/provider/onboarding"
-              className="text-[13px] font-semibold text-ink-sub hover:text-ink transition-colors"
-            >
-              How it works <span className="ml-0.5">&rarr;</span>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8. Final CTA ── */}
-      <section className="pb-14 sm:pb-20 pt-2 sm:pt-4 bg-white">
         <div className="max-w-xl mx-auto px-5 sm:px-6">
           <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
             <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
@@ -999,7 +949,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                <li><Link href="/register"            className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
+                <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
                 <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
