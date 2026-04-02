@@ -219,8 +219,6 @@ export default function AccountPage() {
                     {completedBookings.map(b => {
                       const invoiceNo = `VP-${b.id.slice(0, 8).toUpperCase()}`;
                       const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                      const serviceFee = (b.totalAmount * 0.88).toFixed(2);
-                      const platformFee = (b.totalAmount * 0.12).toFixed(2);
                       return (
                         <div key={b.id} className="bg-white rounded-xl p-3.5 shadow-sm border border-border-dim">
                           {/* Top: service + amount */}
@@ -234,18 +232,18 @@ export default function AccountPage() {
                               <span className="text-[9px] font-bold uppercase bg-trust-surface text-trust px-1.5 py-0.5 rounded-full">Paid</span>
                             </div>
                           </div>
-                          {/* Fee breakdown — compact */}
+                          {/* Details — clean and simple */}
                           <div className="bg-surface-alt rounded-lg p-2.5 text-[11px] space-y-1 mb-2.5">
                             <div className="flex justify-between text-ink-sub"><span>Provider</span><span className="font-medium text-ink truncate ml-2">{b.provider?.user?.name}</span></div>
-                            <div className="flex justify-between text-ink-sub"><span>Service fee</span><span>€{serviceFee}</span></div>
-                            <div className="flex justify-between text-ink-sub"><span>Platform fee</span><span>€{platformFee}</span></div>
+                            <div className="flex justify-between text-ink-sub"><span>Service</span><span>€{b.totalAmount?.toFixed(2)}</span></div>
+                            <div className="flex justify-between font-medium text-ink pt-1 border-t border-border-dim"><span>Total paid</span><span>€{b.totalAmount?.toFixed(2)}</span></div>
                           </div>
                           {/* Actions */}
                           <div className="flex gap-2">
                             <Link href={`/bookings/${b.id}`} className="flex-1 text-center py-2 border border-border-dim rounded-lg text-[11px] font-semibold text-ink hover:bg-surface-alt transition-colors">View booking</Link>
                             <button
                               onClick={() => {
-                                const rows = [['Invoice', invoiceNo], ['Date', date], ['Service', b.quote?.request?.category?.name ?? 'Service'], ['Pro', b.provider?.user?.name ?? ''], ['Service fee', `€${serviceFee}`], ['Platform fee', `€${platformFee}`], ['Total', `€${b.totalAmount?.toFixed(2)}`]];
+                                const rows = [['Invoice', invoiceNo], ['Date', date], ['Service', b.quote?.request?.category?.name ?? 'Service'], ['Pro', b.provider?.user?.name ?? ''], ['Total', `€${b.totalAmount?.toFixed(2)}`]];
                                 const csv = rows.map(r => r.join(',')).join('\n');
                                 const blob = new Blob([csv], { type: 'text/csv' });
                                 const url = URL.createObjectURL(blob);

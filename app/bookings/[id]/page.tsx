@@ -319,19 +319,15 @@ export default function BookingPage() {
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Payment</p>
           <div className="space-y-2 text-sm mb-4">
-            {quotedPrice && (
+            {quotedPrice && quotedPrice !== booking.totalAmount && (
               <div className="flex justify-between text-ink-dim">
-                <span>Quoted price</span>
-                <span>€{quotedPrice.toFixed(2)}</span>
+                <span>Original quote</span>
+                <span className="line-through">€{quotedPrice.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-ink-sub">Service fee</span>
-              <span className="font-semibold">€{(booking.totalAmount * 0.88).toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-ink-sub">Platform fee (12%)</span>
-              <span className="font-semibold">€{(booking.totalAmount * 0.12).toFixed(2)}</span>
+              <span className="text-ink-sub">Service</span>
+              <span className="font-semibold">€{booking.totalAmount?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-border-dim">
               <span className="font-bold">Total</span>
