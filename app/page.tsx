@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
 import { useRouter } from 'next/navigation';
@@ -9,8 +9,8 @@ import { useSession } from 'next-auth/react';
 import {
   Search, MapPin, Star, ShieldCheck,
   ArrowRight, AlertCircle, Clock,
-  ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
-  BadgeCheck, MessageCircle, Brush,
+  ChevronLeft, ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
+  BadgeCheck, MessageCircle, Brush, Shield,
   Wrench, Hammer, Truck, Package, Zap
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
@@ -109,6 +109,123 @@ const SERVICE_CARD_DESCS = [
   'Packing & transport',
   'Interior & exterior',
 ];
+
+/* ─── Trust Carousel ─── */
+
+const trustItems = [
+  { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
+  { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
+  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
+  { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
+];
+
+function TrustCarousel() {
+  const [active, setActive] = useState(0);
+  const total = trustItems.length;
+
+  const prev = useCallback(() => setActive(i => (i - 1 + total) % total), [total]);
+  const next = useCallback(() => setActive(i => (i + 1) % total), [total]);
+
+  // Auto-advance — reset timer on manual interaction
+  useEffect(() => {
+    const id = setInterval(next, 5000);
+    return () => clearInterval(id);
+  }, [next, active]);
+
+  // Touch swipe support
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const diff = touchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) diff > 0 ? next() : prev();
+    setTouchStart(null);
+  };
+
+  const item = trustItems[active];
+  const Icon = item.icon;
+
+  return (
+    <div className="mt-3 mb-0 pt-1">
+      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-6">Why customers trust Aladdin</p>
+
+      {/* Mobile: single-card carousel */}
+      <div className="md:hidden">
+        <div className="relative flex items-center mt-4">
+          <button
+            onClick={prev}
+            className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+            aria-label="Previous"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <div
+            className="w-full overflow-hidden mx-7"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+          >
+            <motion.div
+              key={active}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              className="bg-white border border-border-dim/60 rounded-2xl p-4 flex items-center gap-4 shadow-card min-h-[64px]"
+            >
+              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                <Icon className="w-[18px] h-[18px] text-brand" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
+                <p className="text-xs text-ink-sub leading-snug mt-0.5">{item.desc}</p>
+              </div>
+            </motion.div>
+          </div>
+
+          <button
+            onClick={next}
+            className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+            aria-label="Next"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Dots */}
+        <div className="flex items-center justify-center gap-1.5 mt-3">
+          {trustItems.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setActive(i)}
+              className={`rounded-full transition-all duration-300 ${
+                i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
+              }`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop: 4-column grid */}
+      <div className="hidden md:grid md:grid-cols-4 gap-3">
+        {trustItems.map((t) => {
+          const TIcon = t.icon;
+          return (
+            <div key={t.title} className="bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+              <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+                <TIcon className="w-3.5 h-3.5 text-brand" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
+                <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
   SCHEDULED:   'bg-info-surface text-info',
@@ -283,6 +400,10 @@ export default function LandingPage() {
                   {isUrgent ? t.hero.urgent : t.hero.markUrgent}
                 </button>
               </div>
+
+              {/* Trust Carousel */}
+              <TrustCarousel />
+
             </motion.div>
 
             {/* Hero right — Art Directed Image */}
@@ -796,82 +917,30 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. Join as a Professional ── */}
-      <section className="py-12 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-14 items-center">
-            <div>
-              <span className="inline-flex items-center px-3 py-1.5 bg-brand-muted text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-5">
-                For professionals
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-5">
-                Are you a professional?<br />Get new customers in Vilnius.
-              </h2>
-              <p className="text-ink-sub text-base sm:text-lg leading-relaxed mb-8 max-w-lg">
-                Join hundreds of local pros already growing their business on Aladdin.
-                Receive verified leads, manage bookings, and build your reputation.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/register"
-                  className={buttonVariants({ variant: 'primary', size: 'lg' })}
-                >
-                  Join as a Pro <ArrowRight className="w-4 h-4" />
-                </Link>
-                <Link
-                  href="/browse"
-                  className={buttonVariants({ variant: 'outline', size: 'lg' })}
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
-
-            {/* Feature cards — off-white on canvas background */}
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: Brush,        title: 'Your own profile',    desc: 'Showcase your skills, certifications, and reviews.' },
-                { icon: Zap,          title: 'Instant leads',       desc: 'Get notified the moment a relevant job is posted.' },
-                { icon: ShieldCheck,  title: 'Verified badge',      desc: 'Build trust with a verified professional badge.' },
-                { icon: CheckCircle2, title: 'Secure payments',     desc: 'Get paid on time, every time — no chasing invoices.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="bg-surface-alt rounded-panel p-6 border border-border-dim shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-10 h-10 bg-white rounded-input flex items-center justify-center mb-4 shadow-sm text-brand border border-border-dim">
-                    <Icon className="w-5 h-5" strokeWidth={1.5} />
-                  </div>
-                  <p className="font-bold text-base text-ink mb-1.5">{title}</p>
-                  <p className="text-sm text-ink-sub leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 8. Final CTA ── */}
-      <section className="py-12 sm:py-24 bg-canvas">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">
-            {t.cta.title}
-          </h2>
-          <p className="text-ink-sub text-base sm:text-lg mb-8 sm:mb-10 leading-relaxed">
-            {t.cta.subtitle}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+      {/* ── 7. Final CTA ── */}
+      <section className="py-14 sm:py-20 bg-white">
+        <div className="max-w-xl mx-auto px-5 sm:px-6">
+          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
+            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
+              {t.cta.title}
+            </h2>
+            <p className="text-ink-sub text-[14px] sm:text-[15px] leading-relaxed mb-6 max-w-sm mx-auto">
+              {t.cta.subtitle}
+            </p>
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'xl' })}
+              className={buttonVariants({ variant: 'primary', size: 'lg' })}
             >
-              <Search className="w-5 h-5" /> Find a Professional
+              <Search className="w-4 h-4" /> Find a Professional
             </Link>
-            <Link
-              href="/requests/new"
-              className={buttonVariants({ variant: 'outline', size: 'xl' })}
-            >
-              Post a Job <ArrowRight className="w-5 h-5" />
-            </Link>
+            <p className="mt-3.5 text-[13px] font-medium">
+              <span className="text-ink-dim">or </span>
+              <Link href="/requests/new" className="text-ink-sub hover:text-ink font-semibold transition-colors">
+                post a job &rarr;
+              </Link>
+            </p>
+            <p className="text-[11px] text-ink-dim mt-5 tracking-wide">Free to post · No commitment · Fast quotes</p>
           </div>
-          <p className="text-xs text-ink-dim mt-6">Free to post · No commitment · Instant quotes</p>
         </div>
       </section>
 
@@ -907,7 +976,7 @@ export default function LandingPage() {
             <div>
               <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
               <ul className="space-y-2.5 sm:space-y-3 text-sm">
-                <li><Link href="/register"            className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
+                <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
                 <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
