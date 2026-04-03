@@ -8,9 +8,10 @@ import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
-  MessageSquare, X, Clock, Users, CheckCircle2, TrendingUp, UserCircle2,
+  MessageSquare, X, Clock, Users, CheckCircle2,
 } from 'lucide-react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import MobileNav from '@/components/MobileNav';
 
 const NAV_GROUPS = [
   {
@@ -296,29 +297,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         </main>
 
         {/* ══ Mobile Bottom Navigation ════════════════════════════════════════ */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-          <div className="bg-white/90 backdrop-blur-xl border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.10)] pb-safe">
-            <div className="flex items-center justify-around px-1 py-1.5">
-              {([
-                { href: '/provider/dashboard',   label: 'Dashboard', Icon: Inbox,          isActive: pathname === '/provider/dashboard' },
-                { href: '/provider/jobs',         label: 'Jobs',      Icon: Briefcase,      isActive: pathname?.startsWith('/provider/jobs') || pathname === '/provider/leads' },
-                { href: '/messages',              label: 'Messages',  Icon: MessageSquare,  isActive: pathname?.startsWith('/messages') },
-                { href: '/provider/performance',  label: 'Stats',     Icon: TrendingUp,     isActive: pathname === '/provider/performance' || pathname === '/provider/earnings' },
-                { href: '/provider/settings',     label: 'Account',   Icon: UserCircle2,    isActive: pathname === '/provider/settings' },
-              ] as const).map(({ href, label, Icon, isActive }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${isActive ? 'text-brand' : 'text-ink-dim'}`}
-                >
-                  {isActive && <span className="absolute inset-0 bg-brand-muted rounded-xl" />}
-                  <Icon className={`relative w-5 h-5 ${isActive ? 'stroke-[2]' : 'stroke-[1.5]'}`} />
-                  <span className={`relative text-[10px] font-semibold tracking-tight ${isActive ? 'text-brand' : 'text-ink-dim'}`}>{label}</span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </nav>
+        <MobileNav />
       </div>
     </div>
   );
