@@ -417,9 +417,10 @@ export default function ProviderProfilePage() {
                     body: JSON.stringify({ providerId: provider.id }),
                   });
                   if (!res.ok) {
-                    const data = await res.json();
                     if (res.status === 401) { router.push('/login'); return; }
-                    alert(data.error || 'Could not start chat');
+                    let msg = 'Could not start chat';
+                    try { const data = await res.json(); msg = data.error || msg; } catch {}
+                    alert(msg);
                     return;
                   }
                   const { threadId } = await res.json();

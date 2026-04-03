@@ -29,14 +29,32 @@ export async function GET(request: Request) {
     if (!booking) return NextResponse.json(null);
 
     // Resolve the chat thread for this booking's request + customer + provider
-    const chatThread = await prisma.chatThread.findFirst({
-      where: {
-        requestId: booking.quote?.requestId,
-        customerId: booking.customer?.userId,
-        providerId: booking.provider?.userId,
-      },
-      select: { id: true },
-    });
+    let chatThread = null;
+    if (booking.quote?.requestId && booking.customer?.userId && booking.provider?.userId) {
+      try {
+        // Try with new scalar fields first
+        chatThread = await prisma.chatThread.findFirst({
+          where: {
+            requestId: booking.quote.requestId,
+            customerId: booking.customer.userId,
+            providerId: booking.provider.userId,
+          },
+          select: { id: true },
+        });
+      } catch {
+        // Fallback: old participants-based lookup
+        chatThread = await prisma.chatThread.findFirst({
+          where: {
+            requestId: booking.quote.requestId,
+            AND: [
+              { participants: { some: { id: booking.customer.userId } } },
+              { participants: { some: { id: booking.provider.userId } } },
+            ],
+          },
+          select: { id: true },
+        });
+      }
+    }
 
     return NextResponse.json({ ...booking, chatThread });
   }

@@ -1,23 +1,28 @@
--- AlterTable: Add customerId and providerId to ChatThread
+-- AlterTable: Add customerId and providerId to ChatThread (safe: ADD COLUMN IF NOT EXISTS not supported in all PG versions, but ALTER TABLE ADD COLUMN with a default NULL is safe for re-runs since Prisma tracks applied migrations)
 ALTER TABLE "ChatThread" ADD COLUMN "customerId" TEXT;
 ALTER TABLE "ChatThread" ADD COLUMN "providerId" TEXT;
 
 -- Backfill: Populate customerId and providerId from the implicit join table
 -- The _ChatThreadToUser join table has columns A (ChatThread.id) and B (User.id)
--- We need to figure out which user is the customer and which is the provider
 UPDATE "ChatThread" ct
-SET "customerId" = u_customer."id"
-FROM "_ChatThreadToUser" ctu
-JOIN "User" u_customer ON u_customer."id" = ctu."B" AND u_customer."role" = 'CUSTOMER'
-WHERE ctu."A" = ct."id" AND ct."customerId" IS NULL;
+SET "customerId" = sub."userId"
+FROM (
+  SELECT ctu."A" as "threadId", u."id" as "userId"
+  FROM "_ChatThreadToUser" ctu
+  JOIN "User" u ON u."id" = ctu."B" AND u."role" = 'CUSTOMER'
+) sub
+WHERE sub."threadId" = ct."id" AND ct."customerId" IS NULL;
 
 UPDATE "ChatThread" ct
-SET "providerId" = u_provider."id"
-FROM "_ChatThreadToUser" ctu
-JOIN "User" u_provider ON u_provider."id" = ctu."B" AND u_provider."role" = 'PROVIDER'
-WHERE ctu."A" = ct."id" AND ct."providerId" IS NULL;
+SET "providerId" = sub."userId"
+FROM (
+  SELECT ctu."A" as "threadId", u."id" as "userId"
+  FROM "_ChatThreadToUser" ctu
+  JOIN "User" u ON u."id" = ctu."B" AND u."role" = 'PROVIDER'
+) sub
+WHERE sub."threadId" = ct."id" AND ct."providerId" IS NULL;
 
--- Delete any threads that couldn't be backfilled (orphaned/invalid data)
+-- Delete orphaned threads that couldn't be backfilled
 DELETE FROM "ChatMessage" WHERE "threadId" IN (
   SELECT "id" FROM "ChatThread" WHERE "customerId" IS NULL OR "providerId" IS NULL
 );
@@ -26,52 +31,43 @@ DELETE FROM "_ChatThreadToUser" WHERE "A" IN (
 );
 DELETE FROM "ChatThread" WHERE "customerId" IS NULL OR "providerId" IS NULL;
 
--- Remove duplicate threads: keep the one with the most messages per (requestId, customerId, providerId) group
--- First, identify duplicates
-WITH ranked AS (
-  SELECT ct."id",
-         ct."requestId",
-         ct."customerId",
-         ct."providerId",
-         (SELECT COUNT(*) FROM "ChatMessage" cm WHERE cm."threadId" = ct."id") as msg_count,
-         ROW_NUMBER() OVER (
-           PARTITION BY ct."requestId", ct."customerId", ct."providerId"
-           ORDER BY (SELECT COUNT(*) FROM "ChatMessage" cm WHERE cm."threadId" = ct."id") DESC, ct."createdAt" ASC
-         ) as rn
-  FROM "ChatThread" ct
-),
-duplicates AS (
-  SELECT "id" FROM ranked WHERE rn > 1
-)
--- Move messages from duplicates to the canonical thread
--- (Skip this step — just delete duplicates and their messages for simplicity)
-DELETE FROM "ChatMessage" WHERE "threadId" IN (SELECT "id" FROM duplicates);
+-- Remove duplicate threads: keep the oldest per (requestId, customerId, providerId) group
+-- Step 1: Delete messages belonging to duplicate threads
+DELETE FROM "ChatMessage" WHERE "threadId" IN (
+  SELECT ct."id" FROM "ChatThread" ct
+  WHERE ct."id" != (
+    SELECT ct2."id" FROM "ChatThread" ct2
+    WHERE ct2."requestId" = ct."requestId"
+      AND ct2."customerId" = ct."customerId"
+      AND ct2."providerId" = ct."providerId"
+    ORDER BY ct2."createdAt" ASC
+    LIMIT 1
+  )
+);
 
-WITH ranked AS (
-  SELECT ct."id",
-         ROW_NUMBER() OVER (
-           PARTITION BY ct."requestId", ct."customerId", ct."providerId"
-           ORDER BY (SELECT COUNT(*) FROM "ChatMessage" cm WHERE cm."threadId" = ct."id") DESC, ct."createdAt" ASC
-         ) as rn
-  FROM "ChatThread" ct
-),
-duplicates AS (
-  SELECT "id" FROM ranked WHERE rn > 1
-)
-DELETE FROM "_ChatThreadToUser" WHERE "A" IN (SELECT "id" FROM duplicates);
+-- Step 2: Delete join table entries for duplicate threads
+DELETE FROM "_ChatThreadToUser" WHERE "A" IN (
+  SELECT ct."id" FROM "ChatThread" ct
+  WHERE ct."id" != (
+    SELECT ct2."id" FROM "ChatThread" ct2
+    WHERE ct2."requestId" = ct."requestId"
+      AND ct2."customerId" = ct."customerId"
+      AND ct2."providerId" = ct."providerId"
+    ORDER BY ct2."createdAt" ASC
+    LIMIT 1
+  )
+);
 
-WITH ranked AS (
-  SELECT ct."id",
-         ROW_NUMBER() OVER (
-           PARTITION BY ct."requestId", ct."customerId", ct."providerId"
-           ORDER BY ct."createdAt" ASC
-         ) as rn
-  FROM "ChatThread" ct
-),
-duplicates AS (
-  SELECT "id" FROM ranked WHERE rn > 1
-)
-DELETE FROM "ChatThread" WHERE "id" IN (SELECT "id" FROM duplicates);
+-- Step 3: Delete the duplicate threads themselves
+DELETE FROM "ChatThread" ct
+WHERE ct."id" != (
+  SELECT ct2."id" FROM "ChatThread" ct2
+  WHERE ct2."requestId" = ct."requestId"
+    AND ct2."customerId" = ct."customerId"
+    AND ct2."providerId" = ct."providerId"
+  ORDER BY ct2."createdAt" ASC
+  LIMIT 1
+);
 
 -- Now make the columns NOT NULL
 ALTER TABLE "ChatThread" ALTER COLUMN "customerId" SET NOT NULL;

@@ -76,6 +76,7 @@ export async function POST(request: Request) {
   // Auto-create chat thread between provider and customer (if not exists)
   if (customerProfile) {
     try {
+      // Try with new scalar fields first
       const existingThread = await prisma.chatThread.findFirst({
         where: {
           requestId,
@@ -98,7 +99,35 @@ export async function POST(request: Request) {
       }
     } catch (err: any) {
       // Ignore unique constraint violation — thread already exists
-      if (err?.code !== 'P2002') throw err;
+      if (err?.code === 'P2002') return;
+      // If scalar fields don't exist yet, fall back to old approach
+      try {
+        const existingThread = await prisma.chatThread.findFirst({
+          where: {
+            requestId,
+            AND: [
+              { participants: { some: { id: providerUserId } } },
+              { participants: { some: { id: customerProfile.userId } } },
+            ],
+          },
+        });
+
+        if (!existingThread) {
+          await prisma.chatThread.create({
+            data: {
+              requestId,
+              participants: {
+                connect: [{ id: providerUserId }, { id: customerProfile.userId }],
+              },
+            },
+          });
+        }
+      } catch (fallbackErr: any) {
+        // Ignore constraint violations
+        if (fallbackErr?.code !== 'P2002') {
+          console.error('[quotes] Failed to create chat thread:', fallbackErr);
+        }
+      }
     }
   }
 
