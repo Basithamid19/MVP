@@ -586,30 +586,8 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Mobile: horizontal scroll strip */}
-          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory -mx-4 px-4 pb-2 md:hidden">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }) => (
-              <div
-                key={step}
-                className="shrink-0 w-[72vw] max-w-[260px] snap-start bg-white rounded-2xl p-5 border border-border-dim shadow-sm flex flex-col"
-              >
-                <div className="w-11 h-11 bg-brand text-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-1.5 block">
-                  {t.howItWorks.step} {step}
-                </span>
-                <h3 className="text-sm font-bold text-ink mb-2 leading-snug">{title}</h3>
-                <p className="text-ink-sub text-xs leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop: 3-col grid */}
-          <div className="hidden md:grid md:grid-cols-3 gap-10 relative">
-            {/* Connector line */}
-            <div className="absolute top-9 left-1/3 right-1/3 h-px bg-border-dim" />
-
+          {/* Vertical timeline */}
+          <div className="max-w-lg mx-auto">
             {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
               <motion.div
                 key={step}
@@ -617,16 +595,23 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.12 }}
                 viewport={{ once: true }}
-                className="relative text-center"
+                className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
-                <div className="w-18 h-18 bg-brand text-white rounded-panel flex items-center justify-center mx-auto mb-6 shadow-elevated">
-                  <Icon className="w-7 h-7" />
+                {/* Icon column with connector line */}
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-brand" />
+                  </div>
+                  {idx < HOW_IT_WORKS.length - 1 && (
+                    <div className="w-0.5 flex-1 bg-border-dim my-3" />
+                  )}
                 </div>
-                <span className="text-[10px] font-bold text-brand/60 uppercase tracking-widest mb-2 block">
-                  {t.howItWorks.step} {step}
-                </span>
-                <h3 className="text-lg font-bold text-ink mb-3">{title}</h3>
-                <p className="text-ink-sub text-sm leading-relaxed max-w-xs mx-auto">{desc}</p>
+
+                {/* Text column */}
+                <div className={idx < HOW_IT_WORKS.length - 1 ? 'pb-8 sm:pb-10' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{`${parseInt(step)}. ${title}`}</h3>
+                  <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
+                </div>
               </motion.div>
             ))}
           </div>
