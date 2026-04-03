@@ -599,7 +599,7 @@ export default function LandingPage() {
               >
                 {/* Icon column with connector line */}
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: '#22956b' }}>
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
                   {idx < HOW_IT_WORKS.length - 1 && (
