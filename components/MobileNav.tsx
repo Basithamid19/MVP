@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Home, Search, MessageCircle, Inbox, UserCircle2, Briefcase } from 'lucide-react';
+import { Home, Search, MessageCircle, Inbox, UserCircle2, Briefcase, TrendingUp } from 'lucide-react';
 
 const CUSTOMER_TABS = [
   { href: '/',          label: 'Home',      icon: Home,          active: (p: string) => p === '/' },
@@ -14,10 +14,10 @@ const CUSTOMER_TABS = [
 ];
 
 const PROVIDER_TABS = [
-  { href: '/',                    label: 'Home',      icon: Home,          active: (p: string) => p === '/' },
   { href: '/provider/dashboard',  label: 'Dashboard', icon: Inbox,         active: (p: string) => p === '/provider/dashboard' || p === '/provider/leads' },
-  { href: '/messages',            label: 'Messages',  icon: MessageCircle, active: (p: string) => p.startsWith('/messages') },
   { href: '/provider/jobs',       label: 'Jobs',      icon: Briefcase,     active: (p: string) => p.startsWith('/provider/jobs') },
+  { href: '/messages',            label: 'Messages',  icon: MessageCircle, active: (p: string) => p.startsWith('/messages') },
+  { href: '/provider/performance', label: 'Stats',    icon: TrendingUp,    active: (p: string) => p === '/provider/performance' || p === '/provider/earnings' },
   { href: '/provider/settings',   label: 'Account',   icon: UserCircle2,   active: (p: string) => p === '/provider/settings' },
 ];
 
