@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   const userId = (session.user as any).id;
   const threads = await prisma.chatThread.findMany({
     where: {
-      participants: { some: { id: userId } },
+      OR: [{ customerId: userId }, { providerId: userId }],
     },
     include: {
       participants: {
@@ -50,14 +50,16 @@ export async function GET(request: Request) {
     return new Date(bDate).getTime() - new Date(aDate).getTime();
   });
 
-  // Format response
-  const result = sorted.map(t => ({
-    id: t.id,
-    otherParticipant: t.participants.find(p => p.id !== userId) ?? t.participants[0],
-    lastMessage: t.messages[0] ?? null,
-    category: t.request?.category?.name ?? 'Service',
-    createdAt: t.createdAt,
-  }));
+  // Format response — filter out empty threads (no messages)
+  const result = sorted
+    .filter(t => t.messages.length > 0)
+    .map(t => ({
+      id: t.id,
+      otherParticipant: t.participants.find(p => p.id !== userId) ?? t.participants[0],
+      lastMessage: t.messages[0] ?? null,
+      category: t.request?.category?.name ?? 'Service',
+      createdAt: t.createdAt,
+    }));
 
   return NextResponse.json(result);
 }
@@ -71,11 +73,15 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { threadId, content } = body;
 
+  if (!threadId || !content?.trim()) {
+    return NextResponse.json({ error: 'threadId and content required' }, { status: 400 });
+  }
+
   const message = await prisma.chatMessage.create({
     data: {
       threadId,
       senderId: (session.user as any).id,
-      content,
+      content: content.trim(),
     },
   });
 

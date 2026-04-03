@@ -120,9 +120,17 @@ export default function BookingPage() {
   }
 
   if (showChat) {
+    if (!booking.chatThread?.id) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+          <p className="text-ink-sub text-sm mb-4">No conversation started yet for this booking.</p>
+          <button onClick={() => setShowChat(false)} className="text-brand font-semibold text-sm">Go Back</button>
+        </div>
+      );
+    }
     return (
       <ChatPage
-        threadId={booking.chatThread?.id ?? booking.id}
+        threadId={booking.chatThread.id}
         booking={booking}
       />
     );

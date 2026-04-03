@@ -152,6 +152,8 @@ async function main() {
   const chat1 = await prisma.chatThread.create({
     data: {
       requestId: request1.id,
+      customerId: customers[0].id,
+      providerId: providers[0].id,
       participants: {
         connect: [{ id: customers[0].id }, { id: providers[0].id }], // Jonas & Marius (plumber)
       },
@@ -169,6 +171,8 @@ async function main() {
   const chat2 = await prisma.chatThread.create({
     data: {
       requestId: request1.id,
+      customerId: customers[0].id,
+      providerId: providers[6].id,
       participants: {
         connect: [{ id: customers[0].id }, { id: providers[6].id }], // Jonas & Rokas (plumber)
       },

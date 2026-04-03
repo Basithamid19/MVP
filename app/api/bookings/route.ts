@@ -25,7 +25,20 @@ export async function GET(request: Request) {
         quote: { include: { request: { include: { category: true } } } },
       },
     });
-    return NextResponse.json(booking);
+
+    if (!booking) return NextResponse.json(null);
+
+    // Resolve the chat thread for this booking's request + customer + provider
+    const chatThread = await prisma.chatThread.findFirst({
+      where: {
+        requestId: booking.quote?.requestId,
+        customerId: booking.customer?.userId,
+        providerId: booking.provider?.userId,
+      },
+      select: { id: true },
+    });
+
+    return NextResponse.json({ ...booking, chatThread });
   }
 
   const role = (session.user as any).role;

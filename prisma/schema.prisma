@@ -203,9 +203,13 @@ model ChatThread {
   id                String          @id @default(cuid())
   requestId         String
   request           ServiceRequest  @relation(fields: [requestId], references: [id])
+  customerId        String
+  providerId        String
   participants      User[]
   messages          ChatMessage[]
   createdAt         DateTime        @default(now())
+
+  @@unique([requestId, customerId, providerId])
 }
 
 model ChatMessage {

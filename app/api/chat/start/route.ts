@@ -11,12 +11,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { providerId } = await request.json();
+  const body = await request.json();
+  const { providerId, requestId: suppliedRequestId } = body;
+
   if (!providerId) {
     return NextResponse.json({ error: 'providerId required' }, { status: 400 });
   }
 
   const userId = (session.user as any).id;
+  const userRole = (session.user as any).role;
 
   // Find the provider's userId
   const provider = await prisma.providerProfile.findUnique({
@@ -32,60 +35,45 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Cannot chat with yourself' }, { status: 400 });
   }
 
-  // Find existing thread between these two users
-  const existingThread = await prisma.chatThread.findFirst({
-    where: {
-      AND: [
-        { participants: { some: { id: userId } } },
-        { participants: { some: { id: provider.userId } } },
-      ],
-    },
-  });
+  // Determine customer and provider user IDs
+  const customerId = userRole === 'PROVIDER' ? provider.userId : userId;
+  const providerUserId = userRole === 'PROVIDER' ? userId : provider.userId;
 
-  if (existingThread) {
-    return NextResponse.json({ threadId: existingThread.id });
-  }
+  // Note: customerId here is the User.id of the customer (not CustomerProfile.id)
+  // providerId from body is the ProviderProfile.id — we need the User.id for the thread
 
-  // No existing thread — we need a requestId to create one.
-  // Find any service request between them, or the most recent request by the customer.
-  const customerProfile = await prisma.customerProfile.findUnique({
-    where: { userId },
-    select: { id: true },
-  });
-
-  let requestId: string | null = null;
-
-  if (customerProfile) {
-    // Find a request that has a quote from this provider
-    const quoteLink = await prisma.quote.findFirst({
-      where: {
-        providerId: providerId,
-        request: { customerId: customerProfile.id },
-      },
-      select: { requestId: true },
-      orderBy: { createdAt: 'desc' },
-    });
-    requestId = quoteLink?.requestId ?? null;
-
-    // Fallback: use the customer's most recent request
-    if (!requestId) {
-      const latestReq = await prisma.serviceRequest.findFirst({
-        where: { customerId: customerProfile.id },
-        select: { id: true },
-        orderBy: { createdAt: 'desc' },
-      });
-      requestId = latestReq?.id ?? null;
-    }
-  }
+  // Resolve requestId
+  let requestId = suppliedRequestId || null;
 
   if (!requestId) {
-    // Provider starting the chat — find any request they quoted on
-    const provQuote = await prisma.quote.findFirst({
-      where: { providerId },
-      select: { requestId: true },
-      orderBy: { createdAt: 'desc' },
+    // Find the most relevant request between this customer and provider
+    const customerProfile = await prisma.customerProfile.findUnique({
+      where: { userId: customerId },
+      select: { id: true },
     });
-    requestId = provQuote?.requestId ?? null;
+
+    if (customerProfile) {
+      // Find a request where this provider has quoted
+      const quoteLink = await prisma.quote.findFirst({
+        where: {
+          providerId,
+          request: { customerId: customerProfile.id },
+        },
+        select: { requestId: true },
+        orderBy: { createdAt: 'desc' },
+      });
+      requestId = quoteLink?.requestId ?? null;
+
+      // Fallback: customer's most recent request
+      if (!requestId) {
+        const latestReq = await prisma.serviceRequest.findFirst({
+          where: { customerId: customerProfile.id },
+          select: { id: true },
+          orderBy: { createdAt: 'desc' },
+        });
+        requestId = latestReq?.id ?? null;
+      }
+    }
   }
 
   if (!requestId) {
@@ -95,15 +83,40 @@ export async function POST(request: Request) {
     );
   }
 
-  // Create the thread
-  const thread = await prisma.chatThread.create({
-    data: {
+  // Find existing thread using the unique constraint fields
+  const existingThread = await prisma.chatThread.findFirst({
+    where: {
       requestId,
-      participants: {
-        connect: [{ id: userId }, { id: provider.userId }],
-      },
+      customerId,
+      providerId: providerUserId,
     },
   });
 
-  return NextResponse.json({ threadId: thread.id });
+  if (existingThread) {
+    return NextResponse.json({ threadId: existingThread.id });
+  }
+
+  // Create thread with race-condition protection via unique constraint
+  try {
+    const thread = await prisma.chatThread.create({
+      data: {
+        requestId,
+        customerId,
+        providerId: providerUserId,
+        participants: {
+          connect: [{ id: customerId }, { id: providerUserId }],
+        },
+      },
+    });
+    return NextResponse.json({ threadId: thread.id });
+  } catch (err: any) {
+    // Unique constraint violation — thread was created by a concurrent request
+    if (err?.code === 'P2002') {
+      const thread = await prisma.chatThread.findFirst({
+        where: { requestId, customerId, providerId: providerUserId },
+      });
+      return NextResponse.json({ threadId: thread!.id });
+    }
+    throw err;
+  }
 }

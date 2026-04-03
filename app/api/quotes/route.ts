@@ -75,25 +75,30 @@ export async function POST(request: Request) {
 
   // Auto-create chat thread between provider and customer (if not exists)
   if (customerProfile) {
-    const existingThread = await prisma.chatThread.findFirst({
-      where: {
-        requestId,
-        AND: [
-          { participants: { some: { id: providerUserId } } },
-          { participants: { some: { id: customerProfile.userId } } },
-        ],
-      },
-    });
-
-    if (!existingThread) {
-      await prisma.chatThread.create({
-        data: {
+    try {
+      const existingThread = await prisma.chatThread.findFirst({
+        where: {
           requestId,
-          participants: {
-            connect: [{ id: providerUserId }, { id: customerProfile.userId }],
-          },
+          customerId: customerProfile.userId,
+          providerId: providerUserId,
         },
       });
+
+      if (!existingThread) {
+        await prisma.chatThread.create({
+          data: {
+            requestId,
+            customerId: customerProfile.userId,
+            providerId: providerUserId,
+            participants: {
+              connect: [{ id: providerUserId }, { id: customerProfile.userId }],
+            },
+          },
+        });
+      }
+    } catch (err: any) {
+      // Ignore unique constraint violation — thread already exists
+      if (err?.code !== 'P2002') throw err;
     }
   }
 

@@ -44,6 +44,7 @@ export default function ProviderProfilePage() {
   const router   = useRouter();
   const [provider, setProvider] = useState<any>(null);
   const [reviews,  setReviews]  = useState<any[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
@@ -405,7 +406,10 @@ export default function ProviderProfilePage() {
             </Link>
 
             <button
+              disabled={chatLoading}
               onClick={async () => {
+                if (chatLoading) return;
+                setChatLoading(true);
                 try {
                   const res = await fetch('/api/chat/start', {
                     method: 'POST',
@@ -422,12 +426,14 @@ export default function ProviderProfilePage() {
                   router.push(`/messages?thread=${threadId}`);
                 } catch {
                   alert('Something went wrong. Please try again.');
+                } finally {
+                  setChatLoading(false);
                 }
               }}
-              className="w-full bg-surface-alt text-ink text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim text-sm sm:text-base"
+              className="w-full bg-surface-alt text-ink text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim text-sm sm:text-base disabled:opacity-50"
             >
               <MessageSquare className="w-4 h-4" />
-              Chat with Pro
+              {chatLoading ? 'Opening chat...' : 'Chat with Pro'}
             </button>
 
             {/* Mini availability */}
