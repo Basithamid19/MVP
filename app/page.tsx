@@ -332,7 +332,7 @@ export default function LandingPage() {
 
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight leading-[1.05] mb-6 text-ink">
-                {t.hero.headline} <br className="hidden lg:block" />
+                {t.hero.headline} <br />
                 <span className="text-brand">{t.hero.headlineHighlight}</span>
               </h1>
 

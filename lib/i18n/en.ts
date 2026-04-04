@@ -17,7 +17,7 @@ export const en: Dictionary = {
     eyebrow: 'Trusted local pros in Vilnius',
     headline: 'Premium home services,',
     headlineHighlight: 'delivered with trust.',
-    subheadline: 'Find and book verified plumbers, electricians, and cleaners. Transparent pricing, real reviews, and exceptional quality.',
+    subheadline: 'Verified local pros, clear quotes, and real peace of mind — on demand.',
     searchPlaceholder: 'What do you need?',
     addressPlaceholder: 'Your address',
     search: 'Search',

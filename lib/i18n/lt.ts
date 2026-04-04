@@ -17,7 +17,7 @@ export const lt: Dictionary = {
     eyebrow: 'Patikimi vietiniai meistrai Vilniuje',
     headline: 'Aukščiausios kokybės namų paslaugos,',
     headlineHighlight: 'teikiamos su pasitikėjimu.',
-    subheadline: 'Raskite ir užsisakykite patvirtintus santechnikus, elektrikus ir valymo paslaugas. Skaidrios kainos, tikri atsiliepimai ir išskirtinė kokybė.',
+    subheadline: 'Patikimi vietiniai meistrai, aiškios kainos ir tikra ramybė — kai reikia.',
     searchPlaceholder: 'Ko jums reikia?',
     addressPlaceholder: 'Jūsų adresas',
     search: 'Ieškoti',
