@@ -330,12 +330,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Eyebrow */}
-              <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-border-dim text-brand text-[11px] font-bold uppercase tracking-widest rounded-chip mb-6 shadow-sm">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                {t.hero.eyebrow}
-              </span>
-
               {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-[4rem] font-bold tracking-tight leading-[1.05] mb-6 text-ink">
                 {t.hero.headline} <br className="hidden lg:block" />
