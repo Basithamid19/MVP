@@ -162,7 +162,7 @@ function TrustCarousel() {
             </button>
 
             <div
-              className="w-full overflow-hidden mx-7"
+              className="w-full overflow-hidden mx-2"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -171,7 +171,7 @@ function TrustCarousel() {
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-5 pt-8 pb-8 flex flex-col items-center justify-center gap-3 shadow-card min-h-[200px]"
+                className="bg-white border border-border-dim/60 rounded-2xl px-5 py-4 flex items-center justify-center gap-4 shadow-card min-h-[72px]"
               >
                 <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
                   <Icon className="w-[22px] h-[22px] text-brand" />
