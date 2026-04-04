@@ -15,9 +15,9 @@ export const en: Dictionary = {
 
   hero: {
     eyebrow: 'Trusted local pros in Vilnius',
-    headline: 'Premium home services,',
-    headlineHighlight: 'delivered with trust.',
-    subheadline: 'Verified local pros, clear quotes, and real peace of mind — on demand.',
+    headline: "Your home's every wish,",
+    headlineHighlight: 'granted.',
+    subheadline: 'Verified local pros, upfront pricing, and peace of mind from start to finish.',
     searchPlaceholder: 'What do you need?',
     addressPlaceholder: 'Your address',
     search: 'Search',
