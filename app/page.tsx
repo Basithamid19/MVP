@@ -146,82 +146,84 @@ function TrustCarousel() {
   const Icon = item.icon;
 
   return (
-    <div className="mt-3 mb-0 pt-1">
-      <p className="text-xs font-semibold text-ink-sub uppercase tracking-wider mb-6">Why customers trust Aladdin</p>
+    <div className="mt-6">
+      <div className="bg-surface-alt rounded-2xl px-4 py-5">
+        <p className="text-sm font-semibold text-ink-sub uppercase tracking-wider mb-3">Why customers trust Aladdin</p>
 
-      {/* Mobile: single-card carousel */}
-      <div className="md:hidden">
-        <div className="relative flex items-center mt-4">
-          <button
-            onClick={prev}
-            className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-
-          <div
-            className="w-full overflow-hidden mx-7"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-            <motion.div
-              key={active}
-              initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-              className="bg-white border border-border-dim/60 rounded-2xl p-4 flex items-center gap-4 shadow-card min-h-[64px]"
+        {/* Mobile: single-card carousel */}
+        <div className="md:hidden">
+          <div className="relative flex items-center">
+            <button
+              onClick={prev}
+              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              aria-label="Previous"
             >
-              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                <Icon className="w-[18px] h-[18px] text-brand" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
-                <p className="text-xs text-ink-sub leading-snug mt-0.5">{item.desc}</p>
-              </div>
-            </motion.div>
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            <div
+              className="w-full overflow-hidden mx-7"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+            >
+              <motion.div
+                key={active}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                className="bg-white border border-border-dim/60 rounded-2xl p-5 flex flex-col items-start gap-3 shadow-card min-h-[130px]"
+              >
+                <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                  <Icon className="w-[22px] h-[22px] text-brand" />
+                </div>
+                <div>
+                  <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
+                  <p className="text-[13px] text-ink-sub leading-snug mt-1">{item.desc}</p>
+                </div>
+              </motion.div>
+            </div>
+
+            <button
+              onClick={next}
+              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              aria-label="Next"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
           </div>
 
-          <button
-            onClick={next}
-            className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-            aria-label="Next"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
+          {/* Dots */}
+          <div className="flex items-center justify-center gap-1.5 mt-5">
+            {trustItems.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
+                }`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Dots */}
-        <div className="flex items-center justify-center gap-1.5 mt-3">
-          {trustItems.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setActive(i)}
-              className={`rounded-full transition-all duration-300 ${
-                i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
-              }`}
-              aria-label={`Go to slide ${i + 1}`}
-            />
-          ))}
+        {/* Desktop: 4-column grid */}
+        <div className="hidden md:grid md:grid-cols-4 gap-3">
+          {trustItems.map((t) => {
+            const TIcon = t.icon;
+            return (
+              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+                <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+                  <TIcon className="w-3.5 h-3.5 text-brand" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
+                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Desktop: 4-column grid */}
-      <div className="hidden md:grid md:grid-cols-4 gap-3">
-        {trustItems.map((t) => {
-          const TIcon = t.icon;
-          return (
-            <div key={t.title} className="bg-surface-alt border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
-              <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
-                <TIcon className="w-3.5 h-3.5 text-brand" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
-                <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
-              </div>
-            </div>
-          );
-        })}
       </div>
     </div>
   );
@@ -239,7 +241,6 @@ export default function LandingPage() {
   const router = useRouter();
   const t = useTranslation();
   const [searchQuery, setSearchQuery]   = useState('');
-  const [isUrgent, setIsUrgent]         = useState(false);
   const [savedAddress, setSavedAddress] = useState('');
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [topPros, setTopPros]           = useState<any[]>([]);
@@ -366,35 +367,6 @@ export default function LandingPage() {
                   </button>
                 </div>
               </form>
-
-              {/* Quick category pills & Urgency */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-none pb-1">
-                <span className="text-xs font-semibold text-ink-dim uppercase tracking-wider shrink-0">{t.hero.popular}</span>
-                {categories.slice(0, 3).map(cat => {
-                  const Icon = cat.icon;
-                  return (
-                  <button
-                    key={cat.slug}
-                    onClick={() => handleCategoryRequest(cat.slug)}
-                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-chip bg-white border border-border-dim text-xs font-medium text-ink-sub hover:text-ink hover:border-brand/30 hover:bg-brand-muted transition-all shadow-sm"
-                  >
-                    <Icon className="w-3.5 h-3.5" strokeWidth={2} />
-                    {cat.name}
-                  </button>
-                )})}
-                <div className="w-px h-4 bg-border-dim mx-0.5 shrink-0" />
-                <button
-                  onClick={() => setIsUrgent(!isUrgent)}
-                  className={`shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-chip border text-xs font-medium transition-all shadow-sm ${
-                    isUrgent
-                      ? 'bg-caution-surface border-caution-edge text-caution'
-                      : 'bg-white border-border-dim text-ink-sub hover:text-ink hover:border-border'
-                  }`}
-                >
-                  <AlertCircle className={`w-3.5 h-3.5 ${isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
-                  {isUrgent ? t.hero.urgent : t.hero.markUrgent}
-                </button>
-              </div>
 
               {/* Trust Carousel */}
               <TrustCarousel />
