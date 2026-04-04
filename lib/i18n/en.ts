@@ -15,8 +15,8 @@ export const en: Dictionary = {
 
   hero: {
     eyebrow: 'Trusted local pros in Vilnius',
-    headline: "Your home's every wish,",
-    headlineHighlight: 'granted.',
+    headline: 'When your home calls,',
+    headlineHighlight: 'Aladdin answers.',
     subheadline: 'Verified local pros, upfront pricing, and peace of mind from start to finish.',
     searchPlaceholder: 'What do you need?',
     addressPlaceholder: 'Your address',

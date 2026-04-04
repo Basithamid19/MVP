@@ -15,8 +15,8 @@ export const lt: Dictionary = {
 
   hero: {
     eyebrow: 'Patikimi vietiniai meistrai Vilniuje',
-    headline: 'Kiekvienas jūsų namų noras,',
-    headlineHighlight: 'išpildytas.',
+    headline: 'Kai namai šaukia,',
+    headlineHighlight: 'Aladdin atsako.',
     subheadline: 'Patikrinti meistrai, aiškios kainos ir ramybė nuo pradžios iki pabaigos.',
     searchPlaceholder: 'Ko jums reikia?',
     addressPlaceholder: 'Jūsų adresas',

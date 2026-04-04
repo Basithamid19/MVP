@@ -331,7 +331,7 @@ export default function LandingPage() {
               </div>
 
               {/* Headline */}
-              <h1 className="text-[1.85rem] sm:text-4xl lg:text-[4rem] font-bold tracking-tight leading-[1.08] mb-5 text-ink">
+              <h1 className="text-[2rem] sm:text-4xl lg:text-[4rem] font-bold tracking-tight leading-[1.08] mb-5 text-ink">
                 {t.hero.headline} <br />
                 <span className="text-brand">{t.hero.headlineHighlight}</span>
               </h1>
