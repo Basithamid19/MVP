@@ -1,7 +1,7 @@
 'use client';
 
 import { AladdinIcon } from '@/components/icons';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { signOut } from 'next-auth/react';
 import {
   BarChart3, ShieldCheck, Briefcase, AlertTriangle, Star,
@@ -9,6 +9,7 @@ import {
   XCircle, Loader2, TrendingUp, Eye, EyeOff, Plus,
   Clock, DollarSign, Package, Activity, RefreshCcw,
   ChevronRight, MessageSquare, ArrowUpRight, X, Tag, Menu, FileText,
+  ZoomIn, AlertCircle, FileCheck, Upload, ExternalLink, ChevronDown, ChevronUp,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -985,119 +986,394 @@ function IncidentModule() {
 
 // ─── Verifications Module ─────────────────────────────────────────────────────
 
+const REQUIRED_DOCS = ['SELFIE', 'ID', 'INSURANCE', 'CERTIFICATE'] as const;
+const DOC_LABELS: Record<string, string> = { ID: 'Identity Document', CERTIFICATE: 'Certificate / License', INSURANCE: 'Liability Insurance', SELFIE: 'Selfie Verification' };
+const DOC_ICONS: Record<string, React.ElementType> = { ID: ShieldCheck, CERTIFICATE: FileCheck, INSURANCE: FileText, SELFIE: Users };
+
+function getProviderStatus(documents: any[]): 'PENDING' | 'APPROVED' | 'REJECTED' | 'INCOMPLETE' {
+  if (documents.length === 0) return 'INCOMPLETE';
+  const hasPending = documents.some((d: any) => d.status === 'PENDING');
+  const hasRejected = documents.some((d: any) => d.status === 'REJECTED');
+  const allApproved = documents.every((d: any) => d.status === 'APPROVED');
+  if (allApproved && documents.length >= REQUIRED_DOCS.length) return 'APPROVED';
+  if (hasPending) return 'PENDING';
+  if (hasRejected) return 'REJECTED';
+  return 'INCOMPLETE';
+}
+
+const STATUS_STYLE: Record<string, string> = {
+  PENDING: 'bg-yellow-50 text-yellow-700',
+  APPROVED: 'bg-green-50 text-green-700',
+  REJECTED: 'bg-red-50 text-red-700',
+  INCOMPLETE: 'bg-blue-50 text-blue-600',
+  MISSING: 'bg-surface-alt text-ink-dim',
+};
+
 function VerificationsModule() {
-  const [docs, setDocs] = useState<any[]>([]);
+  const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('PENDING');
+  const [reviewCase, setReviewCase] = useState<any | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [rejectDocId, setRejectDocId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=verifications')
       .then(r => r.json())
-      .then(d => { setDocs(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(d => { setCases(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
-  const handleVerify = async (verificationId: string, status: string, tier?: string) => {
+  // Compute status for each case
+  const casesWithStatus = useMemo(() =>
+    cases.map(c => ({ ...c, overallStatus: getProviderStatus(c.documents) })),
+    [cases]
+  );
+
+  const filtered = useMemo(() =>
+    filter === 'ALL' ? casesWithStatus : casesWithStatus.filter(c => c.overallStatus === filter),
+    [casesWithStatus, filter]
+  );
+
+  const counts = useMemo(() => ({
+    total: casesWithStatus.length,
+    PENDING: casesWithStatus.filter(c => c.overallStatus === 'PENDING').length,
+    APPROVED: casesWithStatus.filter(c => c.overallStatus === 'APPROVED').length,
+    REJECTED: casesWithStatus.filter(c => c.overallStatus === 'REJECTED').length,
+  }), [casesWithStatus]);
+
+  const handleVerify = async (verificationId: string, status: string, rejectionReason?: string, tier?: string) => {
+    setActionLoading(true);
     await fetch('/api/admin', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'verify', verificationId, status, tier }),
+      body: JSON.stringify({ action: 'verify', verificationId, status, tier, rejectionReason }),
     });
-    load();
+    // Refresh data
+    const res = await fetch('/api/admin?section=verifications');
+    const d = await res.json();
+    setCases(Array.isArray(d) ? d : []);
+    // Update the open review case if applicable
+    if (reviewCase) {
+      const updated = (Array.isArray(d) ? d : []).find((c: any) => c.providerId === reviewCase.providerId);
+      if (updated) setReviewCase({ ...updated, overallStatus: getProviderStatus(updated.documents) });
+    }
+    setActionLoading(false);
+  };
+
+  const handleApproveAll = async (documents: any[]) => {
+    setActionLoading(true);
+    const pending = documents.filter((d: any) => d.status === 'PENDING');
+    for (const doc of pending) {
+      await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'verify', verificationId: doc.id, status: 'APPROVED', tier: 'TIER2_TRADE_VERIFIED' }),
+      });
+    }
+    const res = await fetch('/api/admin?section=verifications');
+    const d = await res.json();
+    setCases(Array.isArray(d) ? d : []);
+    if (reviewCase) {
+      const updated = (Array.isArray(d) ? d : []).find((c: any) => c.providerId === reviewCase.providerId);
+      if (updated) setReviewCase({ ...updated, overallStatus: getProviderStatus(updated.documents) });
+      else setReviewCase(null);
+    }
+    setActionLoading(false);
   };
 
   if (loading) return <ModuleLoader />;
-
-  const pendingCount = docs.filter(d => d.status === 'PENDING').length;
-  const approvedCount = docs.filter(d => d.status === 'APPROVED').length;
-  const rejectedCount = docs.filter(d => d.status === 'REJECTED').length;
-  const filtered = filter === 'ALL' ? docs : docs.filter(d => d.status === filter);
-
-  const DOC_LABELS: Record<string, string> = { ID: 'Identity', CERTIFICATE: 'Certificate', INSURANCE: 'Insurance', SELFIE: 'Selfie' };
 
   return (
     <div>
       <ModuleHeader
         title="Verification Queue"
-        description="Review submitted provider documents and approve or reject them."
+        description="Review provider verification cases — all documents grouped per provider."
         action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
       />
 
       <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
-        <span><span className="font-bold text-ink tabular-nums">{docs.length}</span> total</span>
-        {pendingCount > 0 && <span className="text-caution font-semibold">{pendingCount} pending</span>}
-        <span><span className="font-bold text-ink tabular-nums">{approvedCount}</span> approved</span>
-        <span><span className="font-bold text-ink tabular-nums">{rejectedCount}</span> rejected</span>
+        <span><span className="font-bold text-ink tabular-nums">{counts.total}</span> providers</span>
+        {counts.PENDING > 0 && <span className="text-caution font-semibold">{counts.PENDING} pending</span>}
+        <span><span className="font-bold text-ink tabular-nums">{counts.APPROVED}</span> approved</span>
+        <span><span className="font-bold text-ink tabular-nums">{counts.REJECTED}</span> rejected</span>
       </div>
 
       <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        <FilterChip label="Pending" active={filter === 'PENDING'} count={pendingCount} onClick={() => setFilter('PENDING')} />
-        <FilterChip label="All" active={filter === 'ALL'} count={docs.length} onClick={() => setFilter('ALL')} />
-        <FilterChip label="Approved" active={filter === 'APPROVED'} count={approvedCount} onClick={() => setFilter('APPROVED')} />
-        <FilterChip label="Rejected" active={filter === 'REJECTED'} count={rejectedCount} onClick={() => setFilter('REJECTED')} />
+        <FilterChip label="Pending" active={filter === 'PENDING'} count={counts.PENDING} onClick={() => setFilter('PENDING')} />
+        <FilterChip label="All" active={filter === 'ALL'} count={counts.total} onClick={() => setFilter('ALL')} />
+        <FilterChip label="Approved" active={filter === 'APPROVED'} count={counts.APPROVED} onClick={() => setFilter('APPROVED')} />
+        <FilterChip label="Rejected" active={filter === 'REJECTED'} count={counts.REJECTED} onClick={() => setFilter('REJECTED')} />
       </div>
 
       {filtered.length === 0 ? (
-        <AdminEmpty icon={ShieldCheck} title="No documents to review" description="Submitted verification documents will appear here." />
+        <AdminEmpty icon={ShieldCheck} title="No verification cases" description="Provider submissions will appear here." />
       ) : (
         <div className="space-y-2.5">
-          {filtered.map(doc => (
-            <div key={doc.id} className="bg-white rounded-xl border border-border-dim p-4">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
-                  {doc.provider?.user?.image ? (
-                    <img src={doc.provider.user.image} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
-                      {doc.provider?.user?.name?.charAt(0) ?? '?'}
-                    </div>
-                  )}
+          {filtered.map(c => {
+            const docTypes = c.documents.map((d: any) => d.docType);
+            const missing = REQUIRED_DOCS.filter(t => !docTypes.includes(t));
+            const pendingDocs = c.documents.filter((d: any) => d.status === 'PENDING').length;
+            const categories = c.provider?.categories?.map((cat: any) => cat.name).join(', ') || null;
+            return (
+              <div key={c.providerId} className="bg-white rounded-xl border border-border-dim p-4 hover:shadow-card transition-shadow">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
+                    {c.provider?.user?.image ? (
+                      <img src={c.provider.user.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
+                        {c.provider?.user?.name?.charAt(0) ?? '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-ink truncate">{c.provider?.user?.name ?? 'Unknown'}</p>
+                    <p className="text-xs text-ink-dim truncate">{c.provider?.user?.email}</p>
+                    {categories && <p className="text-[10px] text-ink-dim mt-0.5">{categories}</p>}
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${STATUS_STYLE[c.overallStatus]}`}>
+                    {c.overallStatus}
+                  </span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-bold text-sm text-ink truncate">{doc.provider?.user?.name ?? 'Unknown'}</p>
-                  <p className="text-xs text-ink-dim">{doc.provider?.user?.email}</p>
+
+                {/* Document summary */}
+                <div className="flex items-center gap-3 mb-3 text-xs text-ink-dim">
+                  <span className="flex items-center gap-1"><Upload className="w-3 h-3" /> {c.documents.length}/{REQUIRED_DOCS.length} docs</span>
+                  {pendingDocs > 0 && <span className="text-caution font-semibold">{pendingDocs} to review</span>}
+                  {missing.length > 0 && <span className="text-info">Missing: {missing.map((m: string) => DOC_LABELS[m]?.split(' ')[0]).join(', ')}</span>}
                 </div>
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                  doc.status === 'PENDING' ? 'bg-yellow-50 text-yellow-700' :
-                  doc.status === 'APPROVED' ? 'bg-green-50 text-green-700' :
-                  'bg-red-50 text-red-700'
-                }`}>{doc.status}</span>
+
+                {/* Document type pills */}
+                <div className="flex flex-wrap gap-1.5 mb-3">
+                  {REQUIRED_DOCS.map(type => {
+                    const doc = c.documents.find((d: any) => d.docType === type);
+                    const st = doc ? doc.status : 'MISSING';
+                    return (
+                      <span key={type} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${STATUS_STYLE[st]}`}>
+                        {st === 'APPROVED' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                        {st === 'REJECTED' && <XCircle className="w-2.5 h-2.5" />}
+                        {st === 'PENDING' && <Clock className="w-2.5 h-2.5" />}
+                        {DOC_LABELS[type]?.split(' ')[0] ?? type}
+                      </span>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => setReviewCase({ ...c, overallStatus: c.overallStatus })}
+                  className="w-full px-3 py-2 bg-surface-alt text-ink border border-border-dim rounded-lg text-xs font-bold hover:bg-border-dim/30 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Eye className="w-3.5 h-3.5" /> Review Case
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══ Review Case Modal ════════════════════════════════════════════════ */}
+      {reviewCase && (
+        <>
+          <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-50" onClick={() => setReviewCase(null)} />
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div className="bg-white w-full sm:max-w-lg max-h-[90vh] rounded-t-3xl sm:rounded-2xl shadow-float flex flex-col overflow-hidden">
+              {/* Header */}
+              <div className="px-5 py-4 border-b border-border-dim flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
+                    {reviewCase.provider?.user?.image ? (
+                      <img src={reviewCase.provider.user.image} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
+                        {reviewCase.provider?.user?.name?.charAt(0) ?? '?'}
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-bold text-sm text-ink truncate">{reviewCase.provider?.user?.name}</p>
+                    <p className="text-[11px] text-ink-dim truncate">{reviewCase.provider?.user?.email}</p>
+                  </div>
+                </div>
+                <button onClick={() => setReviewCase(null)} className="p-1.5 rounded-lg hover:bg-surface-alt transition-colors">
+                  <X className="w-5 h-5 text-ink-dim" />
+                </button>
               </div>
 
-              <div className="flex items-center gap-3 mb-3 p-3 bg-surface-alt rounded-lg">
-                <div className="w-16 h-12 rounded-lg overflow-hidden border border-border-dim shrink-0 bg-white">
-                  <img src={doc.docUrl} alt={doc.docType} className="w-full h-full object-cover" />
+              {/* Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                {/* Overall status */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-ink-dim uppercase tracking-wider">Case Status</span>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_STYLE[reviewCase.overallStatus]}`}>
+                    {reviewCase.overallStatus}
+                  </span>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-ink">{DOC_LABELS[doc.docType] ?? doc.docType}</p>
-                  <p className="text-xs text-ink-dim">
-                    Submitted {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                  </p>
+
+                {/* Document checklist */}
+                <div className="space-y-3">
+                  <p className="text-xs font-bold text-ink-dim uppercase tracking-wider">Document Checklist</p>
+                  {REQUIRED_DOCS.map(type => {
+                    const doc = reviewCase.documents.find((d: any) => d.docType === type);
+                    const Icon = DOC_ICONS[type] || FileText;
+                    return (
+                      <div key={type} className="bg-surface-alt rounded-xl p-3.5">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 border border-border-dim">
+                            <Icon className="w-4 h-4 text-ink-dim" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-ink">{DOC_LABELS[type]}</p>
+                            {doc ? (
+                              <p className="text-[10px] text-ink-dim">
+                                Uploaded {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            ) : (
+                              <p className="text-[10px] text-ink-dim">Not uploaded</p>
+                            )}
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${STATUS_STYLE[doc ? doc.status : 'MISSING']}`}>
+                            {doc ? doc.status : 'Missing'}
+                          </span>
+                        </div>
+
+                        {doc && (
+                          <>
+                            {/* Document preview */}
+                            <button
+                              onClick={() => setPreviewUrl(doc.docUrl)}
+                              className="w-full h-32 rounded-lg overflow-hidden border border-border-dim bg-white mb-2 relative group cursor-pointer"
+                            >
+                              <img src={doc.docUrl} alt={doc.docType} className="w-full h-full object-cover" />
+                              <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/30 transition-all flex items-center justify-center">
+                                <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </button>
+
+                            {/* Rejection reason display */}
+                            {doc.status === 'REJECTED' && doc.rejectionReason && (
+                              <div className="flex items-start gap-2 p-2 bg-danger-surface rounded-lg mb-2">
+                                <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
+                                <p className="text-[11px] text-danger">{doc.rejectionReason}</p>
+                              </div>
+                            )}
+
+                            {/* Per-document actions */}
+                            {doc.status === 'PENDING' && (
+                              <div className="flex gap-2">
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => handleVerify(doc.id, 'APPROVED', undefined, 'TIER1_ID_VERIFIED')}
+                                  className="flex-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-[11px] font-bold hover:bg-trust-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                >
+                                  <CheckCircle2 className="w-3 h-3" /> Approve
+                                </button>
+                                <button
+                                  disabled={actionLoading}
+                                  onClick={() => { setRejectDocId(doc.id); setRejectReason(''); }}
+                                  className="flex-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-[11px] font-bold hover:bg-danger-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                >
+                                  <XCircle className="w-3 h-3" /> Reject
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Reject reason input */}
+                            {rejectDocId === doc.id && (
+                              <div className="mt-2 space-y-2">
+                                <textarea
+                                  value={rejectReason}
+                                  onChange={e => setRejectReason(e.target.value)}
+                                  placeholder="Reason for rejection (shown to provider)..."
+                                  className="w-full px-3 py-2 text-xs border border-border-dim rounded-lg focus:ring-1 focus:ring-brand focus:border-brand resize-none"
+                                  rows={2}
+                                  autoFocus
+                                />
+                                <div className="flex gap-2">
+                                  <button
+                                    disabled={actionLoading}
+                                    onClick={async () => {
+                                      await handleVerify(doc.id, 'REJECTED', rejectReason || undefined);
+                                      setRejectDocId(null);
+                                      setRejectReason('');
+                                    }}
+                                    className="flex-1 px-2.5 py-1.5 bg-danger text-white rounded-lg text-[11px] font-bold hover:bg-danger/90 transition-colors disabled:opacity-50"
+                                  >
+                                    Confirm Reject
+                                  </button>
+                                  <button
+                                    onClick={() => { setRejectDocId(null); setRejectReason(''); }}
+                                    className="px-3 py-1.5 bg-surface-alt text-ink-dim rounded-lg text-[11px] font-bold hover:bg-border-dim/30 transition-colors"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        )}
+
+                        {/* Not uploaded state */}
+                        {!doc && (
+                          <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-dashed border-border-dim">
+                            <Upload className="w-3.5 h-3.5 text-ink-dim" />
+                            <p className="text-[11px] text-ink-dim">Provider has not uploaded this document yet.</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {doc.status === 'PENDING' && (
-                <div className="flex gap-2">
+              {/* Footer actions */}
+              {reviewCase.documents.some((d: any) => d.status === 'PENDING') && (
+                <div className="px-5 py-4 border-t border-border-dim shrink-0 flex gap-2">
                   <button
-                    onClick={() => handleVerify(doc.id, 'APPROVED', 'TIER1_ID_VERIFIED')}
-                    className="flex-1 px-3 py-2 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-bold hover:bg-trust-surface/80 transition-colors"
+                    disabled={actionLoading}
+                    onClick={() => handleApproveAll(reviewCase.documents)}
+                    className="flex-1 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
                   >
-                    Approve
-                  </button>
-                  <button
-                    onClick={() => handleVerify(doc.id, 'REJECTED')}
-                    className="flex-1 px-3 py-2 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-bold hover:bg-danger-surface/80 transition-colors"
-                  >
-                    Reject
+                    <CheckCircle2 className="w-4 h-4" /> Approve All Pending
                   </button>
                 </div>
               )}
             </div>
-          ))}
-        </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══ Image Preview Lightbox ═══════════════════════════════════════════ */}
+      {previewUrl && (
+        <>
+          <div className="fixed inset-0 bg-ink/80 backdrop-blur-sm z-[60]" onClick={() => setPreviewUrl(null)} />
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <button
+              onClick={() => setPreviewUrl(null)}
+              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+            <img
+              src={previewUrl}
+              alt="Document preview"
+              className="max-w-full max-h-[85vh] rounded-xl shadow-float object-contain"
+            />
+            <a
+              href={previewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-6 right-6 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" /> Open Original
+            </a>
+          </div>
+        </>
       )}
     </div>
   );

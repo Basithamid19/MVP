@@ -121,10 +121,44 @@ export async function GET(request: Request) {
 
   if (section === 'verifications') {
     const verifications = await prisma.providerVerification.findMany({
-      include: { provider: { include: { user: { select: { name: true, email: true, image: true } } } } },
+      include: {
+        provider: {
+          include: {
+            user: { select: { name: true, email: true, image: true } },
+            categories: { select: { name: true } },
+          },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(verifications);
+
+    // Group by provider
+    const grouped = new Map<string, any>();
+    for (const doc of verifications) {
+      const key = doc.providerProfileId;
+      if (!grouped.has(key)) {
+        grouped.set(key, {
+          providerId: key,
+          provider: doc.provider,
+          documents: [],
+          submittedAt: doc.createdAt,
+        });
+      }
+      grouped.get(key)!.documents.push({
+        id: doc.id,
+        docType: doc.docType,
+        docUrl: doc.docUrl,
+        status: doc.status,
+        rejectionReason: (doc as any).rejectionReason ?? null,
+        createdAt: doc.createdAt,
+      });
+      // Track earliest submission
+      if (new Date(doc.createdAt) < new Date(grouped.get(key)!.submittedAt)) {
+        grouped.get(key)!.submittedAt = doc.createdAt;
+      }
+    }
+
+    return NextResponse.json(Array.from(grouped.values()));
   }
 
   if (section === 'tickets') {
@@ -146,10 +180,13 @@ export async function PATCH(request: Request) {
 
   // Verify provider document
   if (!action || action === 'verify') {
-    const { verificationId, status, tier } = body;
+    const { verificationId, status, tier, rejectionReason } = body;
     const verification = await prisma.providerVerification.update({
       where: { id: verificationId },
-      data: { status },
+      data: {
+        status,
+        ...(rejectionReason !== undefined && { rejectionReason }),
+      },
     });
 
     const provider = await prisma.providerProfile.findUnique({
@@ -176,7 +213,9 @@ export async function PATCH(request: Request) {
         userId: provider.userId,
         type: 'status',
         title: 'Verification update',
-        body: 'A submitted document was not approved. Please resubmit with a clearer image.',
+        body: rejectionReason
+          ? `A document was rejected: ${rejectionReason}`
+          : 'A submitted document was not approved. Please resubmit with a clearer image.',
         href: '/provider/verification',
       });
     }

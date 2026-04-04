@@ -90,9 +90,10 @@ model ProviderVerification {
   id                String           @id @default(cuid())
   providerProfileId String
   provider          ProviderProfile  @relation(fields: [providerProfileId], references: [id])
-  docType           String           // "ID", "CERTIFICATE", "INSURANCE"
+  docType           String           // "ID", "CERTIFICATE", "INSURANCE", "SELFIE"
   docUrl            String
   status            String           // "PENDING", "APPROVED", "REJECTED"
+  rejectionReason   String?
   createdAt         DateTime         @default(now())
 }
 

@@ -13,6 +13,7 @@ interface VerificationDoc {
   docType: string;
   docUrl: string;
   status: string;
+  rejectionReason?: string | null;
   createdAt: string;
 }
 
@@ -120,20 +121,28 @@ export default function VerificationStatusPage() {
             const st = STATUS_STYLES[doc.status] ?? STATUS_STYLES.PENDING;
             const Icon = st.icon;
             return (
-              <div key={doc.id} className={`rounded-xl border p-4 flex items-center gap-4 ${st.bg} border-opacity-50`}>
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 border border-border-dim">
-                  <FileText className="w-5 h-5 text-ink-sub" />
+              <div key={doc.id} className={`rounded-xl border p-4 ${st.bg} border-opacity-50`}>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 border border-border-dim">
+                    <FileText className="w-5 h-5 text-ink-sub" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-ink">{DOC_TYPE_LABELS[doc.docType] ?? doc.docType}</p>
+                    <p className="text-xs text-ink-dim">
+                      Submitted {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${st.bg} ${st.text}`}>
+                    <Icon className="w-3.5 h-3.5" />
+                    <span className="text-xs font-bold">{st.label}</span>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-ink">{DOC_TYPE_LABELS[doc.docType] ?? doc.docType}</p>
-                  <p className="text-xs text-ink-dim">
-                    Submitted {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
-                </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${st.bg} ${st.text}`}>
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className="text-xs font-bold">{st.label}</span>
-                </div>
+                {doc.status === 'REJECTED' && doc.rejectionReason && (
+                  <div className="mt-3 ml-14 flex items-start gap-2 p-2.5 bg-white rounded-lg border border-red-200">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+                    <p className="text-xs text-red-700">{doc.rejectionReason}</p>
+                  </div>
+                )}
               </div>
             );
           })}
