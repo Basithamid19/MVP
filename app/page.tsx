@@ -113,30 +113,10 @@ const SERVICE_CARD_DESCS = [
 /* ─── Trust Carousel ─── */
 
 const trustItems = [
-  {
-    icon: CheckCircle2,
-    title: '30-Day Guarantee',
-    desc: 'Not satisfied? We make it right.',
-    detail: 'If you\'re unhappy with any job within 30 days of completion, we\'ll arrange a free return visit or issue a full refund — no arguments, no hassle.',
-  },
-  {
-    icon: FileText,
-    title: 'Upfront Pricing',
-    desc: 'No surprises. Ever.',
-    detail: 'Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.',
-  },
-  {
-    icon: BadgeCheck,
-    title: 'Verified Professionals',
-    desc: 'Every pro is background-checked.',
-    detail: 'All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.',
-  },
-  {
-    icon: Shield,
-    title: 'Damage Cover Included',
-    desc: 'Up to €100 on eligible jobs.',
-    detail: 'Accidental damage during a job? We\'ve got you covered. Eligible claims are reviewed and processed within 5 business days.',
-  },
+  { icon: CheckCircle2, title: '30-Day Guarantee',      desc: 'Free return visit or full refund within 30 days.' },
+  { icon: FileText,     title: 'Upfront Pricing',        desc: 'Full cost locked in before work begins. No hidden fees.' },
+  { icon: BadgeCheck,   title: 'Verified Professionals', desc: 'ID-verified, insured, and compliance-reviewed.' },
+  { icon: Shield,       title: 'Damage Cover Included',  desc: 'Up to €100 on eligible accidental damage claims.' },
 ];
 
 function TrustCarousel() {
@@ -191,20 +171,15 @@ function TrustCarousel() {
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-5 pt-5 pb-6 flex flex-col gap-3 shadow-card"
+                className="bg-white border border-border-dim/60 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-card min-h-[72px]"
               >
-                {/* Icon + title row */}
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                    <Icon className="w-[20px] h-[20px] text-brand" />
-                  </div>
-                  <div>
-                    <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
-                    <p className="text-[11px] font-semibold text-brand uppercase tracking-wide mt-0.5">{item.desc}</p>
-                  </div>
+                <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                  <Icon className="w-[20px] h-[20px] text-brand" />
                 </div>
-                {/* Detail paragraph */}
-                <p className="text-[13px] text-ink-sub leading-relaxed">{item.detail}</p>
+                <div className="min-w-0">
+                  <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
+                  <p className="text-[13px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
+                </div>
               </motion.div>
             </div>
 
@@ -237,17 +212,14 @@ function TrustCarousel() {
           {trustItems.map((t) => {
             const TIcon = t.icon;
             return (
-              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl p-4 flex flex-col gap-3 shadow-card">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                    <TIcon className="w-[17px] h-[17px] text-brand" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-bold text-ink leading-tight">{t.title}</p>
-                    <p className="text-[10px] font-semibold text-brand uppercase tracking-wide mt-0.5">{t.desc}</p>
-                  </div>
+              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+                <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                  <TIcon className="w-[17px] h-[17px] text-brand" />
                 </div>
-                <p className="text-[11px] text-ink-sub leading-relaxed">{t.detail}</p>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-bold text-ink leading-tight">{t.title}</p>
+                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
+                </div>
               </div>
             );
           })}
@@ -783,24 +755,24 @@ export default function LandingPage() {
           <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
             {[
               {
+                icon: CheckCircle2,
+                title: '30-Day Guarantee',
+                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
+              },
+              {
+                icon: FileText,
+                title: 'Upfront, Transparent Pricing',
+                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
+              },
+              {
                 icon: BadgeCheck,
-                title: 'Verified Experts',
-                desc: 'Every pro is ID-verified and trade-certified before joining.',
+                title: 'Verified Professionals',
+                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
               },
               {
-                icon: Star,
-                title: 'Real Reviews Only',
-                desc: 'Only customers with completed bookings can leave reviews.',
-              },
-              {
-                icon: Zap,
-                title: 'Fast Response',
-                desc: 'Most requests get a reply from a local pro within 1 hour.',
-              },
-              {
-                icon: MessageCircle,
-                title: 'Direct Messaging',
-                desc: 'Chat with pros before booking to align on scope and price.',
+                icon: Shield,
+                title: 'Damage Cover Included',
+                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
               },
             ].map(({ icon: Icon, title, desc }, i) => (
               <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
