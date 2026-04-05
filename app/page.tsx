@@ -146,8 +146,8 @@ function TrustCarousel() {
   const Icon = item.icon;
 
   return (
-    <div className="mt-6">
-      <div className="bg-surface-alt rounded-2xl px-4 py-5">
+    <div className="mt-3">
+      <div className="bg-surface-alt rounded-2xl px-4 pt-4 pb-3">
         <p className="text-sm font-semibold text-ink-sub uppercase tracking-wider mb-3 text-center">Why customers trust Aladdin</p>
 
         {/* Mobile: single-card carousel */}
@@ -193,7 +193,7 @@ function TrustCarousel() {
           </div>
 
           {/* Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-5">
+          <div className="flex items-center justify-center gap-1.5 mt-3">
             {trustItems.map((_, i) => (
               <button
                 key={i}
@@ -342,7 +342,7 @@ export default function LandingPage() {
               </p>
 
               {/* Unified Search Bar */}
-              <form onSubmit={handleSearch} className="mb-8">
+              <form onSubmit={handleSearch} className="mb-5">
                 <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
                   <div className="flex-1 flex items-center px-4 py-2">
                     <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
@@ -375,7 +375,7 @@ export default function LandingPage() {
               </form>
 
               {/* Get help your way */}
-              <div className="mt-6 mb-2">
+              <div className="mt-4 mb-1">
                 <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
