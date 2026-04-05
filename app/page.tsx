@@ -375,7 +375,7 @@ export default function LandingPage() {
               </form>
 
               {/* Get help your way */}
-              <div className="mt-4 mb-1">
+              <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-2">
                 <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
