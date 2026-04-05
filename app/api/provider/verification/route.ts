@@ -35,11 +35,22 @@ export async function POST(request: Request) {
   const { documents, identity, businessType } = body;
   // documents: [{ docType: 'ID' | 'CERTIFICATE' | 'INSURANCE' | 'SELFIE', docUrl: string }]
 
-  const provider = await prisma.providerProfile.findUnique({
+  let provider = await prisma.providerProfile.findUnique({
     where: { userId: (session.user as any).id },
   });
 
-  if (!provider) return NextResponse.json({ error: 'No provider profile' }, { status: 404 });
+  // Auto-create the provider profile if it doesn't exist yet
+  // (provider signed up and went straight to onboarding without editing profile first)
+  if (!provider) {
+    provider = await prisma.providerProfile.create({
+      data: {
+        userId: (session.user as any).id,
+        bio: '',
+        serviceArea: 'Vilnius',
+        languages: ['Lithuanian'],
+      },
+    });
+  }
 
   // Create verification records for each document
   const created = [];
