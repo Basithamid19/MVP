@@ -374,62 +374,61 @@ export default function LandingPage() {
                 </div>
               </form>
 
-              {/* Choose how to get help */}
-              <div className="mt-5 mb-5">
-                <p className="text-[11px] font-bold text-ink uppercase tracking-[0.12em] mb-2.5 px-0.5">Choose how to get help</p>
-                <div className="bg-white border border-border-dim rounded-2xl shadow-card overflow-hidden">
-                  {/* Row 1: Find a Pro */}
-                  <Link
-                    href="/browse"
-                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-surface-alt active:bg-surface-alt transition-colors"
-                  >
-                    <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                      <Search className="w-[17px] h-[17px] text-brand" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-ink leading-tight">Find a Pro</p>
-                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
-                  </Link>
+              {/* Get help your way */}
+              <div className="mt-6 mb-2">
+                <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
-                  <div className="h-px bg-border-dim/60 mx-4" />
+                {/* Row 1: Find a Pro */}
+                <Link
+                  href="/browse"
+                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                >
+                  <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                    <Search className="w-[17px] h-[17px] text-brand" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-ink leading-tight">Find a Pro</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-ink-dim/50 shrink-0" />
+                </Link>
 
-                  {/* Row 2: Post a Request */}
-                  <Link
-                    href="/requests/new"
-                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-surface-alt active:bg-surface-alt transition-colors"
-                  >
-                    <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                      <FileText className="w-[17px] h-[17px] text-brand" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] font-semibold text-ink leading-tight">Post a Request</p>
-                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
-                  </Link>
+                <div className="h-px bg-border-dim/50 ml-[52px]" />
 
-                  <div className="h-px bg-border-dim/60 mx-4" />
+                {/* Row 2: Post a Request */}
+                <Link
+                  href="/requests/new"
+                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                >
+                  <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                    <FileText className="w-[17px] h-[17px] text-brand" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-semibold text-ink leading-tight">Post a Request</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-ink-dim/50 shrink-0" />
+                </Link>
 
-                  {/* Row 3: Urgent Help */}
-                  <Link
-                    href="/requests/new?urgent=1"
-                    className="flex items-center gap-3.5 px-4 py-3.5 bg-brand-muted/40 hover:bg-brand-muted/60 active:bg-brand-muted/60 transition-colors"
-                  >
-                    <div className="w-9 h-9 bg-brand/10 rounded-xl flex items-center justify-center shrink-0">
-                      <Zap className="w-[17px] h-[17px] text-brand" />
+                <div className="h-px bg-border-dim/50 ml-[52px]" />
+
+                {/* Row 3: Urgent Help */}
+                <Link
+                  href="/requests/new?urgent=1"
+                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                >
+                  <div className="w-9 h-9 bg-brand/12 rounded-xl flex items-center justify-center shrink-0">
+                    <Zap className="w-[17px] h-[17px] text-brand" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[14px] font-bold text-ink leading-tight">Urgent Help</p>
+                      <span className="text-[10px] font-bold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">Priority</span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-[14px] font-semibold text-ink leading-tight">Urgent Help</p>
-                        <span className="text-[10px] font-bold text-brand bg-brand/10 px-1.5 py-0.5 rounded-full leading-none">Priority</span>
-                      </div>
-                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-brand/40 shrink-0" />
-                  </Link>
-                </div>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-brand/35 shrink-0" />
+                </Link>
               </div>
 
               {/* Trust Carousel */}
