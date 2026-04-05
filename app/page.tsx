@@ -113,10 +113,30 @@ const SERVICE_CARD_DESCS = [
 /* ─── Trust Carousel ─── */
 
 const trustItems = [
-  { icon: CheckCircle2, title: '30-day guarantee', desc: 'We\'ll help make it right after the job.' },
-  { icon: FileText, title: 'Transparent pricing', desc: 'Clear quotes before booking.' },
-  { icon: BadgeCheck, title: 'Verified professionals', desc: 'ID-checked local pros.' },
-  { icon: Shield, title: 'Damage cover up to €100', desc: 'Eligible accidental damage can be covered.' },
+  {
+    icon: CheckCircle2,
+    title: '30-Day Guarantee',
+    desc: 'Not satisfied? We make it right.',
+    detail: 'If you\'re unhappy with any job within 30 days of completion, we\'ll arrange a free return visit or issue a full refund — no arguments, no hassle.',
+  },
+  {
+    icon: FileText,
+    title: 'Upfront Pricing',
+    desc: 'No surprises. Ever.',
+    detail: 'Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.',
+  },
+  {
+    icon: BadgeCheck,
+    title: 'Verified Professionals',
+    desc: 'Every pro is background-checked.',
+    detail: 'All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.',
+  },
+  {
+    icon: Shield,
+    title: 'Damage Cover Included',
+    desc: 'Up to €100 on eligible jobs.',
+    detail: 'Accidental damage during a job? We\'ve got you covered. Eligible claims are reviewed and processed within 5 business days.',
+  },
 ];
 
 function TrustCarousel() {
@@ -171,15 +191,20 @@ function TrustCarousel() {
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-5 py-4 flex items-center justify-center gap-4 shadow-card min-h-[72px]"
+                className="bg-white border border-border-dim/60 rounded-2xl px-5 pt-5 pb-6 flex flex-col gap-3 shadow-card"
               >
-                <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-[22px] h-[22px] text-brand" />
+                {/* Icon + title row */}
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                    <Icon className="w-[20px] h-[20px] text-brand" />
+                  </div>
+                  <div>
+                    <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
+                    <p className="text-[11px] font-semibold text-brand uppercase tracking-wide mt-0.5">{item.desc}</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
-                  <p className="text-[13px] text-ink-sub leading-snug mt-1">{item.desc}</p>
-                </div>
+                {/* Detail paragraph */}
+                <p className="text-[13px] text-ink-sub leading-relaxed">{item.detail}</p>
               </motion.div>
             </div>
 
@@ -212,14 +237,17 @@ function TrustCarousel() {
           {trustItems.map((t) => {
             const TIcon = t.icon;
             return (
-              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
-                <div className="w-7 h-7 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
-                  <TIcon className="w-3.5 h-3.5 text-brand" />
+              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl p-4 flex flex-col gap-3 shadow-card">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                    <TIcon className="w-[17px] h-[17px] text-brand" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-bold text-ink leading-tight">{t.title}</p>
+                    <p className="text-[10px] font-semibold text-brand uppercase tracking-wide mt-0.5">{t.desc}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-ink leading-tight">{t.title}</p>
-                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
-                </div>
+                <p className="text-[11px] text-ink-sub leading-relaxed">{t.detail}</p>
               </div>
             );
           })}
