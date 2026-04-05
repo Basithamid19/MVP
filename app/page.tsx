@@ -381,7 +381,7 @@ export default function LandingPage() {
                 {/* Row 1: Find a Pro */}
                 <Link
                   href="/browse"
-                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 py-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
                   <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
                     <Search className="w-[17px] h-[17px] text-brand" />
@@ -398,7 +398,7 @@ export default function LandingPage() {
                 {/* Row 2: Post a Request */}
                 <Link
                   href="/requests/new"
-                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 py-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
                   <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
                     <FileText className="w-[17px] h-[17px] text-brand" />
@@ -415,7 +415,7 @@ export default function LandingPage() {
                 {/* Row 3: Urgent Help */}
                 <Link
                   href="/requests/new?urgent=1"
-                  className="flex items-center gap-4 py-3.5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 py-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
                   <div className="w-9 h-9 bg-brand/12 rounded-xl flex items-center justify-center shrink-0">
                     <Zap className="w-[17px] h-[17px] text-brand" />
