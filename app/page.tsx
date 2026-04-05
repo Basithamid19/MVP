@@ -431,9 +431,6 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              {/* Trust Carousel */}
-              <TrustCarousel />
-
             </motion.div>
 
             {/* Hero right — Art Directed Image */}
@@ -607,6 +604,13 @@ export default function LandingPage() {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      {/* ── Why Customers Trust Aladdin ── */}
+      <section className="bg-white pb-8 lg:pb-12 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <TrustCarousel />
         </div>
       </section>
 
