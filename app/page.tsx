@@ -415,19 +415,19 @@ export default function LandingPage() {
                   {/* Row 3: Urgent Help */}
                   <Link
                     href="/requests/new?urgent=1"
-                    className="flex items-center gap-3.5 px-4 py-3.5 bg-orange-50/60 hover:bg-orange-50 active:bg-orange-50 transition-colors"
+                    className="flex items-center gap-3.5 px-4 py-3.5 bg-brand-muted/40 hover:bg-brand-muted/60 active:bg-brand-muted/60 transition-colors"
                   >
-                    <div className="w-9 h-9 bg-caution/12 rounded-xl flex items-center justify-center shrink-0">
-                      <Zap className="w-[17px] h-[17px] text-caution" />
+                    <div className="w-9 h-9 bg-brand/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Zap className="w-[17px] h-[17px] text-brand" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-[14px] font-semibold text-orange-900 leading-tight">Urgent Help</p>
-                        <span className="text-[10px] font-bold text-caution bg-caution/12 px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                        <p className="text-[14px] font-semibold text-ink leading-tight">Urgent Help</p>
+                        <span className="text-[10px] font-bold text-brand bg-brand/10 px-1.5 py-0.5 rounded-full leading-none">Priority</span>
                       </div>
-                      <p className="text-[12px] text-orange-700/70 mt-0.5 leading-snug">Need someone today? Get priority matching</p>
+                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-caution/50 shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-brand/40 shrink-0" />
                   </Link>
                 </div>
               </div>
