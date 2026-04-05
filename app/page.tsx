@@ -383,7 +383,7 @@ export default function LandingPage() {
                   href="/browse"
                   className="flex items-center gap-4 pt-5 pb-7 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#8FAD82] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-10 h-10 bg-[#D7BF09] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                     <Users className="w-[18px] h-[18px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -400,7 +400,7 @@ export default function LandingPage() {
                   href="/requests/new"
                   className="flex items-center gap-4 pt-5 pb-7 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#8FAD82] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-10 h-10 bg-[#D7BF09] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                     <ScrollText className="w-[18px] h-[18px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -417,7 +417,7 @@ export default function LandingPage() {
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-5 pb-2 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#8FAD82] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-10 h-10 bg-[#D7BF09] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
                     <BellRing className="w-[18px] h-[18px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
