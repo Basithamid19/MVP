@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   Star,
   ShieldCheck,
@@ -42,6 +43,7 @@ const SLOT_ICONS: Record<string, React.ElementType> = {
 export default function ProviderProfilePage() {
   const { id }   = useParams();
   const router   = useRouter();
+  const { data: session } = useSession();
   const [provider, setProvider] = useState<any>(null);
   const [reviews,  setReviews]  = useState<any[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
@@ -399,7 +401,9 @@ export default function ProviderProfilePage() {
             </div>
 
             <Link
-              href={`/requests/new?providerId=${provider.id}&category=${provider.categories[0]?.slug}`}
+              href={session
+                ? `/requests/new?providerId=${provider.id}&category=${provider.categories[0]?.slug}`
+                : `/login?callbackUrl=/providers/${provider.id}`}
               className="block w-full bg-brand text-white text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-brand-dark transition-all mb-3 shadow-sm hover:shadow-elevated text-sm sm:text-base"
             >
               Send Service Request

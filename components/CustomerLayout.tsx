@@ -116,7 +116,10 @@ export default function CustomerLayout({
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, Icon, match }) => {
+          {NAV_ITEMS.filter(item =>
+            // Hide auth-only items (Dashboard, My Account) for guests
+            session || (item.href === '/' || item.href === '/browse')
+          ).map(({ href, label, Icon, match }) => {
             const active = match(pathname);
             return (
               <Link
@@ -136,13 +139,23 @@ export default function CustomerLayout({
         </nav>
 
         <div className="p-4 lg:p-6">
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
-          >
-            <LogOut className="w-4 h-4 shrink-0" />
-            <span className="hidden lg:block">Log Out</span>
-          </button>
+          {session ? (
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span className="hidden lg:block">Log Out</span>
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand hover:bg-brand-muted transition-all"
+            >
+              <LogOut className="w-4 h-4 shrink-0 rotate-180" />
+              <span className="hidden lg:block">Log In</span>
+            </Link>
+          )}
         </div>
       </aside>
 

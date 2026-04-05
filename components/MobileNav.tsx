@@ -3,7 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Home, Search, MessageCircle, Inbox, UserCircle2, Briefcase, TrendingUp } from 'lucide-react';
+import { Home, Search, MessageCircle, Inbox, UserCircle2, Briefcase, TrendingUp, LogIn } from 'lucide-react';
+
+const GUEST_TABS = [
+  { href: '/',       label: 'Home',     icon: Home,   active: (p: string) => p === '/' },
+  { href: '/browse', label: 'Find Pros', icon: Search, active: (p: string) => p === '/browse' || p.startsWith('/providers') },
+  { href: '/login',  label: 'Log In',   icon: LogIn,  active: (p: string) => p === '/login' },
+];
 
 const CUSTOMER_TABS = [
   { href: '/',          label: 'Home',      icon: Home,          active: (p: string) => p === '/' },
@@ -23,9 +29,13 @@ const PROVIDER_TABS = [
 
 export default function MobileNav() {
   const pathname = usePathname() ?? '';
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const role = (session?.user as any)?.role;
-  const tabs = role === 'PROVIDER' ? PROVIDER_TABS : CUSTOMER_TABS;
+
+  // Don't render until auth is resolved to avoid flash
+  if (status === 'loading') return null;
+
+  const tabs = !session ? GUEST_TABS : role === 'PROVIDER' ? PROVIDER_TABS : CUSTOMER_TABS;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">
