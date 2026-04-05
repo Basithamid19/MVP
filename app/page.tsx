@@ -375,49 +375,61 @@ export default function LandingPage() {
               </form>
 
               {/* Choose how to get help */}
-              <div className="mb-6 mt-2">
-                <p className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-3">Choose how to get help</p>
-                {/* Row 1: Find a Pro + Post a Request */}
-                <div className="grid grid-cols-2 gap-3 mb-3">
+              <div className="mt-5 mb-5">
+                <p className="text-[11px] font-bold text-ink uppercase tracking-[0.12em] mb-2.5 px-0.5">Choose how to get help</p>
+                <div className="bg-white border border-border-dim rounded-2xl shadow-card overflow-hidden">
+                  {/* Row 1: Find a Pro */}
                   <Link
                     href="/browse"
-                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
+                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-surface-alt active:bg-surface-alt transition-colors"
                   >
-                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
-                      <Search className="w-[20px] h-[20px] text-brand" />
+                    <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                      <Search className="w-[17px] h-[17px] text-brand" />
                     </div>
-                    <div>
-                      <p className="text-[14px] font-bold text-ink leading-tight">Find a Pro</p>
-                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Browse &amp; compare verified professionals</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-ink leading-tight">Find a Pro</p>
+                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
                   </Link>
+
+                  <div className="h-px bg-border-dim/60 mx-4" />
+
+                  {/* Row 2: Post a Request */}
                   <Link
                     href="/requests/new"
-                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
+                    className="flex items-center gap-3.5 px-4 py-3.5 hover:bg-surface-alt active:bg-surface-alt transition-colors"
                   >
-                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
-                      <FileText className="w-[20px] h-[20px] text-brand" />
+                    <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                      <FileText className="w-[17px] h-[17px] text-brand" />
                     </div>
-                    <div>
-                      <p className="text-[14px] font-bold text-ink leading-tight">Post a Request</p>
-                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Describe your job, receive quotes</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[14px] font-semibold text-ink leading-tight">Post a Request</p>
+                      <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
                     </div>
+                    <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+                  </Link>
+
+                  <div className="h-px bg-border-dim/60 mx-4" />
+
+                  {/* Row 3: Urgent Help */}
+                  <Link
+                    href="/requests/new?urgent=1"
+                    className="flex items-center gap-3.5 px-4 py-3.5 bg-orange-50/60 hover:bg-orange-50 active:bg-orange-50 transition-colors"
+                  >
+                    <div className="w-9 h-9 bg-caution/12 rounded-xl flex items-center justify-center shrink-0">
+                      <Zap className="w-[17px] h-[17px] text-caution" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[14px] font-semibold text-orange-900 leading-tight">Urgent Help</p>
+                        <span className="text-[10px] font-bold text-caution bg-caution/12 px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                      </div>
+                      <p className="text-[12px] text-orange-700/70 mt-0.5 leading-snug">Need someone today? Get priority matching</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-caution/50 shrink-0" />
                   </Link>
                 </div>
-                {/* Row 2: Urgent Help — full width, stronger emphasis */}
-                <Link
-                  href="/requests/new?urgent=1"
-                  className="w-full flex items-center gap-4 bg-gradient-to-r from-caution/10 to-orange-50 border border-caution/35 rounded-2xl px-5 py-4 shadow-card hover:shadow-elevated hover:border-caution/60 active:scale-[0.99] transition-all"
-                >
-                  <div className="w-11 h-11 bg-caution/15 rounded-2xl flex items-center justify-center shrink-0">
-                    <Zap className="w-[20px] h-[20px] text-caution" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-orange-900 leading-tight">Urgent Help</p>
-                    <p className="text-[12px] text-caution/90 mt-0.5 leading-snug">Need someone today? Pros are notified instantly.</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-caution/70 shrink-0" />
-                </Link>
               </div>
 
               {/* Trust Carousel */}
