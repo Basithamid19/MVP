@@ -49,7 +49,10 @@ export default function ProviderDashboardPage() {
       ]).then(([profile, leads, bookings]) => {
         setData({ profile, leads: Array.isArray(leads) ? leads : [], bookings: Array.isArray(bookings) ? bookings : [] });
         setLoading(false);
-      }).catch(() => setLoading(false));
+      }).catch(() => {
+        setData({ profile: {}, leads: [], bookings: [] });
+        setLoading(false);
+      });
     }
   }, [status, session, router]);
 

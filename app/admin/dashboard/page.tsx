@@ -1012,7 +1012,7 @@ const STATUS_STYLE: Record<string, string> = {
 function VerificationsModule() {
   const [cases, setCases] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('PENDING');
+  const [filter, setFilter] = useState('ALL');
   const [reviewCase, setReviewCase] = useState<any | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [rejectDocId, setRejectDocId] = useState<string | null>(null);
