@@ -374,6 +374,52 @@ export default function LandingPage() {
                 </div>
               </form>
 
+              {/* Choose how to get help */}
+              <div className="mb-6 mt-2">
+                <p className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-3">Choose how to get help</p>
+                {/* Row 1: Find a Pro + Post a Request */}
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <Link
+                    href="/browse"
+                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
+                  >
+                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
+                      <Search className="w-[20px] h-[20px] text-brand" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-ink leading-tight">Find a Pro</p>
+                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Browse &amp; compare verified professionals</p>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/requests/new"
+                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
+                  >
+                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
+                      <FileText className="w-[20px] h-[20px] text-brand" />
+                    </div>
+                    <div>
+                      <p className="text-[14px] font-bold text-ink leading-tight">Post a Request</p>
+                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Describe your job, receive quotes</p>
+                    </div>
+                  </Link>
+                </div>
+                {/* Row 2: Urgent Help — full width, stronger emphasis */}
+                <Link
+                  href="/requests/new?urgent=1"
+                  className="w-full flex items-center gap-4 bg-gradient-to-r from-caution/10 to-orange-50 border border-caution/35 rounded-2xl px-5 py-4 shadow-card hover:shadow-elevated hover:border-caution/60 active:scale-[0.99] transition-all"
+                >
+                  <div className="w-11 h-11 bg-caution/15 rounded-2xl flex items-center justify-center shrink-0">
+                    <Zap className="w-[20px] h-[20px] text-caution" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[14px] font-bold text-orange-900 leading-tight">Urgent Help</p>
+                    <p className="text-[12px] text-caution/90 mt-0.5 leading-snug">Need someone today? Pros are notified instantly.</p>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-caution/70 shrink-0" />
+                </Link>
+              </div>
+
               {/* Trust Carousel */}
               <TrustCarousel />
 
