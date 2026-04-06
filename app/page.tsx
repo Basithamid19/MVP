@@ -867,6 +867,15 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Photo break — the result */}
+      <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop"
+          alt="Happy customer at home"
+          className="w-full h-full object-cover object-top"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+      </div>
 
       {/* ── 6. Testimonials ── */}
       <section className="py-12 sm:py-24 bg-white overflow-hidden">
