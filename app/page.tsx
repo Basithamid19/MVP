@@ -952,33 +952,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 7. Final CTA ── */}
-      <section className="py-14 sm:py-20 bg-white">
-        <div className="max-w-xl mx-auto px-5 sm:px-6">
-          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
-            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
-              {t.cta.title}
-            </h2>
-            <p className="text-ink-sub text-[14px] sm:text-[15px] leading-relaxed mb-6 max-w-sm mx-auto">
-              {t.cta.subtitle}
-            </p>
-            <Link
-              href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' })}
-            >
-              <Search className="w-4 h-4" /> Find a Professional
-            </Link>
-            <p className="mt-3.5 text-[13px] font-medium">
-              <span className="text-ink-dim">or </span>
-              <Link href="/requests/new" className="text-ink-sub hover:text-ink font-semibold transition-colors">
-                post a job &rarr;
-              </Link>
-            </p>
-            <p className="text-[11px] text-ink-dim mt-5 tracking-wide">Free to post · No commitment · Fast quotes</p>
-          </div>
-        </div>
-      </section>
-
       {/* ── 9. Footer ── */}
       <footer className="bg-canvas border-t border-border-dim py-10 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
