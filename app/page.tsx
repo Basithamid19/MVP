@@ -882,7 +882,7 @@ export default function LandingPage() {
       <section className="overflow-hidden">
 
         {/* ── Mobile: full-green centered card carousel ── */}
-        <div className="md:hidden bg-[#FFCA28] py-14 px-5">
+        <div className="md:hidden bg-[#FFCA28] pt-20 pb-14 px-5">
           {/* White card */}
           <div className="bg-white px-7 pt-16 pb-10 text-center relative shadow-float">
             {/* Decorative quote mark — sits behind content */}
