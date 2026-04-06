@@ -893,7 +893,7 @@ export default function LandingPage() {
       <section className="overflow-hidden">
 
         {/* ── Mobile: brand-consistent centered card carousel ── */}
-        <div className="md:hidden bg-gradient-to-b from-brand-muted to-canvas pt-10 pb-10 px-5">
+        <div className="md:hidden bg-gradient-to-b from-brand-muted to-canvas pt-10 pb-8 px-5">
           {/* White card — swipeable */}
           <div
             className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float select-none"
@@ -905,7 +905,7 @@ export default function LandingPage() {
               <span className="text-[160px] font-black text-brand/8 leading-none translate-y-2">&ldquo;</span>
             </div>
 
-            {/* Avatar — centered, no arrows */}
+            {/* Avatar — centered, swipe to navigate */}
             <div className="flex justify-center mb-5 relative z-10">
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm">
                 <img
@@ -930,18 +930,29 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Dots */}
-          <div className="flex justify-center gap-2 mt-5">
+          {/* Dots — compact, neutral */}
+          <div className="flex justify-center gap-1.5 mt-3">
             {TESTIMONIALS.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setActiveTestimonial(i)}
                 className={`rounded-full transition-all duration-300 ${
-                  i === activeTestimonial ? 'w-6 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-brand/25'
+                  i === activeTestimonial ? 'w-5 h-1 bg-brand' : 'w-1 h-1 bg-ink-dim/20'
                 }`}
                 aria-label={`Go to review ${i + 1}`}
               />
             ))}
+          </div>
+
+          {/* Quiet CTA */}
+          <div className="flex justify-center mt-5">
+            <Link
+              href="/browse"
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-sub hover:text-ink transition-colors"
+            >
+              See more reviews
+              <ChevronRight className="w-3 h-3" />
+            </Link>
           </div>
         </div>
 
