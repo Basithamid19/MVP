@@ -147,7 +147,7 @@ function TrustCarousel() {
 
   return (
     <div className="mt-3">
-      <div className="bg-surface-alt rounded-2xl px-4 pt-4 pb-3">
+      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-2">
         <p className="text-sm font-semibold text-ink-sub uppercase tracking-wider mb-3 text-center">Why customers trust Aladdin</p>
 
         {/* Mobile: single-card carousel */}
@@ -171,10 +171,10 @@ function TrustCarousel() {
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-card min-h-[72px]"
+                className="bg-white border border-border-dim/60 rounded-2xl px-4 py-2.5 flex items-center gap-4 shadow-card min-h-[58px]"
               >
-                <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-[20px] h-[20px] text-brand" />
+                <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                  <Icon className="w-[17px] h-[17px] text-brand" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
