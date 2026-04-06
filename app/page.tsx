@@ -802,19 +802,6 @@ export default function LandingPage() {
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
               Every booking is backed by real guarantees, verified professionals, and transparent pricing.
             </p>
-            {/* Metric pills */}
-            <div className="flex gap-2 justify-center flex-wrap">
-              {[
-                { value: '2,400+', label: 'Reviews' },
-                { value: '100+',   label: 'Vetted Pros' },
-                { value: '<1 hr',  label: 'Avg. Response' },
-              ].map(m => (
-                <div key={m.label} className="flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
-                  <span className="text-brand font-bold text-sm">{m.value}</span>
-                  <span className="text-ink-sub text-sm">{m.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Vertical timeline */}
