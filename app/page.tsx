@@ -244,6 +244,7 @@ export default function LandingPage() {
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [topPros, setTopPros]           = useState<any[]>([]);
   const [prosLoading, setProsLoading]   = useState(true);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
@@ -878,80 +879,112 @@ export default function LandingPage() {
       </div>
 
       {/* ── 6. Testimonials ── */}
-      <section className="py-12 sm:py-24 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-16 px-4 sm:px-6 lg:px-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">{t.testimonials.title}</h2>
-            <p className="text-ink-sub text-sm sm:text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
-          </div>
+      <section className="overflow-hidden">
 
-          {/* Mobile: horizontal scroll carousel */}
-          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory px-4 pb-2 md:hidden">
-            {TESTIMONIALS.map((t, idx) => (
-              <div
-                key={idx}
-                className="shrink-0 w-[85vw] max-w-[320px] snap-start bg-white border border-border-dim rounded-2xl p-5 flex flex-col shadow-card"
+        {/* ── Mobile: full-green centered card carousel ── */}
+        <div className="md:hidden bg-brand py-14 px-5">
+          {/* White card */}
+          <div className="bg-white rounded-3xl px-7 py-10 text-center relative overflow-hidden shadow-float">
+            {/* Decorative quote mark — sits behind content */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+              <span className="text-[180px] font-black text-brand/8 leading-none translate-y-4">&ldquo;</span>
+            </div>
+
+            {/* Avatar + arrows */}
+            <div className="flex items-center justify-between mb-7 relative z-10">
+              <button
+                onClick={() => setActiveTestimonial((activeTestimonial - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
+                className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink active:scale-90 transition-all"
+                aria-label="Previous"
               >
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                {/* Quote */}
-                <p className="text-[13px] leading-relaxed text-ink flex-1 mb-5">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                {/* Attribution */}
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-border-dim">
-                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-[13px] font-bold text-ink leading-tight">{t.name}</p>
-                    <p className="text-[11px] text-ink-sub mt-0.5">{t.service}</p>
-                  </div>
-                </div>
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border-dim shadow-sm">
+                <img
+                  src={TESTIMONIALS[activeTestimonial].avatar}
+                  alt={TESTIMONIALS[activeTestimonial].name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
+              <button
+                onClick={() => setActiveTestimonial((activeTestimonial + 1) % TESTIMONIALS.length)}
+                className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink active:scale-90 transition-all"
+                aria-label="Next"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Quote */}
+            <p className="text-[16px] font-semibold text-ink leading-relaxed mb-8 relative z-10">
+              &ldquo;{TESTIMONIALS[activeTestimonial].quote}&rdquo;
+            </p>
+
+            {/* Attribution */}
+            <div className="relative z-10">
+              <p className="font-bold text-ink uppercase tracking-wide text-sm">{TESTIMONIALS[activeTestimonial].name}</p>
+              <p className="text-ink-dim text-[11px] uppercase tracking-widest mt-1">
+                {TESTIMONIALS[activeTestimonial].service} · {TESTIMONIALS[activeTestimonial].city}
+              </p>
+            </div>
           </div>
 
-          {/* Desktop: grid */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-6 lg:px-8">
-            {TESTIMONIALS.map((t, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white border border-border-dim rounded-2xl p-6 flex flex-col shadow-card hover:shadow-elevated transition-shadow duration-300"
-              >
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                {/* Quote */}
-                <p className="text-[15px] leading-relaxed text-ink flex-1 mb-6">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                {/* Attribution */}
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-border-dim">
-                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-ink leading-tight">{t.name}</p>
-                    <p className="text-[12px] text-ink-sub mt-0.5">{t.service} · {t.city}</p>
-                  </div>
-                </div>
-              </motion.div>
+          {/* Dots */}
+          <div className="flex justify-center gap-2 mt-8">
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === activeTestimonial ? 'w-6 h-2 bg-white' : 'w-2 h-2 bg-white/40'
+                }`}
+                aria-label={`Go to review ${i + 1}`}
+              />
             ))}
           </div>
         </div>
+
+        {/* ── Desktop: card grid ── */}
+        <div className="hidden md:block py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">{t.testimonials.title}</h2>
+              <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {TESTIMONIALS.map((tmn, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white border border-border-dim rounded-2xl p-6 flex flex-col shadow-card hover:shadow-elevated transition-shadow duration-300"
+                >
+                  <div className="flex gap-0.5 mb-4">
+                    {Array.from({ length: tmn.rating }).map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-[15px] leading-relaxed text-ink flex-1 mb-6">
+                    &ldquo;{tmn.quote}&rdquo;
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-border-dim">
+                      <img src={tmn.avatar} alt={tmn.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-ink leading-tight">{tmn.name}</p>
+                      <p className="text-[12px] text-ink-sub mt-0.5">{tmn.service} · {tmn.city}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </section>
 
       {/* ── 9. Footer ── */}
