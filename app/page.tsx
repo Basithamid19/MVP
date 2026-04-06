@@ -973,7 +973,7 @@ export default function LandingPage() {
 
           {/* Services */}
           <div className="mb-10">
-            <h4 className="font-bold text-[13px] uppercase tracking-widest text-ink mb-5">Services</h4>
+            <h4 className="font-bold text-[15px] uppercase tracking-widest text-ink mb-5">Services</h4>
             <ul className="space-y-4 text-[15px]">
               <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
               <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
@@ -985,7 +985,7 @@ export default function LandingPage() {
 
           {/* Company */}
           <div className="mb-10">
-            <h4 className="font-bold text-[13px] uppercase tracking-widest text-ink mb-5">Company</h4>
+            <h4 className="font-bold text-[15px] uppercase tracking-widest text-ink mb-5">Company</h4>
             <ul className="space-y-4 text-[15px]">
               <li><Link href="/about"        className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
               <li><Link href="/for-pros"     className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
@@ -995,7 +995,7 @@ export default function LandingPage() {
 
           {/* Legal */}
           <div className="mb-12">
-            <h4 className="font-bold text-[13px] uppercase tracking-widest text-ink mb-5">Legal</h4>
+            <h4 className="font-bold text-[15px] uppercase tracking-widest text-ink mb-5">Legal</h4>
             <ul className="space-y-4 text-[15px]">
               <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="text-ink-sub hover:text-ink transition-colors">Privacy Policy</Link></li>
