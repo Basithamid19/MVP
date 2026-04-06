@@ -245,6 +245,17 @@ export default function LandingPage() {
   const [topPros, setTopPros]           = useState<any[]>([]);
   const [prosLoading, setProsLoading]   = useState(true);
   const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [testimonialTouchStart, setTestimonialTouchStart] = useState<number | null>(null);
+  const handleTestimonialTouchStart = (e: React.TouchEvent) => setTestimonialTouchStart(e.touches[0].clientX);
+  const handleTestimonialTouchEnd = (e: React.TouchEvent) => {
+    if (testimonialTouchStart === null) return;
+    const diff = testimonialTouchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setActiveTestimonial(i => (i + 1) % TESTIMONIALS.length);
+      else setActiveTestimonial(i => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+    }
+    setTestimonialTouchStart(null);
+  };
 
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
@@ -883,8 +894,12 @@ export default function LandingPage() {
 
         {/* ── Mobile: brand-consistent centered card carousel ── */}
         <div className="md:hidden bg-gradient-to-b from-brand-muted to-canvas pt-10 pb-10 px-5">
-          {/* White card */}
-          <div className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float">
+          {/* White card — swipeable */}
+          <div
+            className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float select-none"
+            onTouchStart={handleTestimonialTouchStart}
+            onTouchEnd={handleTestimonialTouchEnd}
+          >
             {/* Decorative quote mark */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-none">
               <span className="text-[160px] font-black text-brand/8 leading-none translate-y-2">&ldquo;</span>
