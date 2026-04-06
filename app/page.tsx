@@ -790,30 +790,35 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. Why Aladdin ── */}
-      <section className="bg-canvas py-16 sm:py-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Eyebrow + headline */}
-          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-[1.15] mb-8">
-            Built for trust,<br className="hidden sm:block" /> built for Vilnius.
-          </h2>
+      <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Metric pills */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 sm:mb-8 sm:flex-wrap">
-            {[
-              { value: '2,400+', label: 'Reviews' },
-              { value: '100+',   label: 'Vetted Pros' },
-              { value: '<1 hr',  label: 'Avg. Response' },
-            ].map(m => (
-              <div key={m.label} className="shrink-0 flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
-                <span className="text-brand font-bold text-sm">{m.value}</span>
-                <span className="text-ink-sub text-sm">{m.label}</span>
-              </div>
-            ))}
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-16">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Built for trust, built for Vilnius.
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
+              Every booking is backed by real guarantees, verified professionals, and transparent pricing.
+            </p>
+            {/* Metric pills */}
+            <div className="flex gap-2 justify-center flex-wrap">
+              {[
+                { value: '2,400+', label: 'Reviews' },
+                { value: '100+',   label: 'Vetted Pros' },
+                { value: '<1 hr',  label: 'Avg. Response' },
+              ].map(m => (
+                <div key={m.label} className="flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
+                  <span className="text-brand font-bold text-sm">{m.value}</span>
+                  <span className="text-ink-sub text-sm">{m.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Feature rows */}
-          <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
+          {/* Vertical timeline */}
+          <div className="max-w-lg mx-auto">
             {[
               {
                 icon: CheckCircle2,
@@ -835,28 +840,44 @@ export default function LandingPage() {
                 title: 'Damage Cover Included',
                 desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
               },
-            ].map(({ icon: Icon, title, desc }, i) => (
-              <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-brand" strokeWidth={1.5} />
+            ].map(({ icon: Icon, title, desc }, idx, arr) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.12 }}
+                viewport={{ once: true }}
+                className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
+              >
+                {/* Icon column with connector line */}
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <div className="w-0.5 flex-1 bg-brand-muted my-3" />
+                  )}
                 </div>
-                <div>
-                  <p className="font-bold text-ink text-sm mb-0.5">{title}</p>
+
+                {/* Text column */}
+                <div className={idx < arr.length - 1 ? 'pb-8 sm:pb-10' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           {/* CTA */}
-          <div className="mt-8">
+          <div className="text-center mt-8 sm:mt-14">
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' w-full sm:w-auto'}
+              className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
+              Find a Pro <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
         </div>
       </section>
 
