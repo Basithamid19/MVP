@@ -385,12 +385,9 @@ export default function LandingPage() {
                 </div>
               </form>
 
-              {/* Trust Carousel */}
-              <TrustCarousel />
-
               {/* Get help your way */}
               <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-3">
-                <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
+                <p className="text-[17px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
@@ -404,7 +401,7 @@ export default function LandingPage() {
                     <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
                   </div>
-                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
 
                 <div className="h-px bg-border-dim/35 ml-[52px]" />
@@ -421,7 +418,7 @@ export default function LandingPage() {
                     <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
                   </div>
-                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
 
                 <div className="h-px bg-border-dim/35 ml-[52px]" />
@@ -431,16 +428,22 @@ export default function LandingPage() {
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0 ring-2 ring-brand/20 ring-offset-1">
                     <BellRing className="w-[16px] h-[16px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-ink leading-tight">Urgent Help</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[15px] font-bold text-ink leading-tight">Urgent Help</p>
+                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                    </div>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
                   </div>
-                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-brand/40 shrink-0" />
                 </Link>
               </div>
+
+              {/* Trust Carousel */}
+              <TrustCarousel />
 
             </motion.div>
 
