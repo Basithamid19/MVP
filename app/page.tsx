@@ -891,26 +891,27 @@ export default function LandingPage() {
             {TESTIMONIALS.map((t, idx) => (
               <div
                 key={idx}
-                className="shrink-0 w-[82vw] max-w-[320px] snap-start bg-[#f5f5f7] rounded-2xl p-6 flex flex-col"
+                className="shrink-0 w-[85vw] max-w-[320px] snap-start bg-white border border-border-dim rounded-2xl p-5 flex flex-col shadow-card"
               >
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-3">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                {/* Quote */}
+                <p className="text-[13px] leading-relaxed text-ink flex-1 mb-5">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                {/* Attribution */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-border-dim">
                     <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex gap-0.5 text-ink">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
+                  <div>
+                    <p className="text-[13px] font-bold text-ink leading-tight">{t.name}</p>
+                    <p className="text-[11px] text-ink-sub mt-0.5">{t.service}</p>
                   </div>
-                </div>
-                <p className="text-sm font-medium leading-relaxed text-ink flex-1 mb-5">
-                  "{t.quote}"
-                </p>
-                <div className="pt-4 border-t border-ink/10">
-                  <p className="text-sm font-bold text-ink">{t.name}</p>
-                  <p className="text-[11px] mt-0.5 text-ink-sub font-medium uppercase tracking-wider">
-                    {t.service} · {t.city}
-                  </p>
                 </div>
               </div>
             ))}
@@ -925,26 +926,27 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col hover:scale-[1.02] transition-transform duration-300"
+                className="bg-white border border-border-dim rounded-2xl p-6 flex flex-col shadow-card hover:shadow-elevated transition-shadow duration-300"
               >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
+                {/* Stars */}
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                {/* Quote */}
+                <p className="text-[15px] leading-relaxed text-ink flex-1 mb-6">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+                {/* Attribution */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-border-dim">
                     <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
                   </div>
-                  <div className="flex gap-1 text-ink">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
+                  <div>
+                    <p className="text-sm font-bold text-ink leading-tight">{t.name}</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5">{t.service} · {t.city}</p>
                   </div>
-                </div>
-                <p className="text-base font-medium leading-relaxed text-ink flex-1 mb-8">
-                  "{t.quote}"
-                </p>
-                <div className="pt-5 border-t border-ink/10">
-                  <p className="text-sm font-bold text-ink">{t.name}</p>
-                  <p className="text-[11px] mt-1 text-ink-sub font-medium uppercase tracking-wider">
-                    {t.service} · {t.city}
-                  </p>
                 </div>
               </motion.div>
             ))}
