@@ -881,25 +881,25 @@ export default function LandingPage() {
       {/* ── 6. Testimonials ── */}
       <section className="overflow-hidden">
 
-        {/* ── Mobile: full-green centered card carousel ── */}
-        <div className="md:hidden bg-[#FFCA28] pt-20 pb-14 px-5">
+        {/* ── Mobile: brand-consistent centered card carousel ── */}
+        <div className="md:hidden bg-brand-muted pt-20 pb-14 px-5">
           {/* White card */}
           <div className="bg-white px-7 pt-16 pb-10 text-center relative shadow-float">
             {/* Decorative quote mark — sits behind content */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-none">
-              <span className="text-[180px] font-black text-[#FFCA28]/60 leading-none translate-y-4">&ldquo;</span>
+              <span className="text-[180px] font-black text-brand/10 leading-none translate-y-4">&ldquo;</span>
             </div>
 
             {/* Avatar + arrows */}
             <div className="flex items-center justify-between mb-7 relative z-10">
               <button
                 onClick={() => setActiveTestimonial((activeTestimonial - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-                className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink active:scale-90 transition-all"
+                className="w-9 h-9 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
                 aria-label="Previous"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-border-dim shadow-sm">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm">
                 <img
                   src={TESTIMONIALS[activeTestimonial].avatar}
                   alt={TESTIMONIALS[activeTestimonial].name}
@@ -908,7 +908,7 @@ export default function LandingPage() {
               </div>
               <button
                 onClick={() => setActiveTestimonial((activeTestimonial + 1) % TESTIMONIALS.length)}
-                className="w-9 h-9 flex items-center justify-center text-ink-dim hover:text-ink active:scale-90 transition-all"
+                className="w-9 h-9 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
                 aria-label="Next"
               >
                 <ChevronRight className="w-5 h-5" />
@@ -936,7 +936,7 @@ export default function LandingPage() {
                 key={i}
                 onClick={() => setActiveTestimonial(i)}
                 className={`rounded-full transition-all duration-300 ${
-                  i === activeTestimonial ? 'w-6 h-2 bg-white' : 'w-2 h-2 bg-white/40'
+                  i === activeTestimonial ? 'w-6 h-2 bg-brand' : 'w-2 h-2 bg-brand/25'
                 }`}
                 aria-label={`Go to review ${i + 1}`}
               />
