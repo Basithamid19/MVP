@@ -884,7 +884,7 @@ export default function LandingPage() {
         {/* ── Mobile: full-green centered card carousel ── */}
         <div className="md:hidden bg-[#FFCA28] py-14 px-5">
           {/* White card */}
-          <div className="bg-white px-7 py-10 text-center relative shadow-float">
+          <div className="bg-white px-7 pt-16 pb-10 text-center relative shadow-float">
             {/* Decorative quote mark — sits behind content */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-none">
               <span className="text-[180px] font-black text-[#FFCA28]/60 leading-none translate-y-4">&ldquo;</span>
