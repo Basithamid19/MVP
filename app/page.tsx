@@ -11,7 +11,7 @@ import {
   ArrowRight, AlertCircle, Clock,
   ChevronLeft, ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush, Shield,
-  Wrench, Hammer, Truck, Package, Zap, ScrollText, BellRing
+  Wrench, Hammer, Truck, Package, Zap, ScrollText, BellRing, Instagram, Twitter
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
 import { avatarUrl } from '@/lib/avatar';
@@ -953,11 +953,71 @@ export default function LandingPage() {
       </section>
 
       {/* ── 9. Footer ── */}
-      <footer className="bg-canvas border-t border-border-dim py-10 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <footer className="bg-canvas border-t border-border-dim">
 
-          {/* Brand lockup — centered above columns */}
-          <div className="text-center mb-8 sm:mb-14">
+        {/* ── Mobile: centered editorial layout ── */}
+        <div className="md:hidden px-6 pt-14 pb-10 text-center">
+
+          {/* Brand */}
+          <div className="mb-12">
+            <div className="flex items-center justify-center gap-2.5 mb-3">
+              <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+                <AladdinIcon className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-2xl tracking-tight text-brand">Aladdin</span>
+            </div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-ink-dim mt-1">
+              Trusted local professionals · Vilnius
+            </p>
+          </div>
+
+          {/* Services */}
+          <div className="mb-10">
+            <h4 className="font-bold text-[11px] uppercase tracking-widest text-ink mb-5">Services</h4>
+            <ul className="space-y-4 text-[15px]">
+              <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
+              <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
+              <li><Link href="/browse?category=cleaning"    className="text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
+              <li><Link href="/browse?category=handyman"    className="text-ink-sub hover:text-ink transition-colors">Handyman</Link></li>
+              <li><Link href="/browse?category=moving-help" className="text-ink-sub hover:text-ink transition-colors">Moving Help</Link></li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div className="mb-10">
+            <h4 className="font-bold text-[11px] uppercase tracking-widest text-ink mb-5">Company</h4>
+            <ul className="space-y-4 text-[15px]">
+              <li><Link href="/about"        className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
+              <li><Link href="/for-pros"     className="text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
+              <li><Link href="/support"      className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="mb-12">
+            <h4 className="font-bold text-[11px] uppercase tracking-widest text-ink mb-5">Legal</h4>
+            <ul className="space-y-4 text-[15px]">
+              <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
+              <li><Link href="/privacy" className="text-ink-sub hover:text-ink transition-colors">Privacy Policy</Link></li>
+            </ul>
+          </div>
+
+          {/* Social icons */}
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <a href="#" aria-label="Instagram" className="text-ink-dim hover:text-ink transition-colors">
+              <Instagram className="w-5 h-5" />
+            </a>
+            <a href="#" aria-label="Twitter" className="text-ink-dim hover:text-ink transition-colors">
+              <Twitter className="w-5 h-5" />
+            </a>
+          </div>
+
+          <p className="text-xs text-ink-dim">© 2026 Aladdin. All rights reserved.</p>
+        </div>
+
+        {/* ── Desktop: multi-column layout ── */}
+        <div className="hidden md:block max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-2.5 mb-3">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
                 <AladdinIcon className="w-5 h-5 text-white" />
@@ -968,12 +1028,10 @@ export default function LandingPage() {
               Trusted local professionals · Vilnius, Lithuania
             </p>
           </div>
-
-          {/* Link columns */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 mb-8 sm:mb-14">
+          <div className="grid grid-cols-4 gap-10 mb-14">
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
                 <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
                 <li><Link href="/browse?category=cleaning"    className="text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
@@ -982,17 +1040,16 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
-                <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/about"   className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
                 <li><Link href="/support" className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
                 <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
@@ -1000,8 +1057,8 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/browse"       className="text-ink-sub hover:text-ink transition-colors">Find a Professional</Link></li>
                 <li><Link href="/requests/new" className="text-ink-sub hover:text-ink transition-colors">Post a Job</Link></li>
                 <li><Link href="/login"        className="text-ink-sub hover:text-ink transition-colors">Log In</Link></li>
@@ -1009,17 +1066,18 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-
-          {/* Bottom bar */}
-          <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="pt-8 border-t border-border-dim flex justify-between items-center">
             <p className="text-xs text-ink-dim">© 2026 {t.footer.copyright}</p>
-            <div className="flex items-center gap-3">
-              <p className="text-xs text-ink-dim">Vilnius, Lithuania</p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <a href="#" aria-label="Instagram" className="text-ink-dim hover:text-ink transition-colors"><Instagram className="w-4 h-4" /></a>
+                <a href="#" aria-label="Twitter" className="text-ink-dim hover:text-ink transition-colors"><Twitter className="w-4 h-4" /></a>
+              </div>
               <LanguageSwitcher />
             </div>
           </div>
-
         </div>
+
       </footer>
 
       {session && <MobileNav />}
