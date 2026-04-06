@@ -870,8 +870,8 @@ export default function LandingPage() {
       {/* Photo break — the result */}
       <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1609220136736-443140cffec6?q=80&w=1400&auto=format&fit=crop"
-          alt="Happy customer at home"
+          src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?q=80&w=1400&auto=format&fit=crop"
+          alt="Immaculate home interior"
           className="w-full h-full object-cover object-top"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
