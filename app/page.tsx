@@ -694,15 +694,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Photo break — Built for Trust */}
-      <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=1400&auto=format&fit=crop"
-          alt="Beautiful home interior"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-      </div>
 
       {/* ── 4. Top Rated Professionals ── */}
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
