@@ -397,14 +397,14 @@ export default function LandingPage() {
                   href="/browse"
                   className="flex items-center gap-4 pt-5 pb-7 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#FDB913] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
-                    <Users className="w-[18px] h-[18px] text-white" />
+                  <div className="w-10 h-10 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                    <Users className="w-[18px] h-[18px] text-brand" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-semibold text-ink leading-tight">Find a Pro</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-ink-dim/50 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-ink-dim/40 shrink-0" />
                 </Link>
 
                 <div className="h-px bg-border-dim/50 ml-[52px]" />
@@ -414,14 +414,14 @@ export default function LandingPage() {
                   href="/requests/new"
                   className="flex items-center gap-4 pt-5 pb-7 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#006A44] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
-                    <ScrollText className="w-[18px] h-[18px] text-white" />
+                  <div className="w-10 h-10 bg-brand/15 rounded-2xl flex items-center justify-center shrink-0">
+                    <ScrollText className="w-[18px] h-[18px] text-brand" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[14px] font-semibold text-ink leading-tight">Post a Request</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-ink-dim/50 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-ink-dim/40 shrink-0" />
                 </Link>
 
                 <div className="h-px bg-border-dim/50 ml-[52px]" />
@@ -431,17 +431,17 @@ export default function LandingPage() {
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-5 pb-2 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-10 h-10 bg-[#C1272D] rounded-2xl flex items-center justify-center shrink-0 shadow-sm">
+                  <div className="w-10 h-10 bg-brand rounded-2xl flex items-center justify-center shrink-0">
                     <BellRing className="w-[18px] h-[18px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[14px] font-bold text-ink leading-tight">Urgent Help</p>
-                      <span className="text-[10px] font-bold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                      <p className="text-[14px] font-semibold text-ink leading-tight">Urgent Help</p>
+                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none tracking-wide">Priority</span>
                     </div>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-brand/35 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-brand/40 shrink-0" />
                 </Link>
               </div>
 
