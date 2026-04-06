@@ -882,61 +882,47 @@ export default function LandingPage() {
       <section className="overflow-hidden">
 
         {/* ── Mobile: brand-consistent centered card carousel ── */}
-        <div className="md:hidden bg-brand-muted pt-20 pb-14 px-5">
+        <div className="md:hidden bg-gradient-to-b from-brand-muted to-canvas pt-10 pb-10 px-5">
           {/* White card */}
-          <div className="bg-white px-7 pt-16 pb-10 text-center relative shadow-float">
-            {/* Decorative quote mark — sits behind content */}
+          <div className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float">
+            {/* Decorative quote mark */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-none">
-              <span className="text-[180px] font-black text-brand/10 leading-none translate-y-4">&ldquo;</span>
+              <span className="text-[160px] font-black text-brand/8 leading-none translate-y-2">&ldquo;</span>
             </div>
 
-            {/* Avatar + arrows */}
-            <div className="flex items-center justify-between mb-7 relative z-10">
-              <button
-                onClick={() => setActiveTestimonial((activeTestimonial - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)}
-                className="w-9 h-9 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-                aria-label="Previous"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm">
+            {/* Avatar — centered, no arrows */}
+            <div className="flex justify-center mb-5 relative z-10">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm">
                 <img
                   src={TESTIMONIALS[activeTestimonial].avatar}
                   alt={TESTIMONIALS[activeTestimonial].name}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <button
-                onClick={() => setActiveTestimonial((activeTestimonial + 1) % TESTIMONIALS.length)}
-                className="w-9 h-9 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
-                aria-label="Next"
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
             </div>
 
             {/* Quote */}
-            <p className="text-[16px] font-semibold text-ink leading-relaxed mb-8 relative z-10">
+            <p className="text-[15px] font-semibold text-ink leading-relaxed mb-5 relative z-10">
               &ldquo;{TESTIMONIALS[activeTestimonial].quote}&rdquo;
             </p>
 
             {/* Attribution */}
             <div className="relative z-10">
-              <p className="font-bold text-ink uppercase tracking-wide text-sm">{TESTIMONIALS[activeTestimonial].name}</p>
-              <p className="text-ink-dim text-[11px] uppercase tracking-widest mt-1">
+              <p className="font-bold text-ink uppercase tracking-wide text-[13px]">{TESTIMONIALS[activeTestimonial].name}</p>
+              <p className="text-ink-dim text-[11px] uppercase tracking-widest mt-0.5">
                 {TESTIMONIALS[activeTestimonial].service} · {TESTIMONIALS[activeTestimonial].city}
               </p>
             </div>
           </div>
 
           {/* Dots */}
-          <div className="flex justify-center gap-2 mt-8">
+          <div className="flex justify-center gap-2 mt-5">
             {TESTIMONIALS.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setActiveTestimonial(i)}
                 className={`rounded-full transition-all duration-300 ${
-                  i === activeTestimonial ? 'w-6 h-2 bg-brand' : 'w-2 h-2 bg-brand/25'
+                  i === activeTestimonial ? 'w-6 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-brand/25'
                 }`}
                 aria-label={`Go to review ${i + 1}`}
               />
