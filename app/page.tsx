@@ -614,55 +614,78 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 3. How It Works ── */}
+      {/* ── 3. Built for Trust ── */}
       <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header */}
           <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
-            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              {t.howItWorks.subtitle}
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Built for trust, built for Vilnius.
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
+              Every booking is backed by real guarantees, verified professionals, and transparent pricing.
             </p>
           </div>
 
           {/* Vertical timeline */}
           <div className="max-w-lg mx-auto">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
+            {[
+              {
+                icon: CheckCircle2,
+                title: '30-Day Guarantee',
+                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
+              },
+              {
+                icon: FileText,
+                title: 'Upfront, Transparent Pricing',
+                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
+              },
+              {
+                icon: BadgeCheck,
+                title: 'Verified Professionals',
+                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
+              },
+              {
+                icon: Shield,
+                title: 'Damage Cover Included',
+                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
+              },
+            ].map(({ icon: Icon, title, desc }, idx, arr) => (
               <motion.div
-                key={step}
+                key={title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.12 }}
                 viewport={{ once: true }}
                 className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
-                {/* Icon column with connector line */}
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  {idx < HOW_IT_WORKS.length - 1 && (
+                  {idx < arr.length - 1 && (
                     <div className="w-0.5 flex-1 bg-brand-muted my-3" />
                   )}
                 </div>
-
-                {/* Text column */}
-                <div className={idx < HOW_IT_WORKS.length - 1 ? 'pb-8 sm:pb-10' : ''}>
-                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{`${parseInt(step)}. ${title}`}</h3>
+                <div className={idx < arr.length - 1 ? 'pb-8 sm:pb-10' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
               </motion.div>
             ))}
           </div>
 
+          {/* CTA */}
           <div className="text-center mt-8 sm:mt-14">
             <Link
-              href="/requests/new"
+              href="/browse"
               className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              Get Started <ArrowRight className="w-4 h-4" />
+              Find a Pro <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
         </div>
       </section>
 
@@ -789,82 +812,52 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. Why Aladdin ── */}
+      {/* ── 5. How It Works ── */}
       <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* Header */}
           <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
-              Built for trust, built for Vilnius.
-            </h2>
-            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
-              Every booking is backed by real guarantees, verified professionals, and transparent pricing.
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
+              {t.howItWorks.subtitle}
             </p>
           </div>
 
           {/* Vertical timeline */}
           <div className="max-w-lg mx-auto">
-            {[
-              {
-                icon: CheckCircle2,
-                title: '30-Day Guarantee',
-                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
-              },
-              {
-                icon: FileText,
-                title: 'Upfront, Transparent Pricing',
-                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
-              },
-              {
-                icon: BadgeCheck,
-                title: 'Verified Professionals',
-                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
-              },
-              {
-                icon: Shield,
-                title: 'Damage Cover Included',
-                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
-              },
-            ].map(({ icon: Icon, title, desc }, idx, arr) => (
+            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
               <motion.div
-                key={title}
+                key={step}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.12 }}
                 viewport={{ once: true }}
                 className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
-                {/* Icon column with connector line */}
                 <div className="flex flex-col items-center">
                   <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
-                  {idx < arr.length - 1 && (
+                  {idx < HOW_IT_WORKS.length - 1 && (
                     <div className="w-0.5 flex-1 bg-brand-muted my-3" />
                   )}
                 </div>
-
-                {/* Text column */}
-                <div className={idx < arr.length - 1 ? 'pb-8 sm:pb-10' : ''}>
-                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
+                <div className={idx < HOW_IT_WORKS.length - 1 ? 'pb-8 sm:pb-10' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{`${parseInt(step)}. ${title}`}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          {/* CTA */}
           <div className="text-center mt-8 sm:mt-14">
             <Link
-              href="/browse"
+              href="/requests/new"
               className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              Find a Pro <ArrowRight className="w-4 h-4" />
+              Get Started <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
         </div>
       </section>
 
