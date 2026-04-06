@@ -390,15 +390,15 @@ export default function LandingPage() {
 
               {/* Get help your way */}
               <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-3">
-                <p className="text-[11px] font-medium text-ink-sub/50 uppercase tracking-[0.12em] leading-none mb-5">Get help your way</p>
+                <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
                   href="/browse"
                   className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
-                    <Users className="w-[16px] h-[16px] text-brand" />
+                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <Users className="w-[16px] h-[16px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
@@ -414,8 +414,8 @@ export default function LandingPage() {
                   href="/requests/new"
                   className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
-                    <ScrollText className="w-[16px] h-[16px] text-brand" />
+                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <ScrollText className="w-[16px] h-[16px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
@@ -431,8 +431,8 @@ export default function LandingPage() {
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
-                    <BellRing className="w-[16px] h-[16px] text-brand" />
+                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <BellRing className="w-[16px] h-[16px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-ink leading-tight">Urgent Help</p>
