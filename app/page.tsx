@@ -610,7 +610,7 @@ export default function LandingPage() {
       </section>
 
       {/* Photo break — Popular Services */}
-      <div className="relative w-full aspect-[16/5] overflow-hidden">
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/5] overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1400&auto=format&fit=crop"
           alt="Professional at work"
@@ -695,7 +695,7 @@ export default function LandingPage() {
       </section>
 
       {/* Photo break — Built for Trust */}
-      <div className="relative w-full aspect-[16/5] overflow-hidden">
+      <div className="relative w-full aspect-[4/3] sm:aspect-[16/5] overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?q=80&w=1400&auto=format&fit=crop"
           alt="Beautiful home interior"
