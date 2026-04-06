@@ -154,10 +154,10 @@ function TrustCarousel() {
           <div className="relative flex items-center">
             <button
               onClick={prev}
-              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
               aria-label="Previous"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <div
@@ -184,10 +184,10 @@ function TrustCarousel() {
 
             <button
               onClick={next}
-              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
               aria-label="Next"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
@@ -386,7 +386,7 @@ export default function LandingPage() {
               </form>
 
               {/* Get help your way */}
-              <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-3">
+              <div className="mt-3 bg-white rounded-2xl px-4 pt-4 pb-3">
                 <p className="text-[17px] font-bold text-ink leading-tight mb-4">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
@@ -428,7 +428,7 @@ export default function LandingPage() {
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0 ring-2 ring-brand/20 ring-offset-1">
+                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
                     <BellRing className="w-[16px] h-[16px] text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
