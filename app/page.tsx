@@ -389,59 +389,56 @@ export default function LandingPage() {
               <TrustCarousel />
 
               {/* Get help your way */}
-              <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-2">
-                <p className="text-[15px] font-semibold text-ink-sub leading-tight mb-4 tracking-wide uppercase text-[11px]">Get help your way</p>
+              <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-3">
+                <p className="text-[11px] font-medium text-ink-sub/50 uppercase tracking-[0.12em] leading-none mb-5">Get help your way</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
                   href="/browse"
-                  className="flex items-center gap-4 pt-4 pb-6 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
-                    <Users className="w-[17px] h-[17px] text-brand" />
+                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
+                    <Users className="w-[16px] h-[16px] text-brand" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-ink leading-tight">Find a Pro</p>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
                   </div>
-                  <ChevronRight className="w-[15px] h-[15px] text-ink-dim/35 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
                 </Link>
 
-                <div className="h-px bg-border-dim/40 ml-[49px]" />
+                <div className="h-px bg-border-dim/35 ml-[52px]" />
 
                 {/* Row 2: Post a Request */}
                 <Link
                   href="/requests/new"
-                  className="flex items-center gap-4 pt-4 pb-6 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
-                    <ScrollText className="w-[17px] h-[17px] text-brand" />
+                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
+                    <ScrollText className="w-[16px] h-[16px] text-brand" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-ink leading-tight">Post a Request</p>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
                   </div>
-                  <ChevronRight className="w-[15px] h-[15px] text-ink-dim/35 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
                 </Link>
 
-                <div className="h-px bg-border-dim/40 ml-[49px]" />
+                <div className="h-px bg-border-dim/35 ml-[52px]" />
 
                 {/* Row 3: Urgent Help */}
                 <Link
                   href="/requests/new?urgent=1"
-                  className="flex items-center gap-4 pt-4 pb-2 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
-                    <BellRing className="w-[17px] h-[17px] text-brand" />
+                  <div className="w-9 h-9 bg-[#eef3f1] rounded-xl flex items-center justify-center shrink-0">
+                    <BellRing className="w-[16px] h-[16px] text-brand" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[14px] font-semibold text-ink leading-tight">Urgent Help</p>
-                      <span className="text-[10px] font-medium text-ink-sub border border-border-dim px-1.5 py-0.5 rounded leading-none">Today</span>
-                    </div>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">Urgent Help</p>
                     <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
                   </div>
-                  <ChevronRight className="w-[15px] h-[15px] text-ink-dim/35 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/25 shrink-0" />
                 </Link>
               </div>
 
