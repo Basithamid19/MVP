@@ -893,7 +893,7 @@ export default function LandingPage() {
       <section className="overflow-hidden">
 
         {/* ── Mobile: brand-consistent centered card carousel ── */}
-        <div className="md:hidden bg-gradient-to-b from-brand-muted to-canvas pt-10 pb-8 px-5">
+        <div className="md:hidden bg-gradient-to-b from-brand-muted/35 to-canvas pt-10 pb-8 px-5">
           {/* White card — swipeable */}
           <div
             className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float select-none"
