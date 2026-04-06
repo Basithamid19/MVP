@@ -374,6 +374,9 @@ export default function LandingPage() {
                 </div>
               </form>
 
+              {/* Trust Carousel */}
+              <TrustCarousel />
+
               {/* Get help your way */}
               <div className="mt-4 mb-1 bg-white rounded-2xl px-4 pt-4 pb-2">
                 <p className="text-[16px] font-bold text-ink leading-tight mb-4">Get help your way</p>
@@ -604,13 +607,6 @@ export default function LandingPage() {
               </button>
             );
           })}
-        </div>
-      </section>
-
-      {/* ── Why Customers Trust Aladdin ── */}
-      <section className="bg-white pb-8 lg:pb-12 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <TrustCarousel />
         </div>
       </section>
 
