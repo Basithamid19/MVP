@@ -398,10 +398,10 @@ export default function LandingPage() {
                 {/* Row 1: Find a Pro */}
                 <Link
                   href="/browse"
-                  className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 pt-3 pb-4 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
-                    <Users className="w-[16px] h-[16px] text-white" />
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
@@ -410,15 +410,15 @@ export default function LandingPage() {
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
 
-                <div className="h-px bg-border-dim/35 ml-[52px]" />
+                <div className="h-px bg-border-dim/35 ml-[60px]" />
 
                 {/* Row 2: Post a Request */}
                 <Link
                   href="/requests/new"
-                  className="flex items-center gap-4 pt-3 pb-5 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                  className="flex items-center gap-4 pt-3 pb-4 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
-                    <ScrollText className="w-[16px] h-[16px] text-white" />
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <ScrollText className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
@@ -427,15 +427,15 @@ export default function LandingPage() {
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
 
-                <div className="h-px bg-border-dim/35 ml-[52px]" />
+                <div className="h-px bg-border-dim/35 ml-[60px]" />
 
                 {/* Row 3: Urgent Help */}
                 <Link
                   href="/requests/new?urgent=1"
                   className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0">
-                    <BellRing className="w-[16px] h-[16px] text-white" />
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <BellRing className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
