@@ -627,7 +627,57 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Photo break — Popular Services */}
+      {/* ── 5. How It Works ── */}
+      <section className="py-12 sm:py-20 bg-surface-alt overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Three ways to get help
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
+              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
+            </p>
+          </div>
+
+          {/* Editorial path list — no timeline, no boxes */}
+          <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
+            {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="flex gap-4 py-7"
+              >
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${urgent ? 'bg-brand' : 'bg-brand-muted'}`}>
+                  <Icon className={`w-[18px] h-[18px] ${urgent ? 'text-white' : 'text-brand'}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
+                    {title}
+                  </h3>
+                  <p className="text-[13px] text-brand mb-2 leading-snug">{hook}</p>
+                  <p className="text-[14px] text-ink-sub leading-relaxed">{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-8 sm:mt-12">
+            <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'xl' })}>
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Photo break */}
       <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1400&auto=format&fit=crop"
@@ -712,7 +762,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-
       {/* ── 4. Top Rated Professionals ── */}
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
@@ -757,7 +806,7 @@ export default function LandingPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-                    
+
                     {/* Category pill */}
                     <div className="absolute top-4 left-4">
                       <span className="text-[10px] font-bold text-white bg-ink/40 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
@@ -827,7 +876,7 @@ export default function LandingPage() {
             })
           )}
         </div>
-        
+
         {/* Mobile See All link */}
         <div className="px-4 sm:hidden mt-2">
           <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
@@ -835,66 +884,6 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
-
-      {/* ── 5. How It Works ── */}
-      <section className="py-12 sm:py-20 bg-surface-alt overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          {/* Header */}
-          <div className="text-center mb-8 sm:mb-12">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
-              Get help your way
-            </h2>
-            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
-            </p>
-          </div>
-
-          {/* Editorial path list — no timeline, no boxes */}
-          <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
-            {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
-              <motion.div
-                key={title}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="flex gap-4 py-7"
-              >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${urgent ? 'bg-brand' : 'bg-brand-muted'}`}>
-                  <Icon className={`w-[18px] h-[18px] ${urgent ? 'text-white' : 'text-brand'}`} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
-                    {title}
-                  </h3>
-                  <p className="text-[13px] text-brand mb-2 leading-snug">{hook}</p>
-                  <p className="text-[14px] text-ink-sub leading-relaxed">{desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-8 sm:mt-12">
-            <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'xl' })}>
-              Get Started <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-      {/* Photo break — the result */}
-      <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
-        <img
-          src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?q=80&w=1400&auto=format&fit=crop"
-          alt="Immaculate home interior"
-          className="w-full h-full object-cover object-top"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-      </div>
 
       {/* ── 6. Testimonials ── */}
       <section className="overflow-hidden">
