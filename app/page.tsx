@@ -1005,27 +1005,27 @@ export default function LandingPage() {
       {/* ── 9. Footer ── */}
       <footer className="bg-canvas border-t border-border-dim">
 
-        {/* ── Mobile: compact 2-column grid layout ── */}
-        <div className="md:hidden px-6 pt-10 pb-8">
+        {/* ── Mobile: premium compact footer ── */}
+        <div className="md:hidden px-6 pt-8 pb-6">
 
           {/* Brand */}
-          <div className="flex items-center gap-2.5 mb-8">
-            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <AladdinIcon className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2.5 mb-7">
+            <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center shrink-0">
+              <AladdinIcon className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="font-bold text-[18px] tracking-tight text-brand leading-none">Aladdin</span>
+              <span className="font-bold text-[16px] tracking-tight text-brand leading-none">Aladdin</span>
               <p className="text-[11px] text-ink-dim leading-none mt-0.5">Trusted local professionals · Vilnius</p>
             </div>
           </div>
 
-          {/* 2-column link grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-7 mb-8">
+          {/* 2-column link grid — Services + Company */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-5 mb-6">
 
             {/* Services */}
             <div>
-              <p className="text-[11px] font-bold text-ink uppercase tracking-wider mb-3">Services</p>
-              <ul className="space-y-2.5">
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Services</p>
+              <ul className="space-y-2">
                 <li><Link href="/browse?category=plumber"     className="text-[13px] text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
                 <li><Link href="/browse?category=electrician" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
                 <li><Link href="/browse?category=cleaning"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
@@ -1036,43 +1036,28 @@ export default function LandingPage() {
 
             {/* Company */}
             <div>
-              <p className="text-[11px] font-bold text-ink uppercase tracking-wider mb-3">Company</p>
-              <ul className="space-y-2.5">
-                <li><Link href="/about"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Company</p>
+              <ul className="space-y-2">
+                <li><Link href="/about"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link></li>
                 <li><Link href="/for-pros" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
                 <li><Link href="/support"  className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link></li>
               </ul>
             </div>
 
-            {/* For Pros */}
-            <div>
-              <p className="text-[11px] font-bold text-ink uppercase tracking-wider mb-3">For Pros</p>
-              <ul className="space-y-2.5">
-                <li><Link href="/for-pros"          className="text-[13px] text-ink-sub hover:text-ink transition-colors">Get Started</Link></li>
-                <li><Link href="/for-pros#how"      className="text-[13px] text-ink-sub hover:text-ink transition-colors">How It Works</Link></li>
-                <li><Link href="/for-pros#pricing"  className="text-[13px] text-ink-sub hover:text-ink transition-colors">Pricing</Link></li>
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <p className="text-[11px] font-bold text-ink uppercase tracking-wider mb-3">Legal</p>
-              <ul className="space-y-2.5">
-                <li><Link href="/terms"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">Terms</Link></li>
-                <li><Link href="/privacy" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Privacy</Link></li>
-              </ul>
-            </div>
-
           </div>
 
-          {/* Bottom meta row */}
-          <div className="border-t border-border-dim/50 pt-5 flex items-center justify-between">
-            <p className="text-[11px] text-ink-dim">© 2026 Aladdin · Vilnius, Lithuania</p>
-            <div className="flex items-center gap-4">
-              <a href="#" aria-label="Instagram" className="text-ink-dim hover:text-ink transition-colors">
+          {/* Bottom bar — copyright + legal inline + socials */}
+          <div className="border-t border-border-dim/40 pt-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <p className="text-[11px] text-ink-dim">© 2026 Aladdin</p>
+              <Link href="/terms"   className="text-[11px] text-ink-dim hover:text-ink transition-colors">Terms</Link>
+              <Link href="/privacy" className="text-[11px] text-ink-dim hover:text-ink transition-colors">Privacy</Link>
+            </div>
+            <div className="flex items-center gap-3.5">
+              <a href="#" aria-label="Instagram" className="text-ink-dim/70 hover:text-ink transition-colors">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="#" aria-label="Twitter" className="text-ink-dim hover:text-ink transition-colors">
+              <a href="#" aria-label="Twitter" className="text-ink-dim/70 hover:text-ink transition-colors">
                 <Twitter className="w-4 h-4" />
               </a>
             </div>
