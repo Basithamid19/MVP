@@ -32,21 +32,27 @@ const categories = [
 const HOW_IT_WORKS = [
   {
     step: '01',
-    icon: FileText,
-    title: 'Describe your job',
-    desc: 'Tell us what you need done, your location, and when you need it. Takes under 2 minutes.',
+    icon: Users,
+    title: 'Find a Pro',
+    hook: 'Know who you want? Book directly.',
+    desc: 'Browse verified professionals, compare reviews and response times, then message or book the one that fits your needs.',
+    urgent: false,
   },
   {
     step: '02',
-    icon: Users,
-    title: 'Compare professionals',
-    desc: 'Browse verified local pros, read real reviews, and compare transparent prices.',
+    icon: ScrollText,
+    title: 'Post a Request',
+    hook: 'Want quotes? Let pros come to you.',
+    desc: 'Describe your job once, choose the service you need, and receive responses from relevant professionals in your area.',
+    urgent: false,
   },
   {
     step: '03',
-    icon: CalendarCheck,
-    title: 'Book with confidence',
-    desc: 'Secure your booking, pay safely, and leave a review when the job is done.',
+    icon: BellRing,
+    title: 'Urgent Help',
+    hook: 'Need someone today? Get priority matching.',
+    desc: 'Send a priority request and available professionals are notified right away so you can get help sooner.',
+    urgent: true,
   },
 ];
 
@@ -831,51 +837,52 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. How It Works ── */}
-      <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
+      <section className="py-12 sm:py-20 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
+
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-12">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Get help your way
+            </h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              {t.howItWorks.subtitle}
+              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
             </p>
           </div>
 
-          {/* Vertical timeline */}
-          <div className="max-w-lg mx-auto">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
+          {/* Editorial path list — no timeline, no boxes */}
+          <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
+            {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
               <motion.div
-                key={step}
-                initial={{ opacity: 0, y: 20 }}
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.12 }}
+                transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
+                className="flex gap-4 py-7"
               >
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                  </div>
-                  {idx < HOW_IT_WORKS.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-brand-muted my-3" />
-                  )}
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${urgent ? 'bg-brand' : 'bg-brand-muted'}`}>
+                  <Icon className={`w-[18px] h-[18px] ${urgent ? 'text-white' : 'text-brand'}`} />
                 </div>
-                <div className={idx < HOW_IT_WORKS.length - 1 ? 'pb-8 sm:pb-10' : ''}>
-                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{`${parseInt(step)}. ${title}`}</h3>
-                  <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
+                    {title}
+                  </h3>
+                  <p className="text-[13px] text-brand mb-2 leading-snug">{hook}</p>
+                  <p className="text-[14px] text-ink-sub leading-relaxed">{desc}</p>
                 </div>
               </motion.div>
             ))}
           </div>
 
-          <div className="text-center mt-8 sm:mt-14">
-            <Link
-              href="/requests/new"
-              className={buttonVariants({ variant: 'primary', size: 'xl' })}
-            >
+          {/* CTA */}
+          <div className="text-center mt-8 sm:mt-12">
+            <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'xl' })}>
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
         </div>
       </section>
 
