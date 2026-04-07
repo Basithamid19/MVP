@@ -890,6 +890,13 @@ export default function LandingPage() {
 
         {/* ── Mobile: brand-consistent centered card carousel ── */}
         <div className="md:hidden bg-gradient-to-b from-brand-muted/35 to-canvas pt-10 pb-8 px-5">
+
+          {/* Section label */}
+          <div className="text-center mb-6">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Real reviews</p>
+            <p className="text-[13px] text-ink-sub">What Aladdin customers say</p>
+          </div>
+
           {/* White card — swipeable */}
           <div
             className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float select-none"
