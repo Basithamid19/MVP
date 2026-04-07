@@ -1005,51 +1005,45 @@ export default function LandingPage() {
       {/* ── 9. Footer ── */}
       <footer className="bg-canvas border-t border-border-dim">
 
-        {/* ── Mobile: purpose-driven compact footer ── */}
-        <div className="md:hidden px-6 pt-8 pb-6">
+        {/* ── Mobile: centered editorial footer ── */}
+        <div className="md:hidden px-6 pt-9 pb-6 text-center">
 
-          {/* Brand */}
-          <div className="flex items-center gap-2.5 mb-6">
+          {/* Brand — centered */}
+          <div className="flex items-center justify-center gap-2 mb-1.5">
             <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center shrink-0">
               <AladdinIcon className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <span className="font-bold text-[16px] tracking-tight text-brand leading-none">Aladdin</span>
-              <p className="text-[11px] text-ink-dim leading-none mt-0.5">Trusted local professionals · Vilnius</p>
-            </div>
+            <span className="font-bold text-[17px] tracking-tight text-brand">Aladdin</span>
           </div>
+          <p className="text-[11px] text-ink-dim mb-7">Trusted local professionals · Vilnius</p>
 
-          {/* 3 stacked link groups */}
-          <div className="space-y-5 mb-6">
+          {/* 3 centered link groups */}
+          <div className="space-y-6 mb-7">
 
             {/* Customers */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">Customers</p>
-              <div className="flex flex-col gap-1.5">
-                <Link href="/browse"                className="text-[13px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
-                <Link href="/requests/new"          className="text-[13px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
-                <Link href="/requests/new?urgent=1" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Customers</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/browse"                className="text-[14px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
+                <Link href="/requests/new"          className="text-[14px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
+                <Link href="/requests/new?urgent=1" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
               </div>
             </div>
-
-            <div className="h-px bg-border-dim/30" />
 
             {/* For Pros */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">For Pros</p>
-              <div className="flex flex-col gap-1.5">
-                <Link href="/for-pros"              className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
-                <Link href="/provider/verification" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
-                <Link href="/provider/dashboard"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">For Pros</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/for-pros"              className="text-[14px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
+                <Link href="/provider/verification" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
+                <Link href="/provider/dashboard"    className="text-[14px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link>
               </div>
             </div>
 
-            <div className="h-px bg-border-dim/30" />
-
-            {/* Company */}
+            {/* Company — utility links inline */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">Company</p>
-              <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Company</p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
                 <Link href="/about"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link>
                 <Link href="/support" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link>
                 <Link href="/terms"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">Terms</Link>
@@ -1070,6 +1064,7 @@ export default function LandingPage() {
                 <Twitter className="w-4 h-4" />
               </a>
             </div>
+          </div>
           </div>
 
         </div>
