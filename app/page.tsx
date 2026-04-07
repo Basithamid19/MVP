@@ -685,7 +685,7 @@ export default function LandingPage() {
                     <div className="w-0.5 flex-1 bg-brand-muted my-2" />
                   )}
                 </div>
-                <div className={idx < arr.length - 1 ? 'pb-10' : ''}>
+                <div className={idx < arr.length - 1 ? 'pb-14' : ''}>
                   <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
