@@ -1009,7 +1009,7 @@ export default function LandingPage() {
         <div className="md:hidden px-6 pt-8 pb-6">
 
           {/* Brand */}
-          <div className="flex items-center gap-2.5 mb-7">
+          <div className="flex items-center gap-2.5 mb-6">
             <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center shrink-0">
               <AladdinIcon className="w-4 h-4 text-white" />
             </div>
@@ -1019,38 +1019,49 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 2-column grid — Customers + For Pros */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-5 mb-6">
+          {/* 3 stacked link groups */}
+          <div className="space-y-5 mb-6">
 
             {/* Customers */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Customers</p>
-              <ul className="space-y-2">
-                <li><Link href="/browse"               className="text-[13px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link></li>
-                <li><Link href="/requests/new"         className="text-[13px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link></li>
-                <li><Link href="/requests/new?urgent=1" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link></li>
-              </ul>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">Customers</p>
+              <div className="flex flex-col gap-1.5">
+                <Link href="/browse"                className="text-[13px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
+                <Link href="/requests/new"          className="text-[13px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
+                <Link href="/requests/new?urgent=1" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
+              </div>
             </div>
+
+            <div className="h-px bg-border-dim/30" />
 
             {/* For Pros */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">For Pros</p>
-              <ul className="space-y-2">
-                <li><Link href="/for-pros"              className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
-                <li><Link href="/provider/verification" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
-                <li><Link href="/provider/dashboard"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
-              </ul>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">For Pros</p>
+              <div className="flex flex-col gap-1.5">
+                <Link href="/for-pros"              className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
+                <Link href="/provider/verification" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
+                <Link href="/provider/dashboard"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link>
+              </div>
+            </div>
+
+            <div className="h-px bg-border-dim/30" />
+
+            {/* Company */}
+            <div>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2">Company</p>
+              <div className="flex flex-col gap-1.5">
+                <Link href="/about"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link>
+                <Link href="/support" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link>
+                <Link href="/terms"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">Terms</Link>
+                <Link href="/privacy" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Privacy</Link>
+              </div>
             </div>
 
           </div>
 
-          {/* Bottom bar */}
+          {/* Bottom meta row */}
           <div className="border-t border-border-dim/40 pt-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <p className="text-[11px] text-ink-dim">© 2026 Aladdin</p>
-              <Link href="/terms"   className="text-[11px] text-ink-dim hover:text-ink transition-colors">Terms</Link>
-              <Link href="/privacy" className="text-[11px] text-ink-dim hover:text-ink transition-colors">Privacy</Link>
-            </div>
+            <p className="text-[11px] text-ink-dim">© 2026 Aladdin · Vilnius</p>
             <div className="flex items-center gap-3.5">
               <a href="#" aria-label="Instagram" className="text-ink-dim/70 hover:text-ink transition-colors">
                 <Instagram className="w-4 h-4" />
