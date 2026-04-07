@@ -1005,7 +1005,7 @@ export default function LandingPage() {
       {/* ── 9. Footer ── */}
       <footer className="bg-canvas border-t border-border-dim">
 
-        {/* ── Mobile: premium compact footer ── */}
+        {/* ── Mobile: purpose-driven compact footer ── */}
         <div className="md:hidden px-6 pt-8 pb-6">
 
           {/* Brand */}
@@ -1019,34 +1019,32 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 2-column link grid — Services + Company */}
+          {/* 2-column grid — Customers + For Pros */}
           <div className="grid grid-cols-2 gap-x-6 gap-y-5 mb-6">
 
-            {/* Services */}
+            {/* Customers */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Services</p>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Customers</p>
               <ul className="space-y-2">
-                <li><Link href="/browse?category=plumber"     className="text-[13px] text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
-                <li><Link href="/browse?category=electrician" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
-                <li><Link href="/browse?category=cleaning"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
-                <li><Link href="/browse?category=handyman"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Handyman</Link></li>
-                <li><Link href="/browse?category=moving-help" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Moving Help</Link></li>
+                <li><Link href="/browse"               className="text-[13px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link></li>
+                <li><Link href="/requests/new"         className="text-[13px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link></li>
+                <li><Link href="/requests/new?urgent=1" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link></li>
               </ul>
             </div>
 
-            {/* Company */}
+            {/* For Pros */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">Company</p>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wider mb-2.5">For Pros</p>
               <ul className="space-y-2">
-                <li><Link href="/about"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link></li>
-                <li><Link href="/for-pros" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
-                <li><Link href="/support"  className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link></li>
+                <li><Link href="/for-pros"              className="text-[13px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link></li>
+                <li><Link href="/provider/verification" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
+                <li><Link href="/provider/dashboard"    className="text-[13px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
               </ul>
             </div>
 
           </div>
 
-          {/* Bottom bar — copyright + legal inline + socials */}
+          {/* Bottom bar */}
           <div className="border-t border-border-dim/40 pt-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <p className="text-[11px] text-ink-dim">© 2026 Aladdin</p>
