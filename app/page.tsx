@@ -678,14 +678,14 @@ export default function LandingPage() {
                 className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <div className="w-12 h-12 bg-brand rounded-2xl flex items-center justify-center shrink-0">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
                   {idx < arr.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-brand-muted my-3" />
+                    <div className="w-0.5 flex-1 bg-brand-muted my-2" />
                   )}
                 </div>
-                <div className={idx < arr.length - 1 ? 'pb-8 sm:pb-10' : ''}>
+                <div className={idx < arr.length - 1 ? 'pb-10' : ''}>
                   <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
