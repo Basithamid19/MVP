@@ -14,6 +14,7 @@ import {
   Wrench, Hammer, Truck, Package, Zap, ScrollText, BellRing, Instagram, Twitter
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { avatarUrl } from '@/lib/avatar';
 import { AladdinIcon, BroomIcon, ElectricianIcon } from '@/components/icons';
 import { useTranslation } from '@/lib/i18n';
@@ -373,13 +374,12 @@ export default function LandingPage() {
                   </div>
                   <div className="hidden sm:block w-px h-8 bg-border-dim self-center" />
                   <div className="flex-1 flex items-center px-4 py-2">
-                    <MapPin className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
-                    <input
-                      type="text"
+                    <MapPin className="w-5 h-5 text-ink-dim shrink-0 mr-3 pointer-events-none" />
+                    <AddressAutocomplete
+                      inline
                       value={savedAddress}
-                      onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
+                      onChange={v => { setSavedAddress(v); localStorage.setItem('vp_saved_address', v); }}
                       placeholder={t.hero.addressPlaceholder}
-                      className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
                   <button

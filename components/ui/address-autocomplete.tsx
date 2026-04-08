@@ -13,6 +13,8 @@ interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  /** inline: transparent input without border/icon — embed inside an existing card/row */
+  inline?: boolean;
   className?: string;
 }
 
@@ -20,6 +22,7 @@ export function AddressAutocomplete({
   value,
   onChange,
   placeholder = 'Street name, house number, apartment',
+  inline = false,
   className = '',
 }: AddressAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -31,7 +34,6 @@ export function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Fetch suggestions with debounce
   const fetchSuggestions = useCallback(async (query: string) => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -56,7 +58,6 @@ export function AddressAutocomplete({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const v = e.target.value;
     onChange(v);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchSuggestions(v), 350);
   };
@@ -88,7 +89,6 @@ export function AddressAutocomplete({
     }
   };
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -100,14 +100,101 @@ export function AddressAutocomplete({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Cleanup debounce on unmount
   useEffect(() => () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   }, []);
 
+  const dropdown = open && suggestions.length > 0 && (
+    <ul
+      role="listbox"
+      className="absolute z-50 w-full mt-1.5 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden"
+    >
+      {suggestions.map((s, i) => (
+        <li
+          key={s.full}
+          role="option"
+          aria-selected={i === activeIdx}
+          onMouseDown={() => select(s)}
+          onMouseEnter={() => setActiveIdx(i)}
+          className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
+            i === activeIdx ? 'bg-brand-muted' : 'hover:bg-canvas'
+          } ${i > 0 ? 'border-t border-border-dim' : ''}`}
+        >
+          <MapPin
+            className={`w-4 h-4 mt-0.5 shrink-0 ${i === activeIdx ? 'text-brand' : 'text-ink-dim'}`}
+            strokeWidth={1.8}
+          />
+          <div className="min-w-0">
+            <p className={`text-sm font-semibold truncate ${i === activeIdx ? 'text-brand' : 'text-ink'}`}>
+              {s.primary}
+            </p>
+            <p className="text-xs text-ink-dim truncate mt-0.5">{s.secondary}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  );
+
+  /* ── Inline variant (used inside search cards) ── */
+  if (inline) {
+    return (
+      <div ref={containerRef} className={`flex-1 relative ${className}`}>
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          placeholder={placeholder}
+          autoComplete="off"
+          aria-autocomplete="list"
+          aria-expanded={open}
+          className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
+        />
+        {loading && (
+          <Loader2 className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim animate-spin pointer-events-none" />
+        )}
+        {/* Dropdown spans left from the MapPin — offset to cover the pin icon too */}
+        <div className="absolute top-full left-0 right-0" style={{ marginTop: '0.75rem' }}>
+          {open && suggestions.length > 0 && (
+            <ul
+              role="listbox"
+              className="w-full bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden"
+            >
+              {suggestions.map((s, i) => (
+                <li
+                  key={s.full}
+                  role="option"
+                  aria-selected={i === activeIdx}
+                  onMouseDown={() => select(s)}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                    i === activeIdx ? 'bg-brand-muted' : 'hover:bg-canvas'
+                  } ${i > 0 ? 'border-t border-border-dim' : ''}`}
+                >
+                  <MapPin
+                    className={`w-4 h-4 mt-0.5 shrink-0 ${i === activeIdx ? 'text-brand' : 'text-ink-dim'}`}
+                    strokeWidth={1.8}
+                  />
+                  <div className="min-w-0">
+                    <p className={`text-sm font-semibold truncate ${i === activeIdx ? 'text-brand' : 'text-ink'}`}>
+                      {s.primary}
+                    </p>
+                    <p className="text-xs text-ink-dim truncate mt-0.5">{s.secondary}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Standalone variant (default — used in forms) ── */
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      {/* Input */}
       <div className="relative">
         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
         <input
@@ -127,38 +214,7 @@ export function AddressAutocomplete({
           <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim animate-spin" />
         )}
       </div>
-
-      {/* Dropdown */}
-      {open && suggestions.length > 0 && (
-        <ul
-          role="listbox"
-          className="absolute z-50 w-full mt-1.5 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden"
-        >
-          {suggestions.map((s, i) => (
-            <li
-              key={s.full}
-              role="option"
-              aria-selected={i === activeIdx}
-              onMouseDown={() => select(s)}
-              onMouseEnter={() => setActiveIdx(i)}
-              className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                i === activeIdx ? 'bg-brand-muted' : 'hover:bg-canvas'
-              } ${i > 0 ? 'border-t border-border-dim' : ''}`}
-            >
-              <MapPin
-                className={`w-4 h-4 mt-0.5 shrink-0 ${i === activeIdx ? 'text-brand' : 'text-ink-dim'}`}
-                strokeWidth={1.8}
-              />
-              <div className="min-w-0">
-                <p className={`text-sm font-semibold truncate ${i === activeIdx ? 'text-brand' : 'text-ink'}`}>
-                  {s.primary}
-                </p>
-                <p className="text-xs text-ink-dim truncate mt-0.5">{s.secondary}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      {dropdown}
     </div>
   );
 }
