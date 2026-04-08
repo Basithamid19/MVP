@@ -628,11 +628,11 @@ export default function LandingPage() {
       </section>
 
       {/* ── 5. How It Works ── */}
-      <section className="py-12 sm:py-20 bg-surface-alt overflow-hidden">
+      <section className="py-10 sm:py-16 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
           {/* Header */}
-          <div className="text-center mb-8 sm:mb-12">
+          <div className="text-center mb-6 sm:mb-8">
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
               Three ways to get help
@@ -642,7 +642,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Editorial path list — no timeline, no boxes */}
+          {/* Editorial path list */}
           <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
             {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
               <motion.div
@@ -651,10 +651,10 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
                 viewport={{ once: true }}
-                className="flex gap-4 py-7"
+                className="flex gap-4 py-5"
               >
-                <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${urgent ? 'bg-brand' : 'bg-brand-muted'}`}>
-                  <Icon className={`w-[18px] h-[18px] ${urgent ? 'text-white' : 'text-brand'}`} />
+                <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
@@ -668,7 +668,7 @@ export default function LandingPage() {
           </div>
 
           {/* CTA */}
-          <div className="text-center mt-8 sm:mt-12">
+          <div className="text-center mt-6 sm:mt-10">
             <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'xl' })}>
               Get Started <ArrowRight className="w-4 h-4" />
             </Link>
