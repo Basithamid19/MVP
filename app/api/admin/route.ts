@@ -34,7 +34,15 @@ export async function GET(request: Request) {
     ] = await Promise.all([
       prisma.providerVerification.findMany({
         where: { status: 'PENDING' },
-        include: { provider: { include: { user: true } } },
+        select: {
+          id: true,
+          providerProfileId: true,
+          docType: true,
+          docUrl: true,
+          status: true,
+          createdAt: true,
+          provider: { include: { user: true } },
+        },
       }),
       prisma.serviceRequest.count(),
       prisma.booking.count(),
@@ -123,9 +131,16 @@ export async function GET(request: Request) {
 
   if (section === 'verifications') {
     const verifications = await prisma.providerVerification.findMany({
-      include: {
+      select: {
+        id: true,
+        providerProfileId: true,
+        docType: true,
+        docUrl: true,
+        status: true,
+        createdAt: true,
         provider: {
-          include: {
+          select: {
+            id: true,
             user: { select: { name: true, email: true, image: true } },
             categories: { select: { name: true } },
           },
@@ -190,13 +205,21 @@ export async function PATCH(request: Request) {
   // Verify provider document
   if (!action || action === 'verify') {
     const { verificationId, status, tier, rejectionReason } = body;
-    const verification = await prisma.providerVerification.update({
-      where: { id: verificationId },
-      data: {
-        status,
-        ...(rejectionReason !== undefined && { rejectionReason }),
-      },
-    });
+    // Attempt to write rejectionReason; silently skip if the column doesn't
+    // exist yet (migration pending). The column is added by migration
+    // 20260404000000_add_verification_rejection_reason.
+    let verification;
+    try {
+      verification = await prisma.providerVerification.update({
+        where: { id: verificationId },
+        data: { status, ...(rejectionReason !== undefined && { rejectionReason }) },
+      });
+    } catch {
+      verification = await prisma.providerVerification.update({
+        where: { id: verificationId },
+        data: { status },
+      });
+    }
 
     const provider = await prisma.providerProfile.findUnique({
       where: { id: verification.providerProfileId },
