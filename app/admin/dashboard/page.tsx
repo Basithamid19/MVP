@@ -111,19 +111,71 @@ const chartData = [
 function AnalyticsModule() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [seeding, setSeeding] = useState(false);
+  const [seedMsg, setSeedMsg] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setApiError(null);
     fetch('/api/admin?section=overview')
-      .then(r => r.json())
-      .then(d => { setData(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(async r => {
+        if (!r.ok) {
+          const body = await r.json().catch(() => ({}));
+          setApiError(body.error ?? `Server error ${r.status}`);
+          setLoading(false);
+          return;
+        }
+        const d = await r.json();
+        setData(d);
+        setLoading(false);
+      })
+      .catch(err => {
+        setApiError(err.message ?? 'Network error — could not reach the server');
+        setLoading(false);
+      });
   }, []);
 
+  useEffect(() => { load(); }, [load]);
+
+  const seedDatabase = async () => {
+    setSeeding(true);
+    setSeedMsg(null);
+    try {
+      const r = await fetch('/api/admin/seed', { method: 'POST' });
+      const d = await r.json();
+      setSeedMsg(d.message ?? 'Done');
+      load();
+    } catch {
+      setSeedMsg('Seed failed — check server logs.');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   if (loading) return <ModuleLoader />;
+
+  // API / DB connection error
+  if (apiError) {
+    return (
+      <div>
+        <ModuleHeader title="Command Center" description="Marketplace overview and operational health." />
+        <div className="bg-danger-surface border border-danger-edge rounded-2xl p-6 text-center">
+          <AlertCircle className="w-8 h-8 text-danger mx-auto mb-3" />
+          <p className="font-bold text-sm text-danger mb-1">API Error</p>
+          <p className="text-xs text-ink-sub mb-4 font-mono">{apiError}</p>
+          <button onClick={load} className="inline-flex items-center gap-2 bg-danger text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
+            <RefreshCcw className="w-4 h-4" /> Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
   const s = data?.stats ?? {};
   const pendingCount = (data?.pendingVerifications ?? []).length;
   const canceledCount = s.canceledBookings ?? 0;
   const cancellationRate = s.cancellationRate ?? 0;
+  const isEmpty = (s.totalUsers ?? 0) === 0 && (s.totalProviders ?? 0) === 0 && (s.totalRequests ?? 0) === 0;
 
   // Action items derived from real data
   const actions = [
@@ -160,6 +212,28 @@ function AnalyticsModule() {
   return (
     <div>
       <ModuleHeader title="Command Center" description="Marketplace overview and operational health." />
+
+      {/* ── Empty DB Banner ── */}
+      {isEmpty && (
+        <div className="mb-5 bg-caution-surface border border-caution-edge rounded-2xl p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-sm text-caution mb-1">Database is empty</p>
+              <p className="text-xs text-ink-sub mb-3">No users, providers, or requests found. Seed the database with demo data to populate the dashboard.</p>
+              {seedMsg && <p className="text-xs font-semibold text-trust mb-2">{seedMsg}</p>}
+              <button
+                onClick={seedDatabase}
+                disabled={seeding}
+                className="inline-flex items-center gap-2 bg-caution text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
+                {seeding ? 'Seeding…' : 'Seed Demo Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Action Needed ── */}
       {actions.length > 0 && (
@@ -264,8 +338,7 @@ function ProvidersModule() {
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=providers')
-      .then(r => r.json())
-      .then(d => { setProviders(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setProviders(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -386,8 +459,7 @@ function BookingsModule() {
 
   useEffect(() => {
     fetch('/api/admin?section=bookings')
-      .then(r => r.json())
-      .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setBookings(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -459,8 +531,8 @@ function DisputesModule() {
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=bookings')
-      .then(r => r.json())
-      .then(d => {
+      .then(async r => {
+        const d = await r.json();
         const list = Array.isArray(d) ? d : [];
         setBookings(list.filter((b: any) => b.status === 'CANCELED' || b.payment?.status === 'PENDING' || b.payment?.status === 'REFUNDED'));
         setLoading(false);
@@ -567,8 +639,7 @@ function ReviewsModule() {
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=reviews')
-      .then(r => r.json())
-      .then(d => { setReviews(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setReviews(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -677,8 +748,7 @@ function CategoriesModule() {
 
   useEffect(() => {
     fetch('/api/admin?section=categories')
-      .then(r => r.json())
-      .then(d => { setCategories(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setCategories(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -755,8 +825,7 @@ function CRMModule() {
 
   useEffect(() => {
     fetch('/api/admin?section=users')
-      .then(r => r.json())
-      .then(d => { setUsers(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setUsers(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -844,8 +913,7 @@ function IncidentModule() {
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=tickets')
-      .then(r => r.json())
-      .then(d => { setTickets(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setTickets(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
@@ -1022,8 +1090,7 @@ function VerificationsModule() {
   const load = useCallback(() => {
     setLoading(true);
     fetch('/api/admin?section=verifications')
-      .then(r => r.json())
-      .then(d => { setCases(Array.isArray(d) ? d : []); setLoading(false); })
+      .then(async r => { const d = await r.json(); setCases(Array.isArray(d) ? d : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
