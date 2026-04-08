@@ -77,7 +77,12 @@ export async function GET(request: Request) {
       include: {
         user: true,
         categories: true,
-        verifications: { orderBy: { createdAt: 'desc' }, take: 3 },
+        // Use select to avoid the missing rejectionReason column
+        verifications: {
+          select: { id: true, providerProfileId: true, docType: true, docUrl: true, status: true, createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 3,
+        },
         _count: { select: { bookings: true, reviews: true } },
       },
       orderBy: { ratingAvg: 'desc' },
