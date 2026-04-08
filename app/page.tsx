@@ -153,7 +153,7 @@ function TrustCarousel() {
 
   return (
     <div className="mt-3 -mx-2 sm:mx-0">
-      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-2">
+      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1">
 
         {/* Mobile: single-card carousel */}
         <div className="md:hidden">
@@ -198,7 +198,7 @@ function TrustCarousel() {
           </div>
 
           {/* Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-3">
+          <div className="flex items-center justify-center gap-1.5 mt-2">
             {trustItems.map((_, i) => (
               <button
                 key={i}
