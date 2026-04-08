@@ -26,3 +26,5 @@ export type { EmptyStateProps }                from './empty-state';
 
 export { PageHeader, SectionHeader }           from './page-header';
 export type { PageHeaderProps, SectionHeaderProps } from './page-header';
+
+export { AddressAutocomplete }                 from './address-autocomplete';

@@ -3,13 +3,14 @@
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, ArrowRight, MapPin, Calendar,
+  ArrowLeft, ArrowRight, Calendar,
   AlertCircle, Loader2, CheckCircle2, Send,
   X, ImagePlus, Zap,
   Wrench, Hammer, Truck, Package
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { SUBCATEGORIES } from '@/lib/subcategories';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   plumber:              Wrench,
@@ -404,16 +405,11 @@ function NewRequestContent() {
 
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Address in Vilnius</label>
-                <div className="relative">
-                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={e => setForm(f => ({ ...f, address: e.target.value }))}
-                    placeholder="Street name, house number, apartment"
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
-                  />
-                </div>
+                <AddressAutocomplete
+                  value={form.address}
+                  onChange={v => setForm(f => ({ ...f, address: v }))}
+                  placeholder="Street name, house number, apartment"
+                />
               </div>
 
               <div>
