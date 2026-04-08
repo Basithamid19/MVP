@@ -18,6 +18,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const section = searchParams.get('section') || 'overview';
 
+  try {
+
   if (section === 'overview') {
     const [
       pendingVerifications,
@@ -168,7 +170,12 @@ export async function GET(request: Request) {
     return NextResponse.json(tickets);
   }
 
-  return NextResponse.json({ error: 'Unknown section' }, { status: 400 });
+    return NextResponse.json({ error: 'Unknown section' }, { status: 400 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[admin GET] error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
@@ -177,6 +184,8 @@ export async function PATCH(request: Request) {
 
   const body = await request.json();
   const { action } = body;
+
+  try {
 
   // Verify provider document
   if (!action || action === 'verify') {
@@ -277,5 +286,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json(ticket);
   }
 
-  return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[admin PATCH] error:', message);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
