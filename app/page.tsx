@@ -109,12 +109,12 @@ const TESTIMONIALS = [
 ];
 
 const SERVICE_CARD_THEMES = [
-  { bg: '#5CC9A2', tag: 'Plumbing',   title: 'Plumbing Experts',    desc: 'From dripping taps to full pipe repairs.',        trust: 'Emergency support available',  popular: false },
-  { bg: '#C5A8EE', tag: 'Electrical', title: 'Electrical Experts',  desc: 'Lights, faults, and fixes done safely.',           trust: 'Safety-checked professionals', popular: false },
-  { bg: '#EAEB6C', tag: 'Cleaning',   title: 'Expert Cleaning',     desc: 'For weekly resets or deep clean days.',            trust: 'Vetted and insured pros',       popular: true  },
-  { bg: '#F4C9A0', tag: 'Repairs',    title: 'Handyman Help',       desc: 'The small jobs that make a big difference.',      trust: 'Tools included',               popular: true  },
-  { bg: '#A8CEF0', tag: 'Logistics',  title: 'Moving Help',         desc: 'From first box packed to final lift in.',          trust: 'Handled with care',            popular: false },
-  { bg: '#E0BCE8', tag: 'Assembly',   title: 'Furniture Assembly',  desc: 'Flat-pack frustration, professionally solved.',   trust: 'Assembly done right',          popular: false },
+  { bg: '#BEE0D8', tag: 'Plumbing',   title: 'Plumbing Experts',    desc: 'From dripping taps to full pipe repairs.',        trust: 'Emergency support available',  popular: false },
+  { bg: '#F2E2B6', tag: 'Electrical', title: 'Electrical Experts',  desc: 'Lights, faults, and fixes done safely.',           trust: 'Safety-checked professionals', popular: false },
+  { bg: '#D2E8D2', tag: 'Cleaning',   title: 'Expert Cleaning',     desc: 'For weekly resets or deep clean days.',            trust: 'Vetted and insured pros',       popular: true  },
+  { bg: '#EED4BC', tag: 'Repairs',    title: 'Handyman Help',       desc: 'The small jobs that make a big difference.',       trust: 'Tools included',               popular: true  },
+  { bg: '#C6D8E8', tag: 'Logistics',  title: 'Moving Help',         desc: 'From first box packed to final lift in.',          trust: 'Handled with care',            popular: false },
+  { bg: '#EACFCF', tag: 'Assembly',   title: 'Furniture Assembly',  desc: 'Flat-pack frustration, professionally solved.',    trust: 'Assembly done right',          popular: false },
 ];
 
 /* ─── Trust Carousel ─── */
