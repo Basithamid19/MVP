@@ -393,7 +393,7 @@ export default function LandingPage() {
 
               {/* Get help your way */}
               <div className="mt-3 bg-white rounded-2xl px-4 pt-4 pb-3">
-                <p className="text-[17px] font-bold text-ink leading-tight mb-4">Get help your way</p>
+                <p className="text-[17px] font-bold text-ink leading-tight mb-4">Your project. Your way.</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
