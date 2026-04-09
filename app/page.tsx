@@ -117,6 +117,15 @@ const SERVICE_CARD_DESCS = [
   'Interior & exterior',
 ];
 
+const SERVICE_CARD_THEMES = [
+  { bg: '#6C4FD8', tag: 'Plumbing',   from: 'From €30/hr' },
+  { bg: '#D97706', tag: 'Electrical', from: 'From €35/hr' },
+  { bg: '#2D9B6E', tag: 'Cleaning',   from: 'From €25/hr' },
+  { bg: '#DC5050', tag: 'Repairs',    from: 'From €28/hr' },
+  { bg: '#2563EB', tag: 'Logistics',  from: 'From €45/hr' },
+  { bg: '#7C3AED', tag: 'Assembly',   from: 'From €40/hr' },
+];
+
 /* ─── Trust Carousel ─── */
 
 const trustItems = [
@@ -576,23 +585,33 @@ export default function LandingPage() {
         <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1 lg:hidden">
           {categories.map((cat, idx) => {
             const Icon = cat.icon;
+            const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="shrink-0 w-[44vw] max-w-[170px] snap-start rounded-2xl p-4 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
-                style={{ minHeight: '164px' }}
+                style={{ background: theme.bg, minHeight: '180px' }}
+                className="shrink-0 w-[46vw] max-w-[180px] snap-start rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform"
               >
-                <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                  <Icon className="w-4.5 h-4.5 text-brand" strokeWidth={1.5} />
+                {/* Tag */}
+                <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-3">
+                  {theme.tag}
+                </span>
+                {/* Icon */}
+                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center mb-auto">
+                  <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
                 </div>
-                <div className="mt-auto pt-3 w-full">
-                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-ink-sub mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Name + desc */}
+                <div className="mt-3 w-full">
+                  <p className="text-sm font-bold text-white leading-tight">{cat.name}</p>
+                  <p className="text-[11px] text-white/70 mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
-                <div className="mt-2 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">{t.services.bookNow}</span>
-                  <ChevronRight className="w-3 h-3" />
+                {/* Footer */}
+                <div className="mt-3 w-full flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-white/80">{theme.from}</span>
+                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-3 h-3" style={{ color: theme.bg }} />
+                  </div>
                 </div>
               </button>
             );
@@ -603,23 +622,33 @@ export default function LandingPage() {
         <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
             const Icon = cat.icon;
+            const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-2xl p-6 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-                style={{ minHeight: '220px' }}
+                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+                style={{ background: theme.bg, minHeight: '224px' }}
               >
-                <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-6 h-6 text-brand" strokeWidth={1.5} />
+                {/* Tag */}
+                <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-3">
+                  {theme.tag}
+                </span>
+                {/* Icon */}
+                <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center mb-auto">
+                  <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
                 </div>
-                <div className="mt-auto pt-5 w-full">
-                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Name + desc */}
+                <div className="mt-4 w-full">
+                  <p className="text-sm font-bold text-white leading-tight">{cat.name}</p>
+                  <p className="text-[11px] text-white/70 mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
                 </div>
-                <div className="mt-3 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">{t.services.explore}</span>
-                  <ChevronRight className="w-3 h-3" />
+                {/* Footer */}
+                <div className="mt-4 w-full flex items-center justify-between">
+                  <span className="text-xs font-semibold text-white/80">{theme.from}</span>
+                  <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-3.5 h-3.5" style={{ color: theme.bg }} />
+                  </div>
                 </div>
               </button>
             );
