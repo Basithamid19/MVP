@@ -49,8 +49,8 @@ export const en: Dictionary = {
 
   services: {
     label: 'Services',
-    title: 'Services Tailored to You.',
-    subtitle: 'From emergency repairs to everyday chores, we connect you with top-rated local professionals.',
+    title: 'Services tailored to your home.',
+    subtitle: 'From urgent fixes to everyday help, Aladdin connects you with trusted local pros.',
     viewAll: 'View all',
     bookNow: 'Book now',
     explore: 'Explore',
