@@ -15,9 +15,9 @@ export const lt: Dictionary = {
 
   hero: {
     eyebrow: 'Patikimi vietiniai meistrai Vilniuje',
-    headline: 'Kai namai šaukia,',
-    headlineHighlight: 'Aladdin atsako.',
-    subheadline: 'Patikrinti meistrai, aiškios kainos ir ramybė nuo pradžios iki pabaigos.',
+    headline: 'Jūsų namai — mūsų rūpestis.',
+    headlineHighlight: 'Visada patikimai.',
+    subheadline: 'Patikrinti meistrai, aiški kaina ir 30 dienų garantija — kiekvieną kartą.',
     searchPlaceholder: 'Ko jums reikia?',
     addressPlaceholder: 'Jūsų adresas',
     search: 'Ieškoti',
@@ -49,17 +49,18 @@ export const lt: Dictionary = {
 
   services: {
     label: 'Paslaugos',
-    title: 'Populiarios paslaugos',
-    subtitle: 'Ko tik jums reikia — mes turime specialistą.',
+    title: 'Paslaugos jūsų namams.',
+    subtitle: 'Nuo skubių remontų iki kasdienės priežiūros — surandame tinkamą meistrą.',
     viewAll: 'Visos paslaugos',
     bookNow: 'Užsakyti',
     explore: 'Žiūrėti',
+    popularBadge: 'Populiaru',
   },
 
   howItWorks: {
     label: 'Kaip tai veikia',
-    title: 'Trys žingsniai iki rezultato',
-    subtitle: 'Nuo darbo paskelbimo iki specialisto užsakymo — užtrunka mažiau nei 5 minutes.',
+    title: 'Trys būdai gauti pagalbą',
+    subtitle: 'Rezervuokite tiesiai, surinkite pasiūlymus arba gaukite skubią pagalbą — Aladdin paruoštas.',
     step: 'Žingsnis',
     step1Title: 'Aprašykite darbą',
     step1Desc: 'Papasakokite, ko jums reikia, nurodykite vietą ir laiką. Užtrunka mažiau nei 2 minutes.',
@@ -71,8 +72,8 @@ export const lt: Dictionary = {
 
   meetPros: {
     label: 'Mūsų meistrai',
-    title: 'Susipažinkite su meistrais',
-    subtitle: 'Patvirtinti specialistai su puikiais rezultatais.',
+    title: 'Geriausi Vilniuje',
+    subtitle: 'Patikrinti, įvertinti ir pasiruošę padėti.',
     viewAll: 'Visi meistrai',
     jobs: 'darbai',
     reviews: 'atsiliepimai',
@@ -153,6 +154,52 @@ export const lt: Dictionary = {
     providerRole: 'Esu specialistas',
     customerDesc: 'Raskite ir užsisakykite patvirtintus meistrus',
     providerDesc: 'Gaukite užsakymų ir plėskite verslą',
+  },
+
+  heroCard: {
+    heading: 'Jūsų projektas.',
+    headingHighlight: 'Jūsų sąlygomis.',
+    desc: 'Užsakykite tiesiai, paskelbkite darbą ar gaukite skubią pagalbą — visa tai vienoje vietoje.',
+    findAProTitle: 'Rasti meistrą',
+    findAProDesc: 'Naršykite patvirtintus specialistus',
+    postRequestTitle: 'Paskelbti darbą',
+    postRequestDesc: 'Aprašykite darbą ir gaukite pasiūlymus',
+    urgentTitle: 'Skubi pagalba',
+    urgentDesc: 'Reikia šiandien? Gausite prioritetinę atranką',
+    priorityBadge: 'Skubu',
+  },
+
+  serviceCards: {
+    plumbing:   { tag: 'Santechnika',       title: 'Santechnikos ekspertai',        desc: 'Nuo varvinančių čiaupų iki vamzdyno remonto.',         trust: 'Skubi pagalba — visada'               },
+    electrical: { tag: 'Elektra',           title: 'Elektros specialistai',         desc: 'Apšvietimas, gedimai ir taisymai — saugiai.',          trust: 'Atestuoti ir patikrinti specialistai' },
+    cleaning:   { tag: 'Valymas',           title: 'Profesionalus valymas',         desc: 'Savaitinis tvarkymas ar gilus valymas — jūsų pasirinkimu.', trust: 'Patikrinti ir apdrausti meistrai' },
+    repairs:    { tag: 'Remontas',          title: 'Meistras namams',               desc: 'Smulkūs darbai, kurie keičia viską.',                  trust: 'Įrankiai įskaičiuoti'                 },
+    logistics:  { tag: 'Perkraustymas',     title: 'Perkraustymo pagalba',          desc: 'Nuo pirmosios dėžės iki paskutinio kėlimo.',           trust: 'Tvarkoma rūpestingai'                  },
+    assembly:   { tag: 'Baldų surinkimas',  title: 'Baldų surinkimas',              desc: 'Sudėtingi baldai — profesionaliai išspręsta.',          trust: 'Surinkta profesionaliai'               },
+  },
+
+  howItWorksHooks: {
+    hook1: 'Žinote ko norite? Užsisakykite tiesiai.',
+    hook2: 'Norite pasiūlymų? Tegul meistrai ateina pas jus.',
+    hook3: 'Reikia šiandien? Gausite prioritetinę atranką.',
+  },
+
+  trustBanner: {
+    guaranteeTitle: '30 dienų garantija',
+    guaranteeDesc: 'Nemokamas pakartotinas apsilankymas arba pinigų grąžinimas per 30 dienų.',
+    guaranteeDescLong: 'Jei per 30 dienų nuo darbo atlikimo esate nepatenkinti — organizuosime nemokamą pakartotinį apsilankymą arba grąžinsime pinigus. Jokių ginčų, jokių komplikacijų.',
+    pricingTitle: 'Aiški kaina iš anksto',
+    pricingDesc: 'Visa kaina žinoma prieš pradedant darbą. Jokių paslėptų mokesčių.',
+    pricingDescLong: 'Kiekvienas pasiūlymas fiksuojamas prieš pradedant darbus. Matote visą kainą — darbo sąnaudos, medžiagos, viskas — prieš patvirtinant. Jokių papildomų mokesčių.',
+    verifiedTitle: 'Patvirtinti specialistai',
+    verifiedDesc: 'Patikrinti tapatybė, apdrausti ir įvertinti atitikties komandos.',
+    verifiedDescLong: 'Visi Aladdin specialistai yra patikrinti tapatybės, apdrausti ir peržiūrėti mūsų atitikties komandos, prieš galėdami priimti bet kokį užsakymą.',
+    damageTitle: 'Žalos draudimas įskaičiuotas',
+    damageDesc: 'Iki 100 € tinkamoms atsitiktinės žalos pretenzijoms.',
+    damageDescLong: 'Atsitiktinė žala darbo metu? Mes pasirūpiname. Tinkamos pretenzijos peržiūrimos ir apdorojamos per 5 darbo dienas.',
+    builtForTrustTitle: 'Sukurta pasitikėjimui, sukurta Vilniui.',
+    builtForTrustSubtitle: 'Kiekvienas užsakymas paremtas tikromis garantijomis, patvirtintais specialistais ir skaidriomis kainomis.',
+    findAPro: 'Rasti meistrą',
   },
 
   browse: {

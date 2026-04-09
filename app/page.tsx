@@ -108,38 +108,39 @@ const TESTIMONIALS = [
   },
 ];
 
-const SERVICE_CARD_THEMES = [
-  { bg: '#BEE0D8', tag: 'Plumbing',   title: 'Plumbing Experts',    desc: 'From dripping taps to full pipe repairs.',        trust: 'Emergency support available',  popular: false },
-  { bg: '#F2E2B6', tag: 'Electrical', title: 'Electrical Experts',  desc: 'Lights, faults, and fixes done safely.',           trust: 'Safety-checked professionals', popular: false },
-  { bg: '#D2E8D2', tag: 'Cleaning',   title: 'Expert Cleaning',     desc: 'For weekly resets or deep clean days.',            trust: 'Vetted and insured pros',       popular: true  },
-  { bg: '#EED4BC', tag: 'Repairs',    title: 'Handyman Help',       desc: 'The small jobs that make a big difference.',       trust: 'Tools included',               popular: true  },
-  { bg: '#C6D8E8', tag: 'Logistics',  title: 'Moving Help',         desc: 'From first box packed to final lift in.',          trust: 'Handled with care',            popular: false },
-  { bg: '#EACFCF', tag: 'Assembly',   title: 'Furniture Assembly',  desc: 'Flat-pack frustration, professionally solved.',    trust: 'Assembly done right',          popular: false },
+type CardKey = 'plumbing' | 'electrical' | 'cleaning' | 'repairs' | 'logistics' | 'assembly';
+const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean }[] = [
+  { bg: '#BEE0D8', cardKey: 'plumbing',   popular: false },
+  { bg: '#F2E2B6', cardKey: 'electrical', popular: false },
+  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true  },
+  { bg: '#EED4BC', cardKey: 'repairs',    popular: true  },
+  { bg: '#C6D8E8', cardKey: 'logistics',  popular: false },
+  { bg: '#EACFCF', cardKey: 'assembly',   popular: false },
 ];
 
 /* ─── Trust Carousel ─── */
 
-const trustItems = [
-  { icon: CheckCircle2, title: '30-Day Guarantee',      desc: 'Free return visit or full refund within 30 days.' },
-  { icon: FileText,     title: 'Upfront Pricing',        desc: 'Full cost locked in before work begins. No hidden fees.' },
-  { icon: BadgeCheck,   title: 'Verified Professionals', desc: 'ID-verified, insured, and compliance-reviewed.' },
-  { icon: Shield,       title: 'Damage Cover Included',  desc: 'Up to €100 on eligible accidental damage claims.' },
-];
+const TRUST_ICONS = [CheckCircle2, FileText, BadgeCheck, Shield];
 
 function TrustCarousel() {
+  const tb = useTranslation().trustBanner;
+  const items = [
+    { title: tb.guaranteeTitle, desc: tb.guaranteeDesc },
+    { title: tb.pricingTitle,   desc: tb.pricingDesc   },
+    { title: tb.verifiedTitle,  desc: tb.verifiedDesc  },
+    { title: tb.damageTitle,    desc: tb.damageDesc    },
+  ];
+  const total = items.length;
   const [active, setActive] = useState(0);
-  const total = trustItems.length;
 
   const prev = useCallback(() => setActive(i => (i - 1 + total) % total), [total]);
   const next = useCallback(() => setActive(i => (i + 1) % total), [total]);
 
-  // Auto-advance — reset timer on manual interaction
   useEffect(() => {
     const id = setInterval(next, 5000);
     return () => clearInterval(id);
   }, [next, active]);
 
-  // Touch swipe support
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const handleTouchStart = (e: React.TouchEvent) => setTouchStart(e.touches[0].clientX);
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -149,8 +150,8 @@ function TrustCarousel() {
     setTouchStart(null);
   };
 
-  const item = trustItems[active];
-  const Icon = item.icon;
+  const item = items[active];
+  const Icon = TRUST_ICONS[active];
 
   return (
     <div className="mt-3 -mx-2 sm:mx-0">
@@ -200,7 +201,7 @@ function TrustCarousel() {
 
           {/* Dots */}
           <div className="flex items-center justify-center gap-1.5 mt-2">
-            {trustItems.map((_, i) => (
+            {items.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setActive(i)}
@@ -215,16 +216,16 @@ function TrustCarousel() {
 
         {/* Desktop: 4-column grid */}
         <div className="hidden md:grid md:grid-cols-4 gap-3">
-          {trustItems.map((t) => {
-            const TIcon = t.icon;
+          {items.map((item, i) => {
+            const TIcon = TRUST_ICONS[i];
             return (
-              <div key={t.title} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
                 <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
                   <TIcon className="w-[17px] h-[17px] text-brand" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-ink leading-tight">{t.title}</p>
-                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{t.desc}</p>
+                  <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
+                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
                 </div>
               </div>
             );
@@ -391,10 +392,10 @@ export default function LandingPage() {
                 </div>
               </form>
 
-              {/* Get help your way */}
+              {/* Your project / Your Way card */}
               <div className="mt-3 bg-white rounded-2xl px-4 pt-4 pb-3">
-                <p className="text-2xl lg:text-3xl font-bold leading-tight mb-1">Your project. <span className="text-brand">Your Way.</span></p>
-                <p className="text-[13px] text-ink-sub leading-snug mb-4">Book a pro directly, post a job for quotes, or get urgent help — all in one place.</p>
+                <p className="text-2xl lg:text-3xl font-bold leading-tight mb-1">{t.heroCard.heading} <span className="text-brand">{t.heroCard.headingHighlight}</span></p>
+                <p className="text-[13px] text-ink-sub leading-snug mb-4">{t.heroCard.desc}</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
@@ -405,8 +406,8 @@ export default function LandingPage() {
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">{t.heroCard.findAProTitle}</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.findAProDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
@@ -422,8 +423,8 @@ export default function LandingPage() {
                     <ScrollText className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">{t.heroCard.postRequestTitle}</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.postRequestDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
@@ -440,10 +441,10 @@ export default function LandingPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[15px] font-bold text-ink leading-tight">Urgent Help</p>
-                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                      <p className="text-[15px] font-bold text-ink leading-tight">{t.heroCard.urgentTitle}</p>
+                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">{t.heroCard.priorityBadge}</span>
                     </div>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.urgentDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-brand/40 shrink-0" />
                 </Link>
@@ -571,6 +572,7 @@ export default function LandingPage() {
         <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2 lg:hidden">
           {categories.map((cat, idx) => {
             const theme = SERVICE_CARD_THEMES[idx];
+            const card = t.serviceCards[theme.cardKey];
             return (
               <button
                 key={cat.slug}
@@ -581,24 +583,24 @@ export default function LandingPage() {
                 {/* Popular badge */}
                 {theme.popular && (
                   <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
-                    Popular
+                    {t.services.popularBadge}
                   </span>
                 )}
                 {/* Tag */}
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
-                  {theme.tag}
+                  {card.tag}
                 </span>
                 {/* Title */}
-                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{theme.title}</p>
+                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{card.title}</p>
                 {/* Desc */}
-                <p className="text-sm text-gray-700 leading-relaxed">{theme.desc}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{card.desc}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
                 {/* Trust banner + CTA row */}
                 <div className="w-full flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                    <span className="text-[11px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
+                    <span className="text-[11px] font-semibold text-black/60 leading-tight">{card.trust}</span>
                   </div>
                   <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
                     <ArrowRight className="w-4 h-4 text-white" />
@@ -613,6 +615,7 @@ export default function LandingPage() {
         <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
             const theme = SERVICE_CARD_THEMES[idx];
+            const card = t.serviceCards[theme.cardKey];
             return (
               <button
                 key={cat.slug}
@@ -623,24 +626,24 @@ export default function LandingPage() {
                 {/* Popular badge */}
                 {theme.popular && (
                   <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
-                    Popular
+                    {t.services.popularBadge}
                   </span>
                 )}
                 {/* Tag */}
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
-                  {theme.tag}
+                  {card.tag}
                 </span>
                 {/* Title */}
-                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{theme.title}</p>
+                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{card.title}</p>
                 {/* Desc */}
-                <p className="text-xs text-gray-700 leading-relaxed">{theme.desc}</p>
+                <p className="text-xs text-gray-700 leading-relaxed">{card.desc}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
                 {/* Trust banner + CTA row */}
                 <div className="w-full flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <CheckCircle2 className="w-3 h-3 text-black/50 shrink-0" />
-                    <span className="text-[10px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
+                    <span className="text-[10px] font-semibold text-black/60 leading-tight">{card.trust}</span>
                   </div>
                   <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
                     <ArrowRight className="w-4 h-4 text-white" />
@@ -658,20 +661,24 @@ export default function LandingPage() {
 
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
-              Three ways to get help
+              {t.howItWorks.title}
             </h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
+              {t.howItWorks.subtitle}
             </p>
           </div>
 
           {/* Editorial path list */}
           <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
-            {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
+            {HOW_IT_WORKS.map(({ icon: Icon, urgent }, idx) => {
+              const titles = [t.howItWorks.step1Title, t.howItWorks.step2Title, t.howItWorks.step3Title];
+              const descs  = [t.howItWorks.step1Desc,  t.howItWorks.step2Desc,  t.howItWorks.step3Desc];
+              const hooks  = [t.howItWorksHooks.hook1,  t.howItWorksHooks.hook2,  t.howItWorksHooks.hook3];
+              return (
               <motion.div
-                key={title}
+                key={idx}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.1 }}
@@ -683,13 +690,14 @@ export default function LandingPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
-                    {title}
+                    {titles[idx]}
                   </h3>
-                  <p className="text-[13px] text-brand mb-2 leading-snug">{hook}</p>
-                  <p className="text-[14px] text-ink-sub leading-relaxed">{desc}</p>
+                  <p className="text-[13px] text-brand mb-2 leading-snug">{hooks[idx]}</p>
+                  <p className="text-[14px] text-ink-sub leading-relaxed">{descs[idx]}</p>
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
 
           {/* CTA */}
@@ -719,36 +727,20 @@ export default function LandingPage() {
           {/* Header */}
           <div className="text-center mb-8 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
-              Built for trust, built for Vilnius.
+              {t.trustBanner.builtForTrustTitle}
             </h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
-              Every booking is backed by real guarantees, verified professionals, and transparent pricing.
+              {t.trustBanner.builtForTrustSubtitle}
             </p>
           </div>
 
           {/* Vertical timeline */}
           <div className="max-w-lg mx-auto">
             {[
-              {
-                icon: CheckCircle2,
-                title: '30-Day Guarantee',
-                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
-              },
-              {
-                icon: FileText,
-                title: 'Upfront, Transparent Pricing',
-                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
-              },
-              {
-                icon: BadgeCheck,
-                title: 'Verified Professionals',
-                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
-              },
-              {
-                icon: Shield,
-                title: 'Damage Cover Included',
-                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
-              },
+              { icon: CheckCircle2, title: t.trustBanner.guaranteeTitle, desc: t.trustBanner.guaranteeDescLong },
+              { icon: FileText,     title: t.trustBanner.pricingTitle,   desc: t.trustBanner.pricingDescLong   },
+              { icon: BadgeCheck,   title: t.trustBanner.verifiedTitle,  desc: t.trustBanner.verifiedDescLong  },
+              { icon: Shield,       title: t.trustBanner.damageTitle,    desc: t.trustBanner.damageDescLong    },
             ].map(({ icon: Icon, title, desc }, idx, arr) => (
               <motion.div
                 key={title}
@@ -780,7 +772,7 @@ export default function LandingPage() {
               href="/browse"
               className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              Find a Pro <ArrowRight className="w-4 h-4" />
+              {t.trustBanner.findAPro} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 

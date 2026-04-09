@@ -15,9 +15,9 @@ export const en: Dictionary = {
 
   hero: {
     eyebrow: 'Trusted local pros in Vilnius',
-    headline: 'When Your Home Calls,',
-    headlineHighlight: 'Aladdin Answers.',
-    subheadline: 'Verified local pros, upfront pricing, and peace of mind from start to finish.',
+    headline: 'Your home, handled.',
+    headlineHighlight: 'Properly.',
+    subheadline: 'Vetted professionals, upfront pricing, and a 30-day guarantee — every time.',
     searchPlaceholder: 'What do you need?',
     addressPlaceholder: 'Your address',
     search: 'Search',
@@ -50,10 +50,11 @@ export const en: Dictionary = {
   services: {
     label: 'Services',
     title: 'Services tailored to your home.',
-    subtitle: 'From urgent fixes to everyday help, Aladdin connects you with trusted local pros.',
+    subtitle: 'From urgent fixes to everyday help — we connect you with trusted local pros.',
     viewAll: 'View all',
     bookNow: 'Book now',
     explore: 'Explore',
+    popularBadge: 'Popular',
   },
 
   howItWorks: {
@@ -71,8 +72,8 @@ export const en: Dictionary = {
 
   meetPros: {
     label: 'Meet our pros',
-    title: 'Meet Our Pros',
-    subtitle: 'Verified professionals with a track record of excellence.',
+    title: 'Top-Rated in Vilnius',
+    subtitle: 'Vetted, reviewed, and ready to help.',
     viewAll: 'View all',
     jobs: 'jobs',
     reviews: 'reviews',
@@ -153,6 +154,52 @@ export const en: Dictionary = {
     providerRole: 'I\'m a professional',
     customerDesc: 'Find and book verified local pros',
     providerDesc: 'Get jobs and grow your business',
+  },
+
+  heroCard: {
+    heading: 'Your project.',
+    headingHighlight: 'Your Way.',
+    desc: 'Book a pro directly, post a job for quotes, or get urgent help — all in one place.',
+    findAProTitle: 'Find a Pro',
+    findAProDesc: 'Browse verified professionals',
+    postRequestTitle: 'Post a Request',
+    postRequestDesc: 'Describe your job and receive quotes',
+    urgentTitle: 'Urgent Help',
+    urgentDesc: 'Need someone today? Get priority matching',
+    priorityBadge: 'Priority',
+  },
+
+  serviceCards: {
+    plumbing:   { tag: 'Plumbing',   title: 'Plumbing Experts',    desc: 'From dripping taps to full pipe repairs.',      trust: 'Emergency support available'  },
+    electrical: { tag: 'Electrical', title: 'Electrical Experts',  desc: 'Lights, faults, and fixes done safely.',         trust: 'Safety-checked professionals' },
+    cleaning:   { tag: 'Cleaning',   title: 'Expert Cleaning',     desc: 'For weekly resets or deep clean days.',          trust: 'Vetted and insured pros'       },
+    repairs:    { tag: 'Repairs',    title: 'Handyman Help',       desc: 'The small jobs that make a big difference.',     trust: 'Tools included'               },
+    logistics:  { tag: 'Logistics',  title: 'Moving Help',         desc: 'From first box packed to final lift in.',        trust: 'Handled with care'            },
+    assembly:   { tag: 'Assembly',   title: 'Furniture Assembly',  desc: 'Flat-pack frustration, professionally solved.',  trust: 'Assembly done right'          },
+  },
+
+  howItWorksHooks: {
+    hook1: 'Know who you want? Book directly.',
+    hook2: 'Want quotes? Let pros come to you.',
+    hook3: 'Need someone today? Get priority matching.',
+  },
+
+  trustBanner: {
+    guaranteeTitle: '30-Day Guarantee',
+    guaranteeDesc: 'Free return visit or full refund within 30 days.',
+    guaranteeDescLong: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
+    pricingTitle: 'Upfront Pricing',
+    pricingDesc: 'Full cost locked in before work begins. No hidden fees.',
+    pricingDescLong: 'Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.',
+    verifiedTitle: 'Verified Professionals',
+    verifiedDesc: 'ID-verified, insured, and compliance-reviewed.',
+    verifiedDescLong: 'All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.',
+    damageTitle: 'Damage Cover Included',
+    damageDesc: 'Up to €100 on eligible accidental damage claims.',
+    damageDescLong: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
+    builtForTrustTitle: 'Built for trust, built for Vilnius.',
+    builtForTrustSubtitle: 'Every booking is backed by real guarantees, verified professionals, and transparent pricing.',
+    findAPro: 'Find a Pro',
   },
 
   browse: {

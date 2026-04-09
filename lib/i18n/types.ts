@@ -58,6 +58,7 @@ export interface Dictionary {
     viewAll: string;
     bookNow: string;
     explore: string;
+    popularBadge: string;
   };
 
   // How it works
@@ -166,6 +167,56 @@ export interface Dictionary {
     providerRole: string;
     customerDesc: string;
     providerDesc: string;
+  };
+
+  // Hero "Your project / Your Way" card
+  heroCard: {
+    heading: string;
+    headingHighlight: string;
+    desc: string;
+    findAProTitle: string;
+    findAProDesc: string;
+    postRequestTitle: string;
+    postRequestDesc: string;
+    urgentTitle: string;
+    urgentDesc: string;
+    priorityBadge: string;
+  };
+
+  // Service cards (per-card copy)
+  serviceCards: {
+    plumbing:   { tag: string; title: string; desc: string; trust: string };
+    electrical: { tag: string; title: string; desc: string; trust: string };
+    cleaning:   { tag: string; title: string; desc: string; trust: string };
+    repairs:    { tag: string; title: string; desc: string; trust: string };
+    logistics:  { tag: string; title: string; desc: string; trust: string };
+    assembly:   { tag: string; title: string; desc: string; trust: string };
+  };
+
+  // How It Works — hook lines
+  howItWorksHooks: {
+    hook1: string;
+    hook2: string;
+    hook3: string;
+  };
+
+  // Trust banner (carousel + Built for Trust section)
+  trustBanner: {
+    guaranteeTitle: string;
+    guaranteeDesc: string;
+    guaranteeDescLong: string;
+    pricingTitle: string;
+    pricingDesc: string;
+    pricingDescLong: string;
+    verifiedTitle: string;
+    verifiedDesc: string;
+    verifiedDescLong: string;
+    damageTitle: string;
+    damageDesc: string;
+    damageDescLong: string;
+    builtForTrustTitle: string;
+    builtForTrustSubtitle: string;
+    findAPro: string;
   };
 
   // Browse page
