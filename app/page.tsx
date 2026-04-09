@@ -561,15 +561,9 @@ export default function LandingPage() {
       {/* ── 2. Popular Services ── */}
       <section className="py-8 lg:py-20 bg-white overflow-hidden">
         {/* Header */}
-        <div className="flex items-start justify-between px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-4 lg:mb-8">
-          <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">{t.services.label}</p>
-            <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">{t.services.title}</h2>
-            <p className="text-sm text-ink-sub mt-1">{t.services.subtitle}</p>
-          </div>
-          <Link href="/browse" className="shrink-0 text-sm font-bold text-brand hover:text-brand-dark transition-colors flex items-center gap-1 mt-5">
-            {t.services.viewAll} <ArrowRight className="w-4 h-4" />
-          </Link>
+        <div className="px-4 sm:px-6 lg:px-8 max-w-7xl lg:mx-auto mb-4 lg:mb-8">
+          <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-ink">{t.services.title}</h2>
+          <p className="text-sm text-ink-sub mt-1">{t.services.subtitle}</p>
         </div>
 
         {/* Mobile: horizontal snap carousel */}
