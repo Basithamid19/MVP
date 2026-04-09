@@ -15,9 +15,9 @@ export const en: Dictionary = {
 
   hero: {
     eyebrow: 'Trusted local pros in Vilnius',
-    headline: 'Your Home, Sorted.',
-    headlineHighlight: 'Book in Minutes.',
-    subheadline: 'Vetted professionals, locked-in pricing, and a 30-day guarantee — every time.',
+    headline: 'When Your Home Calls,',
+    headlineHighlight: 'Aladdin Answers.',
+    subheadline: 'Verified local pros, upfront pricing, and peace of mind from start to finish.',
     searchPlaceholder: 'What do you need?',
     addressPlaceholder: 'Your address',
     search: 'Search',
@@ -49,8 +49,8 @@ export const en: Dictionary = {
 
   services: {
     label: 'Services',
-    title: 'What do you need done?',
-    subtitle: 'From emergency repairs to regular upkeep — book a verified pro today.',
+    title: 'Popular Services',
+    subtitle: 'Whatever you need, we have a pro for that.',
     viewAll: 'View all',
     bookNow: 'Book now',
     explore: 'Explore',
@@ -58,8 +58,8 @@ export const en: Dictionary = {
 
   howItWorks: {
     label: 'How it works',
-    title: 'Find, book, and relax.',
-    subtitle: 'Post a job or browse directly — and have a verified pro at your door in no time.',
+    title: 'Three steps to getting it done',
+    subtitle: 'From posting a job to booking a professional — it takes less than 5 minutes.',
     step: 'Step',
     step1Title: 'Describe your job',
     step1Desc: 'Tell us what you need done, your location, and when you need it. Takes under 2 minutes.',
@@ -71,8 +71,8 @@ export const en: Dictionary = {
 
   meetPros: {
     label: 'Meet our pros',
-    title: 'Top-Rated in Vilnius',
-    subtitle: 'Vetted, reviewed, and ready to help.',
+    title: 'Meet Our Pros',
+    subtitle: 'Verified professionals with a track record of excellence.',
     viewAll: 'View all',
     jobs: 'jobs',
     reviews: 'reviews',
@@ -82,7 +82,7 @@ export const en: Dictionary = {
 
   testimonials: {
     label: 'Testimonials',
-    title: 'Trusted by Vilnius Homeowners',
+    title: 'What Our Customers Say',
   },
 
   trust: {

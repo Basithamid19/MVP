@@ -109,21 +109,21 @@ const TESTIMONIALS = [
 ];
 
 const SERVICE_CARD_DESCS = [
-  'Leaks, pipes, boilers & drainage',
-  'Wiring, sockets & smart home',
-  'Home, deep & end-of-tenancy cleans',
-  'Hanging, fixing & general repairs',
-  'Packing, loading & transport',
-  'Flat-pack & custom furniture',
+  'Leaks, pipes & boilers',
+  'Wiring & fuse boxes',
+  'Home, deep & end-of-tenancy',
+  'Assembly & repairs',
+  'Packing & transport',
+  'Interior & exterior',
 ];
 
 const SERVICE_CARD_THEMES = [
-  { bg: '#5CC9A2', tag: 'Plumbing',   trust: 'Emergency callout available'  },
-  { bg: '#C5A8EE', tag: 'Electrical', trust: 'Certified & fully insured'    },
-  { bg: '#EAEB6C', tag: 'Cleaning',   trust: 'Eco-friendly products used'   },
-  { bg: '#F4C9A0', tag: 'Repairs',    trust: 'No job too small'             },
-  { bg: '#A8CEF0', tag: 'Logistics',  trust: 'Team & van available'         },
-  { bg: '#E0BCE8', tag: 'Assembly',   trust: 'IKEA & flat-pack specialists' },
+  { bg: '#5CC9A2', tag: 'Plumbing',   metric: 'Avg response', from: '< 1 hr'  },  // mint green — exact
+  { bg: '#C5A8EE', tag: 'Electrical', metric: 'Avg response', from: '< 2 hrs' },  // light lavender — exact
+  { bg: '#EAEB6C', tag: 'Cleaning',   metric: 'Avg response', from: '< 1 hr'  },  // bright lemon — exact
+  { bg: '#F4C9A0', tag: 'Repairs',    metric: 'Avg response', from: '< 3 hrs' },  // soft peach — less contrast
+  { bg: '#A8CEF0', tag: 'Logistics',  metric: 'Avg response', from: '< 2 hrs' },  // soft sky blue — less contrast
+  { bg: '#E0BCE8', tag: 'Assembly',   metric: 'Avg response', from: '< 2 hrs' },  // soft lilac — less contrast
 ];
 
 /* ─── Trust Carousel ─── */
@@ -602,12 +602,11 @@ export default function LandingPage() {
                 <p className="text-sm text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
-                {/* Trust banner + button row */}
-                <div className="w-full flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                    <span className="text-[11px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
-                  </div>
+                {/* Metric label */}
+                <p className="text-[11px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{theme.from}</p>
                   <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
@@ -638,12 +637,11 @@ export default function LandingPage() {
                 <p className="text-xs text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
-                {/* Trust banner + button row */}
-                <div className="w-full flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <CheckCircle2 className="w-3 h-3 text-black/50 shrink-0" />
-                    <span className="text-[10px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
-                  </div>
+                {/* Metric label */}
+                <p className="text-[10px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-xl font-bold text-gray-900">{theme.from}</p>
                   <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
@@ -662,10 +660,10 @@ export default function LandingPage() {
           <div className="text-center mb-6 sm:mb-8">
             <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
-              {t.howItWorks.title}
+              Three ways to get help
             </h2>
             <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              {t.howItWorks.subtitle}
+              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
             </p>
           </div>
 
@@ -992,7 +990,7 @@ export default function LandingPage() {
             <div className="text-center mb-16">
               <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">{t.testimonials.title}</h2>
-              <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real customers — unfiltered and unedited.</p>
+              <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {TESTIMONIALS.map((tmn, idx) => (
