@@ -47,7 +47,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col lg:flex-row overflow-hidden">
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-24 py-12 relative z-10">
+      <div className="flex-1 flex flex-col lg:justify-center px-8 lg:px-24 pt-12 pb-12 lg:py-12 relative z-10">
         <div className="max-w-md w-full mx-auto">
           <div className="flex items-center justify-between mb-10">
             <Link href="/" className="flex items-center gap-2">
