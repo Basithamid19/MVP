@@ -118,12 +118,12 @@ const SERVICE_CARD_DESCS = [
 ];
 
 const SERVICE_CARD_THEMES = [
-  { bg: '#6C4FD8', tag: 'Plumbing',   from: 'From €30/hr' },
-  { bg: '#D97706', tag: 'Electrical', from: 'From €35/hr' },
-  { bg: '#2D9B6E', tag: 'Cleaning',   from: 'From €25/hr' },
-  { bg: '#DC5050', tag: 'Repairs',    from: 'From €28/hr' },
-  { bg: '#2563EB', tag: 'Logistics',  from: 'From €45/hr' },
-  { bg: '#7C3AED', tag: 'Assembly',   from: 'From €40/hr' },
+  { bg: '#7C5CDB', tag: 'Plumbing',   from: 'From €30/hr' },  // exact purple from ref
+  { bg: '#4CB872', tag: 'Electrical', from: 'From €35/hr' },  // exact green from ref
+  { bg: '#CBCA3C', tag: 'Cleaning',   from: 'From €25/hr' },  // exact golden yellow from ref
+  { bg: '#C47878', tag: 'Repairs',    from: 'From €28/hr' },  // soft coral — less contrast
+  { bg: '#6B98CC', tag: 'Logistics',  from: 'From €45/hr' },  // soft slate blue — less contrast
+  { bg: '#9F84C8', tag: 'Assembly',   from: 'From €40/hr' },  // soft lavender — less contrast
 ];
 
 /* ─── Trust Carousel ─── */
