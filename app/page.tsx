@@ -118,12 +118,12 @@ const SERVICE_CARD_DESCS = [
 ];
 
 const SERVICE_CARD_THEMES = [
-  { bg: '#7C5CDB', tag: 'Plumbing',   from: 'From €30/hr' },  // exact purple from ref
-  { bg: '#4CB872', tag: 'Electrical', from: 'From €35/hr' },  // exact green from ref
-  { bg: '#CBCA3C', tag: 'Cleaning',   from: 'From €25/hr' },  // exact golden yellow from ref
-  { bg: '#C47878', tag: 'Repairs',    from: 'From €28/hr' },  // soft coral — less contrast
-  { bg: '#6B98CC', tag: 'Logistics',  from: 'From €45/hr' },  // soft slate blue — less contrast
-  { bg: '#9F84C8', tag: 'Assembly',   from: 'From €40/hr' },  // soft lavender — less contrast
+  { bg: '#5CC9A2', tag: 'Plumbing',   metric: 'Avg response', from: '< 1 hr'  },  // mint green — exact
+  { bg: '#C5A8EE', tag: 'Electrical', metric: 'Avg response', from: '< 2 hrs' },  // light lavender — exact
+  { bg: '#EAEB6C', tag: 'Cleaning',   metric: 'Avg response', from: '< 1 hr'  },  // bright lemon — exact
+  { bg: '#F4C9A0', tag: 'Repairs',    metric: 'Avg response', from: '< 3 hrs' },  // soft peach — less contrast
+  { bg: '#A8CEF0', tag: 'Logistics',  metric: 'Avg response', from: '< 2 hrs' },  // soft sky blue — less contrast
+  { bg: '#E0BCE8', tag: 'Assembly',   metric: 'Avg response', from: '< 2 hrs' },  // soft lilac — less contrast
 ];
 
 /* ─── Trust Carousel ─── */
@@ -582,35 +582,33 @@ export default function LandingPage() {
         </div>
 
         {/* Mobile: horizontal snap carousel */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1 lg:hidden">
+        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2 lg:hidden">
           {categories.map((cat, idx) => {
-            const Icon = cat.icon;
             const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                style={{ background: theme.bg, minHeight: '180px' }}
-                className="shrink-0 w-[46vw] max-w-[180px] snap-start rounded-2xl p-4 flex flex-col items-start text-left active:scale-[0.97] transition-transform"
+                style={{ background: theme.bg }}
+                className="shrink-0 w-[76vw] max-w-[300px] snap-start rounded-2xl p-5 flex flex-col items-start text-left active:scale-[0.98] transition-transform"
               >
                 {/* Tag */}
-                <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-3">
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
                   {theme.tag}
                 </span>
-                {/* Icon */}
-                <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center mb-auto">
-                  <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
-                </div>
-                {/* Name + desc */}
-                <div className="mt-3 w-full">
-                  <p className="text-sm font-bold text-white leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-white/70 mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
-                </div>
-                {/* Footer */}
-                <div className="mt-3 w-full flex items-center justify-between">
-                  <span className="text-[11px] font-semibold text-white/80">{theme.from}</span>
-                  <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center shrink-0">
-                    <ArrowRight className="w-3 h-3" style={{ color: theme.bg }} />
+                {/* Title */}
+                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                {/* Desc */}
+                <p className="text-sm text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Divider */}
+                <div className="w-full border-t border-black/10 my-4" />
+                {/* Metric label */}
+                <p className="text-[11px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{theme.from}</p>
+                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>
               </button>
@@ -621,33 +619,31 @@ export default function LandingPage() {
         {/* Desktop: 6-col grid */}
         <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
-            const Icon = cat.icon;
             const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
-                style={{ background: theme.bg, minHeight: '224px' }}
+                style={{ background: theme.bg }}
+                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
                 {/* Tag */}
-                <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest mb-3">
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
                   {theme.tag}
                 </span>
-                {/* Icon */}
-                <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center mb-auto">
-                  <Icon className="w-5 h-5 text-white" strokeWidth={1.5} />
-                </div>
-                {/* Name + desc */}
-                <div className="mt-4 w-full">
-                  <p className="text-sm font-bold text-white leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-white/70 mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
-                </div>
-                {/* Footer */}
-                <div className="mt-4 w-full flex items-center justify-between">
-                  <span className="text-xs font-semibold text-white/80">{theme.from}</span>
-                  <div className="w-7 h-7 bg-white rounded-full flex items-center justify-center shrink-0">
-                    <ArrowRight className="w-3.5 h-3.5" style={{ color: theme.bg }} />
+                {/* Title */}
+                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                {/* Desc */}
+                <p className="text-xs text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Divider */}
+                <div className="w-full border-t border-black/10 my-4" />
+                {/* Metric label */}
+                <p className="text-[10px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-xl font-bold text-gray-900">{theme.from}</p>
+                  <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>
               </button>
