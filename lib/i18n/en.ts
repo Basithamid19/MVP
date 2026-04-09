@@ -49,8 +49,8 @@ export const en: Dictionary = {
 
   services: {
     label: 'Services',
-    title: 'Popular Services',
-    subtitle: 'Whatever you need, we have a pro for that.',
+    title: 'Services Tailored to You.',
+    subtitle: 'From emergency repairs to everyday chores, we connect you with top-rated local professionals.',
     viewAll: 'View all',
     bookNow: 'Book now',
     explore: 'Explore',

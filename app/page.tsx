@@ -108,22 +108,13 @@ const TESTIMONIALS = [
   },
 ];
 
-const SERVICE_CARD_DESCS = [
-  'Leaks, pipes & boilers',
-  'Wiring & fuse boxes',
-  'Home, deep & end-of-tenancy',
-  'Assembly & repairs',
-  'Packing & transport',
-  'Interior & exterior',
-];
-
 const SERVICE_CARD_THEMES = [
-  { bg: '#5CC9A2', tag: 'Plumbing',   metric: 'Avg response', from: '< 1 hr'  },  // mint green — exact
-  { bg: '#C5A8EE', tag: 'Electrical', metric: 'Avg response', from: '< 2 hrs' },  // light lavender — exact
-  { bg: '#EAEB6C', tag: 'Cleaning',   metric: 'Avg response', from: '< 1 hr'  },  // bright lemon — exact
-  { bg: '#F4C9A0', tag: 'Repairs',    metric: 'Avg response', from: '< 3 hrs' },  // soft peach — less contrast
-  { bg: '#A8CEF0', tag: 'Logistics',  metric: 'Avg response', from: '< 2 hrs' },  // soft sky blue — less contrast
-  { bg: '#E0BCE8', tag: 'Assembly',   metric: 'Avg response', from: '< 2 hrs' },  // soft lilac — less contrast
+  { bg: '#5CC9A2', tag: 'Plumbing',   title: 'Certified Plumber',    desc: 'Leaks, pipes, & boiler repair',    trust: '24/7 Emergency Support',       popular: false },
+  { bg: '#C5A8EE', tag: 'Electrical', title: 'Licensed Electrician', desc: 'Wiring, fuse boxes, & lighting',   trust: 'Safety-certified work',        popular: false },
+  { bg: '#EAEB6C', tag: 'Cleaning',   title: 'Expert Cleaning',      desc: 'Home, deep, & end-of-tenancy',     trust: 'Vetted & Insured Pros',        popular: true  },
+  { bg: '#F4C9A0', tag: 'Repairs',    title: 'Handyman Services',    desc: 'Small fixes, installs, & repairs', trust: 'Tools included',               popular: true  },
+  { bg: '#A8CEF0', tag: 'Logistics',  title: 'Removal & Logistics',  desc: 'Packing, lifting, & transport',    trust: 'Secure & tracked transit',     popular: false },
+  { bg: '#E0BCE8', tag: 'Assembly',   title: 'Furniture Assembly',   desc: 'IKEA & flat-pack assembly',        trust: 'All tools & fixings provided', popular: false },
 ];
 
 /* ─── Trust Carousel ─── */
@@ -590,24 +581,31 @@ export default function LandingPage() {
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
                 style={{ background: theme.bg }}
-                className="shrink-0 w-[76vw] max-w-[300px] snap-start rounded-2xl p-5 flex flex-col items-start text-left active:scale-[0.98] transition-transform"
+                className="shrink-0 w-[76vw] max-w-[300px] snap-start rounded-2xl p-5 flex flex-col items-start text-left active:scale-[0.98] hover:shadow-lg transition-all duration-200 relative"
               >
+                {/* Popular badge */}
+                {theme.popular && (
+                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
+                    Popular
+                  </span>
+                )}
                 {/* Tag */}
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
                   {theme.tag}
                 </span>
                 {/* Title */}
-                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{theme.title}</p>
                 {/* Desc */}
-                <p className="text-sm text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                <p className="text-sm text-gray-700 leading-relaxed">{theme.desc}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
-                {/* Metric label */}
-                <p className="text-[11px] text-black/40 mb-1">{theme.metric}</p>
-                {/* Metric + button row */}
-                <div className="w-full flex items-center justify-between">
-                  <p className="text-2xl font-bold text-gray-900">{theme.from}</p>
-                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                {/* Trust banner + CTA row */}
+                <div className="w-full flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
+                    <span className="text-[11px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
+                  </div>
+                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>
@@ -625,24 +623,31 @@ export default function LandingPage() {
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
                 style={{ background: theme.bg }}
-                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] transition-all duration-200 relative"
               >
+                {/* Popular badge */}
+                {theme.popular && (
+                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
+                    Popular
+                  </span>
+                )}
                 {/* Tag */}
                 <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
                   {theme.tag}
                 </span>
                 {/* Title */}
-                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{theme.title}</p>
                 {/* Desc */}
-                <p className="text-xs text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                <p className="text-xs text-gray-700 leading-relaxed">{theme.desc}</p>
                 {/* Divider */}
                 <div className="w-full border-t border-black/10 my-4" />
-                {/* Metric label */}
-                <p className="text-[10px] text-black/40 mb-1">{theme.metric}</p>
-                {/* Metric + button row */}
-                <div className="w-full flex items-center justify-between">
-                  <p className="text-xl font-bold text-gray-900">{theme.from}</p>
-                  <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                {/* Trust banner + CTA row */}
+                <div className="w-full flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <CheckCircle2 className="w-3 h-3 text-black/50 shrink-0" />
+                    <span className="text-[10px] font-semibold text-black/60 leading-tight">{theme.trust}</span>
+                  </div>
+                  <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
                     <ArrowRight className="w-4 h-4 text-white" />
                   </div>
                 </div>
