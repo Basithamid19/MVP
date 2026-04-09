@@ -11,9 +11,10 @@ import {
   ArrowRight, AlertCircle, Clock,
   ChevronLeft, ChevronRight, CheckCircle2, Users, FileText, CalendarCheck,
   BadgeCheck, MessageCircle, Brush, Shield,
-  Wrench, Hammer, Truck, Package, Zap
+  Wrench, Hammer, Truck, Package, Zap, ScrollText, BellRing, Instagram, Twitter
 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
+import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { avatarUrl } from '@/lib/avatar';
 import { AladdinIcon, BroomIcon, ElectricianIcon } from '@/components/icons';
 import { useTranslation } from '@/lib/i18n';
@@ -32,21 +33,27 @@ const categories = [
 const HOW_IT_WORKS = [
   {
     step: '01',
-    icon: FileText,
-    title: 'Describe your job',
-    desc: 'Tell us what you need done, your location, and when you need it. Takes under 2 minutes.',
+    icon: Users,
+    title: 'Find a Pro',
+    hook: 'Know who you want? Book directly.',
+    desc: 'Browse verified professionals, compare reviews and response times, then message or book the one that fits your needs.',
+    urgent: false,
   },
   {
     step: '02',
-    icon: Users,
-    title: 'Compare professionals',
-    desc: 'Browse verified local pros, read real reviews, and compare transparent prices.',
+    icon: ScrollText,
+    title: 'Post a Request',
+    hook: 'Want quotes? Let pros come to you.',
+    desc: 'Describe your job once, choose the service you need, and receive responses from relevant professionals in your area.',
+    urgent: false,
   },
   {
     step: '03',
-    icon: CalendarCheck,
-    title: 'Book with confidence',
-    desc: 'Secure your booking, pay safely, and leave a review when the job is done.',
+    icon: BellRing,
+    title: 'Urgent Help',
+    hook: 'Need someone today? Get priority matching.',
+    desc: 'Send a priority request and available professionals are notified right away so you can get help sooner.',
+    urgent: true,
   },
 ];
 
@@ -110,6 +117,15 @@ const SERVICE_CARD_DESCS = [
   'Interior & exterior',
 ];
 
+const SERVICE_CARD_THEMES = [
+  { bg: '#5CC9A2', tag: 'Plumbing',   metric: 'Avg response', from: '< 1 hr'  },  // mint green — exact
+  { bg: '#C5A8EE', tag: 'Electrical', metric: 'Avg response', from: '< 2 hrs' },  // light lavender — exact
+  { bg: '#EAEB6C', tag: 'Cleaning',   metric: 'Avg response', from: '< 1 hr'  },  // bright lemon — exact
+  { bg: '#F4C9A0', tag: 'Repairs',    metric: 'Avg response', from: '< 3 hrs' },  // soft peach — less contrast
+  { bg: '#A8CEF0', tag: 'Logistics',  metric: 'Avg response', from: '< 2 hrs' },  // soft sky blue — less contrast
+  { bg: '#E0BCE8', tag: 'Assembly',   metric: 'Avg response', from: '< 2 hrs' },  // soft lilac — less contrast
+];
+
 /* ─── Trust Carousel ─── */
 
 const trustItems = [
@@ -146,19 +162,18 @@ function TrustCarousel() {
   const Icon = item.icon;
 
   return (
-    <div className="mt-6">
-      <div className="bg-surface-alt rounded-2xl px-4 py-5">
-        <p className="text-sm font-semibold text-ink-sub uppercase tracking-wider mb-3 text-center">Why customers trust Aladdin</p>
+    <div className="mt-3 -mx-2 sm:mx-0">
+      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1">
 
         {/* Mobile: single-card carousel */}
         <div className="md:hidden">
           <div className="relative flex items-center">
             <button
               onClick={prev}
-              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
               aria-label="Previous"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-4 h-4" />
             </button>
 
             <div
@@ -171,10 +186,10 @@ function TrustCarousel() {
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-5 py-4 flex items-center gap-4 shadow-card min-h-[72px]"
+                className="bg-white border border-border-dim/60 rounded-2xl px-4 py-2.5 flex items-center gap-4 shadow-card min-h-[58px]"
               >
-                <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-[20px] h-[20px] text-brand" />
+                <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+                  <Icon className="w-[17px] h-[17px] text-brand" />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
@@ -185,15 +200,15 @@ function TrustCarousel() {
 
             <button
               onClick={next}
-              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-brand/50 hover:text-brand active:scale-90 transition-all"
+              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
               aria-label="Next"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           {/* Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-5">
+          <div className="flex items-center justify-center gap-1.5 mt-2">
             {trustItems.map((_, i) => (
               <button
                 key={i}
@@ -245,6 +260,18 @@ export default function LandingPage() {
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [topPros, setTopPros]           = useState<any[]>([]);
   const [prosLoading, setProsLoading]   = useState(true);
+  const [activeTestimonial, setActiveTestimonial] = useState(0);
+  const [testimonialTouchStart, setTestimonialTouchStart] = useState<number | null>(null);
+  const handleTestimonialTouchStart = (e: React.TouchEvent) => setTestimonialTouchStart(e.touches[0].clientX);
+  const handleTestimonialTouchEnd = (e: React.TouchEvent) => {
+    if (testimonialTouchStart === null) return;
+    const diff = testimonialTouchStart - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) setActiveTestimonial(i => (i + 1) % TESTIMONIALS.length);
+      else setActiveTestimonial(i => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+    }
+    setTestimonialTouchStart(null);
+  };
 
   useEffect(() => {
     const addr = localStorage.getItem('vp_saved_address');
@@ -310,7 +337,7 @@ export default function LandingPage() {
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-8 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-4 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
@@ -342,7 +369,7 @@ export default function LandingPage() {
               </p>
 
               {/* Unified Search Bar */}
-              <form onSubmit={handleSearch} className="mb-8">
+              <form onSubmit={handleSearch} className="mb-5">
                 <div className="flex flex-col sm:flex-row bg-white p-2 rounded-panel shadow-elevated border border-border-dim gap-2">
                   <div className="flex-1 flex items-center px-4 py-2">
                     <Search className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
@@ -356,13 +383,12 @@ export default function LandingPage() {
                   </div>
                   <div className="hidden sm:block w-px h-8 bg-border-dim self-center" />
                   <div className="flex-1 flex items-center px-4 py-2">
-                    <MapPin className="w-5 h-5 text-ink-dim shrink-0 mr-3" />
-                    <input
-                      type="text"
+                    <MapPin className="w-5 h-5 text-ink-dim shrink-0 mr-3 pointer-events-none" />
+                    <AddressAutocomplete
+                      inline
                       value={savedAddress}
-                      onChange={e => { setSavedAddress(e.target.value); localStorage.setItem('vp_saved_address', e.target.value); }}
+                      onChange={v => { setSavedAddress(v); localStorage.setItem('vp_saved_address', v); }}
                       placeholder={t.hero.addressPlaceholder}
-                      className="w-full bg-transparent text-ink placeholder:text-ink-dim outline-none text-base"
                     />
                   </div>
                   <button
@@ -374,49 +400,60 @@ export default function LandingPage() {
                 </div>
               </form>
 
-              {/* Choose how to get help */}
-              <div className="mb-6 mt-2">
-                <p className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-3">Choose how to get help</p>
-                {/* Row 1: Find a Pro + Post a Request */}
-                <div className="grid grid-cols-2 gap-3 mb-3">
-                  <Link
-                    href="/browse"
-                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
-                  >
-                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
-                      <Search className="w-[20px] h-[20px] text-brand" />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-bold text-ink leading-tight">Find a Pro</p>
-                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Browse &amp; compare verified professionals</p>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/requests/new"
-                    className="bg-white border border-border-dim rounded-2xl p-4 flex flex-col gap-3 shadow-card hover:shadow-elevated hover:border-brand/40 active:scale-[0.98] transition-all"
-                  >
-                    <div className="w-11 h-11 bg-brand-muted rounded-2xl flex items-center justify-center">
-                      <FileText className="w-[20px] h-[20px] text-brand" />
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-bold text-ink leading-tight">Post a Request</p>
-                      <p className="text-[12px] text-ink-sub mt-1 leading-snug">Describe your job, receive quotes</p>
-                    </div>
-                  </Link>
-                </div>
-                {/* Row 2: Urgent Help — full width, stronger emphasis */}
+              {/* Get help your way */}
+              <div className="mt-3 bg-white rounded-2xl px-4 pt-4 pb-3">
+                <p className="text-[17px] font-bold text-ink leading-tight mb-4">Get help your way</p>
+
+                {/* Row 1: Find a Pro */}
                 <Link
-                  href="/requests/new?urgent=1"
-                  className="w-full flex items-center gap-4 bg-gradient-to-r from-caution/10 to-orange-50 border border-caution/35 rounded-2xl px-5 py-4 shadow-card hover:shadow-elevated hover:border-caution/60 active:scale-[0.99] transition-all"
+                  href="/browse"
+                  className="flex items-center gap-4 pt-3 pb-4 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
                 >
-                  <div className="w-11 h-11 bg-caution/15 rounded-2xl flex items-center justify-center shrink-0">
-                    <Zap className="w-[20px] h-[20px] text-caution" />
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-bold text-orange-900 leading-tight">Urgent Help</p>
-                    <p className="text-[12px] text-caution/90 mt-0.5 leading-snug">Need someone today? Pros are notified instantly.</p>
+                    <p className="text-[15px] font-semibold text-ink leading-tight">Find a Pro</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Browse verified professionals</p>
                   </div>
-                  <ArrowRight className="w-4 h-4 text-caution/70 shrink-0" />
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
+                </Link>
+
+                <div className="h-px bg-border-dim/35 ml-[60px]" />
+
+                {/* Row 2: Post a Request */}
+                <Link
+                  href="/requests/new"
+                  className="flex items-center gap-4 pt-3 pb-4 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                >
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <ScrollText className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[15px] font-semibold text-ink leading-tight">Post a Request</p>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Describe your job and receive quotes</p>
+                  </div>
+                  <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
+                </Link>
+
+                <div className="h-px bg-border-dim/35 ml-[60px]" />
+
+                {/* Row 3: Urgent Help */}
+                <Link
+                  href="/requests/new?urgent=1"
+                  className="flex items-center gap-4 pt-3 pb-3 rounded-xl hover:bg-surface-alt active:bg-surface-alt transition-colors -mx-1 px-1"
+                >
+                  <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0">
+                    <BellRing className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[15px] font-bold text-ink leading-tight">Urgent Help</p>
+                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">Priority</span>
+                    </div>
+                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">Need someone today? Get priority matching</p>
+                  </div>
+                  <ChevronRight className="w-[14px] h-[14px] text-brand/40 shrink-0" />
                 </Link>
               </div>
 
@@ -545,26 +582,34 @@ export default function LandingPage() {
         </div>
 
         {/* Mobile: horizontal snap carousel */}
-        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-1 lg:hidden">
+        <div className="flex gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory pl-4 pr-4 pb-2 lg:hidden">
           {categories.map((cat, idx) => {
-            const Icon = cat.icon;
+            const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="shrink-0 w-[44vw] max-w-[170px] snap-start rounded-2xl p-4 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm active:scale-[0.97] transition-transform"
-                style={{ minHeight: '164px' }}
+                style={{ background: theme.bg }}
+                className="shrink-0 w-[76vw] max-w-[300px] snap-start rounded-2xl p-5 flex flex-col items-start text-left active:scale-[0.98] transition-transform"
               >
-                <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                  <Icon className="w-4.5 h-4.5 text-brand" strokeWidth={1.5} />
-                </div>
-                <div className="mt-auto pt-3 w-full">
-                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-ink-sub mt-0.5 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
-                </div>
-                <div className="mt-2 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">{t.services.bookNow}</span>
-                  <ChevronRight className="w-3 h-3" />
+                {/* Tag */}
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
+                  {theme.tag}
+                </span>
+                {/* Title */}
+                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                {/* Desc */}
+                <p className="text-sm text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Divider */}
+                <div className="w-full border-t border-black/10 my-4" />
+                {/* Metric label */}
+                <p className="text-[11px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-2xl font-bold text-gray-900">{theme.from}</p>
+                  <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </button>
             );
@@ -574,24 +619,32 @@ export default function LandingPage() {
         {/* Desktop: 6-col grid */}
         <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
-            const Icon = cat.icon;
+            const theme = SERVICE_CARD_THEMES[idx];
             return (
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                className="rounded-2xl p-6 flex flex-col items-start text-left bg-canvas border border-border-dim shadow-sm hover:shadow-md hover:border-brand/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
-                style={{ minHeight: '220px' }}
+                style={{ background: theme.bg }}
+                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
               >
-                <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                  <Icon className="w-6 h-6 text-brand" strokeWidth={1.5} />
-                </div>
-                <div className="mt-auto pt-5 w-full">
-                  <p className="text-sm font-bold text-ink leading-tight">{cat.name}</p>
-                  <p className="text-[11px] text-ink-sub mt-1 leading-snug">{SERVICE_CARD_DESCS[idx]}</p>
-                </div>
-                <div className="mt-3 flex items-center gap-0.5 text-brand">
-                  <span className="text-[11px] font-semibold">{t.services.explore}</span>
-                  <ChevronRight className="w-3 h-3" />
+                {/* Tag */}
+                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
+                  {theme.tag}
+                </span>
+                {/* Title */}
+                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{cat.name}</p>
+                {/* Desc */}
+                <p className="text-xs text-gray-700 leading-relaxed">{SERVICE_CARD_DESCS[idx]}</p>
+                {/* Divider */}
+                <div className="w-full border-t border-black/10 my-4" />
+                {/* Metric label */}
+                <p className="text-[10px] text-black/40 mb-1">{theme.metric}</p>
+                {/* Metric + button row */}
+                <div className="w-full flex items-center justify-between">
+                  <p className="text-xl font-bold text-gray-900">{theme.from}</p>
+                  <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0">
+                    <ArrowRight className="w-4 h-4 text-white" />
+                  </div>
                 </div>
               </button>
             );
@@ -599,55 +652,138 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 3. How It Works ── */}
+      {/* ── 5. How It Works ── */}
+      <section className="py-10 sm:py-16 bg-surface-alt overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header */}
+          <div className="text-center mb-6 sm:mb-8">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">How it works</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Three ways to get help
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
+              Whether you want to book directly, collect quotes, or get urgent help fast — Aladdin gives you the right path.
+            </p>
+          </div>
+
+          {/* Editorial path list */}
+          <div className="max-w-lg mx-auto divide-y divide-border-dim/40">
+            {HOW_IT_WORKS.map(({ icon: Icon, hook, title, desc, urgent }, idx) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                viewport={{ once: true }}
+                className="flex gap-4 py-5"
+              >
+                <div className="w-11 h-11 bg-brand rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                  <Icon className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
+                    {title}
+                  </h3>
+                  <p className="text-[13px] text-brand mb-2 leading-snug">{hook}</p>
+                  <p className="text-[14px] text-ink-sub leading-relaxed">{desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-6 sm:mt-10">
+            <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'xl' })}>
+              Get Started <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+        </div>
+      </section>
+
+      {/* Photo break */}
+      <div className="relative w-full aspect-[3/2] sm:aspect-[16/5] overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=1400&auto=format&fit=crop"
+          alt="Professional at work"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
+      </div>
+
+      {/* ── 3. Built for Trust ── */}
       <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Header */}
           <div className="text-center mb-8 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">{t.howItWorks.title}</h2>
-            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
-              {t.howItWorks.subtitle}
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+              Built for trust, built for Vilnius.
+            </h2>
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
+              Every booking is backed by real guarantees, verified professionals, and transparent pricing.
             </p>
           </div>
 
           {/* Vertical timeline */}
           <div className="max-w-lg mx-auto">
-            {HOW_IT_WORKS.map(({ step, icon: Icon, title, desc }, idx) => (
+            {[
+              {
+                icon: CheckCircle2,
+                title: '30-Day Guarantee',
+                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
+              },
+              {
+                icon: FileText,
+                title: 'Upfront, Transparent Pricing',
+                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
+              },
+              {
+                icon: BadgeCheck,
+                title: 'Verified Professionals',
+                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
+              },
+              {
+                icon: Shield,
+                title: 'Damage Cover Included',
+                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
+              },
+            ].map(({ icon: Icon, title, desc }, idx, arr) => (
               <motion.div
-                key={step}
+                key={title}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.12 }}
                 viewport={{ once: true }}
                 className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
-                {/* Icon column with connector line */}
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-brand-light rounded-xl flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <div className="w-12 h-12 bg-brand rounded-2xl flex items-center justify-center shrink-0">
+                    <Icon className="w-6 h-6 text-white" />
                   </div>
-                  {idx < HOW_IT_WORKS.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-brand-muted my-3" />
+                  {idx < arr.length - 1 && (
+                    <div className="w-0.5 flex-1 bg-brand-muted my-2" />
                   )}
                 </div>
-
-                {/* Text column */}
-                <div className={idx < HOW_IT_WORKS.length - 1 ? 'pb-8 sm:pb-10' : ''}>
-                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{`${parseInt(step)}. ${title}`}</h3>
+                <div className={idx < arr.length - 1 ? 'pb-6' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
                   <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
                 </div>
               </motion.div>
             ))}
           </div>
 
+          {/* CTA */}
           <div className="text-center mt-8 sm:mt-14">
             <Link
-              href="/requests/new"
+              href="/browse"
               className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
-              Get Started <ArrowRight className="w-4 h-4" />
+              Find a Pro <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
         </div>
       </section>
 
@@ -695,7 +831,7 @@ export default function LandingPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/20 to-transparent" />
-                    
+
                     {/* Category pill */}
                     <div className="absolute top-4 left-4">
                       <span className="text-[10px] font-bold text-white bg-ink/40 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
@@ -765,7 +901,7 @@ export default function LandingPage() {
             })
           )}
         </div>
-        
+
         {/* Mobile See All link */}
         <div className="px-4 sm:hidden mt-2">
           <Link href="/browse" className="w-full flex items-center justify-center gap-2 py-3.5 bg-white border border-border-dim rounded-input text-sm font-bold text-ink hover:bg-surface-alt transition-colors">
@@ -774,186 +910,192 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── 5. Why Aladdin ── */}
-      <section className="bg-canvas py-16 sm:py-20">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          {/* Eyebrow + headline */}
-          <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">Why Aladdin</p>
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-[1.15] mb-8">
-            Built for trust,<br className="hidden sm:block" /> built for Vilnius.
-          </h2>
-
-          {/* Metric pills */}
-          <div className="flex gap-2 overflow-x-auto scrollbar-none pb-1 mb-6 sm:mb-8 sm:flex-wrap">
-            {[
-              { value: '2,400+', label: 'Reviews' },
-              { value: '100+',   label: 'Vetted Pros' },
-              { value: '<1 hr',  label: 'Avg. Response' },
-            ].map(m => (
-              <div key={m.label} className="shrink-0 flex items-center gap-2 bg-brand-muted rounded-full px-4 py-2">
-                <span className="text-brand font-bold text-sm">{m.value}</span>
-                <span className="text-ink-sub text-sm">{m.label}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Feature rows */}
-          <div className="bg-white rounded-2xl border border-border-dim overflow-hidden">
-            {[
-              {
-                icon: CheckCircle2,
-                title: '30-Day Guarantee',
-                desc: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
-              },
-              {
-                icon: FileText,
-                title: 'Upfront, Transparent Pricing',
-                desc: "Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.",
-              },
-              {
-                icon: BadgeCheck,
-                title: 'Verified Professionals',
-                desc: "All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.",
-              },
-              {
-                icon: Shield,
-                title: 'Damage Cover Included',
-                desc: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
-              },
-            ].map(({ icon: Icon, title, desc }, i) => (
-              <div key={title} className={`flex items-start gap-4 px-5 py-4 sm:py-5 ${i > 0 ? 'border-t border-border-dim' : ''}`}>
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-muted flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-brand" strokeWidth={1.5} />
-                </div>
-                <div>
-                  <p className="font-bold text-ink text-sm mb-0.5">{title}</p>
-                  <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* CTA */}
-          <div className="mt-8">
-            <Link
-              href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' }) + ' w-full sm:w-auto'}
-            >
-              Find a Pro <ArrowRight className="w-4 h-4 ml-2" />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-
       {/* ── 6. Testimonials ── */}
-      <section className="py-12 sm:py-24 bg-white overflow-hidden">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-8 sm:mb-16 px-4 sm:px-6 lg:px-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
-            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-ink mb-3 sm:mb-4">{t.testimonials.title}</h2>
-            <p className="text-ink-sub text-sm sm:text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
+      <section className="overflow-hidden">
+
+        {/* ── Mobile: brand-consistent centered card carousel ── */}
+        <div className="md:hidden bg-gradient-to-b from-brand-muted/35 to-canvas pt-10 pb-8 px-5">
+
+          {/* Section label */}
+          <div className="text-center mb-6">
+            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Real reviews</p>
+            <p className="text-[13px] text-ink-sub">What Aladdin customers say</p>
           </div>
 
-          {/* Mobile: horizontal scroll carousel */}
-          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory px-4 pb-2 md:hidden">
-            {TESTIMONIALS.map((t, idx) => (
-              <div
-                key={idx}
-                className="shrink-0 w-[82vw] max-w-[320px] snap-start bg-[#f5f5f7] rounded-2xl p-6 flex flex-col"
-              >
-                <div className="flex items-center justify-between mb-5">
-                  <div className="w-12 h-12 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex gap-0.5 text-ink">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-sm font-medium leading-relaxed text-ink flex-1 mb-5">
-                  "{t.quote}"
-                </p>
-                <div className="pt-4 border-t border-ink/10">
-                  <p className="text-sm font-bold text-ink">{t.name}</p>
-                  <p className="text-[11px] mt-0.5 text-ink-sub font-medium uppercase tracking-wider">
-                    {t.service} · {t.city}
-                  </p>
-                </div>
+          {/* White card — swipeable */}
+          <div
+            className="bg-white px-5 pt-8 pb-7 text-center relative shadow-float select-none"
+            onTouchStart={handleTestimonialTouchStart}
+            onTouchEnd={handleTestimonialTouchEnd}
+          >
+            {/* Decorative quote mark */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden rounded-none">
+              <span className="text-[160px] font-black text-brand/8 leading-none translate-y-2">&ldquo;</span>
+            </div>
+
+            {/* Avatar — centered, swipe to navigate */}
+            <div className="flex justify-center mb-5 relative z-10">
+              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-brand/20 shadow-sm">
+                <img
+                  src={TESTIMONIALS[activeTestimonial].avatar}
+                  alt={TESTIMONIALS[activeTestimonial].name}
+                  className="w-full h-full object-cover"
+                />
               </div>
-            ))}
-          </div>
+            </div>
 
-          {/* Desktop: grid */}
-          <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-6 lg:px-8">
-            {TESTIMONIALS.map((t, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-[#f5f5f7] rounded-[2rem] p-8 flex flex-col hover:scale-[1.02] transition-transform duration-300"
-              >
-                <div className="flex items-center justify-between mb-6">
-                  <div className="w-14 h-14 rounded-full overflow-hidden shrink-0 border-2 border-white shadow-sm">
-                    <img src={t.avatar} alt={t.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex gap-1 text-ink">
-                    {Array.from({ length: t.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                  </div>
-                </div>
-                <p className="text-base font-medium leading-relaxed text-ink flex-1 mb-8">
-                  "{t.quote}"
-                </p>
-                <div className="pt-5 border-t border-ink/10">
-                  <p className="text-sm font-bold text-ink">{t.name}</p>
-                  <p className="text-[11px] mt-1 text-ink-sub font-medium uppercase tracking-wider">
-                    {t.service} · {t.city}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 7. Final CTA ── */}
-      <section className="py-14 sm:py-20 bg-white">
-        <div className="max-w-xl mx-auto px-5 sm:px-6">
-          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-8 sm:px-10 sm:py-10 text-center">
-            <h2 className="text-[22px] sm:text-[26px] font-bold tracking-tight text-ink leading-[1.15] mb-2">
-              {t.cta.title}
-            </h2>
-            <p className="text-ink-sub text-[14px] sm:text-[15px] leading-relaxed mb-6 max-w-sm mx-auto">
-              {t.cta.subtitle}
+            {/* Quote */}
+            <p className="text-[15px] font-semibold text-ink leading-relaxed mb-5 relative z-10">
+              &ldquo;{TESTIMONIALS[activeTestimonial].quote}&rdquo;
             </p>
+
+            {/* Attribution */}
+            <div className="relative z-10">
+              <p className="font-bold text-ink uppercase tracking-wide text-[13px]">{TESTIMONIALS[activeTestimonial].name}</p>
+              <p className="text-ink-dim text-[11px] uppercase tracking-widest mt-0.5">
+                {TESTIMONIALS[activeTestimonial].service} · {TESTIMONIALS[activeTestimonial].city}
+              </p>
+            </div>
+          </div>
+
+          {/* Dots — compact, neutral */}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {TESTIMONIALS.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTestimonial(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === activeTestimonial ? 'w-5 h-1 bg-brand' : 'w-1 h-1 bg-ink-dim/20'
+                }`}
+                aria-label={`Go to review ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Quiet CTA */}
+          <div className="flex justify-center mt-5">
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'primary', size: 'lg' })}
+              className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-sub hover:text-ink transition-colors"
             >
-              <Search className="w-4 h-4" /> Find a Professional
+              See more reviews
+              <ChevronRight className="w-3 h-3" />
             </Link>
-            <p className="mt-3.5 text-[13px] font-medium">
-              <span className="text-ink-dim">or </span>
-              <Link href="/requests/new" className="text-ink-sub hover:text-ink font-semibold transition-colors">
-                post a job &rarr;
-              </Link>
-            </p>
-            <p className="text-[11px] text-ink-dim mt-5 tracking-wide">Free to post · No commitment · Fast quotes</p>
           </div>
         </div>
+
+        {/* ── Desktop: card grid ── */}
+        <div className="hidden md:block py-24 bg-white">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">{t.testimonials.title}</h2>
+              <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {TESTIMONIALS.map((tmn, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-white border border-border-dim rounded-2xl p-6 flex flex-col shadow-card hover:shadow-elevated transition-shadow duration-300"
+                >
+                  <div className="flex gap-0.5 mb-4">
+                    {Array.from({ length: tmn.rating }).map((_, i) => (
+                      <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <p className="text-[15px] leading-relaxed text-ink flex-1 mb-6">
+                    &ldquo;{tmn.quote}&rdquo;
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-border-dim">
+                      <img src={tmn.avatar} alt={tmn.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-ink leading-tight">{tmn.name}</p>
+                      <p className="text-[12px] text-ink-sub mt-0.5">{tmn.service} · {tmn.city}</p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
       </section>
 
       {/* ── 9. Footer ── */}
-      <footer className="bg-canvas border-t border-border-dim py-10 sm:py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <footer className="bg-canvas border-t border-border-dim">
 
-          {/* Brand lockup — centered above columns */}
-          <div className="text-center mb-8 sm:mb-14">
+        {/* ── Mobile: centered editorial footer ── */}
+        <div className="md:hidden px-6 pt-9 pb-6 text-center">
+
+          {/* Brand — centered */}
+          <div className="flex items-center justify-center gap-2 mb-1.5">
+            <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center shrink-0">
+              <AladdinIcon className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-[17px] tracking-tight text-brand">Aladdin</span>
+          </div>
+          <p className="text-[11px] text-ink-dim mb-7">Trusted local professionals · Vilnius</p>
+
+          {/* 3 centered link groups */}
+          <div className="space-y-6 mb-7">
+
+            {/* Customers */}
+            <div>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Customers</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/browse"                className="text-[14px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
+                <Link href="/requests/new"          className="text-[14px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
+                <Link href="/requests/new?urgent=1" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
+              </div>
+            </div>
+
+            {/* For Pros */}
+            <div>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">For Pros</p>
+              <div className="flex flex-col gap-2">
+                <Link href="/for-pros"              className="text-[14px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
+                <Link href="/provider/verification" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
+                <Link href="/provider/dashboard"    className="text-[14px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link>
+              </div>
+            </div>
+
+            {/* Company — utility links inline */}
+            <div>
+              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Company</p>
+              <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                <Link href="/about"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link>
+                <Link href="/support" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link>
+                <Link href="/terms"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">Terms</Link>
+                <Link href="/privacy" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Privacy</Link>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Bottom meta row */}
+          <div className="border-t border-border-dim/40 pt-4 flex items-center justify-between">
+            <p className="text-[11px] text-ink-dim">© 2026 Aladdin · Vilnius</p>
+            <div className="flex items-center gap-3.5">
+              <a href="#" aria-label="Instagram" className="text-ink-dim/70 hover:text-ink transition-colors">
+                <Instagram className="w-4 h-4" />
+              </a>
+              <a href="#" aria-label="Twitter" className="text-ink-dim/70 hover:text-ink transition-colors">
+                <Twitter className="w-4 h-4" />
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        {/* ── Desktop: multi-column layout ── */}
+        <div className="hidden md:block max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-2.5 mb-3">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
                 <AladdinIcon className="w-5 h-5 text-white" />
@@ -964,12 +1106,10 @@ export default function LandingPage() {
               Trusted local professionals · Vilnius, Lithuania
             </p>
           </div>
-
-          {/* Link columns */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-10 mb-8 sm:mb-14">
+          <div className="grid grid-cols-4 gap-10 mb-14">
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
                 <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
                 <li><Link href="/browse?category=cleaning"    className="text-ink-sub hover:text-ink transition-colors">Cleaning</Link></li>
@@ -978,17 +1118,16 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
                 <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
-                <li><Link href="/provider/earnings"   className="text-ink-sub hover:text-ink transition-colors">Earnings</Link></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/about"   className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
                 <li><Link href="/support" className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
                 <li><Link href="/terms"   className="text-ink-sub hover:text-ink transition-colors">Terms of Service</Link></li>
@@ -996,8 +1135,8 @@ export default function LandingPage() {
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-3 sm:mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
-              <ul className="space-y-2.5 sm:space-y-3 text-sm">
+              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
+              <ul className="space-y-3 text-sm">
                 <li><Link href="/browse"       className="text-ink-sub hover:text-ink transition-colors">Find a Professional</Link></li>
                 <li><Link href="/requests/new" className="text-ink-sub hover:text-ink transition-colors">Post a Job</Link></li>
                 <li><Link href="/login"        className="text-ink-sub hover:text-ink transition-colors">Log In</Link></li>
@@ -1005,17 +1144,18 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-
-          {/* Bottom bar */}
-          <div className="pt-8 border-t border-border-dim flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="pt-8 border-t border-border-dim flex justify-between items-center">
             <p className="text-xs text-ink-dim">© 2026 {t.footer.copyright}</p>
-            <div className="flex items-center gap-3">
-              <p className="text-xs text-ink-dim">Vilnius, Lithuania</p>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <a href="#" aria-label="Instagram" className="text-ink-dim hover:text-ink transition-colors"><Instagram className="w-4 h-4" /></a>
+                <a href="#" aria-label="Twitter" className="text-ink-dim hover:text-ink transition-colors"><Twitter className="w-4 h-4" /></a>
+              </div>
               <LanguageSwitcher />
             </div>
           </div>
-
         </div>
+
       </footer>
 
       {session && <MobileNav />}
