@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Star, Users, Zap, Heart, BadgeCheck } from 'lucide-react';
 import { buttonVariants } from '@/components/ui';
+import { AladdinIcon } from '@/components/icons';
 
 const VALUES = [
   {
@@ -46,9 +47,7 @@ export default function AboutPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center shrink-0">
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
-              </svg>
+              <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
