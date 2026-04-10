@@ -1,75 +1,46 @@
 import React from 'react';
 
 export const AladdinIcon = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 24 28" fill="currentColor" className={className} aria-hidden="true">
-    {/* ── Genie head & turban ── */}
-    {/* Head */}
-    <ellipse cx="7.5" cy="3.2" rx="2.3" ry="2.4" />
-    {/* Turban wrap — curved band over head */}
-    <path d="M5.4 2.2 C5.6 0.8 7 0.2 8.8 0.8 C10 1.2 10.2 2.2 9.4 2.8 C8.6 1.6 6.8 1.4 5.4 2.2 Z" />
-    {/* Turban feather / plume */}
-    <path d="M9.2 0.6 C10 -0.2 11.2 0.2 10.8 1.4 C10.5 2.2 9.6 2.4 9 1.8" />
-
-    {/* ── Smoke / genie body trail ── */}
-    {/* Main flowing smoke column */}
+  <svg viewBox="0 0 200 210" fill="currentColor" className={className} aria-hidden="true">
+    {/* Left leg of A */}
+    <path d="M100 14 L18 198 L52 198 L100 52 Z" />
+    {/* Right leg of A */}
+    <path d="M100 14 L182 198 L148 198 L100 52 Z" />
+    {/* Lamp body — sits at the crossbar level of the A */}
+    <ellipse cx="100" cy="132" rx="36" ry="21" />
+    {/* Lamp lid dome */}
+    <path d="M68 120 C72 109 84 103 100 103 C116 103 128 109 132 120 Z" />
+    {/* Lamp finial */}
+    <ellipse cx="100" cy="97" rx="6" ry="9" />
+    {/* Lamp spout — extends left past the left leg */}
     <path d="
-      M7.5 5.6
-      C6.8 6.6 6.2 7.6 6.6 8.8
-      C7.0 9.8 7.6 10.2 7.8 11.2
-      C6.8 11.0 6.0 11.6 5.8 12.4
-    " strokeWidth="2.2" stroke="currentColor" fill="none" strokeLinecap="round"/>
-    {/* Wider filled smoke body */}
-    <path d="
-      M6.2 5.8 C5.2 7.0 4.8 8.2 5.4 9.4
-      C5.8 10.2 6.6 10.6 6.8 11.4
-      C6.0 11.2 5.0 11.8 4.8 12.8
-      C5.8 12.6 6.8 12.0 7.8 11.2
-      C7.6 10.2 7.0 9.8 6.6 8.8
-      C6.2 7.6 6.8 6.6 7.5 5.6
-      C7.2 5.5 6.8 5.6 6.2 5.8 Z
+      M 66 124
+      C 56 120 40 120 30 126
+      C 22 131 23 142 32 145
+      C 41 148 53 143 58 135
+      C 53 139 43 140 38 135
+      C 33 130 41 126 52 128
+      C 60 130 64 135 66 137
+      Z
     " />
-
-    {/* ── Smoke swirl decorations ── */}
-    {/* Left swirl */}
-    <path d="M4.8 12.8 C3.4 12.4 2.8 13.4 3.4 14.4 C4.0 15.2 5.2 15.0 5.4 14.0" fill="none" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/>
-    {/* Left lower swirl */}
-    <path d="M4.2 13.6 C2.8 13.8 2.4 15.0 3.2 15.8 C3.8 16.4 5.0 16.2 5.2 15.2" fill="none" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/>
-
-    {/* ── Lamp spout (connects smoke to lamp) ── */}
-    <path d="M5.4 14.6 C5.0 15.4 5.2 16.0 6.0 16.2" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
-
-    {/* ── Lamp lid ── */}
-    {/* Lid dome */}
-    <path d="M6.2 15.4 C7.2 14.6 9.4 14.4 11.2 15.0 L10.8 15.8 C9.2 15.2 7.4 15.4 6.6 16.0 Z" />
-    {/* Lid finial diamond */}
-    <path d="M9.2 13.8 L9.8 14.6 L9.2 15.2 L8.6 14.6 Z" />
-
-    {/* ── Lamp body ── */}
+    {/* Lamp handle — extends right past the right leg */}
     <path d="
-      M6.0 16.2
-      C5.2 16.4 4.6 17.2 4.6 18.4
-      C4.6 20.2 5.8 21.6 7.4 22.2
-      C9.0 22.8 11.2 22.6 12.8 21.4
-      C14.2 20.4 14.6 18.8 13.8 17.4
-      C13.2 16.4 12.0 16.0 10.8 15.8
-      L10.8 15.8 C9.2 15.2 7.4 15.4 6.6 16.0
-      C6.4 16.0 6.2 16.1 6.0 16.2 Z
+      M 136 126
+      C 154 118 173 125 174 140
+      C 175 155 160 163 148 157
+      C 141 153 139 144 144 139
+      C 142 145 143 153 150 156
+      C 161 161 174 151 172 138
+      C 170 126 157 119 140 127
+      Z
     " />
-
-    {/* ── Lamp handle / curl (right side) ── */}
-    <path d="
-      M13.8 17.6
-      C16.2 17.0 17.4 18.4 17.0 20.0
-      C16.6 21.6 15.0 22.0 14.0 21.4
-      C13.4 21.0 13.2 20.4 13.6 20.0
-      C13.8 19.6 14.4 19.8 14.6 20.2
-    " fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-
-    {/* ── Lamp base pedestal ── */}
-    <path d="M7.0 22.4 L12.0 22.4 L12.6 23.4 L6.4 23.4 Z" />
-    <path d="M6.0 23.4 L13.0 23.4 L13.0 24.4 Q9.5 25.0 6.0 24.4 Z" />
+    {/* Lamp base taper */}
+    <path d="M 72 153 L 128 153 L 133 161 H 67 Z" />
+    {/* Lamp base foot */}
+    <rect x="64" y="161" width="72" height="11" rx="4" />
   </svg>
 );
+
 
 export const BroomIcon = ({ className, strokeWidth = 1.5 }: { className?: string; strokeWidth?: number }) => (
   <svg
