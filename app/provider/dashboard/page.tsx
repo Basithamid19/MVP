@@ -54,7 +54,7 @@ export default function ProviderDashboardPage() {
         setLoading(false);
       });
     }
-  }, [status, session, router]);
+  }, [status, router]);
 
   if (status === 'loading' || loading) {
     return (
