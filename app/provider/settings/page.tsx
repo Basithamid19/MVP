@@ -581,19 +581,17 @@ export default function ProviderSettingsPage() {
         </button>
       </div>
 
-      {/* ── Mobile: Sticky save bar ── */}
-      <div className={`sm:hidden fixed bottom-16 left-0 right-0 z-40 transition-all duration-200 ${dirty || saving || saved ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0 pointer-events-none'}`}>
-        <div className="mx-4 mb-2">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm shadow-elevated transition-all ${
-              saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
-            } disabled:opacity-50`}
-          >
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
-          </button>
-        </div>
+      {/* ── Mobile: Save button ── */}
+      <div className="sm:hidden mt-4">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all ${
+            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
+          } disabled:opacity-50`}
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
+        </button>
       </div>
     </div>
   );
