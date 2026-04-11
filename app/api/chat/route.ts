@@ -26,48 +26,29 @@ export async function GET(request: Request) {
     // Otherwise, return all threads for the current user
     const userId = (session.user as any).id;
 
-    // Try scalar fields first, fall back to participants-based query
-    let threads;
-    try {
-      threads = await prisma.chatThread.findMany({
-        where: {
-          OR: [{ customerId: userId }, { providerId: userId }],
+    // Match threads whether stored via scalar fields (post-migration) or participants join table (pre-migration)
+    const threads = await prisma.chatThread.findMany({
+      where: {
+        OR: [
+          { customerId: userId },
+          { providerId: userId },
+          { participants: { some: { id: userId } } },
+        ],
+      },
+      include: {
+        participants: {
+          select: { id: true, name: true, image: true, role: true },
         },
-        include: {
-          participants: {
-            select: { id: true, name: true, image: true, role: true },
-          },
-          messages: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-          request: {
-            include: { category: true },
-          },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
         },
-        orderBy: { createdAt: 'desc' },
-      });
-    } catch {
-      // Fallback: old participants-based query (before migration)
-      threads = await prisma.chatThread.findMany({
-        where: {
-          participants: { some: { id: userId } },
+        request: {
+          include: { category: true },
         },
-        include: {
-          participants: {
-            select: { id: true, name: true, image: true, role: true },
-          },
-          messages: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-          request: {
-            include: { category: true },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-    }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
     // Sort by last message date (threads with recent messages first)
     const sorted = threads.sort((a, b) => {
@@ -76,9 +57,7 @@ export async function GET(request: Request) {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
-    // Format response — filter out empty threads (no messages)
     const result = sorted
-      .filter(t => t.messages.length > 0)
       .map(t => ({
         id: t.id,
         otherParticipant: t.participants.find(p => p.id !== userId) ?? t.participants[0],
