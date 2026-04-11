@@ -106,11 +106,13 @@ export async function GET(request: Request) {
     if (!provider) return NextResponse.json([]);
 
     const categoryIds = provider.categories.map(c => c.id);
-    if (categoryIds.length === 0) return NextResponse.json([]);
+    const categoryFilter = categoryIds.length > 0
+      ? { categoryId: { in: categoryIds } }
+      : {};
 
     const requests = await prisma.serviceRequest.findMany({
       where: {
-        categoryId: { in: categoryIds },
+        ...categoryFilter,
         status: { in: ['NEW', 'QUOTED'] },
       },
       include: { category: true, customer: { include: { user: true } } },
