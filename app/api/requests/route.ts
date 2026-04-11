@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { createNotification } from '@/lib/notifications';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,26 @@ export async function POST(request: Request) {
       isUrgent: isUrgent || false,
       status: 'NEW',
     },
+    include: { category: true },
   });
+
+  // Notify all providers who have this category in their profile
+  const matchingProviders = await prisma.providerProfile.findMany({
+    where: { categories: { some: { id: categoryId } } },
+    select: { userId: true },
+  });
+
+  const categoryName = serviceRequest.category?.name ?? 'service';
+  const urgentPrefix = isUrgent ? '🔴 Urgent: ' : '';
+  for (const provider of matchingProviders) {
+    createNotification({
+      userId: provider.userId,
+      type: 'lead',
+      title: `${urgentPrefix}New ${categoryName} lead`,
+      body: `A customer needs ${categoryName.toLowerCase()} help${address ? ` in ${address}` : ''}. Send a quote now.`,
+      href: '/provider/leads',
+    });
+  }
 
   return NextResponse.json(serviceRequest);
 }

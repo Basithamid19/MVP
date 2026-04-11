@@ -23,6 +23,7 @@ export default function ProviderSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const initialRef = useRef<string>('');
   const [dirty, setDirty] = useState(false);
@@ -119,12 +120,12 @@ export default function ProviderSettingsPage() {
   };
 
   const handleSave = async () => {
-    // Validate offerings before saving
+    // Validate offerings — but don't block profile save; just flag bad services
     const errors: Record<number, string> = {};
     offerings.forEach((o, i) => {
       const name = o.name.trim();
       const desc = o.description.trim();
-      if (name.length < 3) {
+      if (name.length > 0 && name.length < 3) {
         errors[i] = 'Service name must be at least 3 characters.';
       } else if (desc.length > 0 && desc.length < 20) {
         errors[i] = 'Description must be at least 20 characters if provided.';
@@ -133,12 +134,14 @@ export default function ProviderSettingsPage() {
     setOfferingErrors(errors);
     if (Object.keys(errors).length > 0) {
       setActiveTab('Services');
+      setSaveError('Fix service errors before saving.');
       return;
     }
 
     setSaving(true);
+    setSaveError(null);
     try {
-      await fetch('/api/provider/profile', {
+      const res = await fetch('/api/provider/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -148,10 +151,17 @@ export default function ProviderSettingsPage() {
           availability: slots.filter(s => s.enabled).map(s => ({ dayOfWeek: s.dayOfWeek, startTime: s.startTime, endTime: s.endTime })),
         }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setSaveError(err.error || 'Save failed. Please try again.');
+        return;
+      }
       setSaved(true);
       initialRef.current = getSnapshot();
       setDirty(false);
       setTimeout(() => setSaved(false), 3000);
+    } catch {
+      setSaveError('Network error. Please check your connection and try again.');
     } finally {
       setSaving(false);
     }
@@ -212,6 +222,14 @@ export default function ProviderSettingsPage() {
               </span>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Save error banner */}
+      {saveError && (
+        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-xl text-sm text-caution font-medium flex items-center justify-between gap-2">
+          <span>{saveError}</span>
+          <button onClick={() => setSaveError(null)} className="shrink-0 text-caution hover:opacity-70"><X className="w-4 h-4" /></button>
         </div>
       )}
 

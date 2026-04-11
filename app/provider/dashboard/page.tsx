@@ -42,15 +42,15 @@ export default function ProviderDashboardPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
-      Promise.all([
+      Promise.allSettled([
         fetch('/api/provider/profile').then(r => r.json()),
         fetch('/api/provider/leads').then(r => r.json()),
         fetch('/api/bookings').then(r => r.json()),
-      ]).then(([profile, leads, bookings]) => {
-        setData({ profile, leads: Array.isArray(leads) ? leads : [], bookings: Array.isArray(bookings) ? bookings : [] });
-        setLoading(false);
-      }).catch(() => {
-        setData({ profile: {}, leads: [], bookings: [] });
+      ]).then(([profileRes, leadsRes, bookingsRes]) => {
+        const profile = profileRes.status === 'fulfilled' ? profileRes.value : {};
+        const leads = leadsRes.status === 'fulfilled' && Array.isArray(leadsRes.value) ? leadsRes.value : [];
+        const bookings = bookingsRes.status === 'fulfilled' && Array.isArray(bookingsRes.value) ? bookingsRes.value : [];
+        setData({ profile, leads, bookings });
         setLoading(false);
       });
     }

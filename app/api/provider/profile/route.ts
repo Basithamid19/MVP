@@ -26,75 +26,90 @@ export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await request.json();
-  const {
-    bio, serviceArea, languages, responseTime,
-    categoryIds, offerings, availability,
-  } = body;
+  try {
+    const body = await request.json();
+    const {
+      bio, serviceArea, languages, responseTime,
+      categoryIds, offerings, availability,
+    } = body;
 
-  const profile = await prisma.providerProfile.upsert({
-    where: { userId: (session.user as any).id },
-    update: {
-      ...(bio !== undefined && { bio: bio.trim() }),
-      ...(serviceArea !== undefined && { serviceArea }),
-      ...(languages !== undefined && { languages }),
-      ...(responseTime !== undefined && { responseTime }),
-      ...(categoryIds && {
-        categories: { set: categoryIds.map((id: string) => ({ id })) },
-      }),
-    },
-    create: {
-      userId: (session.user as any).id,
-      bio: bio ?? '',
-      serviceArea: serviceArea ?? 'Vilnius',
-      languages: languages ?? ['Lithuanian'],
-    },
-  });
+    const userId = (session.user as any).id;
 
-  if (offerings) {
-    // Validate offerings
-    for (const o of offerings) {
-      const name = (o.name ?? '').trim();
-      if (name.length < 3) {
-        return NextResponse.json({ error: 'Service name must be at least 3 characters.' }, { status: 400 });
-      }
-      const desc = (o.description ?? '').trim();
-      if (desc.length > 0 && desc.length < 20) {
-        return NextResponse.json({ error: 'Service description must be at least 20 characters if provided.' }, { status: 400 });
-      }
-      const price = parseFloat(o.price);
-      if (isNaN(price) || price < 0) {
-        return NextResponse.json({ error: 'Service price must be a valid positive number.' }, { status: 400 });
+    // Validate offerings before touching the DB
+    if (Array.isArray(offerings) && offerings.length > 0) {
+      for (const o of offerings) {
+        const name = (o.name ?? '').trim();
+        if (name.length < 3) {
+          return NextResponse.json({ error: `Service name "${name || '(empty)'}" must be at least 3 characters.` }, { status: 400 });
+        }
+        const desc = (o.description ?? '').trim();
+        if (desc.length > 0 && desc.length < 20) {
+          return NextResponse.json({ error: `Description for "${name}" must be at least 20 characters if provided.` }, { status: 400 });
+        }
+        const price = parseFloat(o.price);
+        if (isNaN(price) || price < 0) {
+          return NextResponse.json({ error: `Price for "${name}" must be a valid positive number.` }, { status: 400 });
+        }
       }
     }
 
-    await prisma.serviceOffering.deleteMany({ where: { providerProfileId: profile.id } });
-    for (const o of offerings) {
-      await prisma.serviceOffering.create({
-        data: {
-          providerProfileId: profile.id,
-          name: (o.name ?? '').trim(),
-          description: (o.description ?? '').trim() || null,
-          price: parseFloat(o.price),
-          priceType: o.priceType ?? 'HOURLY',
-        },
-      });
+    const profile = await prisma.providerProfile.upsert({
+      where: { userId },
+      update: {
+        ...(bio !== undefined && { bio: bio.trim() }),
+        ...(serviceArea !== undefined && { serviceArea }),
+        ...(languages !== undefined && { languages }),
+        ...(responseTime !== undefined && { responseTime }),
+        ...(categoryIds && {
+          categories: { set: categoryIds.map((id: string) => ({ id })) },
+        }),
+      },
+      create: {
+        userId,
+        bio: bio ?? '',
+        serviceArea: serviceArea ?? 'Vilnius',
+        languages: languages ?? ['Lithuanian'],
+        responseTime: responseTime ?? 'Usually responds in 1 hour',
+        ...(categoryIds?.length && {
+          categories: { connect: categoryIds.map((id: string) => ({ id })) },
+        }),
+      },
+    });
+
+    // Save offerings (only modify if array explicitly sent)
+    if (Array.isArray(offerings)) {
+      await prisma.serviceOffering.deleteMany({ where: { providerProfileId: profile.id } });
+      for (const o of offerings) {
+        await prisma.serviceOffering.create({
+          data: {
+            providerProfileId: profile.id,
+            name: (o.name ?? '').trim(),
+            description: (o.description ?? '').trim() || null,
+            price: parseFloat(o.price),
+            priceType: o.priceType ?? 'HOURLY',
+          },
+        });
+      }
     }
+
+    // Save availability (only modify if array explicitly sent)
+    if (Array.isArray(availability)) {
+      await prisma.availabilitySlot.deleteMany({ where: { providerProfileId: profile.id } });
+      for (const slot of availability) {
+        await prisma.availabilitySlot.create({
+          data: {
+            providerProfileId: profile.id,
+            dayOfWeek: slot.dayOfWeek,
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          },
+        });
+      }
+    }
+
+    return NextResponse.json(profile);
+  } catch (err) {
+    console.error('[provider/profile PATCH]', err);
+    return NextResponse.json({ error: 'Failed to save profile. Please try again.' }, { status: 500 });
   }
-
-  if (availability) {
-    await prisma.availabilitySlot.deleteMany({ where: { providerProfileId: profile.id } });
-    for (const slot of availability) {
-      await prisma.availabilitySlot.create({
-        data: {
-          providerProfileId: profile.id,
-          dayOfWeek: slot.dayOfWeek,
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-        },
-      });
-    }
-  }
-
-  return NextResponse.json(profile);
 }
