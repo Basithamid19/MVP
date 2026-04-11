@@ -152,7 +152,7 @@ export default function ForProsPage() {
       </section>
 
       {/* How it works */}
-      <section className="py-16 sm:py-24 bg-canvas">
+      <section id="how-it-works" className="py-16 sm:py-24 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-3">How it works</p>

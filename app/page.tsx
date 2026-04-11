@@ -1053,7 +1053,7 @@ export default function LandingPage() {
               <div className="flex flex-col gap-2">
                 <Link href="/for-pros"              className="text-[14px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
                 <Link href="/provider/verification" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
-                <Link href="/provider/dashboard"    className="text-[14px] text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link>
+                <Link href="/for-pros#how-it-works" className="text-[14px] text-ink-sub hover:text-ink transition-colors">How it works</Link>
               </div>
             </div>
 
@@ -1113,7 +1113,7 @@ export default function LandingPage() {
               <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
-                <li><Link href="/provider/dashboard"  className="text-ink-sub hover:text-ink transition-colors">Pro Dashboard</Link></li>
+                <li><Link href="/for-pros#how-it-works" className="text-ink-sub hover:text-ink transition-colors">How it works</Link></li>
                 <li><Link href="/provider/onboarding" className="text-ink-sub hover:text-ink transition-colors">Get Verified</Link></li>
               </ul>
             </div>
