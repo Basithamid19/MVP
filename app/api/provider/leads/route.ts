@@ -17,11 +17,15 @@ export async function GET() {
 
   const categoryIds = profile.categories.map(c => c.id);
 
-  if (categoryIds.length === 0) return NextResponse.json([]);
+  // If no categories set, show all open leads so the provider can see
+  // available work and is encouraged to configure their profile.
+  const categoryFilter = categoryIds.length > 0
+    ? { categoryId: { in: categoryIds } }
+    : {};
 
   const requests = await prisma.serviceRequest.findMany({
     where: {
-      categoryId: { in: categoryIds },
+      ...categoryFilter,
       status: { in: ['NEW', 'QUOTED'] },
       quotes: { none: { providerId: profile.id } },
     },

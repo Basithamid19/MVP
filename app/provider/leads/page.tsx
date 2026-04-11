@@ -34,15 +34,22 @@ export default function ProviderLeadsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [leads, setLeads] = useState<any[]>([]);
+  const [hasCategories, setHasCategories] = useState(true);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'urgent' | 'new'>('all');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    fetch('/api/provider/leads')
-      .then(r => r.json())
-      .then(d => { setLeads(Array.isArray(d) ? d : []); setLoading(false); })
+    Promise.all([
+      fetch('/api/provider/leads').then(r => r.json()),
+      fetch('/api/provider/profile').then(r => r.json()),
+    ])
+      .then(([leadsData, profile]) => {
+        setLeads(Array.isArray(leadsData) ? leadsData : []);
+        setHasCategories((profile?.categories?.length ?? 0) > 0);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   }, []);
 
@@ -90,6 +97,21 @@ export default function ProviderLeadsPage() {
           <RefreshCcw className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
         </button>
       </div>
+
+      {/* Category setup nudge — shown when provider has no categories */}
+      {!hasCategories && (
+        <Link
+          href="/provider/settings"
+          className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 mb-5 hover:bg-amber-100 transition-colors"
+        >
+          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-amber-900">Set your service categories</p>
+            <p className="text-xs text-amber-700 mt-0.5">You're seeing all open leads. Add your categories in settings so we can match the right jobs to you.</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+        </Link>
+      )}
 
       {/* Search + filter — only show search when leads exist */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5 sm:mb-8">
