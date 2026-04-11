@@ -41,16 +41,18 @@ export default function ProviderLeadsPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    Promise.all([
+    Promise.allSettled([
       fetch('/api/provider/leads').then(r => r.json()),
       fetch('/api/provider/profile').then(r => r.json()),
-    ])
-      .then(([leadsData, profile]) => {
-        setLeads(Array.isArray(leadsData) ? leadsData : []);
-        setHasCategories((profile?.categories?.length ?? 0) > 0);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    ]).then(([leadsRes, profileRes]) => {
+      if (leadsRes.status === 'fulfilled' && Array.isArray(leadsRes.value)) {
+        setLeads(leadsRes.value);
+      }
+      if (profileRes.status === 'fulfilled') {
+        setHasCategories((profileRes.value?.categories?.length ?? 0) > 0);
+      }
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
