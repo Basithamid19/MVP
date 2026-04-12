@@ -8,18 +8,49 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const profile = await prisma.providerProfile.findUnique({
-    where: { userId: (session.user as any).id },
-    include: {
-      user: { select: { name: true, email: true, image: true } },
-      categories: true,
-      offerings: true,
-      availability: true,
-      verifications: true,
-      _count: { select: { bookings: true, reviews: true } },
-    },
-  });
-  return NextResponse.json(profile ?? {});
+  const userId = (session.user as any).id;
+
+  try {
+    const profile = await prisma.providerProfile.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { name: true, email: true, image: true } },
+        categories: true,
+        offerings: true,
+        availability: true,
+        verifications: true,
+        _count: { select: { bookings: true, reviews: true } },
+      },
+    });
+    return NextResponse.json(profile ?? {});
+  } catch (err: unknown) {
+    // If new columns (instantBook / bufferMins / blackoutDates) aren't in the DB yet,
+    // fall back to selecting only the columns that have always existed so the page loads.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (
+      msg.includes('instantBook') || msg.includes('bufferMins') ||
+      msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')
+    ) {
+      console.warn('[provider/profile GET] new columns missing, returning core fields only');
+      const profile = await prisma.providerProfile.findUnique({
+        where: { userId },
+        select: {
+          id: true, userId: true, bio: true, serviceArea: true,
+          languages: true, ratingAvg: true, completedJobs: true,
+          isVerified: true, verificationTier: true, responseTime: true,
+          categories: true, offerings: true, availability: true,
+          verifications: true,
+          _count: { select: { bookings: true, reviews: true } },
+          user: { select: { name: true, email: true, image: true } },
+        },
+      }).catch(() => null);
+      return NextResponse.json(
+        profile ? { ...profile, instantBook: false, bufferMins: 30, blackoutDates: [] } : {}
+      );
+    }
+    console.error('[provider/profile GET]', err);
+    return NextResponse.json({ error: 'Failed to load profile.' }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
