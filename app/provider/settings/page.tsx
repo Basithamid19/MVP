@@ -331,7 +331,9 @@ export default function ProviderSettingsPage() {
       {/* PROFILE TAB */}
       {activeTab === 'Profile' && (
         <div className="space-y-3 sm:space-y-5">
-          {/* Bio + Coverage + Languages + Response time — grouped */}
+          {/* Public profile group */}
+          <div>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Public profile</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
             {/* Bio */}
             <div className="p-4 sm:p-6">
@@ -410,8 +412,11 @@ export default function ProviderSettingsPage() {
               </select>
             </div>
           </div>
+          </div>{/* end public profile group */}
 
-          {/* Category selection */}
+          {/* Work details group */}
+          <div>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Work details</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
             <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3 sm:mb-4">Service categories</p>
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3">
@@ -426,6 +431,7 @@ export default function ProviderSettingsPage() {
               })}
             </div>
           </div>
+          </div>{/* end work details group */}
         </div>
       )}
 
