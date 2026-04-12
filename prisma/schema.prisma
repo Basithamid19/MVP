@@ -76,7 +76,10 @@ model ProviderProfile {
   isVerified        Boolean          @default(false)
   verificationTier  VerificationTier @default(TIER0_BASIC)
   responseTime      String?          // e.g., "Usually responds in 1 hour"
-  
+  instantBook       Boolean          @default(false)
+  bufferMins        Int              @default(30)
+  blackoutDates     String[]         @default([])
+
   categories        ServiceCategory[]
   offerings         ServiceOffering[]
   availability      AvailabilitySlot[]
