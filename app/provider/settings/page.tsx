@@ -60,25 +60,50 @@ export default function ProviderSettingsPage() {
         fetch('/api/provider/profile').then(r => r.json()),
         fetch('/api/categories').then(r => r.json()),
       ]).then(([profile, cats]) => {
-        if (profile) {
-          setBio(profile.bio ?? '');
-          setServiceArea(profile.serviceArea ?? '');
-          setLanguages(profile.languages ?? ['Lithuanian']);
-          setResponseTime(profile.responseTime ?? 'Usually responds in 1 hour');
-          setSelectedCategories(profile.categories?.map((c: any) => c.id) ?? []);
-          if (profile.offerings?.length) setOfferings(profile.offerings.map((o: any) => ({ name: o.name, price: String(o.price), priceType: o.priceType, description: o.description ?? '' })));
-          if (profile.availability?.length) {
-            setSlots(DAYS.map((_, i) => {
-              const existing = profile.availability.find((s: any) => s.dayOfWeek === i);
-              return existing ? { dayOfWeek: i, startTime: existing.startTime, endTime: existing.endTime, enabled: true }
-                              : { dayOfWeek: i, startTime: '09:00', endTime: '17:00', enabled: false };
-            }));
-          }
-        }
+        // Derive all loaded values explicitly so we can build the initial
+        // snapshot directly — avoids the stale-closure bug of using
+        // getSnapshot() inside a setTimeout after batch state updates.
+        const p = profile ?? {};
+        const loadedBio             = p.bio ?? '';
+        const loadedArea            = p.serviceArea ?? '';
+        const loadedLanguages       = p.languages ?? ['Lithuanian'];
+        const loadedResponseTime    = p.responseTime ?? 'Usually responds in 1 hour';
+        const loadedCategoryIds     = (p.categories ?? []).map((c: any) => c.id);
+        const loadedInstantBook     = p.instantBook ?? false;
+        const loadedOfferings       = (p.offerings ?? []).map((o: any) => ({
+          name: o.name, price: String(o.price), priceType: o.priceType, description: o.description ?? '',
+        }));
+        const loadedSlots           = DAYS.map((_, i) => {
+          const existing = (p.availability ?? []).find((s: any) => s.dayOfWeek === i);
+          return existing
+            ? { dayOfWeek: i, startTime: existing.startTime, endTime: existing.endTime, enabled: true }
+            : { dayOfWeek: i, startTime: '09:00', endTime: '17:00', enabled: false };
+        });
+        const loadedBlackoutDates   = p.blackoutDates ?? [];
+        const loadedBufferMins      = p.bufferMins ?? 30;
+
+        setBio(loadedBio);
+        setServiceArea(loadedArea);
+        setLanguages(loadedLanguages);
+        setResponseTime(loadedResponseTime);
+        setSelectedCategories(loadedCategoryIds);
+        setInstantBook(loadedInstantBook);
+        setOfferings(loadedOfferings);
+        setSlots(loadedSlots);
+        setBlackoutDates(loadedBlackoutDates);
+        setBufferMins(loadedBufferMins);
+
         if (Array.isArray(cats)) setCategories(cats);
         setLoading(false);
-        // Capture initial state after a tick so all setState calls settle
-        setTimeout(() => { initialRef.current = getSnapshot(); }, 0);
+
+        // Build initial snapshot directly from the loaded data so dirty
+        // detection starts from the true persisted state, not empty defaults.
+        initialRef.current = JSON.stringify({
+          bio: loadedBio, serviceArea: loadedArea, languages: loadedLanguages,
+          responseTime: loadedResponseTime, selectedCategories: loadedCategoryIds,
+          instantBook: loadedInstantBook, offerings: loadedOfferings,
+          slots: loadedSlots, blackoutDates: loadedBlackoutDates, bufferMins: loadedBufferMins,
+        });
       }).catch(() => setLoading(false));
     }
   }, [status, router]);
@@ -147,6 +172,9 @@ export default function ProviderSettingsPage() {
         body: JSON.stringify({
           bio, serviceArea, languages, responseTime,
           categoryIds: selectedCategories,
+          instantBook,
+          bufferMins,
+          blackoutDates,
           offerings: offerings.map(o => ({ ...o, price: parseFloat(o.price) || 0 })),
           availability: slots.filter(s => s.enabled).map(s => ({ dayOfWeek: s.dayOfWeek, startTime: s.startTime, endTime: s.endTime })),
         }),

@@ -31,6 +31,7 @@ export async function PATCH(request: Request) {
     const {
       bio, serviceArea, languages, responseTime,
       categoryIds, offerings, availability,
+      instantBook, bufferMins, blackoutDates,
     } = body;
 
     const userId = (session.user as any).id;
@@ -60,6 +61,9 @@ export async function PATCH(request: Request) {
         ...(serviceArea !== undefined && { serviceArea }),
         ...(languages !== undefined && { languages }),
         ...(responseTime !== undefined && { responseTime }),
+        ...(instantBook !== undefined && { instantBook: Boolean(instantBook) }),
+        ...(bufferMins !== undefined && { bufferMins: Number(bufferMins) }),
+        ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
         ...(categoryIds && {
           categories: { set: categoryIds.map((id: string) => ({ id })) },
         }),
@@ -70,6 +74,9 @@ export async function PATCH(request: Request) {
         serviceArea: serviceArea ?? 'Vilnius',
         languages: languages ?? ['Lithuanian'],
         responseTime: responseTime ?? 'Usually responds in 1 hour',
+        instantBook: Boolean(instantBook ?? false),
+        bufferMins: Number(bufferMins ?? 30),
+        blackoutDates: Array.isArray(blackoutDates) ? blackoutDates : [],
         ...(categoryIds?.length && {
           categories: { connect: categoryIds.map((id: string) => ({ id })) },
         }),
