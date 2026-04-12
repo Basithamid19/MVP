@@ -5,12 +5,11 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
-  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
+  Languages, Clock, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
   Briefcase, Zap, Shield,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const TIMES = Array.from({ length: 25 }, (_, i) => `${String(Math.floor(i * 0.5 + 8)).padStart(2, '0')}:${i % 2 === 0 ? '00' : '30'}`).filter((_, i) => i < 26);
 const ALL_TIMES = ['06:00','06:30','07:00','07:30','08:00','08:30','09:00','09:30','10:00','10:30','11:00','11:30',
   '12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30','16:00','16:30','17:00','17:30',
   '18:00','18:30','19:00','19:30','20:00','20:30','21:00'];
@@ -21,6 +20,8 @@ export default function ProviderSettingsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Profile');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -104,9 +105,9 @@ export default function ProviderSettingsPage() {
           instantBook: loadedInstantBook, offerings: loadedOfferings,
           slots: loadedSlots, blackoutDates: loadedBlackoutDates, bufferMins: loadedBufferMins,
         });
-      }).catch(() => setLoading(false));
+      }).catch(() => { setLoading(false); setLoadError(true); });
     }
-  }, [status, router]);
+  }, [status, router, retryCount]);
 
   // Track dirty state
   useEffect(() => {
@@ -145,13 +146,17 @@ export default function ProviderSettingsPage() {
   };
 
   const handleSave = async () => {
-    // Validate offerings — but don't block profile save; just flag bad services
     const errors: Record<number, string> = {};
     offerings.forEach((o, i) => {
       const name = o.name.trim();
       const desc = o.description.trim();
-      if (name.length > 0 && name.length < 3) {
+      const price = o.price.trim();
+      if (name.length === 0) {
+        errors[i] = 'Enter a service name or remove this row.';
+      } else if (name.length < 3) {
         errors[i] = 'Service name must be at least 3 characters.';
+      } else if (price === '' || isNaN(parseFloat(price))) {
+        errors[i] = 'Enter a price (use 0 for free services).';
       } else if (desc.length > 0 && desc.length < 20) {
         errors[i] = 'Description must be at least 20 characters if provided.';
       }
@@ -197,6 +202,19 @@ export default function ProviderSettingsPage() {
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
 
+  if (loadError) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-6 text-center">
+      <p className="text-sm font-semibold text-ink">Could not load your profile</p>
+      <p className="text-xs text-ink-dim max-w-xs">There was a problem fetching your data. Check your connection and try again.</p>
+      <button
+        onClick={() => { setLoadError(false); setLoading(true); setRetryCount(c => c + 1); }}
+        className="px-5 py-2 bg-brand text-white rounded-full text-sm font-semibold hover:bg-brand-dark transition-colors"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
   // Profile completeness
   const hasAvatar = !!(localAvatar || session?.user?.image);
   const hasBio = bio.trim().length >= 50;
@@ -219,8 +237,12 @@ export default function ProviderSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className={`hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
-            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
+          className={`hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm ${
+            saved
+              ? 'bg-trust text-white'
+              : dirty
+                ? 'bg-brand text-white hover:bg-brand-dark hover:shadow-md'
+                : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
           } disabled:opacity-50`}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
@@ -632,9 +654,13 @@ export default function ProviderSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all ${
-            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
-          } disabled:opacity-50`}
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all disabled:opacity-50 ${
+            saved
+              ? 'bg-trust text-white'
+              : dirty
+                ? 'bg-brand text-white'
+                : 'bg-surface-alt text-ink-dim border border-border-dim'
+          }`}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
         </button>
