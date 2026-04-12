@@ -438,7 +438,8 @@ export default function ProviderSettingsPage() {
       {/* SERVICES TAB */}
       {activeTab === 'Services' && (
         <div className="space-y-3 sm:space-y-5">
-          {/* Service offerings */}
+          {/* Your services */}
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Your services</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4 sm:mb-5">
               <div>
@@ -527,7 +528,8 @@ export default function ProviderSettingsPage() {
             )}
           </div>
 
-          {/* Instant book + booking behavior */}
+          {/* Booking settings */}
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Booking settings</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim overflow-hidden">
             <div className="p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
               <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
@@ -552,6 +554,7 @@ export default function ProviderSettingsPage() {
       {activeTab === 'Availability' && (
         <div className="space-y-3 sm:space-y-5">
           {/* Working hours */}
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Working hours</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
             <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-5 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-ink-dim" /> Working hours
@@ -592,7 +595,8 @@ export default function ProviderSettingsPage() {
             </div>
           </div>
 
-          {/* Buffer time */}
+          {/* Break between jobs */}
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Break between jobs</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
             <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
               <Clock className="w-4 h-4 text-ink-dim" /> Buffer between jobs
@@ -612,7 +616,8 @@ export default function ProviderSettingsPage() {
             </div>
           </div>
 
-          {/* Blackout dates */}
+          {/* Days off */}
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Days off</p>
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
             <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2">
               <Shield className="w-4 h-4 text-ink-dim" /> Blackout dates
