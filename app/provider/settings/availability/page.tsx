@@ -121,7 +121,7 @@ export default function ProviderAvailabilitySettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving || !dirty}
-          className={`hidden sm:flex items-center gap-2 px-5 py-2 rounded-full font-medium text-sm transition-all ${
+          className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full font-medium text-sm transition-all ${
             saved ? 'bg-trust text-white shadow-sm'
             : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
             : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
@@ -131,7 +131,7 @@ export default function ProviderAvailabilitySettingsPage() {
             ? <Loader2 className="w-4 h-4 animate-spin" />
             : saved
               ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /> Save Changes</>
+              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
           }
         </button>
       </div>
@@ -284,7 +284,7 @@ export default function ProviderAvailabilitySettingsPage() {
             ? <Loader2 className="w-4 h-4 animate-spin" />
             : saved
               ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /> Save Changes</>
+              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
           }
         </button>
       </div>
