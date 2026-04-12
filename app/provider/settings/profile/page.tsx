@@ -74,13 +74,27 @@ export default function ProviderProfileSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bio, serviceArea, languages, responseTime, categoryIds: selectedCategories }),
       });
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        setSaveError(err.error || 'Save failed. Please try again.');
+        console.error('[profile save] server error:', data);
+        setSaveError(data.error || 'Save failed. Please try again.');
         return;
       }
+      // Update form state from server response to confirm what was actually persisted.
+      if (data.serviceArea !== undefined) setServiceArea(data.serviceArea ?? '');
+      if (data.bio !== undefined) setBio(data.bio ?? '');
+      if (Array.isArray(data.languages)) setLanguages(data.languages);
+      if (data.responseTime !== undefined) setResponseTime(data.responseTime ?? responseTime);
       setSaved(true);
-      initialRef.current = getSnapshot();
+      // Rebuild snapshot from confirmed server values
+      const confirmedSnapshot = JSON.stringify({
+        bio: data.bio ?? bio,
+        serviceArea: data.serviceArea ?? serviceArea,
+        languages: Array.isArray(data.languages) ? data.languages : languages,
+        responseTime: data.responseTime ?? responseTime,
+        selectedCategories,
+      });
+      initialRef.current = confirmedSnapshot;
       setDirty(false);
       setTimeout(() => setSaved(false), 3000);
     } catch {

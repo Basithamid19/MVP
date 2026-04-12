@@ -105,13 +105,15 @@ export async function PATCH(request: Request) {
       ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
     };
 
+    console.log('[provider/profile PATCH] userId:', userId, 'coreUpdate keys:', Object.keys(coreUpdate));
+
     let profile = await prisma.providerProfile.upsert({
       where: { userId },
       update: { ...coreUpdate, ...newFields },
       create: {
         userId,
         bio: bio ?? '',
-        serviceArea: serviceArea ?? 'Vilnius',
+        serviceArea: serviceArea ?? '',
         languages: languages ?? ['Lithuanian'],
         responseTime: responseTime ?? 'Usually responds in 1 hour',
         instantBook: Boolean(instantBook ?? false),
@@ -122,9 +124,10 @@ export async function PATCH(request: Request) {
         }),
       },
     }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[provider/profile PATCH] upsert error:', msg);
       // If the upsert failed because the new columns don't exist yet (migration
       // not yet applied), retry with only the core fields so bio/area/etc. still save.
-      const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('instantBook') || msg.includes('bufferMins') || msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')) {
         console.warn('[provider/profile PATCH] new columns missing, saving core fields only');
         return prisma.providerProfile.upsert({
@@ -133,7 +136,7 @@ export async function PATCH(request: Request) {
           create: {
             userId,
             bio: bio ?? '',
-            serviceArea: serviceArea ?? 'Vilnius',
+            serviceArea: serviceArea ?? '',
             languages: languages ?? ['Lithuanian'],
             responseTime: responseTime ?? 'Usually responds in 1 hour',
             ...(categoryIds?.length && {
@@ -144,6 +147,8 @@ export async function PATCH(request: Request) {
       }
       throw err;
     });
+
+    console.log('[provider/profile PATCH] saved serviceArea:', profile.serviceArea, 'bio length:', profile.bio?.length ?? 0);
 
     // Update categories separately — keeps M2M join-table issues from rolling
     // back the core profile save.  Non-fatal: logs error but does not 500.
