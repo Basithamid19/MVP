@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
-  Languages, Clock, DollarSign, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
-  Briefcase, Zap, Shield,
+  Languages, Clock, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
+  Briefcase, Zap, Shield, ShieldCheck,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -21,6 +22,8 @@ export default function ProviderSettingsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<typeof TABS[number]>('Profile');
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -36,6 +39,8 @@ export default function ProviderSettingsPage() {
   const [responseTime, setResponseTime] = useState('Usually responds in 1 hour');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [instantBook, setInstantBook] = useState(false);
+  const [verificationTier, setVerificationTier] = useState<string>('TIER0_BASIC');
+  const [completedJobs, setCompletedJobs] = useState(0);
 
   // Services state
   const [offerings, setOfferings] = useState<{name: string; price: string; priceType: string; description: string}[]>([]);
@@ -56,6 +61,7 @@ export default function ProviderSettingsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
+      setLoadError(false);
       Promise.all([
         fetch('/api/provider/profile').then(r => r.json()),
         fetch('/api/categories').then(r => r.json()),
@@ -88,6 +94,8 @@ export default function ProviderSettingsPage() {
         setResponseTime(loadedResponseTime);
         setSelectedCategories(loadedCategoryIds);
         setInstantBook(loadedInstantBook);
+        setVerificationTier(p.verificationTier ?? 'TIER0_BASIC');
+        setCompletedJobs(p.completedJobs ?? 0);
         setOfferings(loadedOfferings);
         setSlots(loadedSlots);
         setBlackoutDates(loadedBlackoutDates);
@@ -104,9 +112,9 @@ export default function ProviderSettingsPage() {
           instantBook: loadedInstantBook, offerings: loadedOfferings,
           slots: loadedSlots, blackoutDates: loadedBlackoutDates, bufferMins: loadedBufferMins,
         });
-      }).catch(() => setLoading(false));
+      }).catch(() => { setLoading(false); setLoadError(true); });
     }
-  }, [status, router]);
+  }, [status, router, retryCount]);
 
   // Track dirty state
   useEffect(() => {
@@ -197,6 +205,14 @@ export default function ProviderSettingsPage() {
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
 
+  if (loadError) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-6">
+      <p className="text-base font-semibold text-ink">Could not load your profile</p>
+      <p className="text-sm text-ink-sub max-w-xs leading-relaxed">There was a problem fetching your data. Check your connection and try again.</p>
+      <button onClick={() => { setLoading(true); setRetryCount(c => c + 1); }} className="px-6 py-2.5 bg-brand text-white rounded-full font-medium text-sm hover:bg-brand-dark transition-colors">Retry</button>
+    </div>
+  );
+
   // Profile completeness
   const hasAvatar = !!(localAvatar || session?.user?.image);
   const hasBio = bio.trim().length >= 50;
@@ -209,41 +225,62 @@ export default function ProviderSettingsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto pb-28 sm:pb-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-8">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Account</h1>
-          <p className="text-sm text-ink-sub mt-0.5 sm:mt-1">Profile, services & business settings</p>
+      {/* ── Provider summary card ── */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm p-4 sm:p-6 mb-5 sm:mb-7">
+        <div className="flex items-start gap-4">
+          <label className="relative shrink-0 cursor-pointer">
+            <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim flex items-center justify-center">
+              {localAvatar || session?.user?.image
+                ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
+                : <User className="w-7 h-7 sm:w-8 sm:h-8 text-ink-dim" />
+              }
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-brand rounded-full flex items-center justify-center shadow-md">
+              {avatarUploading
+                ? <Loader2 className="w-3 h-3 text-white animate-spin" />
+                : <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" />
+              }
+            </div>
+          </label>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-base sm:text-lg font-semibold text-ink truncate leading-tight">{session?.user?.name ?? 'Provider'}</p>
+                <p className="text-xs text-ink-sub truncate mt-0.5">{session?.user?.email}</p>
+              </div>
+              {verificationTier === 'TIER0_BASIC' ? (
+                <Link href="/provider/verification"
+                  className="flex items-center gap-1 px-2 py-0.5 bg-caution-surface border border-caution-edge text-caution rounded-full text-[10px] font-bold shrink-0 hover:opacity-80 transition-opacity">
+                  <Shield className="w-3 h-3" /> Get verified
+                </Link>
+              ) : (
+                <span className="flex items-center gap-1 px-2 py-0.5 bg-brand-muted text-brand rounded-full text-[10px] font-bold shrink-0">
+                  <ShieldCheck className="w-3 h-3" />
+                  {verificationTier === 'TIER1_ID_VERIFIED' ? 'ID Verified' : verificationTier === 'TIER2_TRADE_VERIFIED' ? 'Trade Verified' : 'Enhanced'}
+                </span>
+              )}
+            </div>
+            {completedJobs > 0 && (
+              <p className="text-[10px] text-ink-dim mt-1.5">{completedJobs} job{completedJobs !== 1 ? 's' : ''} completed</p>
+            )}
+          </div>
         </div>
-        {/* Desktop save button */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className={`hidden sm:flex items-center gap-2 px-6 py-2.5 rounded-full font-medium text-sm transition-all shadow-sm hover:shadow-md ${
-            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
-          } disabled:opacity-50`}
-        >
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
-        </button>
-      </div>
-
-      {/* ── Mobile: Profile completeness ── */}
-      {completePct < 100 && (
-        <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 mb-4 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
+        <div className="mt-4 pt-4 border-t border-border-dim">
+          <div className="flex items-center justify-between mb-1.5">
             <p className="text-xs font-semibold text-ink">Profile completeness</p>
-            <span className="text-xs font-bold text-brand">{completePct}%</span>
+            <span className={`text-xs font-bold ${completePct === 100 ? 'text-trust' : 'text-brand'}`}>{completePct}%</span>
           </div>
-          <div className="w-full bg-surface-alt rounded-full h-1.5">
-            <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${completePct}%` }} />
+          <div className="w-full bg-surface-alt rounded-full h-1.5 mb-2.5">
+            <div className={`h-1.5 rounded-full transition-all ${completePct === 100 ? 'bg-trust' : 'bg-brand'}`} style={{ width: `${completePct}%` }} />
           </div>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             {[
               [hasAvatar, 'Photo'],
-              [hasBio, 'Bio'],
-              [hasArea, 'Area'],
+              [hasBio, 'Bio (50+ chars)'],
+              [hasArea, 'Coverage area'],
               [hasCategories, 'Categories'],
-              [hasOfferings, 'Services'],
+              [hasOfferings, 'Services listed'],
             ].map(([done, label]) => (
               <span key={label as string} className={`text-[10px] font-medium ${done ? 'text-trust' : 'text-ink-dim'}`}>
                 {done ? '✓' : '○'} {label as string}
@@ -251,7 +288,23 @@ export default function ProviderSettingsPage() {
             ))}
           </div>
         </div>
-      )}
+      </div>
+
+      {/* Setup label + desktop save button */}
+      <div className="hidden sm:flex items-center justify-between mb-3">
+        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Setup</p>
+        <button
+          onClick={handleSave}
+          disabled={saving || !dirty}
+          className={`flex items-center gap-2 px-5 py-2 rounded-full font-medium text-sm transition-all ${
+            saved ? 'bg-trust text-white shadow-sm'
+            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
+            : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
+          } disabled:opacity-60`}
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
+        </button>
+      </div>
 
       {/* Save error banner */}
       {saveError && (
@@ -278,32 +331,6 @@ export default function ProviderSettingsPage() {
       {/* PROFILE TAB */}
       {activeTab === 'Profile' && (
         <div className="space-y-3 sm:space-y-5">
-          {/* Photo + identity */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim p-4 sm:p-6">
-            <div className="flex items-center gap-3.5 sm:gap-4">
-              <label className="relative shrink-0 cursor-pointer">
-                <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden bg-canvas border-2 border-border-dim flex items-center justify-center">
-                  {localAvatar || session?.user?.image
-                    ? <img src={localAvatar ?? session?.user?.image ?? ''} alt="" className="w-full h-full object-cover" />
-                    : <User className="w-7 h-7 sm:w-8 sm:h-8 text-ink-dim" />
-                  }
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-brand rounded-full flex items-center justify-center shadow-md">
-                  {avatarUploading
-                    ? <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 text-white animate-spin" />
-                    : <Camera className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                  }
-                </div>
-              </label>
-              <div className="flex-1 min-w-0">
-                <p className="text-base sm:text-lg font-semibold text-ink truncate">{session?.user?.name ?? 'Provider'}</p>
-                <p className="text-xs text-ink-sub truncate">{session?.user?.email}</p>
-                <p className="text-[10px] text-ink-dim mt-0.5">Tap photo to change</p>
-              </div>
-            </div>
-          </div>
-
           {/* Bio + Coverage + Languages + Response time — grouped */}
           <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
             {/* Bio */}
