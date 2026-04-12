@@ -54,20 +54,29 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const profile = await prisma.providerProfile.upsert({
+    // Build the core update — fields that have existed since the initial schema.
+    // These must never fail due to migration state.
+    const coreUpdate: Record<string, unknown> = {
+      ...(bio !== undefined && { bio: bio.trim() }),
+      ...(serviceArea !== undefined && { serviceArea }),
+      ...(languages !== undefined && { languages }),
+      ...(responseTime !== undefined && { responseTime }),
+      ...(categoryIds && {
+        categories: { set: categoryIds.map((id: string) => ({ id })) },
+      }),
+    };
+
+    // New fields added in migration 20260412000000_add_provider_booking_settings.
+    // Applied separately so a missing column does not break the core save.
+    const newFields: Record<string, unknown> = {
+      ...(instantBook !== undefined && { instantBook: Boolean(instantBook) }),
+      ...(bufferMins !== undefined && { bufferMins: Number(bufferMins) }),
+      ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
+    };
+
+    let profile = await prisma.providerProfile.upsert({
       where: { userId },
-      update: {
-        ...(bio !== undefined && { bio: bio.trim() }),
-        ...(serviceArea !== undefined && { serviceArea }),
-        ...(languages !== undefined && { languages }),
-        ...(responseTime !== undefined && { responseTime }),
-        ...(instantBook !== undefined && { instantBook: Boolean(instantBook) }),
-        ...(bufferMins !== undefined && { bufferMins: Number(bufferMins) }),
-        ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
-        ...(categoryIds && {
-          categories: { set: categoryIds.map((id: string) => ({ id })) },
-        }),
-      },
+      update: { ...coreUpdate, ...newFields },
       create: {
         userId,
         bio: bio ?? '',
@@ -81,6 +90,28 @@ export async function PATCH(request: Request) {
           categories: { connect: categoryIds.map((id: string) => ({ id })) },
         }),
       },
+    }).catch(async (err: unknown) => {
+      // If the upsert failed because the new columns don't exist yet (migration
+      // not yet applied), retry with only the core fields so bio/area/etc. still save.
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('instantBook') || msg.includes('bufferMins') || msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[provider/profile PATCH] new columns missing, saving core fields only');
+        return prisma.providerProfile.upsert({
+          where: { userId },
+          update: coreUpdate,
+          create: {
+            userId,
+            bio: bio ?? '',
+            serviceArea: serviceArea ?? 'Vilnius',
+            languages: languages ?? ['Lithuanian'],
+            responseTime: responseTime ?? 'Usually responds in 1 hour',
+            ...(categoryIds?.length && {
+              categories: { connect: categoryIds.map((id: string) => ({ id })) },
+            }),
+          },
+        });
+      }
+      throw err;
     });
 
     // Save offerings (only modify if array explicitly sent)
