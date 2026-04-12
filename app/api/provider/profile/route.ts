@@ -87,14 +87,14 @@ export async function PATCH(request: Request) {
 
     // Build the core update — fields that have existed since the initial schema.
     // These must never fail due to migration state.
+    // NOTE: categories are intentionally NOT included here — they are updated
+    // in a separate step below so that an M2M join-table failure (e.g. Supabase
+    // RLS on _ProviderProfileToServiceCategory) never rolls back the core fields.
     const coreUpdate: Record<string, unknown> = {
       ...(bio !== undefined && { bio: bio.trim() }),
       ...(serviceArea !== undefined && { serviceArea }),
       ...(languages !== undefined && { languages }),
       ...(responseTime !== undefined && { responseTime }),
-      ...(categoryIds && {
-        categories: { set: categoryIds.map((id: string) => ({ id })) },
-      }),
     };
 
     // New fields added in migration 20260412000000_add_provider_booking_settings.
@@ -144,6 +144,19 @@ export async function PATCH(request: Request) {
       }
       throw err;
     });
+
+    // Update categories separately — keeps M2M join-table issues from rolling
+    // back the core profile save.  Non-fatal: logs error but does not 500.
+    if (Array.isArray(categoryIds)) {
+      try {
+        await prisma.providerProfile.update({
+          where: { id: profile.id },
+          data: { categories: { set: categoryIds.map((id: string) => ({ id })) } },
+        });
+      } catch (catErr) {
+        console.error('[provider/profile PATCH] categories update failed (non-fatal):', catErr);
+      }
+    }
 
     // Save offerings (only modify if array explicitly sent)
     if (Array.isArray(offerings)) {
