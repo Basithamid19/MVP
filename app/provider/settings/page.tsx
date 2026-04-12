@@ -8,6 +8,7 @@ import {
   Loader2, Save, Plus, X, CheckCircle2, MapPin,
   Languages, Clock, Calendar, ToggleLeft, ToggleRight, LogOut, Camera, User,
   Briefcase, Zap, Shield, ShieldCheck,
+  ChevronRight, FileText, AlertCircle, Mail,
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -55,6 +56,8 @@ export default function ProviderSettingsPage() {
   const [bufferMins, setBufferMins] = useState(30);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(true);
 
   const getSnapshot = () => JSON.stringify({ bio, serviceArea, languages, responseTime, selectedCategories, instantBook, offerings, slots, blackoutDates, bufferMins });
 
@@ -65,7 +68,8 @@ export default function ProviderSettingsPage() {
       Promise.all([
         fetch('/api/provider/profile').then(r => r.json()),
         fetch('/api/categories').then(r => r.json()),
-      ]).then(([profile, cats]) => {
+        fetch('/api/provider/bookings').then(r => r.json()).catch(() => []),
+      ]).then(([profile, cats, bookings]) => {
         // Derive all loaded values explicitly so we can build the initial
         // snapshot directly — avoids the stale-closure bug of using
         // getSnapshot() inside a setTimeout after batch state updates.
@@ -102,6 +106,8 @@ export default function ProviderSettingsPage() {
         setBufferMins(loadedBufferMins);
 
         if (Array.isArray(cats)) setCategories(cats);
+        if (Array.isArray(bookings)) setInvoices(bookings);
+        setInvoicesLoading(false);
         setLoading(false);
 
         // Build initial snapshot directly from the loaded data so dirty
@@ -112,7 +118,7 @@ export default function ProviderSettingsPage() {
           instantBook: loadedInstantBook, offerings: loadedOfferings,
           slots: loadedSlots, blackoutDates: loadedBlackoutDates, bufferMins: loadedBufferMins,
         });
-      }).catch(() => { setLoading(false); setLoadError(true); });
+      }).catch(() => { setLoading(false); setInvoicesLoading(false); setLoadError(true); });
     }
   }, [status, router, retryCount]);
 
@@ -653,26 +659,112 @@ export default function ProviderSettingsPage() {
         </div>
       )}
 
-      {/* ── Account actions (mobile) ── */}
-      <div className="sm:hidden mt-6">
-        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2.5 px-1">Account</p>
-        <button
-          onClick={() => signOut({ callbackUrl: '/' })}
-          className="w-full flex items-center gap-3 p-3.5 bg-white rounded-xl border border-border-dim text-left hover:border-caution-edge transition-all"
-        >
-          <LogOut className="w-4 h-4 text-ink-dim" />
-          <span className="text-sm font-medium text-ink-sub">Log out</span>
-        </button>
+      {/* ── Account hub ── */}
+      <div className="mt-8 sm:mt-10 space-y-5">
+
+        {/* Invoices */}
+        <div>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Invoices</p>
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
+            {invoicesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-5 h-5 animate-spin text-ink-dim" />
+              </div>
+            ) : invoices.length === 0 ? (
+              <div className="flex items-center gap-3 p-4 sm:p-5">
+                <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                  <FileText className="w-4 h-4 text-ink-dim" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-ink">No invoices yet</p>
+                  <p className="text-[11px] text-ink-dim mt-0.5">Invoices appear here after your first completed booking.</p>
+                </div>
+              </div>
+            ) : (
+              invoices.map((b: any, idx: number) => (
+                <div key={b.id} className={`flex items-center gap-3 p-4 sm:p-5 ${idx < invoices.length - 1 ? 'border-b border-border-dim' : ''}`}>
+                  <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                    <FileText className="w-4 h-4 text-ink-dim" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-ink truncate">{b.quote?.request?.category?.name ?? 'Service'}</p>
+                    <p className="text-[11px] text-ink-dim mt-0.5">
+                      {b.customer?.user?.name ?? 'Customer'} · {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                  <p className="text-sm font-bold text-ink shrink-0">€{Number(b.totalAmount).toFixed(2)}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Support */}
+        <div>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Support</p>
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
+            <Link href="/provider/disputes" className="flex items-center gap-3 p-4 sm:p-5 border-b border-border-dim hover:bg-surface-alt transition-colors">
+              <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                <AlertCircle className="w-4 h-4 text-ink-dim" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-ink">Report an issue or dispute</p>
+                <p className="text-[11px] text-ink-dim mt-0.5">Disputes, refunds, no-shows, payment issues</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </Link>
+            <a href="mailto:support@aladdin.lt" className="flex items-center gap-3 p-4 sm:p-5 hover:bg-surface-alt transition-colors">
+              <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                <Mail className="w-4 h-4 text-ink-dim" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-ink">Email support</p>
+                <p className="text-[11px] text-ink-dim mt-0.5">support@aladdin.lt</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </a>
+          </div>
+        </div>
+
+        {/* Account */}
+        <div>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Account</p>
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm overflow-hidden">
+            <Link href="/provider/verification" className="flex items-center gap-3 p-4 sm:p-5 border-b border-border-dim hover:bg-surface-alt transition-colors">
+              <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-4 h-4 text-ink-dim" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-ink">Verification documents</p>
+                <p className="text-[11px] text-ink-dim mt-0.5">ID, trade certificates, insurance</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </Link>
+            <button onClick={() => signOut({ callbackUrl: '/' })}
+              className="w-full flex items-center gap-3 p-4 sm:p-5 hover:bg-surface-alt transition-colors text-left">
+              <div className="w-8 h-8 bg-surface-alt rounded-xl flex items-center justify-center shrink-0">
+                <LogOut className="w-4 h-4 text-ink-dim" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-danger">Log out</p>
+              </div>
+              <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+            </button>
+          </div>
+        </div>
+
       </div>
 
       {/* ── Mobile: Save button ── */}
-      <div className="sm:hidden mt-4">
+      <div className="sm:hidden mt-6">
         <button
           onClick={handleSave}
-          disabled={saving}
+          disabled={saving || !dirty}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all ${
-            saved ? 'bg-trust text-white' : 'bg-brand text-white hover:bg-brand-dark'
-          } disabled:opacity-50`}
+            saved ? 'bg-trust text-white'
+            : dirty ? 'bg-brand text-white hover:bg-brand-dark'
+            : 'bg-surface-alt text-ink-dim border border-border-dim'
+          } disabled:opacity-60`}
         >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : saved ? <><CheckCircle2 className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save Changes</>}
         </button>
