@@ -76,7 +76,12 @@ export async function GET(request: Request) {
     if (!provider) return NextResponse.json([]);
     const bookings = await prisma.booking.findMany({
       where: { providerId: provider.id },
-      include: { customer: { include: { user: true } } },
+      include: {
+        customer: { include: { user: true } },
+        quote: { include: { request: { include: { category: true } } } },
+        payment: true,
+        review: true,
+      },
       orderBy: { scheduledAt: 'desc' },
     });
     return NextResponse.json(bookings);
