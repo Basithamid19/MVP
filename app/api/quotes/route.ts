@@ -139,6 +139,7 @@ export async function PATCH(request: Request) {
 
     const depositAmount = quote.price * 0.2;
 
+    // Try with depositAmount (new column); fall back to without if migration not applied
     const booking = await prisma.booking.create({
       data: {
         customerId: quote.request.customerId,
@@ -149,9 +150,28 @@ export async function PATCH(request: Request) {
         depositAmount,
         status: 'SCHEDULED',
       },
+      select: { id: true, totalAmount: true },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('depositAmount') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[quotes PATCH] depositAmount column missing, creating booking without it');
+        return prisma.booking.create({
+          data: {
+            customerId: quote.request.customerId,
+            providerId: quote.providerId,
+            quoteId: quote.id,
+            scheduledAt: quote.request.dateWindow,
+            totalAmount: quote.price,
+            status: 'SCHEDULED',
+          },
+          select: { id: true, totalAmount: true },
+        });
+      }
+      throw err;
     });
 
     // Create pending payment record — customer must pay deposit to confirm
+    // Non-fatal if new payment columns (depositAmount, platformFee) don't exist yet
     await prisma.payment.create({
       data: {
         bookingId: booking.id,
@@ -160,13 +180,23 @@ export async function PATCH(request: Request) {
         platformFee: quote.price * 0.1,
         status: 'PENDING',
       },
+      select: { id: true },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('depositAmount') || msg.includes('platformFee') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[quotes PATCH] new payment columns missing, creating payment without them');
+        await prisma.payment.create({
+          data: { bookingId: booking.id, amount: quote.price, status: 'PENDING' },
+          select: { id: true },
+        }).catch(() => {});
+      }
     });
 
     // Lock the chat thread until deposit is paid
     await prisma.chatThread.updateMany({
       where: { requestId: quote.requestId },
       data: { isLocked: true },
-    }).catch(() => {}); // non-fatal if column not yet in DB
+    }).catch(() => {}); // non-fatal if isLocked column not yet in DB
 
     // Notify provider that their quote was accepted
     const providerProfile = await prisma.providerProfile.findUnique({
