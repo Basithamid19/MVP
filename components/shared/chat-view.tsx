@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
-import { Send, Loader2, User, ArrowLeft, Phone, ImagePlus, X, CheckCircle2, Calendar, Star, Clock } from 'lucide-react';
+import { Send, Loader2, User, ArrowLeft, Phone, ImagePlus, X, CheckCircle2, Calendar, Star, Clock, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface SystemEvent {
   id: string;
@@ -68,6 +69,7 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
   const [loading, setLoading] = useState(false);
   const [sendingImage, setSendingImage] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [isLocked, setIsLocked] = useState(booking?.payment?.status === 'PENDING');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -109,6 +111,11 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId, content: newMessage }),
       });
+      if (res.status === 403) {
+        const data = await res.json().catch(() => ({}));
+        if (data.locked) setIsLocked(true);
+        return;
+      }
       if (res.ok) {
         setNewMessage('');
         const msg = await res.json();
@@ -273,40 +280,57 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
         })}
       </div>
 
-      {/* Input */}
+      {/* Input / lock banner */}
       <div className="p-4 bg-white border-t border-gray-100">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageSelect}
-        />
-        <form onSubmit={handleSend} className="max-w-4xl mx-auto flex gap-2 items-end">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={sendingImage}
-            className="w-12 h-12 bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-black rounded-2xl flex items-center justify-center transition-all shrink-0 disabled:opacity-50"
-            title="Share image"
-          >
-            {sendingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
-          </button>
-          <input 
-            type="text" 
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black outline-none transition-all text-sm"
-          />
-          <button 
-            type="submit" 
-            disabled={loading || !newMessage.trim()}
-            className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center hover:bg-gray-800 transition-all disabled:opacity-50 shrink-0"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
-          </button>
-        </form>
+        {isLocked ? (
+          <div className="flex items-center gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl">
+            <Lock className="w-5 h-5 text-caution shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-caution">Chat locked</p>
+              <p className="text-xs text-caution leading-relaxed">Pay the booking deposit to unlock messaging.</p>
+            </div>
+            {booking?.id && (
+              <Link href={`/bookings/${booking.id}`} className="text-xs font-bold text-caution underline shrink-0">
+                Pay now
+              </Link>
+            )}
+          </div>
+        ) : (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageSelect}
+            />
+            <form onSubmit={handleSend} className="max-w-4xl mx-auto flex gap-2 items-end">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={sendingImage}
+                className="w-12 h-12 bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-black rounded-2xl flex items-center justify-center transition-all shrink-0 disabled:opacity-50"
+                title="Share image"
+              >
+                {sendingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-5 h-5" />}
+              </button>
+              <input
+                type="text"
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type a message..."
+                className="flex-1 px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-black outline-none transition-all text-sm"
+              />
+              <button
+                type="submit"
+                disabled={loading || !newMessage.trim()}
+                className="w-12 h-12 bg-black text-white rounded-2xl flex items-center justify-center hover:bg-gray-800 transition-all disabled:opacity-50 shrink-0"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

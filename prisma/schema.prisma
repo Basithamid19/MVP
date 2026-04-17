@@ -80,6 +80,8 @@ model ProviderProfile {
   instantBook       Boolean          @default(false)
   bufferMins        Int              @default(30)
   blackoutDates     String[]         @default([])
+  stripeAccountId   String?
+  stripeOnboarded   Boolean          @default(false)
 
   categories        ServiceCategory[]
   offerings         ServiceOffering[]
@@ -174,8 +176,10 @@ model Booking {
   status            BookingStatus   @default(SCHEDULED)
   scheduledAt       DateTime
   totalAmount       Float
+  depositAmount     Float?
+  canceledAt        DateTime?
   createdAt         DateTime        @default(now())
-  
+
   payment           Payment?
   review            Review?
 }
@@ -185,8 +189,12 @@ model Payment {
   bookingId         String   @unique
   booking           Booking  @relation(fields: [bookingId], references: [id])
   amount            Float
-  status            String   // "PENDING", "PAID", "REFUNDED"
+  depositAmount     Float?
+  platformFee       Float?
+  status            String   // "PENDING", "DEPOSIT_HELD", "PAID", "REFUNDED", "PARTIAL_REFUND"
   stripeSessionId   String?
+  stripeIntentId    String?
+  stripeChargeId    String?
   createdAt         DateTime @default(now())
 }
 
@@ -210,6 +218,7 @@ model ChatThread {
   request           ServiceRequest  @relation(fields: [requestId], references: [id])
   customerId        String
   providerId        String
+  isLocked          Boolean         @default(false)
   participants      User[]
   messages          ChatMessage[]
   createdAt         DateTime        @default(now())

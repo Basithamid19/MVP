@@ -170,6 +170,29 @@ export default function ProviderJobDetailPage() {
 
       <div className="space-y-3 sm:space-y-5">
 
+        {/* Stripe Connect setup banner */}
+        {!booking.provider?.stripeOnboarded && !isCanceled && (
+          <div className="bg-caution-surface border border-caution-edge rounded-2xl p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-bold text-caution text-sm">Set up payouts to receive payment</p>
+              <p className="text-xs text-caution mt-0.5 mb-3 leading-relaxed">
+                Connect your bank account via Stripe to receive earnings for completed jobs.
+              </p>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/provider/stripe-connect', { method: 'POST' });
+                  const data = await res.json();
+                  if (data.url) window.location.href = data.url;
+                }}
+                className="text-xs font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Set up payouts
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── Mobile: Customer compact card ── */}
         <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
           <div className="flex items-center gap-3 p-3.5">

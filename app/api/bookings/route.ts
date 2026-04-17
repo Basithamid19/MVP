@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
+import { stripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
@@ -119,15 +120,35 @@ export async function PATCH(request: Request) {
       data: { completedJobs: { increment: 1 } },
     });
 
-    // Auto-create payment record as PROCESSING
-    const existingPayment = await prisma.payment.findUnique({ where: { bookingId } });
-    if (!existingPayment) {
+    // Release remaining balance to provider (80% minus the deposit already collected)
+    const payment = await prisma.payment.findUnique({
+      where: { bookingId },
+      include: { booking: { include: { provider: { select: { stripeAccountId: true, stripeOnboarded: true } } } } },
+    });
+
+    if (payment?.status === 'DEPOSIT_HELD' && payment.stripeIntentId && payment.booking.provider.stripeAccountId) {
+      try {
+        const remainingAmount = Math.round((booking.totalAmount - (payment.depositAmount ?? 0)) * 100);
+        const platformFeeOnRemainder = Math.round(remainingAmount * 0.1);
+        const chargeIntent = await stripe.paymentIntents.create({
+          amount: remainingAmount,
+          currency: 'eur',
+          payment_method_types: ['card'],
+          application_fee_amount: platformFeeOnRemainder,
+          transfer_data: { destination: payment.booking.provider.stripeAccountId },
+          metadata: { bookingId, type: 'final_payment' },
+        });
+        await prisma.payment.update({
+          where: { bookingId },
+          data: { status: 'PAID', stripeChargeId: chargeIntent.id },
+        });
+      } catch (stripeErr) {
+        console.error('[bookings PATCH COMPLETED] Stripe final payment failed:', stripeErr);
+        await prisma.payment.update({ where: { bookingId }, data: { status: 'PROCESSING' } });
+      }
+    } else if (!payment) {
       await prisma.payment.create({
-        data: {
-          bookingId,
-          amount: booking.totalAmount,
-          status: 'PROCESSING',
-        },
+        data: { bookingId, amount: booking.totalAmount, status: 'PROCESSING' },
       });
     }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { redactPII } from '@/lib/pii-filter';
 
 export const dynamic = 'force-dynamic';
 
@@ -110,11 +111,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'threadId and content required' }, { status: 400 });
     }
 
+    // Check if thread is locked (deposit not yet paid)
+    const thread = await prisma.chatThread.findUnique({
+      where: { id: threadId },
+      select: { isLocked: true },
+    }).catch(() => null);
+
+    if (thread?.isLocked) {
+      return NextResponse.json({ error: 'Chat is locked. Pay the deposit to unlock messaging.', locked: true }, { status: 403 });
+    }
+
     const message = await prisma.chatMessage.create({
       data: {
         threadId,
         senderId: (session.user as any).id,
-        content: content.trim(),
+        content: redactPII(content.trim()),
       },
     });
 
