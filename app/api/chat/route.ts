@@ -26,7 +26,22 @@ export async function GET(request: Request) {
     // Otherwise, return all threads for the current user
     const userId = (session.user as any).id;
 
-    // Match threads whether stored via scalar fields (post-migration) or participants join table (pre-migration)
+    const threadInclude = {
+      participants: {
+        select: { id: true, name: true, image: true, role: true },
+      },
+      messages: {
+        orderBy: { createdAt: 'desc' } as const,
+        take: 1,
+      },
+      request: {
+        include: { category: true },
+      },
+    };
+
+    // Primary query: uses customerId/providerId scalar columns (added in migration
+    // 20260403000000_add_chat_thread_dedup). Falls back to participants-only if the
+    // migration hasn't been applied to the DB yet (Supabase pooler issue).
     const threads = await prisma.chatThread.findMany({
       where: {
         OR: [
@@ -35,19 +50,22 @@ export async function GET(request: Request) {
           { participants: { some: { id: userId } } },
         ],
       },
-      include: {
-        participants: {
-          select: { id: true, name: true, image: true, role: true },
-        },
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-        request: {
-          include: { category: true },
-        },
-      },
+      include: threadInclude,
       orderBy: { createdAt: 'desc' },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.includes('customerId') || msg.includes('providerId') ||
+        msg.includes('column') || msg.includes('P2022')
+      ) {
+        console.warn('[chat GET] scalar columns missing, falling back to participants lookup');
+        return prisma.chatThread.findMany({
+          where: { participants: { some: { id: userId } } },
+          include: threadInclude,
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      throw err;
     });
 
     // Sort by last message date (threads with recent messages first)
@@ -58,13 +76,18 @@ export async function GET(request: Request) {
     });
 
     const result = sorted
-      .map(t => ({
-        id: t.id,
-        otherParticipant: t.participants.find(p => p.id !== userId) ?? t.participants[0],
-        lastMessage: t.messages[0] ?? null,
-        category: t.request?.category?.name ?? 'Service',
-        createdAt: t.createdAt,
-      }));
+      .map(t => {
+        const otherP = t.participants.find(p => p.id !== userId) ?? t.participants[0] ?? null;
+        if (!otherP) return null;
+        return {
+          id: t.id,
+          otherParticipant: otherP,
+          lastMessage: t.messages[0] ?? null,
+          category: t.request?.category?.name ?? 'Service',
+          createdAt: t.createdAt,
+        };
+      })
+      .filter(Boolean);
 
     return NextResponse.json(result);
   } catch (err) {
