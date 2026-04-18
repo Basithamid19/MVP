@@ -107,6 +107,14 @@ export async function PATCH(request: Request) {
 
     console.log('[provider/profile PATCH] userId:', userId, 'coreUpdate keys:', Object.keys(coreUpdate));
 
+    // Explicit select avoids RETURNING columns that may not exist in DB yet
+    // (instantBook, bufferMins, blackoutDates, stripeAccountId, stripeOnboarded).
+    const SAFE_RETURN_SELECT = {
+      id: true, userId: true, bio: true, serviceArea: true,
+      languages: true, ratingAvg: true, completedJobs: true,
+      isVerified: true, verificationTier: true, responseTime: true,
+    } as const;
+
     let profile = await prisma.providerProfile.upsert({
       where: { userId },
       update: { ...coreUpdate, ...newFields },
@@ -123,12 +131,16 @@ export async function PATCH(request: Request) {
           categories: { connect: categoryIds.map((id: string) => ({ id })) },
         }),
       },
+      select: SAFE_RETURN_SELECT,
     }).catch(async (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
       console.error('[provider/profile PATCH] upsert error:', msg);
-      // If the upsert failed because the new columns don't exist yet (migration
-      // not yet applied), retry with only the core fields so bio/area/etc. still save.
-      if (msg.includes('instantBook') || msg.includes('bufferMins') || msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')) {
+      // If the upsert failed because new columns don't exist yet, retry with
+      // core fields only and an explicit safe select to avoid RETURNING failures.
+      if (
+        msg.includes('instantBook') || msg.includes('bufferMins') ||
+        msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')
+      ) {
         console.warn('[provider/profile PATCH] new columns missing, saving core fields only');
         return prisma.providerProfile.upsert({
           where: { userId },
@@ -143,6 +155,7 @@ export async function PATCH(request: Request) {
               categories: { connect: categoryIds.map((id: string) => ({ id })) },
             }),
           },
+          select: SAFE_RETURN_SELECT,
         });
       }
       throw err;
