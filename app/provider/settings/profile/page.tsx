@@ -49,13 +49,21 @@ export default function ProviderProfileSettingsPage() {
         setResponseTime(loadedResponseTime);
         setSelectedCategories(loadedCategoryIds);
         if (Array.isArray(cats)) setCategories(cats);
-        setLoading(false);
 
-        initialRef.current = JSON.stringify({
+        const snap = JSON.stringify({
           bio: loadedBio, serviceArea: loadedArea, languages: loadedLanguages,
           responseTime: loadedResponseTime, selectedCategories: loadedCategoryIds,
         });
-      }).catch(() => setLoading(false));
+        initialRef.current = snap;
+        setLoading(false);
+      }).catch(() => {
+        // Even on load failure, set a baseline snapshot so dirty detection works.
+        initialRef.current = JSON.stringify({
+          bio: '', serviceArea: '', languages: ['Lithuanian'],
+          responseTime: 'Usually responds in 1 hour', selectedCategories: [],
+        });
+        setLoading(false);
+      });
     }
   }, [status, router]);
 

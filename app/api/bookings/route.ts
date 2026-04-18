@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       status: true, scheduledAt: true, totalAmount: true, createdAt: true,
       customer: { include: { user: true } },
       provider: { include: { user: true, categories: true } },
-      payment: { select: { id: true, bookingId: true, amount: true, status: true, stripeSessionId: true, createdAt: true } },
+      payment: { select: { id: true, bookingId: true, amount: true, status: true, createdAt: true } },
       review: true,
       quote: { include: { request: { include: { category: true } } } },
     } as const;
@@ -87,18 +87,44 @@ export async function GET(request: Request) {
     });
     return NextResponse.json(bookings);
   } else if (role === 'PROVIDER') {
-    const provider = await prisma.providerProfile.findUnique({ where: { userId } });
+    const provider = await prisma.providerProfile.findUnique({
+      where: { userId },
+      select: { id: true },
+    });
     if (!provider) return NextResponse.json([]);
+
+    const PROVIDER_BOOKING_SAFE_SELECT = {
+      id: true, customerId: true, providerId: true, quoteId: true,
+      status: true, scheduledAt: true, totalAmount: true, createdAt: true,
+      customer: { include: { user: true } },
+      quote: { include: { request: { include: { category: true } } } },
+      payment: { select: { id: true, bookingId: true, amount: true, status: true, createdAt: true } },
+      review: true,
+    } as const;
+
     const bookings = await prisma.booking.findMany({
       where: { providerId: provider.id },
-      include: {
-        customer: { include: { user: true } },
-        quote: { include: { request: { include: { category: true } } } },
-        payment: true,
-        review: true,
-      },
+      select: PROVIDER_BOOKING_SAFE_SELECT,
       orderBy: { scheduledAt: 'desc' },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[bookings GET provider] column error, retrying without payment select');
+        return prisma.booking.findMany({
+          where: { providerId: provider.id },
+          select: {
+            id: true, customerId: true, providerId: true, quoteId: true,
+            status: true, scheduledAt: true, totalAmount: true, createdAt: true,
+            customer: { include: { user: true } },
+            quote: { include: { request: { include: { category: true } } } },
+            review: true,
+          },
+          orderBy: { scheduledAt: 'desc' },
+        }).catch(() => []);
+      }
+      return [];
     });
+
     return NextResponse.json(bookings);
   }
 
