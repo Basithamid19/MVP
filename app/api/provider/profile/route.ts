@@ -148,56 +148,41 @@ export async function PATCH(request: Request) {
         throw err;
       });
     } else {
-      // CREATE path — only include newFields if explicitly sent (avoids INSERT into missing columns)
-      profile = await prisma.providerProfile.create({
-        data: {
-          userId,
-          bio: bio ?? '',
-          serviceArea: serviceArea ?? '',
-          languages: languages ?? ['Lithuanian'],
-          responseTime: responseTime ?? 'Usually responds in 1 hour',
-          ...newFields,
-        },
+      // CREATE path: use raw SQL so Prisma never applies client-side defaults
+      // for schema columns that don't exist in the DB yet
+      // (instantBook, bufferMins, blackoutDates, stripeOnboarded, etc.).
+      // Prisma ORM create() injects ALL @default values into the INSERT column
+      // list even when they're absent from `data` — raw SQL is the only bypass.
+      const newId = crypto.randomUUID();
+      const bioVal = (bio ?? '').trim();
+      const areaVal = serviceArea ?? '';
+      const rtVal = responseTime ?? 'Usually responds in 1 hour';
+      // Build a safe PostgreSQL array literal manually (avoids $executeRaw array quirks)
+      const langsLiteral = '{' + (languages ?? ['Lithuanian'])
+        .map(l => '"' + String(l).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"')
+        .join(',') + '}';
+
+      await prisma.$executeRaw`
+        INSERT INTO "ProviderProfile" (
+          id, "userId", bio, "serviceArea", languages, "responseTime",
+          "ratingAvg", "completedJobs", "isVerified", "verificationTier"
+        ) VALUES (
+          ${newId}, ${userId}, ${bioVal}, ${areaVal},
+          ${langsLiteral}::text[], ${rtVal},
+          0, 0, false, 'TIER0_BASIC'::"VerificationTier"
+        )
+        ON CONFLICT ("userId") DO UPDATE SET
+          bio = EXCLUDED.bio,
+          "serviceArea" = EXCLUDED."serviceArea",
+          languages = EXCLUDED.languages,
+          "responseTime" = EXCLUDED."responseTime"
+      `;
+
+      profile = await prisma.providerProfile.findFirst({
+        where: { userId },
         select: SAFE_RETURN_SELECT,
-      }).catch(async (err: unknown) => {
-        console.error('[provider/profile PATCH] create error:', err instanceof Error ? err.message : String(err));
-        const code = (err as any)?.code;
-        if (isColErr(err)) {
-          // New columns missing — retry without them; also handle P2002 in the retry
-          return prisma.providerProfile.create({
-            data: {
-              userId,
-              bio: bio ?? '',
-              serviceArea: serviceArea ?? '',
-              languages: languages ?? ['Lithuanian'],
-              responseTime: responseTime ?? 'Usually responds in 1 hour',
-            },
-            select: SAFE_RETURN_SELECT,
-          }).catch(async (err2: unknown) => {
-            if ((err2 as any)?.code === 'P2002') {
-              // Profile created between findFirst and create — fall back to UPDATE
-              const found = await prisma.providerProfile.findFirst({ where: { userId }, select: { id: true } });
-              if (found) return prisma.providerProfile.update({ where: { id: found.id }, data: coreUpdate, select: SAFE_RETURN_SELECT });
-            }
-            throw err2;
-          });
-        }
-        if (code === 'P2002') {
-          // Profile already exists (findFirst failed to find it) — UPDATE instead
-          const found = await prisma.providerProfile.findFirst({ where: { userId }, select: { id: true } });
-          if (found) {
-            return prisma.providerProfile.update({
-              where: { id: found.id },
-              data: { ...coreUpdate, ...newFields },
-              select: SAFE_RETURN_SELECT,
-            }).catch(async (ue: unknown) => {
-              if (isColErr(ue)) return prisma.providerProfile.update({ where: { id: found.id }, data: coreUpdate, select: SAFE_RETURN_SELECT });
-              throw ue;
-            });
-          }
-        }
-        throw err;
       });
+      if (!profile) throw new Error('Profile could not be created');
     }
 
     console.log('[provider/profile PATCH] saved serviceArea:', profile.serviceArea, 'bio length:', profile.bio?.length ?? 0);
