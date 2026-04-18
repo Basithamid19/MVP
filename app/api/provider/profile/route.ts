@@ -148,7 +148,7 @@ export async function PATCH(request: Request) {
         throw err;
       });
     } else {
-      // CREATE path — try with newFields, fall back to core only
+      // CREATE path — only include newFields if explicitly sent (avoids INSERT into missing columns)
       profile = await prisma.providerProfile.create({
         data: {
           userId,
@@ -156,14 +156,14 @@ export async function PATCH(request: Request) {
           serviceArea: serviceArea ?? '',
           languages: languages ?? ['Lithuanian'],
           responseTime: responseTime ?? 'Usually responds in 1 hour',
-          instantBook: Boolean(instantBook ?? false),
-          bufferMins: Number(bufferMins ?? 30),
-          blackoutDates: Array.isArray(blackoutDates) ? blackoutDates : [],
+          ...newFields,
         },
         select: SAFE_RETURN_SELECT,
       }).catch(async (err: unknown) => {
         console.error('[provider/profile PATCH] create error:', err instanceof Error ? err.message : String(err));
+        const code = (err as any)?.code;
         if (isColErr(err)) {
+          // New columns missing — retry without them; also handle P2002 in the retry
           return prisma.providerProfile.create({
             data: {
               userId,
@@ -173,7 +173,28 @@ export async function PATCH(request: Request) {
               responseTime: responseTime ?? 'Usually responds in 1 hour',
             },
             select: SAFE_RETURN_SELECT,
+          }).catch(async (err2: unknown) => {
+            if ((err2 as any)?.code === 'P2002') {
+              // Profile created between findFirst and create — fall back to UPDATE
+              const found = await prisma.providerProfile.findFirst({ where: { userId }, select: { id: true } });
+              if (found) return prisma.providerProfile.update({ where: { id: found.id }, data: coreUpdate, select: SAFE_RETURN_SELECT });
+            }
+            throw err2;
           });
+        }
+        if (code === 'P2002') {
+          // Profile already exists (findFirst failed to find it) — UPDATE instead
+          const found = await prisma.providerProfile.findFirst({ where: { userId }, select: { id: true } });
+          if (found) {
+            return prisma.providerProfile.update({
+              where: { id: found.id },
+              data: { ...coreUpdate, ...newFields },
+              select: SAFE_RETURN_SELECT,
+            }).catch(async (ue: unknown) => {
+              if (isColErr(ue)) return prisma.providerProfile.update({ where: { id: found.id }, data: coreUpdate, select: SAFE_RETURN_SELECT });
+              throw ue;
+            });
+          }
         }
         throw err;
       });
