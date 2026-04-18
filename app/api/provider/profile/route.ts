@@ -8,18 +8,49 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const profile = await prisma.providerProfile.findUnique({
-    where: { userId: (session.user as any).id },
-    include: {
-      user: { select: { name: true, email: true, image: true } },
-      categories: true,
-      offerings: true,
-      availability: true,
-      verifications: true,
-      _count: { select: { bookings: true, reviews: true } },
-    },
-  });
-  return NextResponse.json(profile ?? {});
+  const userId = (session.user as any).id;
+
+  try {
+    const profile = await prisma.providerProfile.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { name: true, email: true, image: true } },
+        categories: true,
+        offerings: true,
+        availability: true,
+        verifications: true,
+        _count: { select: { bookings: true, reviews: true } },
+      },
+    });
+    return NextResponse.json(profile ?? {});
+  } catch (err: unknown) {
+    // If new columns (instantBook / bufferMins / blackoutDates) aren't in the DB yet,
+    // fall back to selecting only the columns that have always existed so the page loads.
+    const msg = err instanceof Error ? err.message : String(err);
+    if (
+      msg.includes('instantBook') || msg.includes('bufferMins') ||
+      msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')
+    ) {
+      console.warn('[provider/profile GET] new columns missing, returning core fields only');
+      const profile = await prisma.providerProfile.findUnique({
+        where: { userId },
+        select: {
+          id: true, userId: true, bio: true, serviceArea: true,
+          languages: true, ratingAvg: true, completedJobs: true,
+          isVerified: true, verificationTier: true, responseTime: true,
+          categories: true, offerings: true, availability: true,
+          verifications: true,
+          _count: { select: { bookings: true, reviews: true } },
+          user: { select: { name: true, email: true, image: true } },
+        },
+      }).catch(() => null);
+      return NextResponse.json(
+        profile ? { ...profile, instantBook: false, bufferMins: 30, blackoutDates: [] } : {}
+      );
+    }
+    console.error('[provider/profile GET]', err);
+    return NextResponse.json({ error: 'Failed to load profile.' }, { status: 500 });
+  }
 }
 
 export async function PATCH(request: Request) {
@@ -54,34 +85,115 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const profile = await prisma.providerProfile.upsert({
+    // Build the core update — fields that have existed since the initial schema.
+    // These must never fail due to migration state.
+    // NOTE: categories are intentionally NOT included here — they are updated
+    // in a separate step below so that an M2M join-table failure (e.g. Supabase
+    // RLS on _ProviderProfileToServiceCategory) never rolls back the core fields.
+    const coreUpdate: Record<string, unknown> = {
+      ...(bio !== undefined && { bio: bio.trim() }),
+      ...(serviceArea !== undefined && { serviceArea }),
+      ...(languages !== undefined && { languages }),
+      ...(responseTime !== undefined && { responseTime }),
+    };
+
+    // New fields added in migration 20260412000000_add_provider_booking_settings.
+    // Applied separately so a missing column does not break the core save.
+    const newFields: Record<string, unknown> = {
+      ...(instantBook !== undefined && { instantBook: Boolean(instantBook) }),
+      ...(bufferMins !== undefined && { bufferMins: Number(bufferMins) }),
+      ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
+    };
+
+    console.log('[provider/profile PATCH] userId:', userId, 'coreUpdate keys:', Object.keys(coreUpdate));
+
+    // Explicit select — only original schema columns, never new/optional ones.
+    const SAFE_RETURN_SELECT = {
+      id: true, userId: true, bio: true, serviceArea: true,
+      languages: true, ratingAvg: true, completedJobs: true,
+      isVerified: true, verificationTier: true, responseTime: true,
+    } as const;
+
+    // Helper: true when error is about a missing DB column
+    const isColErr = (e: unknown) => {
+      const m = e instanceof Error ? e.message : String(e);
+      return m.includes('instantBook') || m.includes('bufferMins') || m.includes('blackoutDates') ||
+             m.includes('column') || m.includes('P2022');
+    };
+
+    // Use findFirst + update/create instead of upsert so Prisma never includes
+    // potentially-missing columns (instantBook, bufferMins, blackoutDates) in the
+    // INSERT column list, which would fail even for the ON CONFLICT UPDATE path.
+    const existing = await prisma.providerProfile.findFirst({
       where: { userId },
-      update: {
-        ...(bio !== undefined && { bio: bio.trim() }),
-        ...(serviceArea !== undefined && { serviceArea }),
-        ...(languages !== undefined && { languages }),
-        ...(responseTime !== undefined && { responseTime }),
-        ...(instantBook !== undefined && { instantBook: Boolean(instantBook) }),
-        ...(bufferMins !== undefined && { bufferMins: Number(bufferMins) }),
-        ...(blackoutDates !== undefined && Array.isArray(blackoutDates) && { blackoutDates }),
-        ...(categoryIds && {
-          categories: { set: categoryIds.map((id: string) => ({ id })) },
-        }),
-      },
-      create: {
-        userId,
-        bio: bio ?? '',
-        serviceArea: serviceArea ?? 'Vilnius',
-        languages: languages ?? ['Lithuanian'],
-        responseTime: responseTime ?? 'Usually responds in 1 hour',
-        instantBook: Boolean(instantBook ?? false),
-        bufferMins: Number(bufferMins ?? 30),
-        blackoutDates: Array.isArray(blackoutDates) ? blackoutDates : [],
-        ...(categoryIds?.length && {
-          categories: { connect: categoryIds.map((id: string) => ({ id })) },
-        }),
-      },
-    });
+      select: { id: true },
+    }).catch(() => null);
+
+    let profile;
+    if (existing) {
+      // UPDATE path — try with newFields, fall back to coreUpdate only
+      profile = await prisma.providerProfile.update({
+        where: { id: existing.id },
+        data: { ...coreUpdate, ...newFields },
+        select: SAFE_RETURN_SELECT,
+      }).catch(async (err: unknown) => {
+        console.error('[provider/profile PATCH] update error:', err instanceof Error ? err.message : String(err));
+        if (isColErr(err)) {
+          return prisma.providerProfile.update({
+            where: { id: existing.id },
+            data: coreUpdate,
+            select: SAFE_RETURN_SELECT,
+          });
+        }
+        throw err;
+      });
+    } else {
+      // CREATE path — try with newFields, fall back to core only
+      profile = await prisma.providerProfile.create({
+        data: {
+          userId,
+          bio: bio ?? '',
+          serviceArea: serviceArea ?? '',
+          languages: languages ?? ['Lithuanian'],
+          responseTime: responseTime ?? 'Usually responds in 1 hour',
+          instantBook: Boolean(instantBook ?? false),
+          bufferMins: Number(bufferMins ?? 30),
+          blackoutDates: Array.isArray(blackoutDates) ? blackoutDates : [],
+        },
+        select: SAFE_RETURN_SELECT,
+      }).catch(async (err: unknown) => {
+        console.error('[provider/profile PATCH] create error:', err instanceof Error ? err.message : String(err));
+        if (isColErr(err)) {
+          return prisma.providerProfile.create({
+            data: {
+              userId,
+              bio: bio ?? '',
+              serviceArea: serviceArea ?? '',
+              languages: languages ?? ['Lithuanian'],
+              responseTime: responseTime ?? 'Usually responds in 1 hour',
+            },
+            select: SAFE_RETURN_SELECT,
+          });
+        }
+        throw err;
+      });
+    }
+
+    console.log('[provider/profile PATCH] saved serviceArea:', profile.serviceArea, 'bio length:', profile.bio?.length ?? 0);
+
+    // Update categories separately — keeps M2M join-table issues from rolling
+    // back the core profile save.  Non-fatal: logs error but does not 500.
+    if (Array.isArray(categoryIds)) {
+      try {
+        await prisma.providerProfile.update({
+          where: { id: profile.id },
+          data: { categories: { set: categoryIds.map((id: string) => ({ id })) } },
+          select: { id: true },
+        });
+      } catch (catErr) {
+        console.error('[provider/profile PATCH] categories update failed (non-fatal):', catErr);
+      }
+    }
 
     // Save offerings (only modify if array explicitly sent)
     if (Array.isArray(offerings)) {

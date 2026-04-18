@@ -76,14 +76,22 @@ export async function POST(request: Request) {
   // Auto-create chat thread between provider and customer (if not exists)
   if (customerProfile) {
     try {
-      // Try with new scalar fields first
+      // Try scalar WHERE first; fall back to participants if columns don't exist yet
       const existingThread = await prisma.chatThread.findFirst({
-        where: {
-          requestId,
-          customerId: customerProfile.userId,
-          providerId: providerUserId,
-        },
-      });
+        where: { requestId, customerId: customerProfile.userId, providerId: providerUserId },
+        select: { id: true },
+      }).catch(async () =>
+        prisma.chatThread.findFirst({
+          where: {
+            requestId,
+            AND: [
+              { participants: { some: { id: providerUserId } } },
+              { participants: { some: { id: customerProfile.userId } } },
+            ],
+          },
+          select: { id: true },
+        }).catch(() => null)
+      );
 
       if (!existingThread) {
         await prisma.chatThread.create({
@@ -95,39 +103,19 @@ export async function POST(request: Request) {
               connect: [{ id: providerUserId }, { id: customerProfile.userId }],
             },
           },
-        });
-      }
-    } catch (err: any) {
-      // Ignore unique constraint violation — thread already exists
-      if (err?.code === 'P2002') return;
-      // If scalar fields don't exist yet, fall back to old approach
-      try {
-        const existingThread = await prisma.chatThread.findFirst({
-          where: {
-            requestId,
-            AND: [
-              { participants: { some: { id: providerUserId } } },
-              { participants: { some: { id: customerProfile.userId } } },
-            ],
-          },
-        });
-
-        if (!existingThread) {
+        }).catch(async (err: any) => {
+          if (err?.code === 'P2002') return; // concurrent create — already exists
+          // Columns don't exist yet — create without scalar fields
           await prisma.chatThread.create({
             data: {
               requestId,
-              participants: {
-                connect: [{ id: providerUserId }, { id: customerProfile.userId }],
-              },
+              participants: { connect: [{ id: providerUserId }, { id: customerProfile.userId }] },
             },
-          });
-        }
-      } catch (fallbackErr: any) {
-        // Ignore constraint violations
-        if (fallbackErr?.code !== 'P2002') {
-          console.error('[quotes] Failed to create chat thread:', fallbackErr);
-        }
+          }).catch(() => {});
+        });
       }
+    } catch (err: any) {
+      console.error('[quotes] Failed to create chat thread:', err);
     }
   }
 
@@ -163,6 +151,9 @@ export async function PATCH(request: Request) {
       data: { status: 'ACCEPTED' },
     });
 
+    const depositAmount = quote.price * 0.2;
+
+    // Try with depositAmount (new column); fall back to without if migration not applied
     const booking = await prisma.booking.create({
       data: {
         customerId: quote.request.customerId,
@@ -170,9 +161,56 @@ export async function PATCH(request: Request) {
         quoteId: quote.id,
         scheduledAt: quote.request.dateWindow,
         totalAmount: quote.price,
+        depositAmount,
         status: 'SCHEDULED',
       },
+      select: { id: true, totalAmount: true },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('depositAmount') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[quotes PATCH] depositAmount column missing, creating booking without it');
+        return prisma.booking.create({
+          data: {
+            customerId: quote.request.customerId,
+            providerId: quote.providerId,
+            quoteId: quote.id,
+            scheduledAt: quote.request.dateWindow,
+            totalAmount: quote.price,
+            status: 'SCHEDULED',
+          },
+          select: { id: true, totalAmount: true },
+        });
+      }
+      throw err;
     });
+
+    // Create pending payment record — customer must pay deposit to confirm
+    // Non-fatal if new payment columns (depositAmount, platformFee) don't exist yet
+    await prisma.payment.create({
+      data: {
+        bookingId: booking.id,
+        amount: quote.price,
+        depositAmount,
+        platformFee: quote.price * 0.1,
+        status: 'PENDING',
+      },
+      select: { id: true },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('depositAmount') || msg.includes('platformFee') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[quotes PATCH] new payment columns missing, creating payment without them');
+        await prisma.payment.create({
+          data: { bookingId: booking.id, amount: quote.price, status: 'PENDING' },
+          select: { id: true },
+        }).catch(() => {});
+      }
+    });
+
+    // Lock the chat thread until deposit is paid
+    await prisma.chatThread.updateMany({
+      where: { requestId: quote.requestId },
+      data: { isLocked: true },
+    }).catch(() => {}); // non-fatal if isLocked column not yet in DB
 
     // Notify provider that their quote was accepted
     const providerProfile = await prisma.providerProfile.findUnique({
@@ -188,8 +226,23 @@ export async function PATCH(request: Request) {
         userId: providerProfile.userId,
         type: 'booking',
         title: 'Quote accepted!',
-        body: `${customerUser?.name ?? 'A customer'} accepted your quote for €${quote.price.toFixed(0)}. Job is scheduled.`,
+        body: `${customerUser?.name ?? 'A customer'} accepted your quote for €${quote.price.toFixed(0)}. Waiting for deposit.`,
         href: `/provider/jobs`,
+      });
+    }
+
+    // Notify customer to pay deposit
+    const customerProfile = await prisma.customerProfile.findUnique({
+      where: { id: quote.request.customerId },
+      select: { userId: true },
+    });
+    if (customerProfile) {
+      createNotification({
+        userId: customerProfile.userId,
+        type: 'payment',
+        title: 'Pay deposit to confirm booking',
+        body: `Pay €${depositAmount.toFixed(2)} deposit (20%) to lock in your booking and unlock messaging.`,
+        href: `/bookings/${booking.id}`,
       });
     }
 

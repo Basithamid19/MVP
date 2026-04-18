@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { redactPII } from '@/lib/pii-filter';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,8 +27,29 @@ export async function GET(request: Request) {
     // Otherwise, return all threads for the current user
     const userId = (session.user as any).id;
 
-    // Match threads whether stored via scalar fields (post-migration) or participants join table (pre-migration)
-    const threads = await prisma.chatThread.findMany({
+    // Safe select: never references customerId/providerId/isLocked which may not
+    // exist in the DB if migration 20260403000000_add_chat_thread_dedup hasn't run.
+    const SAFE_THREAD_SELECT = {
+      id: true,
+      requestId: true,
+      createdAt: true,
+      participants: {
+        select: { id: true, name: true, image: true, role: true },
+      },
+      messages: {
+        orderBy: { createdAt: 'desc' as const },
+        take: 1,
+      },
+      request: {
+        select: {
+          category: { select: { name: true } },
+        },
+      },
+    } as const;
+
+    // Primary query: tries customerId/providerId scalar WHERE clauses.
+    // Falls back to participants-only select if the migration hasn't run yet.
+    const threads: any[] = await prisma.chatThread.findMany({
       where: {
         OR: [
           { customerId: userId },
@@ -35,19 +57,22 @@ export async function GET(request: Request) {
           { participants: { some: { id: userId } } },
         ],
       },
-      include: {
-        participants: {
-          select: { id: true, name: true, image: true, role: true },
-        },
-        messages: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-        },
-        request: {
-          include: { category: true },
-        },
-      },
+      select: SAFE_THREAD_SELECT,
       orderBy: { createdAt: 'desc' },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (
+        msg.includes('customerId') || msg.includes('providerId') ||
+        msg.includes('column') || msg.includes('P2022')
+      ) {
+        console.warn('[chat GET] scalar columns missing, falling back to participants lookup');
+        return prisma.chatThread.findMany({
+          where: { participants: { some: { id: userId } } },
+          select: SAFE_THREAD_SELECT,
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      throw err;
     });
 
     // Sort by last message date (threads with recent messages first)
@@ -58,13 +83,18 @@ export async function GET(request: Request) {
     });
 
     const result = sorted
-      .map(t => ({
-        id: t.id,
-        otherParticipant: t.participants.find(p => p.id !== userId) ?? t.participants[0],
-        lastMessage: t.messages[0] ?? null,
-        category: t.request?.category?.name ?? 'Service',
-        createdAt: t.createdAt,
-      }));
+      .map(t => {
+        const otherP = t.participants.find(p => p.id !== userId) ?? t.participants[0] ?? null;
+        if (!otherP) return null;
+        return {
+          id: t.id,
+          otherParticipant: otherP,
+          lastMessage: t.messages[0] ?? null,
+          category: t.request?.category?.name ?? 'Service',
+          createdAt: t.createdAt,
+        };
+      })
+      .filter(Boolean);
 
     return NextResponse.json(result);
   } catch (err) {
@@ -87,11 +117,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'threadId and content required' }, { status: 400 });
     }
 
+    // Check if thread is locked (deposit not yet paid)
+    const thread = await prisma.chatThread.findUnique({
+      where: { id: threadId },
+      select: { isLocked: true },
+    }).catch(() => null);
+
+    if (thread?.isLocked) {
+      return NextResponse.json({ error: 'Chat is locked. Pay the deposit to unlock messaging.', locked: true }, { status: 403 });
+    }
+
     const message = await prisma.chatMessage.create({
       data: {
         threadId,
         senderId: (session.user as any).id,
-        content: content.trim(),
+        content: redactPII(content.trim()),
       },
     });
 

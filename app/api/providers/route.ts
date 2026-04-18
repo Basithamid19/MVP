@@ -14,6 +14,32 @@ const PROVIDER_IMAGES: Record<string, string> = {
   'darius@pro.lt':  'https://randomuser.me/api/portraits/men/25.jpg',
 };
 
+// Explicit select for ProviderProfile that only includes pre-migration columns.
+// Used as a fallback when new Stripe columns don't exist in the DB yet.
+const PROVIDER_CORE_SELECT = {
+  id: true,
+  userId: true,
+  bio: true,
+  serviceArea: true,
+  languages: true,
+  ratingAvg: true,
+  completedJobs: true,
+  isVerified: true,
+  verificationTier: true,
+  responseTime: true,
+  instantBook: true,
+  bufferMins: true,
+  blackoutDates: true,
+} as const;
+
+function isColumnError(err: unknown): boolean {
+  const msg = err instanceof Error ? err.message : String(err);
+  return (
+    msg.includes('stripeAccountId') || msg.includes('stripeOnboarded') ||
+    msg.includes('column') || msg.includes('P2022')
+  );
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const id = searchParams.get('id');
@@ -21,28 +47,50 @@ export async function GET(request: Request) {
   const verified = searchParams.get('verified');
 
   if (id) {
+    const singleInclude = {
+      user: true,
+      categories: true,
+      offerings: true,
+      availability: true,
+      reviews: {
+        where: { isHidden: false },
+        include: { customer: { include: { user: true } } },
+        orderBy: { createdAt: 'desc' } as const,
+        take: 20,
+      },
+      _count: { select: { bookings: true, reviews: true } },
+    };
+
     const provider = await prisma.providerProfile.findUnique({
       where: { id },
-      include: {
-        user: true,
-        categories: true,
-        offerings: true,
-        availability: true,
-        reviews: {
-          where: { isHidden: false },
-          include: { customer: { include: { user: true } } },
-          orderBy: { createdAt: 'desc' },
-          take: 20,
+      include: singleInclude,
+    }).catch(async (err: unknown) => {
+      if (!isColumnError(err)) throw err;
+      console.warn('[providers GET] new columns missing, using core select for single provider');
+      return prisma.providerProfile.findUnique({
+        where: { id },
+        select: {
+          ...PROVIDER_CORE_SELECT,
+          user: true,
+          categories: true,
+          offerings: true,
+          availability: true,
+          reviews: {
+            where: { isHidden: false },
+            include: { customer: { include: { user: true } } },
+            orderBy: { createdAt: 'desc' } as const,
+            take: 20,
+          },
+          _count: { select: { bookings: true, reviews: true } },
         },
-        _count: { select: { bookings: true, reviews: true } },
-      },
+      });
     });
-    // Auto-fix image if missing
+
     if (provider?.user && !provider.user.image) {
       const correctImage = PROVIDER_IMAGES[provider.user.email ?? ''];
       if (correctImage) {
         await prisma.user.update({ where: { id: provider.user.id }, data: { image: correctImage } });
-        provider.user.image = correctImage;
+        (provider.user as any).image = correctImage;
       }
     }
     return NextResponse.json(provider);
@@ -56,30 +104,35 @@ export async function GET(request: Request) {
   if (verified === 'true') {
     where.isVerified = true;
   }
-  // Homepage: only show pros with ≥5 completed jobs
   if (homepage === 'true') {
     where.completedJobs = { gte: 5 };
   }
 
+  const browseInclude = {
+    user: { select: { id: true, email: true, name: true, image: true } },
+    categories: true,
+  };
+
   const providers = await prisma.providerProfile.findMany({
     where,
-    include: {
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          image: true,
-        },
-      },
-      categories: true,
-    },
+    include: browseInclude,
     orderBy: { ratingAvg: 'desc' },
+  }).catch(async (err: unknown) => {
+    if (!isColumnError(err)) throw err;
+    console.warn('[providers GET] new columns missing, using core select for browse');
+    return prisma.providerProfile.findMany({
+      where,
+      select: {
+        ...PROVIDER_CORE_SELECT,
+        user: { select: { id: true, email: true, name: true, image: true } },
+        categories: true,
+      },
+      orderBy: { ratingAvg: 'desc' },
+    });
   });
 
-  // Homepage: sort by verified first, then weighted score (rating × completedJobs)
   if (homepage === 'true') {
-    providers.sort((a, b) => {
+    providers.sort((a: any, b: any) => {
       if (a.isVerified !== b.isVerified) return a.isVerified ? -1 : 1;
       const scoreA = (a.ratingAvg ?? 0) * (a.completedJobs ?? 0);
       const scoreB = (b.ratingAvg ?? 0) * (b.completedJobs ?? 0);
@@ -87,20 +140,18 @@ export async function GET(request: Request) {
     });
   }
 
-  // Auto-fix any providers missing an image
-  const fixPromises = providers
-    .filter(p => p.user && !p.user.image && PROVIDER_IMAGES[p.user.email ?? ''])
-    .map(p => prisma.user.update({
-      where: { id: p.user!.id },
-      data: { image: PROVIDER_IMAGES[p.user!.email!] },
+  const fixPromises = (providers as any[])
+    .filter((p: any) => p.user && !p.user.image && PROVIDER_IMAGES[p.user.email ?? ''])
+    .map((p: any) => prisma.user.update({
+      where: { id: p.user.id },
+      data: { image: PROVIDER_IMAGES[p.user.email] },
     }));
   if (fixPromises.length > 0) await Promise.all(fixPromises);
 
-  // Return with correct images applied
-  const result = providers.map(p => ({
+  const result = (providers as any[]).map((p: any) => ({
     ...p,
     user: p.user ? {
-      name: p.user.name,
+      ...p.user,
       image: p.user.image ?? PROVIDER_IMAGES[p.user.email ?? ''] ?? null,
     } : p.user,
   }));

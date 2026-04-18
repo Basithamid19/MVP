@@ -45,6 +45,7 @@ export default function BookingPage() {
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState(false);
+  const [payingDeposit, setPayingDeposit] = useState(false);
   const [review, setReview] = useState({ rating: 0, comment: '' });
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
@@ -76,6 +77,40 @@ export default function BookingPage() {
     } finally {
       setActioning(false);
       setShowCancelConfirm(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    setActioning(true);
+    try {
+      await fetch('/api/payments/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: id }),
+      });
+      load();
+    } finally {
+      setActioning(false);
+      setShowCancelConfirm(false);
+    }
+  };
+
+  const handlePayDeposit = async () => {
+    setPayingDeposit(true);
+    try {
+      const res = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: id }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error ?? 'Could not start checkout. Please try again.');
+      }
+    } finally {
+      setPayingDeposit(false);
     }
   };
 
@@ -205,6 +240,28 @@ export default function BookingPage() {
           <div className="bg-danger-surface border border-danger-edge rounded-card p-4 flex items-center gap-3">
             <XCircle className="w-5 h-5 text-danger shrink-0" />
             <p className="text-sm font-medium text-danger">This booking has been canceled.</p>
+          </div>
+        )}
+
+        {/* Deposit payment banner */}
+        {!isCanceled && booking.payment?.status === 'PENDING' && (
+          <div className="bg-caution-surface border border-caution-edge rounded-panel p-5 shadow-card">
+            <div className="flex items-start gap-3 mb-4">
+              <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-caution">Deposit required to confirm booking</p>
+                <p className="text-sm text-caution mt-1 leading-relaxed">
+                  Pay a <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * 0.2).toFixed(2)} deposit (20%)</span> to confirm your booking and unlock messaging with your provider.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handlePayDeposit}
+              disabled={payingDeposit}
+              className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> Pay deposit · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * 0.2).toFixed(2)}</>}
+            </button>
           </div>
         )}
 
@@ -344,14 +401,19 @@ export default function BookingPage() {
           </div>
           {(() => {
             const payStatus = booking.payment?.status;
-            const isCompleted = booking.status === 'COMPLETED';
+            const bkCompleted = booking.status === 'COMPLETED';
             const label = payStatus === 'PAID' ? 'Paid'
               : payStatus === 'REFUNDED' ? 'Refunded'
-              : payStatus === 'PROCESSING' || isCompleted ? 'Processing'
+              : payStatus === 'PARTIAL_REFUND' ? 'Partially refunded'
+              : payStatus === 'DEPOSIT_HELD' ? 'Deposit held'
+              : payStatus === 'PROCESSING' || bkCompleted ? 'Processing'
+              : payStatus === 'PENDING' ? 'Deposit required'
               : 'Awaiting completion';
             const style = payStatus === 'PAID' ? 'bg-trust-surface text-trust'
-              : payStatus === 'REFUNDED' ? 'bg-surface-alt text-ink-sub'
-              : payStatus === 'PROCESSING' || isCompleted ? 'bg-info-surface text-info'
+              : payStatus === 'REFUNDED' || payStatus === 'PARTIAL_REFUND' ? 'bg-surface-alt text-ink-sub'
+              : payStatus === 'DEPOSIT_HELD' ? 'bg-info-surface text-info'
+              : payStatus === 'PROCESSING' || bkCompleted ? 'bg-info-surface text-info'
+              : payStatus === 'PENDING' ? 'bg-caution-surface text-caution'
               : 'bg-surface-alt text-ink-sub';
             return (
               <div>
@@ -362,7 +424,12 @@ export default function BookingPage() {
                     <span className="font-normal ml-1">· {new Date(booking.payment.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
                   )}
                 </div>
-                {(payStatus === 'PROCESSING' || (isCompleted && !payStatus)) && (
+                {payStatus === 'DEPOSIT_HELD' && (
+                  <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
+                    €{booking.payment?.depositAmount?.toFixed(2)} deposit confirmed. Remaining balance collected after job completion.
+                  </p>
+                )}
+                {(payStatus === 'PROCESSING' || (bkCompleted && !payStatus)) && (
                   <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
                     Payment is confirmed after job completion. You&apos;ll receive a receipt by email within 24 hours.
                   </p>
@@ -372,7 +439,7 @@ export default function BookingPage() {
           })()}
           <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim text-xs text-ink-sub leading-relaxed">
             <span className="font-bold text-ink-sub">Cancellation policy: </span>
-            Free cancellation up to 24h before the scheduled time. Late cancellations may incur a fee of up to €10.
+            Free cancellation more than 24 hours before the scheduled time. Cancellations within 24 hours are non-refundable.
           </div>
         </div>
 
@@ -491,7 +558,7 @@ export default function BookingPage() {
                 Keep booking
               </button>
               <button
-                onClick={() => updateStatus('CANCELED')}
+                onClick={handleCancel}
                 disabled={actioning}
                 className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
               >
