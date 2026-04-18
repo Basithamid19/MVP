@@ -27,23 +27,29 @@ export async function GET(request: Request) {
     // Otherwise, return all threads for the current user
     const userId = (session.user as any).id;
 
-    const threadInclude = {
+    // Safe select: never references customerId/providerId/isLocked which may not
+    // exist in the DB if migration 20260403000000_add_chat_thread_dedup hasn't run.
+    const SAFE_THREAD_SELECT = {
+      id: true,
+      requestId: true,
+      createdAt: true,
       participants: {
         select: { id: true, name: true, image: true, role: true },
       },
       messages: {
-        orderBy: { createdAt: 'desc' } as const,
+        orderBy: { createdAt: 'desc' as const },
         take: 1,
       },
       request: {
-        include: { category: true },
+        select: {
+          category: { select: { name: true } },
+        },
       },
-    };
+    } as const;
 
-    // Primary query: uses customerId/providerId scalar columns (added in migration
-    // 20260403000000_add_chat_thread_dedup). Falls back to participants-only if the
-    // migration hasn't been applied to the DB yet (Supabase pooler issue).
-    const threads = await prisma.chatThread.findMany({
+    // Primary query: tries customerId/providerId scalar WHERE clauses.
+    // Falls back to participants-only select if the migration hasn't run yet.
+    const threads: any[] = await prisma.chatThread.findMany({
       where: {
         OR: [
           { customerId: userId },
@@ -51,7 +57,7 @@ export async function GET(request: Request) {
           { participants: { some: { id: userId } } },
         ],
       },
-      include: threadInclude,
+      select: SAFE_THREAD_SELECT,
       orderBy: { createdAt: 'desc' },
     }).catch(async (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
@@ -62,7 +68,7 @@ export async function GET(request: Request) {
         console.warn('[chat GET] scalar columns missing, falling back to participants lookup');
         return prisma.chatThread.findMany({
           where: { participants: { some: { id: userId } } },
-          include: threadInclude,
+          select: SAFE_THREAD_SELECT,
           orderBy: { createdAt: 'desc' },
         });
       }
