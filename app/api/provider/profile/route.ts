@@ -68,8 +68,8 @@ export async function PATCH(request: Request) {
     } = body;
 
     const userId = (session.user as any).id;
-
-    // Validate offerings before touching the DB
+    console.log('[provider/profile PATCH] userId:', userId, 'email:', session.user.email);
+    if (!userId) return NextResponse.json({ error: 'Session missing user ID — please log out and log back in.' }, { status: 401 });
     if (Array.isArray(offerings) && offerings.length > 0) {
       for (const o of offerings) {
         const name = (o.name ?? '').trim();

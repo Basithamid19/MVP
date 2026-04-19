@@ -131,6 +131,13 @@ export default function ProviderProfileSettingsPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto pb-28 sm:pb-8">
 
+      {/* Account indicator — shows which account is active */}
+      {session?.user?.email && (
+        <p className="text-[11px] text-ink-dim text-center mb-3">
+          Logged in as <span className="font-semibold text-ink-sub">{session.user.email}</span>
+        </p>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
