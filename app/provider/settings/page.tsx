@@ -76,8 +76,12 @@ export default function ProviderSettingsPage() {
     if (status === 'authenticated') {
       setLoadError(false);
       Promise.all([
-        fetch('/api/provider/profile').then(r => r.json()),
-        fetch('/api/provider/bookings').then(r => r.json()).catch(() => []),
+        fetch('/api/provider/profile', { cache: 'no-store' }).then(async r => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) console.error('[settings hub] GET /api/provider/profile failed:', r.status, data);
+          return data;
+        }),
+        fetch('/api/provider/bookings', { cache: 'no-store' }).then(r => r.json()).catch(() => []),
       ]).then(([profile, bookings]) => {
         const p = profile ?? {};
         setVerificationTier(p.verificationTier ?? 'TIER0_BASIC');

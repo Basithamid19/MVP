@@ -9,6 +9,8 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const userId = (session.user as any).id;
+  console.log('[provider/profile GET] userId:', userId, 'email:', session.user.email);
+  if (!userId) return NextResponse.json({ error: 'Session missing user ID — please log out and log back in.' }, { status: 401 });
 
   try {
     const profile = await prisma.providerProfile.findUnique({

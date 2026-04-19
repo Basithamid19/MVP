@@ -33,8 +33,15 @@ export default function ProviderProfileSettingsPage() {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
       Promise.all([
-        fetch('/api/provider/profile').then(r => r.json()),
-        fetch('/api/categories').then(r => r.json()),
+        fetch('/api/provider/profile', { cache: 'no-store' }).then(async r => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) {
+            console.error('[profile page] GET /api/provider/profile failed:', r.status, data);
+            throw new Error(data?.error || `HTTP ${r.status}`);
+          }
+          return data;
+        }),
+        fetch('/api/categories', { cache: 'no-store' }).then(r => r.json()).catch(() => []),
       ]).then(([profile, cats]) => {
         const p = profile ?? {};
         const loadedBio = p.bio ?? '';
@@ -56,8 +63,9 @@ export default function ProviderProfileSettingsPage() {
         });
         initialRef.current = snap;
         setLoading(false);
-      }).catch(() => {
-        // Even on load failure, set a baseline snapshot so dirty detection works.
+      }).catch((err) => {
+        console.error('[profile page] load failed:', err);
+        setSaveError('Could not load profile data. Please refresh the page.');
         initialRef.current = JSON.stringify({
           bio: '', serviceArea: '', languages: ['Lithuanian'],
           responseTime: 'Usually responds in 1 hour', selectedCategories: [],
