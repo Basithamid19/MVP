@@ -43,6 +43,16 @@ export async function GET(request: Request) {
 
     if (!booking) return NextResponse.json(null);
 
+    // Ownership: only the booking's customer, its provider, or an admin may
+    // read it. Prevents horizontal enumeration of other users' bookings.
+    const role = (session.user as any).role;
+    const userId = (session.user as any).id;
+    const isParticipant =
+      booking.customer?.userId === userId || booking.provider?.userId === userId;
+    if (role !== 'ADMIN' && !isParticipant) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     // Resolve the chat thread for this booking's request + customer + provider
     let chatThread = null;
     if (booking.quote?.requestId && booking.customer?.userId && booking.provider?.userId) {
@@ -139,6 +149,36 @@ export async function PATCH(request: Request) {
 
   const body = await request.json();
   const { bookingId, status } = body;
+
+  // Whitelist the statuses this endpoint is allowed to set. Anything else
+  // (e.g. a crafted body with 'DEPOSIT_HELD' or garbage) is rejected up-front.
+  const ALLOWED_STATUSES = new Set(['IN_PROGRESS', 'COMPLETED', 'CANCELED']);
+  if (!ALLOWED_STATUSES.has(status)) {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
+  // Ownership: load minimal booking first, ensure the caller is the booking's
+  // customer, its provider, or an admin. Without this, any authenticated user
+  // could flip any booking to COMPLETED and trigger the payment-release path.
+  const existing = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    select: {
+      id: true,
+      customer: { select: { userId: true } },
+      provider: { select: { userId: true } },
+    },
+  });
+  if (!existing) {
+    return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+  }
+
+  const callerRole = (session.user as any).role;
+  const callerId = (session.user as any).id;
+  const isParticipant =
+    existing.customer?.userId === callerId || existing.provider?.userId === callerId;
+  if (callerRole !== 'ADMIN' && !isParticipant) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   // Use explicit select to avoid failing on new columns (depositAmount, canceledAt)
   // that may not exist in the DB until the migration runs.

@@ -20,13 +20,17 @@ export async function GET() {
   return NextResponse.json(notifications);
 }
 
-// POST — create a notification (internal use / admin)
+// POST — create a notification for the current user only.
+// Any `userId` provided in the request body is ignored; the row is always
+// attributed to the session user. Server-side fan-out to other users must go
+// through `lib/notifications.ts#createNotification` instead of this endpoint.
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const body = await request.json();
-  const { userId, type, title, body: notifBody, href } = body;
+  const { type, title, body: notifBody, href } = body;
+  const userId = (session.user as any).id;
 
   const notification = await prisma.notification.create({
     data: { userId, type, title, body: notifBody, href },

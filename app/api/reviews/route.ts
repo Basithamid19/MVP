@@ -30,10 +30,19 @@ export async function POST(request: Request) {
 
   const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
+    include: { customer: { select: { userId: true } } },
   });
 
   if (!booking || booking.status !== 'COMPLETED') {
     return NextResponse.json({ error: 'Only completed bookings can be reviewed' }, { status: 400 });
+  }
+
+  // Ownership: only the customer who owns the booking may review it. Without
+  // this, any authenticated user who knew a completed bookingId could submit
+  // a review on the customer's behalf (review fraud).
+  const callerId = (session.user as any).id;
+  if (booking.customer?.userId !== callerId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const review = await prisma.review.create({

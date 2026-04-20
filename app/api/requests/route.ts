@@ -67,6 +67,45 @@ export async function GET(request: Request) {
   const id = searchParams.get('id');
 
   if (id) {
+    const userId = (session.user as any).id;
+    const role = (session.user as any).role;
+
+    // Authorization: full details are only readable by the owning customer,
+    // an admin, or a provider who has already submitted a quote on this
+    // request. Category-matched providers who have NOT quoted yet are NOT
+    // authorized here — lead visibility with a narrower field set will be
+    // handled in a dedicated endpoint in a later block.
+    const header = await prisma.serviceRequest.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        customer: { select: { userId: true } },
+      },
+    });
+    if (!header) {
+      return NextResponse.json(null);
+    }
+
+    let authorized = role === 'ADMIN' || header.customer?.userId === userId;
+
+    if (!authorized && role === 'PROVIDER') {
+      const providerProfile = await prisma.providerProfile.findUnique({
+        where: { userId },
+        select: { id: true },
+      });
+      if (providerProfile) {
+        const quoted = await prisma.quote.findFirst({
+          where: { requestId: id, providerId: providerProfile.id },
+          select: { id: true },
+        });
+        if (quoted) authorized = true;
+      }
+    }
+
+    if (!authorized) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const req = await prisma.serviceRequest.findUnique({
       where: { id },
       include: {

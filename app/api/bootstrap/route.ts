@@ -153,10 +153,6 @@ export async function POST(request: Request) {
       message: 'Bootstrap complete',
       createdProviders,
       counts,
-      credentials: {
-        admin: { email: 'admin@vilniuspro.lt', password: 'password123' },
-        provider: { email: 'marius@pro.lt', password: 'password123' },
-      },
     });
   } catch (err) {
     console.error('[bootstrap POST] failed:', err);

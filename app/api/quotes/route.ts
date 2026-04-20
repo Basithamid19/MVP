@@ -133,11 +133,23 @@ export async function PATCH(request: Request) {
 
   const quote = await prisma.quote.findUnique({
     where: { id: quoteId },
-    include: { request: true },
+    include: {
+      request: {
+        include: { customer: { select: { userId: true } } },
+      },
+    },
   });
 
   if (!quote) {
     return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
+  }
+
+  // Ownership: only the customer who posted the request may accept or decline
+  // its quotes. Admin retained for moderation/repair flows.
+  const callerId = (session.user as any).id;
+  const callerRole = (session.user as any).role;
+  if (callerRole !== 'ADMIN' && quote.request.customer?.userId !== callerId) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   const updatedQuote = await prisma.quote.update({

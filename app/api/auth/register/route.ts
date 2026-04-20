@@ -7,11 +7,16 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email: emailRaw, password, name, role } = body;
+    const { email: emailRaw, password, name, role: roleRaw } = body;
 
     if (!emailRaw || !password || !name) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
+
+    // Allow-list the role. Any value other than PROVIDER (including 'ADMIN',
+    // null, garbage, or a missing field) collapses to CUSTOMER. This closes
+    // the self-elevation-to-admin vector on the public registration endpoint.
+    const role: 'CUSTOMER' | 'PROVIDER' = roleRaw === 'PROVIDER' ? 'PROVIDER' : 'CUSTOMER';
 
     // Normalize so login (which also lowercases) can always find the row.
     const email = String(emailRaw).trim().toLowerCase();
@@ -31,7 +36,7 @@ export async function POST(request: Request) {
         email,
         name,
         password: hashedPassword,
-        role: role || 'CUSTOMER',
+        role,
         ...(role === 'PROVIDER' ? {
           providerProfile: {
             create: {

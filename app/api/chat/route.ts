@@ -14,9 +14,49 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const threadId = searchParams.get('threadId');
+    const userId = (session.user as any).id;
+    const role = (session.user as any).role;
 
     // If threadId provided, return messages for that thread
     if (threadId) {
+      // Authorization: participants is the canonical check. Load participant
+      // IDs first and allow the caller if they appear in that list.
+      const thread = await prisma.chatThread.findUnique({
+        where: { id: threadId },
+        select: {
+          participants: { select: { id: true } },
+        },
+      }).catch(() => null);
+
+      if (!thread) {
+        return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+      }
+
+      let authorized = role === 'ADMIN' || thread.participants.some(p => p.id === userId);
+
+      // Fallback compatibility: legacy threads created via the scalar-only
+      // path in quotes/route.ts may have been persisted without populating
+      // the participants relation. Honour customerId/providerId scalars when
+      // the participants check fails and those columns exist.
+      if (!authorized) {
+        try {
+          const scalar: any = await prisma.chatThread.findUnique({
+            where: { id: threadId },
+            select: { customerId: true, providerId: true } as any,
+          });
+          if (scalar && (scalar.customerId === userId || scalar.providerId === userId)) {
+            authorized = true;
+          }
+        } catch {
+          // customerId/providerId columns missing on this DB — participants
+          // was the only source of truth and already rejected this caller.
+        }
+      }
+
+      if (!authorized) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
       const messages = await prisma.chatMessage.findMany({
         where: { threadId },
         orderBy: { createdAt: 'asc' },
@@ -25,7 +65,6 @@ export async function GET(request: Request) {
     }
 
     // Otherwise, return all threads for the current user
-    const userId = (session.user as any).id;
 
     // Safe select: never references customerId/providerId/isLocked which may not
     // exist in the DB if migration 20260403000000_add_chat_thread_dedup hasn't run.
