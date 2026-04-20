@@ -29,29 +29,35 @@ export async function GET() {
     // If new columns (instantBook / bufferMins / blackoutDates) aren't in the DB yet,
     // fall back to selecting only the columns that have always existed so the page loads.
     const msg = err instanceof Error ? err.message : String(err);
-    if (
-      msg.includes('instantBook') || msg.includes('bufferMins') ||
-      msg.includes('blackoutDates') || msg.includes('column') || msg.includes('P2022')
-    ) {
-      console.warn('[provider/profile GET] new columns missing, returning core fields only');
-      const profile = await prisma.providerProfile.findUnique({
-        where: { userId },
-        select: {
-          id: true, userId: true, bio: true, serviceArea: true,
-          languages: true, ratingAvg: true, completedJobs: true,
-          isVerified: true, verificationTier: true, responseTime: true,
-          categories: true, offerings: true, availability: true,
-          verifications: true,
-          _count: { select: { bookings: true, reviews: true } },
-          user: { select: { name: true, email: true, image: true } },
-        },
-      }).catch(() => null);
-      return NextResponse.json(
-        profile ? { ...profile, instantBook: false, bufferMins: 30, blackoutDates: [] } : {}
-      );
-    }
-    console.error('[provider/profile GET]', err);
-    return NextResponse.json({ error: 'Failed to load profile.' }, { status: 500 });
+    console.warn('[provider/profile GET] primary query failed:', msg.slice(0, 200));
+    // Fall back to only the guaranteed-stable scalar columns — no relations that
+    // might also reference missing columns in related tables.
+    const profile = await prisma.providerProfile.findUnique({
+      where: { userId },
+      select: {
+        id: true, userId: true, bio: true, serviceArea: true,
+        languages: true, ratingAvg: true, completedJobs: true,
+        isVerified: true, verificationTier: true, responseTime: true,
+      },
+    }).catch((fallbackErr: unknown) => {
+      console.error('[provider/profile GET] fallback also failed:',
+        fallbackErr instanceof Error ? fallbackErr.message : String(fallbackErr));
+      return null;
+    });
+    // Fetch categories separately so a join-table issue never blocks core data
+    const categories = profile
+      ? await prisma.serviceCategory.findMany({
+          where: { providers: { some: { userId } } },
+          select: { id: true, name: true },
+        }).catch(() => [])
+      : [];
+    return NextResponse.json(
+      profile
+        ? { ...profile, categories, offerings: [], availability: [], verifications: [],
+            instantBook: false, bufferMins: 30, blackoutDates: [],
+            _count: { bookings: 0, reviews: 0 } }
+        : {}
+    );
   }
 }
 

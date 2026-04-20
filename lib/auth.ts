@@ -48,10 +48,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (session.user) {
         (session.user as any).id = token.id;
         try {
-          const dbUser = await prisma.user.findUnique({
-            where: { id: token.id as string },
-            select: { image: true, role: true },
-          });
+          // Look up by ID first; if that misses (stale JWT), fall back to email
+          let dbUser = token.id
+            ? await prisma.user.findUnique({
+                where: { id: token.id as string },
+                select: { id: true, image: true, role: true },
+              }).catch(() => null)
+            : null;
+
+          if (!dbUser && session.user.email) {
+            // token.id is missing or points to a deleted/different record —
+            // resolve the correct ID from the email so all downstream queries work
+            dbUser = await prisma.user.findUnique({
+              where: { email: session.user.email },
+              select: { id: true, image: true, role: true },
+            }).catch(() => null);
+            if (dbUser) {
+              console.warn('[auth] token.id mismatch for', session.user.email,
+                '— correcting from', token.id, 'to', dbUser.id);
+              (session.user as any).id = dbUser.id;
+            }
+          }
+
           if (dbUser) {
             session.user.image = dbUser.image;
             (session.user as any).role = dbUser.role;
