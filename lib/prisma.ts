@@ -13,7 +13,7 @@ function withPgBouncerFlags(raw: string | undefined): string | undefined {
     const isPooled = u.port === '6543' || u.hostname.includes('pooler');
     if (!isPooled) return raw;
     if (!u.searchParams.has('pgbouncer')) u.searchParams.set('pgbouncer', 'true');
-    if (!u.searchParams.has('connection_limit')) u.searchParams.set('connection_limit', '1');
+    if (!u.searchParams.has('connection_limit')) u.searchParams.set('connection_limit', '5');
     return u.toString();
   } catch {
     return raw;
