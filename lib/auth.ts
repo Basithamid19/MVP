@@ -12,44 +12,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          console.warn('[auth] authorize: missing credentials');
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
-        // Normalize email so registration / seed / login all agree on casing.
-        const emailRaw = String(credentials.email);
-        const email = emailRaw.trim().toLowerCase();
+        const email = String(credentials.email).trim();
+        const password = String(credentials.password);
 
-        // Case-insensitive lookup so rows stored with any casing are findable.
-        let user = await prisma.user.findFirst({
-          where: { email: { equals: email, mode: 'insensitive' } },
-        });
-        // Fallback to exact-match in case the case-insensitive filter hits a
-        // Prisma/driver edge case.
-        if (!user) user = await prisma.user.findUnique({ where: { email } });
-        if (!user && email !== emailRaw) {
-          user = await prisma.user.findUnique({ where: { email: emailRaw } });
-        }
-
+        // Try exact match first (fast path for correctly-cased emails).
+        // Then try lowercased (in case DB stored it that way).
+        let user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
         if (!user) {
-          console.warn('[auth] authorize: no user for email', email);
-          return null;
-        }
-        if (!user.password) {
-          console.warn('[auth] authorize: user has no password hash', email);
-          return null;
+          const lower = email.toLowerCase();
+          if (lower !== email) {
+            user = await prisma.user.findUnique({ where: { email: lower } }).catch(() => null);
+          }
         }
 
-        const isValid = await bcrypt.compare(
-          String(credentials.password),
-          user.password
-        );
+        if (!user || !user.password) return null;
 
-        if (!isValid) {
-          console.warn('[auth] authorize: bcrypt compare failed for', email);
-          return null;
-        }
+        const isValid = await bcrypt.compare(password, user.password);
+        if (!isValid) return null;
 
         return {
           id: user.id,
