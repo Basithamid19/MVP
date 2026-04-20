@@ -85,9 +85,35 @@ export default function ProviderAvailabilitySettingsPage() {
         setSaveError(err.error || 'Save failed. Please try again.');
         return;
       }
-      setSaved(true);
-      initialRef.current = getSnapshot();
+      // Ground truth is the server's response — re-hydrate form + snapshot
+      // from what actually persisted, so a silently-dropped column (e.g.
+      // bufferMins/blackoutDates missing in DB) doesn't falsely mark the
+      // form clean.
+      const persisted = await res.json().catch(() => null);
+      if (persisted && typeof persisted === 'object') {
+        const persistedSlots = DAYS.map((_, i) => {
+          const existing = Array.isArray(persisted.availability)
+            ? persisted.availability.find((s: any) => s.dayOfWeek === i)
+            : null;
+          return existing
+            ? { dayOfWeek: i, startTime: existing.startTime, endTime: existing.endTime, enabled: true }
+            : { dayOfWeek: i, startTime: '09:00', endTime: '17:00', enabled: false };
+        });
+        const persistedBlackout = Array.isArray(persisted.blackoutDates) ? persisted.blackoutDates : [];
+        const persistedBuffer = typeof persisted.bufferMins === 'number' ? persisted.bufferMins : 30;
+        setSlots(persistedSlots);
+        setBlackoutDates(persistedBlackout);
+        setBufferMins(persistedBuffer);
+        initialRef.current = JSON.stringify({
+          slots: persistedSlots,
+          blackoutDates: persistedBlackout,
+          bufferMins: persistedBuffer,
+        });
+      } else {
+        initialRef.current = getSnapshot();
+      }
       setDirty(false);
+      setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
       setSaveError('Network error. Please check your connection and try again.');

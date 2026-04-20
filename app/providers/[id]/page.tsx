@@ -16,29 +16,14 @@ import {
   Award,
   ThumbsUp,
   Calendar,
-  Sun,
-  Moon,
-  Sunrise,
 } from 'lucide-react';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { avatarUrl } from '@/lib/avatar';
 
-const AVAILABILITY: Record<string, { slots: string[]; label: string }> = {
-  Mon: { slots: ['morning', 'afternoon'],           label: 'Mon' },
-  Tue: { slots: ['morning', 'afternoon', 'evening'], label: 'Tue' },
-  Wed: { slots: ['afternoon', 'evening'],            label: 'Wed' },
-  Thu: { slots: ['morning', 'afternoon'],            label: 'Thu' },
-  Fri: { slots: ['morning', 'afternoon', 'evening'], label: 'Fri' },
-  Sat: { slots: ['morning'],                         label: 'Sat' },
-  Sun: { slots: [],                                  label: 'Sun' },
-};
-
-const SLOT_ICONS: Record<string, React.ElementType> = {
-  morning:   Sunrise,
-  afternoon: Sun,
-  evening:   Moon,
-};
+// Day-of-week index (0 = Sun … 6 = Sat) → short label. Matches DB convention
+// used by `AvailabilitySlot.dayOfWeek`.
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export default function ProviderProfilePage() {
   const { id }   = useParams();
@@ -244,71 +229,140 @@ export default function ProviderProfilePage() {
           {/* Services */}
           <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
             <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-5">Services</h3>
-            <div className="space-y-2.5 sm:space-y-3">
-              {provider.categories.map((cat: any) => {
-                const offering = provider.offerings?.find((o: any) => o.categoryId === cat.id);
-                return (
-                  <div key={cat.id} className="flex items-center justify-between p-3 sm:p-4 bg-surface-alt rounded-2xl border border-border-dim">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-xl sm:rounded-input flex items-center justify-center shadow-sm">
-                        <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-trust" />
+
+            {/* Categories the pro is qualified in */}
+            {provider.categories?.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {provider.categories.map((cat: any) => (
+                  <span
+                    key={cat.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-alt border border-border-dim rounded-full text-xs sm:text-sm font-bold text-ink"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-trust" />
+                    {cat.name}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Flat list of specific offerings with their real prices */}
+            {provider.offerings?.length > 0 ? (
+              <div className="space-y-2.5 sm:space-y-3">
+                {provider.offerings.map((offering: any) => {
+                  const price = Number(offering.price);
+                  const priceLabel = offering.priceType === 'FIXED' ? 'Fixed'
+                    : offering.priceType === 'FROM' ? 'From'
+                    : '/hr';
+                  const priceSuffix = offering.priceType === 'HOURLY' ? (
+                    <span className="text-ink-dim text-[11px] sm:text-xs font-medium ml-1">/hr</span>
+                  ) : null;
+                  const priceHeader = offering.priceType === 'FROM' ? (
+                    <div className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-0.5 sm:mb-1">From</div>
+                  ) : null;
+                  return (
+                    <div
+                      key={offering.id}
+                      className="flex items-start justify-between gap-3 p-3 sm:p-4 bg-surface-alt rounded-2xl border border-border-dim"
+                    >
+                      <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white rounded-xl sm:rounded-input flex items-center justify-center shadow-sm shrink-0">
+                          <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-trust" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-sm sm:text-base truncate">{offering.name}</div>
+                          {offering.description && (
+                            <p className="text-[11px] sm:text-xs text-ink-sub leading-relaxed mt-0.5 line-clamp-2">
+                              {offering.description}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <span className="font-bold text-sm sm:text-base">{cat.name}</span>
+                      <div className="text-right shrink-0">
+                        {!isNaN(price) ? (
+                          <>
+                            {priceHeader}
+                            <div className="text-base sm:text-lg font-bold">
+                              €{price.toFixed(0)}
+                              {priceSuffix}
+                            </div>
+                            {offering.priceType === 'FIXED' && (
+                              <div className="text-[10px] sm:text-xs text-ink-dim">{priceLabel}</div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="text-xs sm:text-sm font-medium text-ink-dim">Price on request</div>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-right">
-                      {offering?.price ? (
-                        <>
-                          <div className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-0.5 sm:mb-1">From</div>
-                          <div className="text-base sm:text-lg font-bold">
-                            €{Number(offering.price).toFixed(0)}
-                            <span className="text-ink-dim text-[11px] sm:text-xs font-medium ml-1">/hr</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-xs sm:text-sm font-medium text-ink-dim">Price on request</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-xs sm:text-sm text-ink-dim">No specific services listed yet — contact the pro for a quote.</p>
+            )}
           </div>
 
-          {/* Availability */}
-          <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
-            <div className="flex items-center gap-2 mb-4 sm:mb-5">
-              <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
-              <h3 className="text-base sm:text-lg font-bold">Typical Availability</h3>
-            </div>
-            <div className="grid grid-cols-7 gap-1 sm:gap-1.5 mb-4">
-              {Object.entries(AVAILABILITY).map(([day, avail]) => (
-                <div key={day} className="text-center">
-                  <p className="text-[10px] sm:text-[11px] font-bold text-ink-dim uppercase mb-1.5">
-                    {avail.label}
-                  </p>
-                  <div className={`rounded-xl py-2 sm:py-3 text-[10px] sm:text-[11px] font-bold uppercase tracking-wide ${
-                    avail.slots.length > 0
-                      ? 'bg-trust-surface text-trust border border-trust-edge'
-                      : 'bg-surface-alt text-ink-dim border border-border-dim'
-                  }`}>
-                    {avail.slots.length > 0 ? `${avail.slots.length}` : '—'}
-                  </div>
+          {/* Availability — rendered from the provider's saved AvailabilitySlot rows */}
+          {(() => {
+            const slotsByDay: Record<number, { startTime: string; endTime: string }[]> = {};
+            for (const s of (provider.availability ?? []) as any[]) {
+              if (typeof s?.dayOfWeek !== 'number') continue;
+              (slotsByDay[s.dayOfWeek] ??= []).push({ startTime: s.startTime, endTime: s.endTime });
+            }
+            // Sort each day's slots by start time so the rendered order is stable.
+            for (const d of Object.keys(slotsByDay)) {
+              slotsByDay[Number(d)].sort((a, b) => a.startTime.localeCompare(b.startTime));
+            }
+            const hasAnyAvailability = Object.values(slotsByDay).some(arr => arr.length > 0);
+
+            return (
+              <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
+                <div className="flex items-center gap-2 mb-4 sm:mb-5">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
+                  <h3 className="text-base sm:text-lg font-bold">Typical Availability</h3>
                 </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-3 sm:gap-4 mb-1.5">
-              {(['morning', 'afternoon', 'evening'] as const).map(slot => {
-                const Icon = SLOT_ICONS[slot];
-                return (
-                  <div key={slot} className="flex items-center gap-1.5 text-xs text-ink-sub font-medium">
-                    <Icon className="w-3.5 h-3.5 text-ink-dim" />
-                    <span className="capitalize">{slot}</span>
+
+                {hasAnyAvailability ? (
+                  <div className="space-y-1.5">
+                    {DAY_LABELS.map((label, idx) => {
+                      const daySlots = slotsByDay[idx] ?? [];
+                      const isOff = daySlots.length === 0;
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-center gap-3 p-2.5 sm:p-3 rounded-xl border ${
+                            isOff ? 'bg-surface-alt border-border-dim' : 'bg-trust-surface border-trust-edge'
+                          }`}
+                        >
+                          <span className={`w-10 text-xs font-bold uppercase tracking-wide shrink-0 ${isOff ? 'text-ink-dim' : 'text-trust'}`}>
+                            {label}
+                          </span>
+                          {isOff ? (
+                            <span className="text-xs text-ink-dim font-medium">Off</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {daySlots.map((s, i) => (
+                                <span
+                                  key={i}
+                                  className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-white border border-trust-edge rounded-full text-[11px] sm:text-xs font-bold text-trust"
+                                >
+                                  {s.startTime} – {s.endTime}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-            <p className="text-[10px] text-ink-dim/60">Times are approximate — confirm when booking</p>
-          </div>
+                ) : (
+                  <p className="text-xs sm:text-sm text-ink-dim">No hours published yet — message the pro to check availability.</p>
+                )}
+
+                <p className="text-[10px] text-ink-dim/60 mt-3">Times are approximate — confirm when booking</p>
+              </div>
+            );
+          })()}
 
           {/* Reviews */}
           <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
@@ -441,26 +495,37 @@ export default function ProviderProfilePage() {
               {chatLoading ? 'Opening chat...' : 'Chat with Pro'}
             </button>
 
-            {/* Mini availability */}
-            <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border-dim">
-              <p className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-2.5 sm:mb-3">
-                This week
-              </p>
-              <div className="flex gap-1 sm:gap-1.5">
-                {Object.entries(AVAILABILITY).map(([day, avail]) => (
-                  <div key={day} className="flex-1 text-center">
-                    <p className="text-[10px] font-bold text-ink-dim uppercase mb-1">{day.slice(0, 1)}</p>
-                    <div className={`rounded-md py-2 text-[10px] font-bold ${
-                      avail.slots.length > 0
-                        ? 'bg-trust text-white'
-                        : 'bg-surface-alt text-ink-dim border border-border-dim'
-                    }`}>
-                      {avail.slots.length > 0 ? '✓' : '×'}
-                    </div>
+            {/* Mini availability — driven by saved AvailabilitySlot rows */}
+            {(() => {
+              const hasDay = new Set<number>();
+              for (const s of (provider.availability ?? []) as any[]) {
+                if (typeof s?.dayOfWeek === 'number') hasDay.add(s.dayOfWeek);
+              }
+              return (
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border-dim">
+                  <p className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-2.5 sm:mb-3">
+                    This week
+                  </p>
+                  <div className="flex gap-1 sm:gap-1.5">
+                    {DAY_LABELS.map((label, idx) => {
+                      const on = hasDay.has(idx);
+                      return (
+                        <div key={idx} className="flex-1 text-center">
+                          <p className="text-[10px] font-bold text-ink-dim uppercase mb-1">{label.slice(0, 1)}</p>
+                          <div className={`rounded-md py-2 text-[10px] font-bold ${
+                            on
+                              ? 'bg-trust text-white'
+                              : 'bg-surface-alt text-ink-dim border border-border-dim'
+                          }`}>
+                            {on ? '✓' : '×'}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

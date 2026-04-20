@@ -311,11 +311,34 @@ export async function PATCH(request: Request) {
       prisma.availabilitySlot.findMany({ where: { providerProfileId: profileId } }).catch(() => []),
     ]);
 
+    // Read newer columns (instantBook/bufferMins/blackoutDates) separately so
+    // GET and PATCH expose the same canonical field set. Fall back to defaults
+    // when the migration hasn't run yet — mirrors the GET fallback path above.
+    let instantBookOut = false;
+    let bufferMinsOut = 30;
+    let blackoutDatesOut: string[] = [];
+    try {
+      const extra: any = await prisma.providerProfile.findUnique({
+        where: { id: profileId },
+        select: { instantBook: true, bufferMins: true, blackoutDates: true } as any,
+      });
+      if (extra) {
+        instantBookOut = Boolean(extra.instantBook);
+        bufferMinsOut = typeof extra.bufferMins === 'number' ? extra.bufferMins : 30;
+        blackoutDatesOut = Array.isArray(extra.blackoutDates) ? extra.blackoutDates : [];
+      }
+    } catch (extraErr) {
+      if (!isColumnError(extraErr)) throw extraErr;
+    }
+
     return NextResponse.json({
       ...persisted,
       categories,
       offerings: offeringsRows,
       availability: availabilityRows,
+      instantBook: instantBookOut,
+      bufferMins: bufferMinsOut,
+      blackoutDates: blackoutDatesOut,
     });
   } catch (err) {
     console.error('[provider/profile PATCH] fatal:', err);

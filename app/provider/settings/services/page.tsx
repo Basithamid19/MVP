@@ -85,9 +85,32 @@ export default function ProviderServicesSettingsPage() {
         setSaveError(err.error || 'Save failed. Please try again.');
         return;
       }
-      setSaved(true);
-      initialRef.current = getSnapshot();
+      // Ground truth is the server's response, not our local form state. If
+      // the server dropped a column (e.g. instantBook missing in DB), local
+      // state would falsely claim dirty=false. Re-hydrate from the response
+      // and snapshot that.
+      const persisted = await res.json().catch(() => null);
+      if (persisted && typeof persisted === 'object') {
+        const persistedOfferings = Array.isArray(persisted.offerings)
+          ? persisted.offerings.map((o: any) => ({
+              name: o.name ?? '',
+              price: String(o.price ?? ''),
+              priceType: o.priceType ?? 'HOURLY',
+              description: o.description ?? '',
+            }))
+          : [];
+        const persistedInstantBook = Boolean(persisted.instantBook);
+        setOfferings(persistedOfferings);
+        setInstantBook(persistedInstantBook);
+        initialRef.current = JSON.stringify({
+          offerings: persistedOfferings,
+          instantBook: persistedInstantBook,
+        });
+      } else {
+        initialRef.current = getSnapshot();
+      }
       setDirty(false);
+      setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch {
       setSaveError('Network error. Please check your connection and try again.');
