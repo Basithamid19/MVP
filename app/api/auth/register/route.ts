@@ -7,11 +7,14 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password, name, role } = body;
+    const { email: emailRaw, password, name, role } = body;
 
-    if (!email || !password || !name) {
+    if (!emailRaw || !password || !name) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
+
+    // Normalize so login (which also lowercases) can always find the row.
+    const email = String(emailRaw).trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
       where: { email },

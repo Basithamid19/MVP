@@ -12,20 +12,44 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          console.warn('[auth] authorize: missing credentials');
+          return null;
+        }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        // Normalize email so registration / seed / login all agree on casing.
+        const emailRaw = String(credentials.email);
+        const email = emailRaw.trim().toLowerCase();
+
+        // Case-insensitive lookup so rows stored with any casing are findable.
+        let user = await prisma.user.findFirst({
+          where: { email: { equals: email, mode: 'insensitive' } },
         });
+        // Fallback to exact-match in case the case-insensitive filter hits a
+        // Prisma/driver edge case.
+        if (!user) user = await prisma.user.findUnique({ where: { email } });
+        if (!user && email !== emailRaw) {
+          user = await prisma.user.findUnique({ where: { email: emailRaw } });
+        }
 
-        if (!user || !user.password) return null;
+        if (!user) {
+          console.warn('[auth] authorize: no user for email', email);
+          return null;
+        }
+        if (!user.password) {
+          console.warn('[auth] authorize: user has no password hash', email);
+          return null;
+        }
 
         const isValid = await bcrypt.compare(
-          credentials.password as string,
+          String(credentials.password),
           user.password
         );
 
-        if (!isValid) return null;
+        if (!isValid) {
+          console.warn('[auth] authorize: bcrypt compare failed for', email);
+          return null;
+        }
 
         return {
           id: user.id,
