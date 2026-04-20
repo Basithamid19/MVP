@@ -70,6 +70,7 @@ export default function ProviderSettingsPage() {
   const [reviewCount, setReviewCount] = useState(0);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -98,11 +99,12 @@ export default function ProviderSettingsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setAvatarUploading(true);
+    setAvatarError(null);
     const reader = new FileReader();
     reader.onload = ev => {
       const src = ev.target?.result as string;
       const img = new Image();
-      img.onload = () => {
+      img.onload = async () => {
         const size = 300;
         const canvas = document.createElement('canvas');
         canvas.width = size; canvas.height = size;
@@ -112,11 +114,34 @@ export default function ProviderSettingsPage() {
         ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
         setLocalAvatar(dataUrl);
-        fetch('/api/user/avatar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image: dataUrl }),
-        }).then(() => updateSession()).finally(() => setAvatarUploading(false));
+        try {
+          const res = await fetch('/api/user/avatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: dataUrl }),
+          });
+          if (!res.ok) {
+            // Server rejected the upload — revert optimistic UI so the user
+            // doesn't see a photo that isn't actually saved.
+            const err = await res.json().catch(() => ({}));
+            setLocalAvatar(null);
+            setAvatarError(err.error || `Upload failed (${res.status}). Please try again.`);
+            return;
+          }
+          const data = await res.json().catch(() => ({}));
+          // Treat the server response as ground truth. Pass the persisted
+          // image into updateSession so next-auth forces a fresh JWT with the
+          // new value — the bare `update()` in this beta of next-auth isn't
+          // reliable at refreshing token.image on its own.
+          const persistedImage = typeof data?.image === 'string' ? data.image : dataUrl;
+          setLocalAvatar(persistedImage);
+          await updateSession({ user: { image: persistedImage } });
+        } catch {
+          setLocalAvatar(null);
+          setAvatarError('Network error. Please check your connection and try again.');
+        } finally {
+          setAvatarUploading(false);
+        }
       };
       img.src = src;
     };
@@ -160,6 +185,17 @@ export default function ProviderSettingsPage() {
           <h1 className="text-base font-bold text-ink">Account</h1>
         </div>
       </header>
+
+      {/* Avatar error surfaced above hero — keeps the upload failure visible
+          since the optimistic localAvatar is reverted on error. */}
+      {avatarError && (
+        <div className="mx-4 mt-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-xl text-sm text-caution font-medium flex items-center justify-between gap-2">
+          <span>{avatarError}</span>
+          <button onClick={() => setAvatarError(null)} className="shrink-0 text-caution hover:opacity-70" aria-label="Dismiss">
+            <span className="text-base leading-none">×</span>
+          </button>
+        </div>
+      )}
 
       {/* ── Profile hero ── */}
       <div className="px-4 pt-5 pb-1">
