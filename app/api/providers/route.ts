@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export const dynamic = 'force-dynamic';
+// Deliberately NOT `force-dynamic` — this endpoint has no session/cookie
+// reads, so we want Vercel's edge cache to honor the Cache-Control headers
+// set on each response. The query-string params still produce per-URL cache
+// keys, so `?category=plumber` and `?homepage=true` cache independently.
+export const dynamic = 'auto';
 
 const PROVIDER_IMAGES: Record<string, string> = {
   'marius@pro.lt':  'https://randomuser.me/api/portraits/men/10.jpg',
@@ -70,7 +74,13 @@ export async function GET(request: Request) {
           (provider.user as any).image = fallback;
         }
       }
-      return NextResponse.json(provider);
+      return NextResponse.json(provider, {
+        headers: {
+          // 30s fresh at edge, 2min stale-while-revalidate. Profile edits
+          // become visible within 30s without hammering Postgres on every hit.
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=120',
+        },
+      });
     } catch (err) {
       console.error('[providers GET id=' + id + '] failed:', err);
       return NextResponse.json(null, { status: 500 });
@@ -120,7 +130,13 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(withUser);
+    return NextResponse.json(withUser, {
+      headers: {
+        // 60s fresh at edge, 5min stale-while-revalidate. Browse + homepage
+        // Top-Rated are fine with minute-level freshness.
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
+    });
   } catch (err) {
     console.error('[providers GET] query failed:', {
       where,
