@@ -47,6 +47,12 @@ export default function MobileNav() {
               <Link
                 key={href}
                 href={href}
+                // prefetch={true} forces a full RSC + data prefetch for
+                // dynamic routes (dashboard/messages/account). Without this
+                // Next 15 only prefetches the shared layout, so the first
+                // click still waits on Prisma. With it, data is warm in the
+                // Router Cache by the time the user taps.
+                prefetch={true}
                 className={`relative flex flex-col items-center gap-0.5 px-4 py-1.5 rounded-xl transition-all duration-200 ${
                   isActive ? 'text-brand' : 'text-ink-dim'
                 }`}
