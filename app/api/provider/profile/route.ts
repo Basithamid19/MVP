@@ -186,26 +186,58 @@ export async function PATCH(request: Request) {
 
     const profileId = existing.id;
 
-    // Apply any field updates. For a brand-new row the raw INSERT above already
-    // handled coreData; we still run this so newData (instantBook, bufferMins,
-    // blackoutDates) is applied via a separate UPDATE that can tolerate missing
-    // columns. For an existing row this is the sole path that persists edits.
-    if (Object.keys(coreData).length > 0 || Object.keys(newData).length > 0) {
+    // Apply core field edits via raw SQL. Bypasses Prisma's query engine
+    // entirely so there's no chance of client-side default injection, stale
+    // prepared statements on the PgBouncer pool, or any other middleware quirk
+    // swallowing the write. Only columns we know exist since the initial
+    // migration are touched here — so this is safe on any DB state.
+    if (Object.keys(coreData).length > 0) {
+      const sets: string[] = [];
+      const values: unknown[] = [];
+
+      if ('bio' in coreData) {
+        values.push(coreData.bio);
+        sets.push(`"bio" = $${values.length}`);
+      }
+      if ('serviceArea' in coreData) {
+        values.push(coreData.serviceArea);
+        sets.push(`"serviceArea" = $${values.length}`);
+      }
+      if ('languages' in coreData) {
+        const langsArr = Array.isArray(coreData.languages) ? (coreData.languages as string[]) : [];
+        const langsLiteral = '{' + langsArr
+          .map((l) => '"' + String(l).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"')
+          .join(',') + '}';
+        values.push(langsLiteral);
+        sets.push(`"languages" = $${values.length}::text[]`);
+      }
+      if ('responseTime' in coreData) {
+        values.push(coreData.responseTime);
+        sets.push(`"responseTime" = $${values.length}`);
+      }
+
+      if (sets.length > 0) {
+        values.push(profileId);
+        const sql = `UPDATE "ProviderProfile" SET ${sets.join(', ')} WHERE "id" = $${values.length}`;
+        const affected = await prisma.$executeRawUnsafe(sql, ...values);
+        console.log('[provider/profile PATCH] core UPDATE affected', affected, 'rows', {
+          profileId, keys: Object.keys(coreData),
+        });
+      }
+    }
+
+    // newData (instantBook, bufferMins, blackoutDates) may not exist on older
+    // DBs — keep the Prisma path here so the column-error fallback can skip
+    // it gracefully.
+    if (Object.keys(newData).length > 0) {
       try {
         await prisma.providerProfile.update({
           where: { id: profileId },
-          data: { ...coreData, ...newData },
+          data: newData,
           select: { id: true },
         });
       } catch (err) {
-        if (isColumnError(err) && Object.keys(coreData).length > 0) {
-          console.warn('[provider/profile PATCH] newer columns missing, retrying core fields only');
-          await prisma.providerProfile.update({
-            where: { id: profileId },
-            data: coreData,
-            select: { id: true },
-          });
-        } else if (isColumnError(err)) {
+        if (isColumnError(err)) {
           console.warn('[provider/profile PATCH] newer columns missing, skipping newData');
         } else {
           throw err;
