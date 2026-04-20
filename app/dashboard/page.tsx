@@ -10,20 +10,17 @@ export const dynamic = 'force-dynamic';
 
 async function getInitialData(userId: string) {
   try {
-    const customer = await prisma.customerProfile.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-    if (!customer) return { initialRequests: [], initialBookings: [] };
-
+    // Nested relation filter skips the customerProfile.findUnique round-trip —
+    // Postgres does the join in a single query instead of us resolving the
+    // profile id client-side first.
     const [requests, bookings] = await Promise.all([
       prisma.serviceRequest.findMany({
-        where: { customerId: customer.id },
+        where: { customer: { userId } },
         include: { category: true, quotes: true },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.booking.findMany({
-        where: { customerId: customer.id },
+        where: { customer: { userId } },
         include: { provider: { include: { user: true } }, review: true },
         orderBy: { scheduledAt: 'desc' },
       }),
