@@ -42,48 +42,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+      // On sign-in: persist everything the session needs so subsequent
+      // session() calls can hydrate without hitting the DB.
       if (user) {
-        token.role = (user as any).role;
         token.id = user.id;
+        token.role = (user as any).role;
+        token.image = (user as any).image ?? null;
       }
+
+      // Client-side `update()` forces a DB refresh so profile edits (new
+      // avatar, role change) surface without requiring re-login.
+      if (trigger === 'update' && token.id) {
+        const fresh = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { id: true, image: true, role: true },
+        }).catch(() => null);
+        if (fresh) {
+          token.role = fresh.role;
+          token.image = fresh.image ?? null;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
+      // Hydrate from the JWT only — no DB round-trip. This used to query
+      // Prisma on every request (page nav, API call, middleware auth()),
+      // which was the dominant latency for logged-in users.
       if (session.user) {
         (session.user as any).id = token.id;
-        try {
-          // Look up by ID first; if that misses (stale JWT), fall back to email
-          let dbUser = token.id
-            ? await prisma.user.findUnique({
-                where: { id: token.id as string },
-                select: { id: true, image: true, role: true },
-              }).catch(() => null)
-            : null;
-
-          if (!dbUser && session.user.email) {
-            // token.id is missing or points to a deleted/different record —
-            // resolve the correct ID from the email so all downstream queries work
-            dbUser = await prisma.user.findUnique({
-              where: { email: session.user.email },
-              select: { id: true, image: true, role: true },
-            }).catch(() => null);
-            if (dbUser) {
-              console.warn('[auth] token.id mismatch for', session.user.email,
-                '— correcting from', token.id, 'to', dbUser.id);
-              (session.user as any).id = dbUser.id;
-            }
-          }
-
-          if (dbUser) {
-            session.user.image = dbUser.image;
-            (session.user as any).role = dbUser.role;
-          } else {
-            (session.user as any).role = token.role;
-          }
-        } catch {
-          // DB unavailable — fall back to JWT values so session stays valid
-          (session.user as any).role = token.role;
+        (session.user as any).role = token.role;
+        if (token.image !== undefined) {
+          session.user.image = token.image as string | null;
         }
       }
       return session;
