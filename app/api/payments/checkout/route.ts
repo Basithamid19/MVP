@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
+import { isColumnError } from '@/lib/prisma-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,15 +15,31 @@ export async function POST(request: Request) {
   const { bookingId } = await request.json();
   if (!bookingId) return NextResponse.json({ error: 'bookingId required' }, { status: 400 });
 
-  const booking = await prisma.booking.findUnique({
-    where: { id: bookingId },
-    include: {
-      customer: { include: { user: { select: { email: true, name: true } } } },
-      provider: { select: { id: true, stripeAccountId: true, stripeOnboarded: true } },
-      quote: { include: { request: { include: { category: true } } } },
-      payment: true,
-    },
-  });
+  // `stripeAccountId` / `stripeOnboarded` were added in migration 20260417.
+  // If an environment is running this deploy before that migration lands,
+  // Prisma throws P2022 from the `provider.select` below. Degrade to a 503
+  // with a clear message instead of a bare 500.
+  let booking;
+  try {
+    booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        customer: { include: { user: { select: { email: true, name: true } } } },
+        provider: { select: { id: true, stripeAccountId: true, stripeOnboarded: true } },
+        quote: { include: { request: { include: { category: true } } } },
+        payment: true,
+      },
+    });
+  } catch (err) {
+    if (isColumnError(err)) {
+      console.error('[payments/checkout] stripe columns missing — migration pending:', err);
+      return NextResponse.json(
+        { error: 'Payments are being configured — please try again in a few minutes.' },
+        { status: 503 },
+      );
+    }
+    throw err;
+  }
 
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
   if (booking.customer.userId !== (session.user as any).id) {

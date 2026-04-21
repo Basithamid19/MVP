@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { isColumnError } from '@/lib/prisma-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,20 +19,6 @@ const SAFE_SCALAR_SELECT = {
   verificationTier: true,
   responseTime: true,
 } as const;
-
-// Errors caused by a column that exists in schema.prisma but not in the DB yet.
-function isColumnError(e: unknown): boolean {
-  const m = e instanceof Error ? e.message : String(e);
-  return (
-    m.includes('P2022') ||
-    m.includes('instantBook') ||
-    m.includes('bufferMins') ||
-    m.includes('blackoutDates') ||
-    m.includes('stripeAccountId') ||
-    m.includes('stripeOnboarded') ||
-    m.includes('does not exist in the current database')
-  );
-}
 
 export async function GET() {
   const session = await auth();
@@ -259,35 +246,46 @@ export async function PATCH(request: Request) {
       }
     }
 
-    // Offerings
+    // Offerings + Availability — atomic replace.
+    //
+    // Semantics preserved from the previous sequential version:
+    //   undefined       → leave current rows untouched
+    //   empty array []  → clear all current rows (deleteMany runs, no insert)
+    //   non-empty array → replace existing rows with the provided set
+    //
+    // `prisma.$transaction([...])` (array form) runs all ops in a single DB
+    // transaction; a failure in any step rolls the whole thing back. Array
+    // form is required for Supabase pgbouncer compatibility.
+    const ops: any[] = [];
     if (Array.isArray(offerings)) {
-      await prisma.serviceOffering.deleteMany({ where: { providerProfileId: profileId } });
-      for (const o of offerings) {
-        await prisma.serviceOffering.create({
-          data: {
+      ops.push(prisma.serviceOffering.deleteMany({ where: { providerProfileId: profileId } }));
+      if (offerings.length > 0) {
+        ops.push(prisma.serviceOffering.createMany({
+          data: offerings.map((o: any) => ({
             providerProfileId: profileId,
             name: (o.name ?? '').trim(),
             description: (o.description ?? '').trim() || null,
             price: parseFloat(o.price),
             priceType: o.priceType ?? 'HOURLY',
-          },
-        });
+          })),
+        }));
       }
     }
-
-    // Availability
     if (Array.isArray(availability)) {
-      await prisma.availabilitySlot.deleteMany({ where: { providerProfileId: profileId } });
-      for (const slot of availability) {
-        await prisma.availabilitySlot.create({
-          data: {
+      ops.push(prisma.availabilitySlot.deleteMany({ where: { providerProfileId: profileId } }));
+      if (availability.length > 0) {
+        ops.push(prisma.availabilitySlot.createMany({
+          data: availability.map((slot: any) => ({
             providerProfileId: profileId,
             dayOfWeek: slot.dayOfWeek,
             startTime: slot.startTime,
             endTime: slot.endTime,
-          },
-        });
+          })),
+        }));
       }
+    }
+    if (ops.length > 0) {
+      await prisma.$transaction(ops);
     }
 
     // Re-read from the DB so the client sees ground truth, not a racy cache

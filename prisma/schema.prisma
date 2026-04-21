@@ -191,7 +191,7 @@ model Payment {
   amount            Float
   depositAmount     Float?
   platformFee       Float?
-  status            String   // "PENDING", "DEPOSIT_HELD", "PAID", "REFUNDED", "PARTIAL_REFUND"
+  status            String   // "PENDING", "DEPOSIT_HELD", "PAID", "PROCESSING", "REFUNDED", "PARTIAL_REFUND"
   stripeSessionId   String?
   stripeIntentId    String?
   stripeChargeId    String?
@@ -224,6 +224,8 @@ model ChatThread {
   createdAt         DateTime        @default(now())
 
   @@unique([requestId, customerId, providerId])
+  @@index([customerId])
+  @@index([providerId])
 }
 
 model ChatMessage {
@@ -245,6 +247,8 @@ model Notification {
   href      String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model AdminTicket {

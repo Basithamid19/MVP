@@ -103,15 +103,14 @@ export async function POST(request: Request) {
               connect: [{ id: providerUserId }, { id: customerProfile.userId }],
             },
           },
-        }).catch(async (err: any) => {
-          if (err?.code === 'P2002') return; // concurrent create — already exists
-          // Columns don't exist yet — create without scalar fields
-          await prisma.chatThread.create({
-            data: {
-              requestId,
-              participants: { connect: [{ id: providerUserId }, { id: customerProfile.userId }] },
-            },
-          }).catch(() => {});
+        }).catch((err: any) => {
+          // P2002 = concurrent create; the other writer already has the row.
+          // Anything else is a real bug we want to see in logs rather than
+          // silently swallow — the prior "create without scalars" fallback
+          // violated the NOT NULL constraint added in 20260403 and always
+          // failed, so thread creation appeared to succeed but never did.
+          if (err?.code === 'P2002') return;
+          console.error('[quotes POST] Failed to create chat thread:', err);
         });
       }
     } catch (err: any) {
