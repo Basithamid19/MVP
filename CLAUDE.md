@@ -117,3 +117,36 @@ Root-level `refine_*.js` and `replace_dashboard.js` are one-off migration script
 ## Branching
 
 All development on this session goes to branch `claude/add-claude-documentation-mO3h8`. Do not push to `main` directly.
+
+## Repair-cycle lessons
+
+### Source of truth
+- `prisma/schema.prisma` defines data shape. `lib/auth.ts` is the only auth source. Public provider API shape lives in `SINGLE_SELECT` in `app/api/providers/route.ts` — widen that `select` when the UI needs a new field.
+- Customer-facing pages (notably `app/providers/[id]/page.tsx`) render **duplicated tile rows**: a `hidden sm:grid` desktop row and a `sm:hidden grid-cols-3` mobile row. Update both when changing a tile.
+- Save path: settings form → `PATCH /api/provider/profile` → Prisma. Read path: page → `GET /api/providers` → Prisma. Don't cross the wires.
+
+### Deployment & migration
+- `next.config.ts` suppresses TS + ESLint errors in build; a passing build is not a correctness signal. Run `npm run lint` and `npx tsc --noEmit` locally before pushing.
+- `npm run build` runs `prisma migrate deploy`. New columns require a migration **and** a `.catch` that inspects for `P2022` / column name in every read site (see `app/api/chat/route.ts`, `app/api/bookings/route.ts`). Don't drop the fallback.
+- `DATABASE_URL` = pooled (6543, `?pgbouncer=true`). `DIRECT_URL` = 5432 for migrations. Never swap them.
+
+### Debugging workflow
+- Trace data end-to-end **before editing**: DB column → Prisma `select` → API response → page render. Confirm which layer actually drops the data.
+- For any field visible on a page, `grep -n "\.fieldName\b"` across `app/**/*.{ts,tsx}` to find every render site — never fix just the one you noticed.
+- Reproduce at both `≥ sm` (≥640px) and `< sm` widths for any visual bug; breakpoint-duplicated markup bites.
+- Edit only the layer that's wrong. No "while I'm here" refactors on unrelated layers.
+
+### Known bug patterns
+- **Breakpoint duplication:** desktop and mobile tile markup diverge — e.g. `languages.join(', ')` on desktop vs. `languages[0]` on mobile.
+- **Array-indexed render:** `arr[0]` used where `.join(', ')` was intended, collapsing multi-value fields to one.
+- **Empty-state blanks:** `[].join(', ')` renders as empty string; always guard with `arr?.length ? arr.join(', ') : '—'`.
+- **Auth `id` cast:** `(session.user as any).id` is load-bearing; the session callback also falls back from id→email. Don't "clean up" either.
+- **Stripe lazy Proxy:** `lib/stripe.ts` must stay lazy so `next build` works without `STRIPE_SECRET_KEY`.
+- **Migration drift:** newest migrations (`20260403*`, `20260404*`, `20260412*`, `20260417*`, `20260420*`) are guarded by `.catch` fallbacks. Extend the pattern, don't remove it.
+- **PII redaction:** all outgoing chat content passes through `redactPII` — never bypass it for user content.
+
+### Branching & promotion
+- Keep repair work on the current feature branch until explicitly merged; do not push directly to `main`.
+- One commit per logical fix with a `why`-first message; push with `git push -u origin <branch>`.
+- Don't open a PR unless the user asks.
+- After each push report: exact file changed, exact root cause, exact rendering/behaviour change, exact manual verification steps, commit hash.
