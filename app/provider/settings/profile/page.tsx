@@ -29,6 +29,23 @@ export default function ProviderProfileSettingsPage() {
 
   const getSnapshot = () => JSON.stringify({ bio, serviceArea, languages, responseTime, selectedCategories });
 
+  // Single source of truth for the Languages chip-add flow. Called from
+  // desktop keydown, mobile beforeinput, and the explicit Add button.
+  // Dedupe runs inside the functional updater, so calling this twice in the
+  // same event sequence (Android soft keyboards sometimes dispatch both
+  // keydown and beforeinput for the same Enter) is safe: the second call
+  // sees the already-appended array and returns it unchanged.
+  const commitLanguage = (raw: string) => {
+    const candidate = raw.trim();
+    if (!candidate) return;
+    setLanguages(prev =>
+      prev.some(l => l.toLowerCase() === candidate.toLowerCase())
+        ? prev
+        : [...prev, candidate]
+    );
+    setLangInput('');
+  };
+
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
@@ -234,28 +251,49 @@ export default function ProviderProfileSettingsPage() {
                   </span>
                 ))}
               </div>
-              <input
-                type="text"
-                value={langInput}
-                onChange={e => setLangInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key !== 'Enter') return;
-                  // preventDefault is unconditional on Enter so this input can
-                  // never submit a parent <form>, even if the page is later
-                  // wrapped in one. Empty/whitespace input becomes a no-op
-                  // after the early return below.
-                  e.preventDefault();
-                  const candidate = langInput.trim();
-                  if (!candidate) return;
-                  const exists = languages.some(
-                    l => l.toLowerCase() === candidate.toLowerCase(),
-                  );
-                  if (!exists) setLanguages(p => [...p, candidate]);
-                  setLangInput('');
-                }}
-                placeholder="Add language and press Enter"
-                className="w-full px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={langInput}
+                  onChange={e => setLangInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key !== 'Enter') return;
+                    // Android IME fires keydown with key 'Unidentified' /
+                    // keyCode 229 during composition; skip those — the real
+                    // Enter arrives via onBeforeInput below.
+                    if ((e.nativeEvent as unknown as { isComposing?: boolean }).isComposing) return;
+                    e.preventDefault();
+                    commitLanguage(langInput);
+                  }}
+                  onBeforeInput={e => {
+                    // Soft-keyboard Enter on most Android IMEs (Gboard, SwiftKey,
+                    // Samsung) and iOS predictive-text commit + Return dispatch
+                    // beforeinput with inputType 'insertLineBreak' even when
+                    // keydown is missing or ambiguous. This is the reliable
+                    // mobile signal for "user pressed Enter in a single-line
+                    // input". commitLanguage is idempotent (dedupe happens
+                    // inside setLanguages' functional updater) so if both this
+                    // and keydown fire in the same sequence, the second call
+                    // is a no-op.
+                    const inputType = (e.nativeEvent as InputEvent).inputType;
+                    if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
+                      e.preventDefault();
+                      commitLanguage(langInput);
+                    }
+                  }}
+                  enterKeyHint="done"
+                  placeholder="Add language"
+                  className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => commitLanguage(langInput)}
+                  disabled={!langInput.trim()}
+                  className="shrink-0 px-4 py-2.5 rounded-xl font-medium text-sm transition-colors bg-brand text-white hover:bg-brand-dark disabled:bg-surface-alt disabled:text-ink-dim disabled:border disabled:border-border-dim disabled:cursor-not-allowed"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
             {/* Response time */}
