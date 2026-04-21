@@ -22,6 +22,8 @@ export default async function ProviderDashboardPage() {
   if (!session?.user) redirect('/login');
 
   const userId = (session.user as any).id;
+  if (!userId) redirect('/login');
+
   const initialUser = {
     name: session.user.name ?? null,
     image: session.user.image ?? null,
