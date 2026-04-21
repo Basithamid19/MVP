@@ -137,7 +137,7 @@ export default function ProviderProfilePage() {
                     <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-current" />
                     <span className="text-ink font-bold text-sm sm:text-base">{provider.ratingAvg.toFixed(1)}</span>
                     <span className="text-ink-dim text-[11px] sm:text-sm font-medium ml-0.5">
-                      ({reviews.length || provider.completedJobs} reviews)
+                      ({provider._count?.reviews ?? reviews.length} reviews)
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-ink-dim text-[11px] sm:text-sm font-medium">
