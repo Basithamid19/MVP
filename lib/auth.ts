@@ -67,14 +67,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // Hydrate from the JWT only — no DB round-trip. This used to query
-      // Prisma on every request (page nav, API call, middleware auth()),
-      // which was the dominant latency for logged-in users.
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         if (token.image !== undefined) {
           session.user.image = token.image as string | null;
+        }
+
+        // Stale-JWT recovery — deployed tokens from before the 42P05 era carry
+        // outdated token.id values. Resolve via email so downstream Prisma reads
+        // hit the right row. See CLAUDE.md "Auth `id` cast" lesson: "don't
+        // clean up" this fallback.
+        try {
+          let dbUser = token.id
+            ? await prisma.user.findUnique({
+                where: { id: token.id as string },
+                select: { id: true, image: true, role: true },
+              }).catch(() => null)
+            : null;
+
+          if (!dbUser && session.user.email) {
+            dbUser = await prisma.user.findUnique({
+              where: { email: session.user.email },
+              select: { id: true, image: true, role: true },
+            }).catch(() => null);
+            if (dbUser) {
+              (session.user as any).id = dbUser.id;
+            }
+          }
+
+          if (dbUser) {
+            (session.user as any).role = dbUser.role;
+            if (session.user.image == null) {
+              session.user.image = dbUser.image;
+            }
+          }
+        } catch {
+          // DB unreachable — keep JWT-only values so the session stays valid.
         }
       }
       return session;
