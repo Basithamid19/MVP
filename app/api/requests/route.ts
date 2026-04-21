@@ -67,59 +67,93 @@ export async function GET(request: Request) {
   const id = searchParams.get('id');
 
   if (id) {
-    const userId = (session.user as any).id;
-    const role = (session.user as any).role;
+    try {
+      const userId = (session.user as any).id;
+      const role = (session.user as any).role;
 
-    // Authorization: full details are only readable by the owning customer,
-    // an admin, or a provider who has already submitted a quote on this
-    // request. Category-matched providers who have NOT quoted yet are NOT
-    // authorized here — lead visibility with a narrower field set will be
-    // handled in a dedicated endpoint in a later block.
-    const header = await prisma.serviceRequest.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        customer: { select: { userId: true } },
-      },
-    });
-    if (!header) {
-      return NextResponse.json(null);
-    }
-
-    let authorized = role === 'ADMIN' || header.customer?.userId === userId;
-
-    if (!authorized && role === 'PROVIDER') {
-      const providerProfile = await prisma.providerProfile.findUnique({
-        where: { userId },
-        select: { id: true },
+      // Authorization: full details are only readable by the owning customer,
+      // an admin, or a provider who has already submitted a quote on this
+      // request. Category-matched providers who have NOT quoted yet are NOT
+      // authorized here — lead visibility with a narrower field set will be
+      // handled in a dedicated endpoint in a later block.
+      const header = await prisma.serviceRequest.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          customer: { select: { userId: true } },
+        },
       });
-      if (providerProfile) {
-        const quoted = await prisma.quote.findFirst({
-          where: { requestId: id, providerId: providerProfile.id },
+      if (!header) {
+        return NextResponse.json(null);
+      }
+
+      let authorized = role === 'ADMIN' || header.customer?.userId === userId;
+
+      if (!authorized && role === 'PROVIDER') {
+        const providerProfile = await prisma.providerProfile.findUnique({
+          where: { userId },
           select: { id: true },
         });
-        if (quoted) authorized = true;
+        if (providerProfile) {
+          const quoted = await prisma.quote.findFirst({
+            where: { requestId: id, providerId: providerProfile.id },
+            select: { id: true },
+          });
+          if (quoted) authorized = true;
+        }
       }
-    }
 
-    if (!authorized) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
+      if (!authorized) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
 
-    const req = await prisma.serviceRequest.findUnique({
-      where: { id },
-      include: {
-        category: true,
-        customer: { include: { user: true } },
-        quotes: {
-          include: {
-            provider: { include: { user: true, categories: true } },
+      // Explicit select only for columns the inbox page actually renders.
+      // Using `include` pulled every scalar on every related row, which made
+      // this handler crash with P2022 whenever the Prisma client knew about a
+      // column that the prod DB migration hadn't applied yet (stripe/booking
+      // fields added in 20260412/20260417). The crash bubbled as an HTML 500
+      // that the client `.catch`ed into a misleading "Request not found".
+      const req = await prisma.serviceRequest.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          status: true,
+          description: true,
+          address: true,
+          dateWindow: true,
+          budget: true,
+          isUrgent: true,
+          category: { select: { id: true, name: true } },
+          customer: { select: { userId: true } },
+          quotes: {
+            select: {
+              id: true,
+              status: true,
+              price: true,
+              estimatedHours: true,
+              notes: true,
+              createdAt: true,
+              provider: {
+                select: {
+                  id: true,
+                  ratingAvg: true,
+                  responseTime: true,
+                  completedJobs: true,
+                  isVerified: true,
+                  categories: { select: { id: true, name: true } },
+                  user: { select: { name: true, image: true } },
+                },
+              },
+            },
+            orderBy: { createdAt: 'asc' },
           },
-          orderBy: { createdAt: 'asc' },
         },
-      },
-    });
-    return NextResponse.json(req);
+      });
+      return NextResponse.json(req);
+    } catch (err) {
+      console.error('[requests GET id=] error:', err);
+      return NextResponse.json({ error: 'Internal' }, { status: 500 });
+    }
   }
 
   const role = (session.user as any).role;

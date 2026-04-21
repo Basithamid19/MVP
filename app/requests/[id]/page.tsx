@@ -34,13 +34,22 @@ export default function QuoteInboxPage() {
   const router = useRouter();
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [actioning, setActioning] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     fetch(`/api/requests?id=${id}`)
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        // A truly-missing request is returned as JSON `null`; anything else is
+        // a real payload. Non-ok responses are thrown above so they land in
+        // the `error` state instead of being mis-rendered as "not found".
+        return r.json();
+      })
       .then(d => { setRequest(d); setLoading(false); })
-      .catch(() => setLoading(false));
+      .catch(() => { setLoadError(true); setLoading(false); });
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
@@ -68,6 +77,23 @@ export default function QuoteInboxPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-canvas">
         <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-center p-4">
+        <p className="text-xl font-bold mb-2">Couldn&apos;t load this request</p>
+        <p className="text-sm text-ink-sub mb-5 max-w-sm">Something went wrong on our end. Please try again.</p>
+        <div className="flex gap-3">
+          <button onClick={load} className="inline-flex items-center gap-2 bg-brand text-white font-bold px-5 py-2.5 rounded-2xl hover:bg-brand-dark transition-colors">
+            <RefreshCcw className="w-4 h-4" /> Try again
+          </button>
+          <Link href="/dashboard" className="inline-flex items-center px-5 py-2.5 rounded-2xl border border-border-dim font-bold text-ink hover:bg-surface-alt transition-colors">
+            Back to dashboard
+          </Link>
+        </div>
       </div>
     );
   }
