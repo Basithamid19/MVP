@@ -228,7 +228,7 @@ export default function ProviderProfileSettingsPage() {
                 {languages.map(l => (
                   <span key={l} className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-muted text-brand rounded-full text-xs font-semibold">
                     {l}
-                    <button onClick={() => setLanguages(prev => prev.filter(x => x !== l))} className="hover:text-brand-dark">
+                    <button type="button" onClick={() => setLanguages(prev => prev.filter(x => x !== l))} className="hover:text-brand-dark">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -239,10 +239,19 @@ export default function ProviderProfileSettingsPage() {
                 value={langInput}
                 onChange={e => setLangInput(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter' && langInput.trim()) {
-                    setLanguages(p => [...p, langInput.trim()]);
-                    setLangInput('');
-                  }
+                  if (e.key !== 'Enter') return;
+                  // preventDefault is unconditional on Enter so this input can
+                  // never submit a parent <form>, even if the page is later
+                  // wrapped in one. Empty/whitespace input becomes a no-op
+                  // after the early return below.
+                  e.preventDefault();
+                  const candidate = langInput.trim();
+                  if (!candidate) return;
+                  const exists = languages.some(
+                    l => l.toLowerCase() === candidate.toLowerCase(),
+                  );
+                  if (!exists) setLanguages(p => [...p, candidate]);
+                  setLangInput('');
                 }}
                 placeholder="Add language and press Enter"
                 className="w-full px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
