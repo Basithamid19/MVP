@@ -166,7 +166,9 @@ export default function ProviderProfilePage() {
                     <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-1">
                       <Languages className="w-3 h-3" /> Languages
                     </div>
-                    <div className="text-sm font-bold">{provider.languages.join(', ')}</div>
+                    <div className="text-sm font-bold">
+                      {provider.languages?.length ? provider.languages.join(', ') : '—'}
+                    </div>
                   </div>
                   <div className="p-3 bg-surface-alt rounded-card border border-border-dim">
                     <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-1">
@@ -196,7 +198,9 @@ export default function ProviderProfilePage() {
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
                   <Languages className="w-2.5 h-2.5" /> Speaks
                 </p>
-                <p className="text-[11px] font-bold text-ink leading-tight truncate">{provider.languages[0]}</p>
+                <p className="text-[11px] font-bold text-ink leading-tight">
+                  {provider.languages?.length ? provider.languages.join(', ') : '—'}
+                </p>
               </div>
               <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
