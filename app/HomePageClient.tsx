@@ -214,12 +214,12 @@ function TrustCarousel() {
           </div>
         </div>
 
-        {/* Desktop: 4-column grid */}
-        <div className="hidden md:grid md:grid-cols-4 gap-3">
+        {/* Desktop: 2×2 grid */}
+        <div className="hidden md:grid md:grid-cols-2 gap-3">
           {items.map((item, i) => {
             const TIcon = TRUST_ICONS[i];
             return (
-              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-center gap-3 shadow-card">
+              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-start gap-3 shadow-card">
                 <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
                   <TIcon className="w-[17px] h-[17px] text-brand" />
                 </div>
@@ -332,7 +332,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
       </nav>
 
       {/* ── 1. Hero ── */}
-      <section className="relative pt-0 pb-4 sm:pb-28 lg:pb-40 overflow-hidden bg-canvas">
+      <section className="relative pt-0 pb-4 sm:pb-16 lg:pb-20 overflow-hidden bg-canvas">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
