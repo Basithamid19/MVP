@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Star, ShieldCheck, Search as SearchIcon,
-  Loader2, Clock, ChevronRight, SlidersHorizontal, CheckCircle2,
+  Loader2, Clock, ChevronRight, SlidersHorizontal, CheckCircle2, ArrowLeft,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 import { useSession } from 'next-auth/react';
@@ -39,6 +39,7 @@ function parseResponseMinutes(rt: string | null): number {
 
 function BrowseContent() {
   const searchParams   = useSearchParams();
+  const router         = useRouter();
   const { data: session } = useSession();
   const initialCategory = searchParams.get('category') || '';
 
@@ -88,6 +89,15 @@ function BrowseContent() {
       {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
         <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
+
+          {/* Back button */}
+          <button
+            onClick={() => router.back()}
+            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-surface-alt border border-border-dim text-ink-sub hover:text-ink hover:border-brand/30 transition-all shrink-0"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
 
           {/* Search field */}
           <div className="flex-1 relative">
