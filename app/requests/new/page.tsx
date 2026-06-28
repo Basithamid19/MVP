@@ -542,7 +542,7 @@ function NewRequestContent() {
 
       {/* ── Sticky bottom CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
-        <div className="max-w-2xl mx-auto px-4 pt-3 pb-safe">
+        <div className="max-w-2xl mx-auto px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
           {/* Step indicator */}
           <p className="text-center text-[11px] font-semibold text-ink-dim mb-2.5 tracking-wide">
             Step {step} of {STEPS.length}
@@ -565,9 +565,6 @@ function NewRequestContent() {
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Post Request</>}
             </button>
           )}
-
-          {/* Extra safe area buffer below pb-safe on very old browsers */}
-          <div className="h-1 sm:h-0" />
         </div>
       </div>
     </div>
