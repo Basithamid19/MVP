@@ -8,6 +8,7 @@ import {
   Loader2, Clock, ChevronRight, SlidersHorizontal, CheckCircle2, ArrowLeft,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
+import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
 import { useSession } from 'next-auth/react';
 import { avatarUrl } from '@/lib/avatar';
 
@@ -89,6 +90,9 @@ function BrowseContent() {
       {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
         <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
+
+          {/* Menu (desktop) */}
+          <CustomerMenuDrawer />
 
           {/* Back button */}
           <button

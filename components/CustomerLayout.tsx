@@ -3,13 +3,12 @@
 import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import MobileNav from '@/components/MobileNav';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
 import {
-  Home, Search, LayoutDashboard, Users, LogOut,
-  Bell, Clock, Calendar, CheckCircle2, X,
+  Users, Bell, Clock, Calendar, CheckCircle2, X,
 } from 'lucide-react';
 
 interface Notification {
@@ -43,13 +42,6 @@ function timeAgo(date: string) {
   return `${Math.floor(hrs / 24)}d ago`;
 }
 
-const NAV_ITEMS = [
-  { href: '/',          label: 'Home',       Icon: Home,            match: (p: string) => p === '/' },
-  { href: '/browse',    label: 'Find Pros',  Icon: Search,          match: (p: string) => p === '/browse' || p.startsWith('/providers') },
-  { href: '/dashboard', label: 'Dashboard',  Icon: LayoutDashboard, match: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests') },
-  { href: '/account',   label: 'My Account', Icon: Users,           match: (p: string) => p === '/account' },
-];
-
 interface CustomerLayoutProps {
   children: React.ReactNode;
   maxWidth?: string;
@@ -59,7 +51,6 @@ export default function CustomerLayout({
   children,
   maxWidth = 'max-w-5xl',
 }: CustomerLayoutProps) {
-  const pathname = usePathname();
   const { data: session } = useSession();
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -104,72 +95,22 @@ export default function CustomerLayout({
 
   return (
     <div className="min-h-screen w-full max-w-full bg-canvas flex font-sans">
-      {/* Sidebar */}
-      <aside className="hidden md:flex w-16 lg:w-64 bg-canvas flex-col sticky top-0 h-screen shrink-0 border-r border-border-dim/50">
-        <div className="p-6 lg:p-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight text-ink hidden lg:block">Aladdin</span>
-          </Link>
-        </div>
-
-        <nav className="flex-1 px-4 py-4 space-y-1.5 overflow-y-auto">
-          {NAV_ITEMS.filter(item =>
-            // Hide auth-only items (Dashboard, My Account) for guests
-            session || (item.href === '/' || item.href === '/browse')
-          ).map(({ href, label, Icon, match }) => {
-            const active = match(pathname);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
-                  active
-                    ? 'bg-white shadow-sm border border-border-dim text-brand'
-                    : 'text-ink-sub hover:text-ink hover:bg-white/60 border border-transparent'
-                }`}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="hidden lg:block">{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="p-4 lg:p-6">
-          {session ? (
-            <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
-            >
-              <LogOut className="w-4 h-4 shrink-0" />
-              <span className="hidden lg:block">Log Out</span>
-            </button>
-          ) : (
-            <Link
-              href="/login"
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand hover:bg-brand-muted transition-all"
-            >
-              <LogOut className="w-4 h-4 shrink-0 rotate-180" />
-              <span className="hidden lg:block">Log In</span>
-            </Link>
-          )}
-        </div>
-      </aside>
-
       {/* Main area */}
       <div className="flex-1 min-w-0 overflow-x-hidden flex flex-col pb-20 md:pb-0">
         {/* Top bar */}
-        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-2 sm:py-3 flex items-center justify-between sm:justify-end sticky top-0 z-20">
-          <Link href="/" className="md:hidden flex items-center gap-2">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
-          </Link>
+        <header className="bg-canvas/80 backdrop-blur-xl px-5 sm:px-8 py-2 sm:py-3 flex items-center justify-between sticky top-0 z-20">
+          {/* Left: hamburger (desktop) + brand */}
+          <div className="flex items-center gap-2">
+            <CustomerMenuDrawer />
+            <Link href="/" className="md:hidden flex items-center gap-2">
+              <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
+                <AladdinIcon className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
+            </Link>
+          </div>
 
+          <div className="flex items-center gap-2">
           <LanguageSwitcher className="hidden sm:flex" />
           <div className="relative" ref={notifRef}>
             <button
@@ -238,6 +179,7 @@ export default function CustomerLayout({
                 )}
               </div>
             )}
+          </div>
           </div>
         </header>
 

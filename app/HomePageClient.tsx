@@ -19,6 +19,7 @@ import { avatarUrl } from '@/lib/avatar';
 import { AladdinIcon, BroomIcon, ElectricianIcon } from '@/components/icons';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
 
 /* ─── Static data ─── */
 const categories = [
@@ -302,12 +303,15 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
       {/* ── Nav ── */}
       <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between w-full">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <CustomerMenuDrawer />
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
+                <AladdinIcon className="w-5 h-5 text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />
             {session ? (
