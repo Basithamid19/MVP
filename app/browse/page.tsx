@@ -89,7 +89,7 @@ function BrowseContent() {
 
       {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
-        <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 max-w-5xl mx-auto w-full">
+        <div className="flex items-center gap-2.5 px-4 lg:px-6 pt-3 pb-2 max-w-7xl mx-auto w-full">
 
           {/* Menu (desktop) */}
           <CustomerMenuDrawer />
@@ -115,10 +115,10 @@ function BrowseContent() {
             />
           </div>
 
-          {/* Sort button */}
+          {/* Sort button — mobile only (desktop uses the filter sidebar) */}
           <button
             onClick={() => setShowSortSheet(true)}
-            className={`flex items-center gap-1.5 px-3.5 h-10 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
+            className={`lg:hidden flex items-center gap-1.5 px-3.5 h-10 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
               sortBy !== 'top_rated'
                 ? 'bg-brand-muted text-brand border-brand/30'
                 : 'bg-surface-alt border-border-dim text-ink-sub hover:border-brand/30 hover:text-ink'
@@ -129,8 +129,8 @@ function BrowseContent() {
           </button>
         </div>
 
-        {/* Category chips */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5 max-w-5xl mx-auto w-full">
+        {/* Category chips — mobile only (desktop uses the filter sidebar) */}
+        <div className="lg:hidden flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5 max-w-7xl mx-auto w-full">
           {CATEGORIES.map(cat => (
             <button
               key={cat.value}
@@ -147,27 +147,69 @@ function BrowseContent() {
         </div>
       </header>
 
-      {/* ── Result count ── */}
-      <div className="px-4 pt-2.5 pb-2.5 flex items-center justify-between max-w-5xl mx-auto w-full">
-        <p className="text-xs text-ink-sub">
-          {loading ? 'Searching…' : (
-            <>
-              <span className="font-semibold text-ink">{sorted.length}</span>
-              {' '}{sorted.length !== 1 ? 'professionals' : 'professional'} found
-            </>
-          )}
-        </p>
-        {!loading && sorted.length > 0 && (
-          <p className="text-[11px] text-ink-dim font-medium">
-            {SORT_OPTIONS.find(s => s.id === sortBy)?.label}
-          </p>
-        )}
-      </div>
+      {/* ── Body: filter sidebar (desktop) + results ── */}
+      <div className="max-w-7xl mx-auto w-full px-4 lg:px-6 lg:flex lg:gap-8 lg:pt-6">
 
-      {/* ── Cards ── */}
-      <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-1">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+        {/* Filter sidebar — desktop only */}
+        <aside className="hidden lg:block w-56 shrink-0">
+          <div className="sticky top-24 space-y-7">
+            <div>
+              <h3 className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Categories</h3>
+              <div className="space-y-0.5">
+                {CATEGORIES.map(cat => (
+                  <button
+                    key={cat.value}
+                    onClick={() => setCategory(cat.value)}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      category === cat.value ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-white hover:text-ink'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Sort by</h3>
+              <div className="space-y-0.5">
+                {SORT_OPTIONS.map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setSortBy(opt.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all ${
+                      sortBy === opt.id ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-white hover:text-ink'
+                    }`}
+                  >
+                    {opt.label}
+                    {sortBy === opt.id && <CheckCircle2 className="w-4 h-4 shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Results */}
+        <main className="flex-1 min-w-0">
+          {/* Result count */}
+          <div className="pt-1 pb-2.5 flex items-center justify-between">
+            <p className="text-xs text-ink-sub">
+              {loading ? 'Searching…' : (
+                <>
+                  <span className="font-semibold text-ink">{sorted.length}</span>
+                  {' '}{sorted.length !== 1 ? 'professionals' : 'professional'} found
+                </>
+              )}
+            </p>
+            {!loading && sorted.length > 0 && (
+              <p className="text-[11px] text-ink-dim font-medium lg:hidden">
+                {SORT_OPTIONS.find(s => s.id === sortBy)?.label}
+              </p>
+            )}
+          </div>
+
+          {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="bg-white rounded-2xl border border-border-dim p-4 animate-pulse flex gap-3.5">
               <div className="w-14 h-14 rounded-2xl bg-surface-alt shrink-0" />
@@ -180,7 +222,7 @@ function BrowseContent() {
           ))}
           </div>
         ) : sorted.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {sorted.map(p => {
             const responseTime = p.responseTime
               ? p.responseTime.replace(/^usually responds in\s*/i, '')
@@ -190,7 +232,7 @@ function BrowseContent() {
               <Link
                 key={p.id}
                 href={`/providers/${p.id}`}
-                className="bg-white rounded-2xl border border-border-dim shadow-sm active:scale-[0.98] transition-transform flex gap-3 p-3.5 items-start"
+                className="bg-white rounded-2xl border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-md active:scale-[0.98] transition-all flex gap-3 p-3.5 lg:p-4 items-start"
               >
                 {/* Avatar with verified overlay */}
                 <div className="relative shrink-0">
@@ -256,7 +298,8 @@ function BrowseContent() {
             </button>
           </div>
         )}
-      </main>
+        </main>
+      </div>
 
       {session && <MobileNav />}
 
