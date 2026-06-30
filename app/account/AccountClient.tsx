@@ -50,7 +50,7 @@ function SettingsRow({
 /* ── Section wrapper ── */
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="px-4">
+    <div>
       <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
       <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
         {children}
@@ -147,58 +147,66 @@ export default function AccountPage({
         </div>
       </header>
 
+      {/* ── Centered desktop container ── */}
+      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6">
+
       {/* ── Profile hero ── */}
-      <div className="px-4 pt-5 pb-1">
-        <div className="bg-brand rounded-2xl p-4 relative overflow-hidden">
+      <div className="pt-5 pb-1">
+        <div className="bg-brand rounded-2xl p-4 sm:p-5 relative overflow-hidden">
           <div className="absolute inset-0 opacity-[0.07]" style={{
             backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)'
           }} />
-          <div className="relative z-10 flex items-center gap-3.5">
-            <label className="relative w-14 h-14 shrink-0 cursor-pointer">
-              <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-              <div className="w-14 h-14 rounded-xl bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
-                {localAvatar || user?.image
-                  ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
-                  : <User className="w-7 h-7 text-white/80" />
-                }
-              </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
-                {avatarUploading
-                  ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
-                  : <Camera className="w-3 h-3 text-brand" />
-                }
-              </div>
-            </label>
-            <div className="min-w-0 flex-1">
-              <h2 className="text-lg font-bold text-white truncate leading-tight">{user?.name}</h2>
-              <p className="text-xs text-white/50 truncate mt-0.5">{user?.email}</p>
-              <span className="inline-flex items-center gap-1 mt-1.5 bg-white/12 px-2 py-0.5 rounded-full">
-                <ShieldCheck className="w-3 h-3 text-white/70" />
-                <span className="text-[10px] font-semibold text-white/70 capitalize">
-                  {(user as any)?.role?.toLowerCase() ?? 'customer'}
+          <div className="relative z-10 sm:flex sm:items-center sm:gap-8">
+            <div className="flex items-center gap-3.5 min-w-0 sm:flex-1">
+              <label className="relative w-14 h-14 shrink-0 cursor-pointer">
+                <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+                <div className="w-14 h-14 rounded-xl bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
+                  {localAvatar || user?.image
+                    ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
+                    : <User className="w-7 h-7 text-white/80" />
+                  }
+                </div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  {avatarUploading
+                    ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
+                    : <Camera className="w-3 h-3 text-brand" />
+                  }
+                </div>
+              </label>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-bold text-white truncate leading-tight">{user?.name}</h2>
+                <p className="text-xs text-white/50 truncate mt-0.5">{user?.email}</p>
+                <span className="inline-flex items-center gap-1 mt-1.5 bg-white/12 px-2 py-0.5 rounded-full">
+                  <ShieldCheck className="w-3 h-3 text-white/70" />
+                  <span className="text-[10px] font-semibold text-white/70 capitalize">
+                    {(user as any)?.role?.toLowerCase() ?? 'customer'}
+                  </span>
                 </span>
-              </span>
-            </div>
-          </div>
-
-          {/* Stats — seamless */}
-          <div className="relative z-10 grid grid-cols-3 mt-3.5 pt-3 border-t border-white/10">
-            {[
-              { value: bookings.length, label: 'Bookings' },
-              { value: `€${totalSpent.toFixed(0)}`, label: 'Spent' },
-              { value: reviewsGiven, label: 'Reviews' },
-            ].map((stat, i) => (
-              <div key={stat.label} className={`text-center ${i > 0 ? 'border-l border-white/10' : ''}`}>
-                <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
-                <p className="text-[9px] font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
-            ))}
+            </div>
+
+            {/* Stats — stacked under identity on mobile, inline on desktop */}
+            <div className="grid grid-cols-3 mt-3.5 pt-3 border-t border-white/10 sm:mt-0 sm:pt-0 sm:border-t-0 sm:flex sm:shrink-0">
+              {[
+                { value: bookings.length, label: 'Bookings' },
+                { value: `€${totalSpent.toFixed(0)}`, label: 'Spent' },
+                { value: reviewsGiven, label: 'Reviews' },
+              ].map((stat, i) => (
+                <div key={stat.label} className={`text-center sm:px-6 ${i > 0 ? 'border-l border-white/10' : ''}`}>
+                  <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
+                  <p className="text-[9px] font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Sections ── */}
-      <div className="flex flex-col gap-6 pt-4">
+      {/* ── Sections — single column on mobile, balanced two columns on desktop ── */}
+      <div className="pt-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+
+        {/* Left column */}
+        <div className="flex flex-col gap-6">
 
         {/* Activity */}
         <Section title="Activity">
@@ -324,6 +332,11 @@ export default function AccountPage({
           <SettingsRow icon={Heart}  label="Favourite Pros"  sub="Bookmarked professionals" href="/browse" />
         </Section>
 
+        </div>
+
+        {/* Right column */}
+        <div className="flex flex-col gap-6">
+
         {/* Support */}
         <Section title="Support">
           <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:aladdin@gmail.com" />
@@ -333,7 +346,7 @@ export default function AccountPage({
         </Section>
 
         {/* Quick action — visually demoted */}
-        <div className="px-4">
+        <div>
           <Link href="/requests/new"
             className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-dashed border-border-dim hover:border-brand/30 transition-all">
             <div className="w-8 h-8 bg-surface-alt rounded-lg flex items-center justify-center shrink-0">
@@ -347,7 +360,7 @@ export default function AccountPage({
         </div>
 
         {/* Log out */}
-        <div className="px-4 pb-4">
+        <div className="pb-4">
           <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Account</p>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
@@ -357,6 +370,9 @@ export default function AccountPage({
             <span className="text-sm font-medium text-ink-sub">Log out</span>
           </button>
         </div>
+
+        </div>
+      </div>
 
       </div>
 
