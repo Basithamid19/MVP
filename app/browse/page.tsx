@@ -89,7 +89,7 @@ function BrowseContent() {
 
       {/* ── Sticky header ── */}
       <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
-        <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
+        <div className="flex items-center gap-2.5 px-4 pt-3 pb-2 max-w-5xl mx-auto w-full">
 
           {/* Menu (desktop) */}
           <CustomerMenuDrawer />
@@ -130,7 +130,7 @@ function BrowseContent() {
         </div>
 
         {/* Category chips */}
-        <div className="flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5">
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5 max-w-5xl mx-auto w-full">
           {CATEGORIES.map(cat => (
             <button
               key={cat.value}
@@ -148,7 +148,7 @@ function BrowseContent() {
       </header>
 
       {/* ── Result count ── */}
-      <div className="px-4 pt-2.5 pb-2.5 flex items-center justify-between">
+      <div className="px-4 pt-2.5 pb-2.5 flex items-center justify-between max-w-5xl mx-auto w-full">
         <p className="text-xs text-ink-sub">
           {loading ? 'Searching…' : (
             <>
@@ -165,9 +165,10 @@ function BrowseContent() {
       </div>
 
       {/* ── Cards ── */}
-      <main className="flex-1 px-4 pt-1 flex flex-col gap-2.5">
+      <main className="flex-1 w-full max-w-5xl mx-auto px-4 pt-1">
         {loading ? (
-          Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="bg-white rounded-2xl border border-border-dim p-4 animate-pulse flex gap-3.5">
               <div className="w-14 h-14 rounded-2xl bg-surface-alt shrink-0" />
               <div className="flex-1 space-y-2 pt-1">
@@ -176,9 +177,11 @@ function BrowseContent() {
                 <div className="h-3 bg-surface-alt rounded w-36" />
               </div>
             </div>
-          ))
+          ))}
+          </div>
         ) : sorted.length > 0 ? (
-          sorted.map(p => {
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+          {sorted.map(p => {
             const responseTime = p.responseTime
               ? p.responseTime.replace(/^usually responds in\s*/i, '')
               : null;
@@ -236,7 +239,8 @@ function BrowseContent() {
                 </div>
               </Link>
             );
-          })
+          })}
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
             <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
