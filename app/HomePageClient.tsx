@@ -154,8 +154,8 @@ function TrustCarousel() {
   const Icon = TRUST_ICONS[active];
 
   return (
-    <div className="mt-3 -mx-2 sm:mx-0">
-      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1">
+    <div className="mt-8 lg:mt-12 -mx-2 sm:mx-0">
+      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1 md:bg-transparent md:rounded-none md:p-0">
 
         {/* Mobile: single-card carousel */}
         <div className="md:hidden">
@@ -214,12 +214,12 @@ function TrustCarousel() {
           </div>
         </div>
 
-        {/* Desktop: 2×2 grid */}
-        <div className="hidden md:grid md:grid-cols-2 gap-3">
+        {/* Desktop: full-width 4-column strip */}
+        <div className="hidden md:grid md:grid-cols-4 gap-4">
           {items.map((item, i) => {
             const TIcon = TRUST_ICONS[i];
             return (
-              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-3.5 py-3 flex items-start gap-3 shadow-card">
+              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-4 py-3.5 flex items-start gap-3 shadow-card">
                 <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
                   <TIcon className="w-[17px] h-[17px] text-brand" />
                 </div>
@@ -337,8 +337,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent pointer-events-none" />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-20 items-start">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-0 lg:pt-12 w-full min-w-0">
+          <div className="flex flex-col lg:grid lg:grid-cols-2 gap-8 lg:gap-16 items-start lg:items-center">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-0 w-full min-w-0">
 
               {/* Mobile-only hero image — full-bleed banner above eyebrow */}
               <div className="lg:hidden -mx-4 sm:-mx-6 mb-8">
@@ -453,9 +453,6 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 </Link>
               </div>
 
-              {/* Trust Carousel */}
-              <TrustCarousel />
-
             </motion.div>
 
             {/* Hero right — Art Directed Image */}
@@ -475,7 +472,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </div>
 
               {/* Floating Trust Badge */}
-              <div className="absolute -bottom-6 -left-10 bg-white p-5 rounded-panel shadow-float border border-border-dim flex items-center gap-4">
+              <div className="absolute bottom-4 left-4 bg-white p-4 rounded-panel shadow-float border border-border-dim flex items-center gap-4">
                 <div className="w-12 h-12 bg-trust-surface rounded-full flex items-center justify-center shrink-0">
                   <ShieldCheck className="w-6 h-6 text-trust" />
                 </div>
@@ -486,7 +483,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </div>
 
               {/* Floating Pro Badge */}
-              <div className="absolute top-12 -right-8 bg-white p-4 rounded-card shadow-elevated border border-border-dim flex items-center gap-3">
+              <div className="absolute top-4 right-4 bg-white p-4 rounded-card shadow-elevated border border-border-dim flex items-center gap-3">
                 <div className="flex -space-x-2">
                   {[
                     'https://randomuser.me/api/portraits/women/44.jpg',
@@ -508,6 +505,9 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </div>
             </motion.div>
           </div>
+
+          {/* Trust strip — full width below the hero */}
+          <TrustCarousel />
         </div>
       </section>
 
