@@ -60,8 +60,37 @@ export async function GET(request: Request) {
       prisma.booking.aggregate({ where: { status: 'COMPLETED' }, _sum: { totalAmount: true } }),
     ]);
 
+    // Weekly activity — real counts for the last 7 days (was hardcoded mock in
+    // the dashboard). Grouped in JS from a date-filtered fetch.
+    const windowStart = new Date();
+    windowStart.setHours(0, 0, 0, 0);
+    windowStart.setDate(windowStart.getDate() - 6);
+
+    const [recentRequests, recentBookings] = await Promise.all([
+      prisma.serviceRequest.findMany({ where: { createdAt: { gte: windowStart } }, select: { createdAt: true } }),
+      prisma.booking.findMany({ where: { createdAt: { gte: windowStart } }, select: { createdAt: true } }),
+    ]);
+
+    const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayKey = (d: Date) => new Date(d).toISOString().slice(0, 10);
+    const buckets = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(windowStart);
+      d.setDate(windowStart.getDate() + i);
+      return { key: dayKey(d), name: DAY_LABELS[d.getDay()], requests: 0, bookings: 0 };
+    });
+    for (const r of recentRequests) {
+      const b = buckets.find((x) => x.key === dayKey(r.createdAt));
+      if (b) b.requests++;
+    }
+    for (const bk of recentBookings) {
+      const b = buckets.find((x) => x.key === dayKey(bk.createdAt));
+      if (b) b.bookings++;
+    }
+    const weeklyActivity = buckets.map(({ name, requests, bookings }) => ({ name, requests, bookings }));
+
     return NextResponse.json({
       pendingVerifications,
+      weeklyActivity,
       stats: {
         totalRequests,
         totalBookings,

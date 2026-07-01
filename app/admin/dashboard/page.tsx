@@ -98,16 +98,6 @@ const TIER_LABELS: Record<string, string> = {
 
 // ─── Module 1: Analytics Dashboard ───────────────────────────────────────────
 
-const chartData = [
-  { name: 'Mon', requests: 4, bookings: 2 },
-  { name: 'Tue', requests: 7, bookings: 4 },
-  { name: 'Wed', requests: 5, bookings: 3 },
-  { name: 'Thu', requests: 9, bookings: 6 },
-  { name: 'Fri', requests: 12, bookings: 8 },
-  { name: 'Sat', requests: 6, bookings: 5 },
-  { name: 'Sun', requests: 3, bookings: 2 },
-];
-
 function AnalyticsModule() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -286,7 +276,7 @@ function AnalyticsModule() {
         </div>
         <div className="h-44 sm:h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={data?.weeklyActivity ?? []}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} width={28} />
