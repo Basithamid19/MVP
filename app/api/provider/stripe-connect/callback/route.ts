@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
-import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
+  // NextResponse.redirect requires an ABSOLUTE URL — a relative '/login' throws
+  // ERR_INVALID_URL (500). Resolve a base from NEXTAUTH_URL, falling back to the
+  // request's own origin so the callback never crashes if the env is unset.
+  const base = process.env.NEXTAUTH_URL ?? new URL(request.url).origin;
+
   const session = await auth();
   if (!session?.user || (session.user as any).role !== 'PROVIDER') {
-    return NextResponse.redirect('/login');
+    return NextResponse.redirect(new URL('/login', base));
   }
 
   const userId = (session.user as any).id;
@@ -26,5 +30,5 @@ export async function GET() {
     }
   }
 
-  return NextResponse.redirect(`${process.env.NEXTAUTH_URL}/provider/earnings`);
+  return NextResponse.redirect(new URL('/provider/earnings', base));
 }

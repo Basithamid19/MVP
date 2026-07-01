@@ -19,11 +19,19 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL("/provider/dashboard", req.url));
       }
     }
+    // Non-admins never see the admin console (the /api/admin gate already
+    // blocks data, but this stops the shell from flashing).
+    if (pathname.startsWith("/admin")) {
+      return NextResponse.redirect(new URL("/provider/dashboard", req.url));
+    }
   }
 
   // Customer hitting provider routes → send to customer dashboard
   if (role === "CUSTOMER") {
     if (pathname.startsWith("/provider")) {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    if (pathname.startsWith("/admin")) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
@@ -47,5 +55,6 @@ export const config = {
     "/bookings/:path*",
     "/requests/:path*",
     "/provider/:path*",
+    "/admin/:path*",
   ],
 };

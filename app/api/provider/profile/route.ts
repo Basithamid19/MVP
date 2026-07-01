@@ -79,6 +79,14 @@ export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Only providers (or admins) may write a provider profile. Without this a
+  // CUSTOMER could POST here and auto-create a ProviderProfile row for their
+  // account (data anomaly), since the handler creates one if missing below.
+  const role = (session.user as any).role;
+  if (role !== 'PROVIDER' && role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
   const userId = (session.user as any).id;
   if (!userId) return NextResponse.json({ error: 'Session missing user ID — please log out and log back in.' }, { status: 401 });
 
