@@ -149,6 +149,7 @@ function NewRequestContent() {
           address: form.address,
           description: `${form.description}${form.timePreference !== 'flexible' ? `\n\nPreferred time: ${form.timePreference}` : ''}`,
           dateWindow: form.dateWindow,
+          timeOfDay: form.timePreference,
           budget: form.budget ? form.budget : null,
           isUrgent: form.isUrgent,
         }),

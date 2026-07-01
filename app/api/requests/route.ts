@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { categoryId, address, description, dateWindow, budget, isUrgent } = body;
+  const { categoryId, address, description, dateWindow, budget, isUrgent, timeOfDay } = body;
 
   const customer = await prisma.customerProfile.findUnique({
     where: { userId: (session.user as any).id },
@@ -22,18 +22,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Customer profile not found' }, { status: 404 });
   }
 
+  // Normalize the time-of-day preference to the known set (defaults to flexible).
+  const VALID_TOD = ['morning', 'afternoon', 'evening', 'flexible'];
+  const normalizedTimeOfDay = VALID_TOD.includes(timeOfDay) ? timeOfDay : 'flexible';
+
+  const baseData = {
+    customerId: customer.id,
+    categoryId,
+    address,
+    description,
+    dateWindow: new Date(dateWindow),
+    budget: budget ? parseFloat(budget) : null,
+    isUrgent: isUrgent || false,
+    status: 'NEW' as const,
+  };
+
+  // Persist timeOfDay; fall back to a create without it if the column hasn't
+  // been migrated yet (20260702_add_request_time_of_day).
   const serviceRequest = await prisma.serviceRequest.create({
-    data: {
-      customerId: customer.id,
-      categoryId,
-      address,
-      description,
-      dateWindow: new Date(dateWindow),
-      budget: budget ? parseFloat(budget) : null,
-      isUrgent: isUrgent || false,
-      status: 'NEW',
-    },
+    data: { ...baseData, timeOfDay: normalizedTimeOfDay },
     include: { category: true },
+  }).catch(async (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('timeOfDay') || msg.includes('column') || msg.includes('P2022')) {
+      console.warn('[requests POST] timeOfDay column missing, creating without it');
+      return prisma.serviceRequest.create({ data: baseData, include: { category: true } });
+    }
+    throw err;
   });
 
   // Notify all providers who have this category in their profile

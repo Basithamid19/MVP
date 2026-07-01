@@ -8,6 +8,7 @@ import {
   TrendingUp, ShieldCheck, Calendar, MapPin, Clock, Users,
   Zap, Timer,
 } from 'lucide-react';
+import { formatVilnius } from '@/lib/time';
 
 function capitalize(name?: string | null) {
   if (!name) return '';
@@ -459,7 +460,7 @@ export default function DashboardClient({
                       <p className="font-semibold text-sm sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? 'Job'}</p>
                       <p className="text-xs sm:text-sm text-ink-sub flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1">
                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {formatVilnius(b.scheduledAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
                     <span className="font-bold text-sm text-ink">€{b.totalAmount?.toFixed(0)}</span>

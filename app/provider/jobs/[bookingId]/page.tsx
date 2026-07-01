@@ -9,6 +9,7 @@ import {
   ImagePlus, AlertTriangle, DollarSign, Timer, ChevronRight,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
+import { formatVilnius } from '@/lib/time';
 
 const STATUS_FLOW: Record<string, { next: string; label: string; nextLabel: string; color: string }> = {
   SCHEDULED:   { next: 'IN_PROGRESS', label: 'Scheduled',   nextLabel: 'Mark Arrived / Start Job', color: 'bg-info-surface text-info' },
@@ -138,10 +139,10 @@ export default function ProviderJobDetailPage() {
             <div>
               <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Scheduled</p>
               <p className="text-xs font-semibold text-ink">
-                {new Date(booking.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                {formatVilnius(booking.scheduledAt, { day: 'numeric', month: 'short' })}
               </p>
               <p className="text-[10px] text-ink-dim">
-                {new Date(booking.scheduledAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                {formatVilnius(booking.scheduledAt, { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             {booking.quote?.estimatedHours && (
@@ -286,7 +287,7 @@ export default function ProviderJobDetailPage() {
             <div className="flex justify-between">
               <span className="text-ink-dim flex items-center gap-2"><Clock className="w-4 h-4" /> Scheduled</span>
               <span className="font-semibold">
-                {new Date(booking.scheduledAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                {formatVilnius(booking.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             <div className="flex justify-between">

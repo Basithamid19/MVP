@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
+import { checkAvailability } from '@/lib/availability';
+import { buildVilniusScheduledAt } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
 
@@ -139,13 +141,36 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
   }
 
-  const quote = await prisma.quote.findUnique({
-    where: { id: quoteId },
-    include: {
-      request: {
-        include: { customer: { select: { userId: true } } },
+  // Explicit select (not include) so we can guard the new ServiceRequest
+  // .timeOfDay column with a P2022 fallback per the migration-safety pattern.
+  const QUOTE_SELECT = {
+    id: true, price: true, providerId: true, requestId: true, status: true,
+    request: {
+      select: {
+        id: true, customerId: true, status: true, dateWindow: true, timeOfDay: true,
+        customer: { select: { userId: true } },
       },
     },
+  } as const;
+  const QUOTE_SELECT_NO_TOD = {
+    id: true, price: true, providerId: true, requestId: true, status: true,
+    request: {
+      select: {
+        id: true, customerId: true, status: true, dateWindow: true,
+        customer: { select: { userId: true } },
+      },
+    },
+  } as const;
+
+  const quote: any = await prisma.quote.findUnique({
+    where: { id: quoteId },
+    select: QUOTE_SELECT,
+  }).catch(async (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('timeOfDay') || msg.includes('column') || msg.includes('P2022')) {
+      return prisma.quote.findUnique({ where: { id: quoteId }, select: QUOTE_SELECT_NO_TOD });
+    }
+    throw err;
   });
 
   if (!quote) {
@@ -166,6 +191,40 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: `Quote already ${quote.status.toLowerCase()}` }, { status: 409 });
   }
 
+  // Request-level double-booking guard: a request yields at most one booking.
+  // Without this, a customer could accept a second (still-PENDING) quote on a
+  // request that already has an accepted quote/booking → duplicate Booking +
+  // Payment + deposit demand for the same job.
+  if (status === 'ACCEPTED') {
+    if (quote.request.status === 'ACCEPTED') {
+      return NextResponse.json({ error: 'This request already has an accepted quote.' }, { status: 409 });
+    }
+    const alreadyAccepted = await prisma.quote.findFirst({
+      where: { requestId: quote.requestId, status: 'ACCEPTED' },
+      select: { id: true },
+    });
+    const existingBooking = await prisma.booking.findFirst({
+      where: { quote: { requestId: quote.requestId } },
+      select: { id: true },
+    });
+    if (alreadyAccepted || existingBooking) {
+      return NextResponse.json({ error: 'This request already has a booking.' }, { status: 409 });
+    }
+  }
+
+  // Compute the booking instant in Vilnius local time (date + time-of-day),
+  // used both for the availability check and the stored scheduledAt.
+  const scheduledAt = buildVilniusScheduledAt(quote.request.dateWindow, quote.request.timeOfDay ?? null);
+
+  // Enforce provider availability (blackout dates / working hours / buffer)
+  // before committing. Degrades to allow on un-migrated DBs.
+  if (status === 'ACCEPTED') {
+    const avail = await checkAvailability(quote.providerId, scheduledAt);
+    if (!avail.ok) {
+      return NextResponse.json({ error: avail.reason }, { status: 409 });
+    }
+  }
+
   const updatedQuote = await prisma.quote.update({
     where: { id: quoteId },
     data: { status },
@@ -177,6 +236,13 @@ export async function PATCH(request: Request) {
       data: { status: 'ACCEPTED' },
     });
 
+    // Auto-decline the other still-PENDING quotes on this request so the
+    // customer's inbox reflects that the job is now committed.
+    await prisma.quote.updateMany({
+      where: { requestId: quote.requestId, status: 'PENDING', id: { not: quote.id } },
+      data: { status: 'DECLINED' },
+    }).catch(() => {});
+
     const depositAmount = quote.price * 0.2;
 
     // Try with depositAmount (new column); fall back to without if migration not applied
@@ -185,7 +251,7 @@ export async function PATCH(request: Request) {
         customerId: quote.request.customerId,
         providerId: quote.providerId,
         quoteId: quote.id,
-        scheduledAt: quote.request.dateWindow,
+        scheduledAt,
         totalAmount: quote.price,
         depositAmount,
         status: 'SCHEDULED',
@@ -200,7 +266,7 @@ export async function PATCH(request: Request) {
             customerId: quote.request.customerId,
             providerId: quote.providerId,
             quoteId: quote.id,
-            scheduledAt: quote.request.dateWindow,
+            scheduledAt,
             totalAmount: quote.price,
             status: 'SCHEDULED',
           },

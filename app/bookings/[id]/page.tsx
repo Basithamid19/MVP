@@ -12,6 +12,7 @@ import {
   ChevronRight, Info,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
+import { formatVilnius } from '@/lib/time';
 
 const BOOKING_STEPS = ['Scheduled', 'In Progress', 'Completed'];
 
@@ -365,11 +366,11 @@ export default function BookingPage() {
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-ink-sub"><Calendar className="w-4 h-4" /> Date</span>
-              <span className="font-semibold">{new Date(booking.scheduledAt).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
+              <span className="font-semibold">{formatVilnius(booking.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="flex items-center gap-2 text-ink-sub"><Clock className="w-4 h-4" /> Time</span>
-              <span className="font-semibold">{new Date(booking.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="font-semibold">{formatVilnius(booking.scheduledAt, { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             {booking.quote?.request?.address && (
               <div className="flex items-start justify-between">
