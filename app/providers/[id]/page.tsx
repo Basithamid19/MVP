@@ -16,6 +16,8 @@ import {
   Award,
   ThumbsUp,
   Calendar,
+  Zap,
+  CalendarOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
@@ -129,7 +131,20 @@ export default function ProviderProfilePage() {
                       Verified
                     </div>
                   )}
+                  {provider.instantBook && (
+                    <div className="flex items-center gap-1 bg-brand-muted text-brand-dark px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide mt-0.5 sm:mt-1.5 shrink-0">
+                      <Zap className="w-3 h-3" />
+                      Instant Book
+                    </div>
+                  )}
                 </div>
+
+                {/* Company name (from onboarding), if provided */}
+                {provider.companyName && (
+                  <p className="text-[13px] sm:text-sm text-ink-sub font-medium mb-1.5">
+                    {provider.companyName}
+                  </p>
+                )}
 
                 {/* Rating + location */}
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 sm:gap-4 mb-2 sm:mb-4">
@@ -362,6 +377,33 @@ export default function ProviderProfilePage() {
                 ) : (
                   <p className="text-xs sm:text-sm text-ink-dim">No hours published yet — message the pro to check availability.</p>
                 )}
+
+                {/* Upcoming days off (blackout dates the provider has set) */}
+                {(() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  const upcoming = ((provider.blackoutDates ?? []) as string[])
+                    .filter((d) => typeof d === 'string' && d >= today)
+                    .sort()
+                    .slice(0, 6);
+                  if (upcoming.length === 0) return null;
+                  return (
+                    <div className="mt-4 pt-4 border-t border-border-dim">
+                      <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-2">
+                        <CalendarOff className="w-3 h-3" /> Upcoming days off
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {upcoming.map((d) => (
+                          <span
+                            key={d}
+                            className="px-2.5 py-1 bg-caution-surface border border-caution-edge text-caution rounded-full text-[11px] sm:text-xs font-medium"
+                          >
+                            {new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <p className="text-[10px] text-ink-dim/60 mt-3">Times are approximate — confirm when booking</p>
               </div>

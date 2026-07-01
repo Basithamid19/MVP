@@ -37,19 +37,33 @@ const BROWSE_SELECT = {
   categories: { select: { id: true, name: true, slug: true } },
 } as const;
 
+// `email` is selected for the internal PROVIDER_IMAGES portrait backfill only —
+// it is stripped from the response before returning (public, edge-cached
+// endpoint). instantBook/blackoutDates surface availability on the public
+// profile; companyName/businessType are the newest columns and are guarded by
+// SINGLE_SELECT_SAFE below. The `reviews` relation is intentionally NOT selected
+// here — the profile page fetches reviews via /api/reviews and discarded this.
 const SINGLE_SELECT = {
   ...BROWSE_SELECT,
   user: { select: { id: true, email: true, name: true, image: true, role: true } },
+  instantBook: true,
+  blackoutDates: true,
+  companyName: true,
+  businessType: true,
   offerings: true,
   availability: true,
-  reviews: {
-    where: { isHidden: false },
-    // Reviewer identity only — this endpoint is public and edge-cached, so a
-    // full user include would publish reviewers' password hashes and emails.
-    include: { customer: { include: { user: { select: { id: true, name: true, image: true } } } } },
-    orderBy: { createdAt: 'desc' } as const,
-    take: 20,
-  },
+  _count: { select: { bookings: true, reviews: true } },
+} as const;
+
+// Fallback for DBs that haven't run 20260703_add_provider_business_fields yet —
+// drops only the brand-new companyName/businessType columns.
+const SINGLE_SELECT_SAFE = {
+  ...BROWSE_SELECT,
+  user: { select: { id: true, email: true, name: true, image: true, role: true } },
+  instantBook: true,
+  blackoutDates: true,
+  offerings: true,
+  availability: true,
   _count: { select: { bookings: true, reviews: true } },
 } as const;
 
@@ -63,9 +77,16 @@ export async function GET(request: Request) {
   // ── Single-provider lookup ────────────────────────────────────────────
   if (id) {
     try {
-      const provider = await prisma.providerProfile.findUnique({
+      const provider: any = await prisma.providerProfile.findUnique({
         where: { id },
         select: SINGLE_SELECT,
+      }).catch(async (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('companyName') || msg.includes('businessType') || msg.includes('column') || msg.includes('P2022')) {
+          console.warn('[providers GET] business columns missing, retrying with safe select');
+          return prisma.providerProfile.findUnique({ where: { id }, select: SINGLE_SELECT_SAFE });
+        }
+        throw err;
       });
 
       if (provider?.user && !provider.user.image) {
@@ -76,6 +97,8 @@ export async function GET(request: Request) {
           (provider.user as any).image = fallback;
         }
       }
+      // Strip the internal-only email before returning (public endpoint).
+      if (provider?.user) delete (provider.user as any).email;
       return NextResponse.json(provider, {
         headers: {
           // 30s fresh at edge, 2min stale-while-revalidate. Profile edits
@@ -123,6 +146,7 @@ export async function GET(request: Request) {
     }
 
     // Image backfill is fire-and-forget — never block or fail the response.
+    // Then strip the internal-only email before returning (public endpoint).
     for (const p of withUser as any[]) {
       if (p.user && !p.user.image && PROVIDER_IMAGES[p.user.email ?? '']) {
         const fallback = PROVIDER_IMAGES[p.user.email];
@@ -130,6 +154,7 @@ export async function GET(request: Request) {
           .catch((err) => console.warn('[providers GET] image backfill failed:', err));
         p.user.image = fallback;
       }
+      if (p.user) delete p.user.email;
     }
 
     return NextResponse.json(withUser, {
