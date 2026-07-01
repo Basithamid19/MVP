@@ -25,6 +25,13 @@ const nextConfig: NextConfig = {
         hostname: 'ui-avatars.com',
         pathname: '/**',
       },
+      {
+        // Supabase Storage public objects (real uploads). Project-scoped
+        // subdomain, so match any *.supabase.co host.
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
     ],
   },
   transpilePackages: ['motion'],
