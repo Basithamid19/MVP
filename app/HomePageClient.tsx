@@ -111,12 +111,12 @@ const TESTIMONIALS = [
 
 type CardKey = 'plumbing' | 'electrical' | 'cleaning' | 'repairs' | 'logistics' | 'assembly';
 const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean }[] = [
-  { bg: '#BEE0D8', cardKey: 'plumbing',   popular: false },
-  { bg: '#F2E2B6', cardKey: 'electrical', popular: false },
+  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false },
+  { bg: '#D2E8D2', cardKey: 'electrical', popular: false },
   { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true  },
-  { bg: '#EED4BC', cardKey: 'repairs',    popular: true  },
-  { bg: '#C6D8E8', cardKey: 'logistics',  popular: false },
-  { bg: '#EACFCF', cardKey: 'assembly',   popular: false },
+  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true  },
+  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false },
+  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false },
 ];
 
 /* ─── Trust Carousel ─── */
@@ -618,8 +618,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
           })}
         </div>
 
-        {/* Desktop: 6-col grid */}
-        <div className="hidden lg:grid grid-cols-6 gap-4 max-w-7xl mx-auto px-8">
+        {/* Desktop: 3-col grid */}
+        <div className="hidden lg:grid grid-cols-3 gap-5 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
             const theme = SERVICE_CARD_THEMES[idx];
             const card = t.serviceCards[theme.cardKey];
@@ -628,11 +628,11 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
                 style={{ background: theme.bg }}
-                className="rounded-2xl p-6 flex flex-col items-start text-left hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] transition-all duration-200 relative"
+                className="h-full rounded-3xl p-7 flex flex-col items-start text-left hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] transition-all duration-200 relative"
               >
                 {/* Popular badge */}
                 {theme.popular && (
-                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
+                  <span className="absolute top-4 right-4 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
                     {t.services.popularBadge}
                   </span>
                 )}
@@ -641,19 +641,20 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                   {card.tag}
                 </span>
                 {/* Title */}
-                <p className="text-lg font-bold text-gray-900 leading-tight mb-2">{card.title}</p>
+                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{card.title}</p>
                 {/* Desc */}
-                <p className="text-xs text-gray-700 leading-relaxed">{card.desc}</p>
-                {/* Divider */}
-                <div className="w-full border-t border-black/10 my-4" />
-                {/* Trust banner + CTA row */}
-                <div className="w-full flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <CheckCircle2 className="w-3 h-3 text-black/50 shrink-0" />
-                    <span className="text-[10px] font-semibold text-black/60 leading-tight">{card.trust}</span>
-                  </div>
-                  <div className="w-9 h-9 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
-                    <ArrowRight className="w-4 h-4 text-white" />
+                <p className="text-sm text-gray-700 leading-relaxed">{card.desc}</p>
+                {/* Trust banner + CTA row — pinned to bottom */}
+                <div className="w-full mt-auto pt-6">
+                  <div className="w-full border-t border-black/10 mb-4" />
+                  <div className="w-full flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
+                      <span className="text-[11px] font-semibold text-black/60 leading-tight">{card.trust}</span>
+                    </div>
+                    <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
+                      <ArrowRight className="w-4 h-4 text-white" />
+                    </div>
                   </div>
                 </div>
               </button>
