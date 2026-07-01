@@ -77,6 +77,9 @@ model ProviderProfile {
   isVerified        Boolean          @default(false)
   verificationTier  VerificationTier @default(TIER0_BASIC)
   responseTime      String?          // e.g., "Usually responds in 1 hour"
+  companyName       String?
+  businessType      String?          // "SOLE_TRADER", "COMPANY", etc. (from onboarding)
+  vatNumber         String?
   instantBook       Boolean          @default(false)
   bufferMins        Int              @default(30)
   blackoutDates     String[]         @default([])
@@ -141,6 +144,7 @@ model ServiceRequest {
   address           String
   description       String
   dateWindow        DateTime
+  timeOfDay         String?              // "morning" | "afternoon" | "evening" | "flexible"
   budget            Float?
   isUrgent          Boolean              @default(false)
   status            ServiceRequestStatus @default(NEW)
