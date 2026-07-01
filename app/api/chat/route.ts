@@ -57,9 +57,22 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
+      // Explicit select: imageUrl (migration 20260701*) may not exist in the
+      // DB yet — fall back to a select without it rather than failing the poll.
       const messages = await prisma.chatMessage.findMany({
         where: { threadId },
+        select: { id: true, threadId: true, senderId: true, content: true, imageUrl: true, createdAt: true },
         orderBy: { createdAt: 'asc' },
+      }).catch(async (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes('imageUrl') || msg.includes('column') || msg.includes('P2022')) {
+          return prisma.chatMessage.findMany({
+            where: { threadId },
+            select: { id: true, threadId: true, senderId: true, content: true, createdAt: true },
+            orderBy: { createdAt: 'asc' },
+          });
+        }
+        throw err;
       });
       return NextResponse.json(messages);
     }
@@ -75,7 +88,11 @@ export async function GET(request: Request) {
       participants: {
         select: { id: true, name: true, image: true, role: true },
       },
+      // Explicit column list: an implicit SELECT * here would break on DBs
+      // that haven't run the 20260701* imageUrl migration yet. The preview
+      // only needs sender/content/timestamp anyway.
       messages: {
+        select: { id: true, senderId: true, content: true, createdAt: true },
         orderBy: { createdAt: 'desc' as const },
         take: 1,
       },
@@ -166,28 +183,81 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { threadId, content } = body;
+    const { threadId, content, imageUrl } = body;
 
     if (!threadId || !content?.trim()) {
       return NextResponse.json({ error: 'threadId and content required' }, { status: 400 });
     }
 
-    // Check if thread is locked (deposit not yet paid)
+    const userId = (session.user as any).id;
+    const role = (session.user as any).role;
+
+    // Authorization: only thread participants (or admin) may post into a
+    // thread. Mirrors the GET check — without this any logged-in user could
+    // write into any conversation by guessing/replaying a threadId.
     const thread = await prisma.chatThread.findUnique({
+      where: { id: threadId },
+      select: { participants: { select: { id: true } } },
+    }).catch(() => null);
+
+    if (!thread) {
+      return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
+    }
+
+    let authorized = role === 'ADMIN' || thread.participants.some(p => p.id === userId);
+    if (!authorized) {
+      try {
+        const scalar: any = await prisma.chatThread.findUnique({
+          where: { id: threadId },
+          select: { customerId: true, providerId: true } as any,
+        });
+        if (scalar && (scalar.customerId === userId || scalar.providerId === userId)) {
+          authorized = true;
+        }
+      } catch {
+        // customerId/providerId columns missing on this DB — participants
+        // was the only source of truth and already rejected this caller.
+      }
+    }
+
+    if (!authorized) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Check if thread is locked (deposit not yet paid). Separate query so a
+    // missing isLocked column (pre-20260403 DB) doesn't break the auth check.
+    const lock = await prisma.chatThread.findUnique({
       where: { id: threadId },
       select: { isLocked: true },
     }).catch(() => null);
 
-    if (thread?.isLocked) {
+    if (lock?.isLocked) {
       return NextResponse.json({ error: 'Chat is locked. Pay the deposit to unlock messaging.', locked: true }, { status: 403 });
     }
 
+    const safeImageUrl =
+      typeof imageUrl === 'string' && /^https?:\/\//.test(imageUrl) ? imageUrl : null;
+
+    // imageUrl column may not exist until migration 20260701* runs — retry
+    // without it so text content still goes through.
     const message = await prisma.chatMessage.create({
       data: {
         threadId,
-        senderId: (session.user as any).id,
+        senderId: userId,
         content: redactPII(content.trim()),
+        imageUrl: safeImageUrl,
       },
+      select: { id: true, threadId: true, senderId: true, content: true, imageUrl: true, createdAt: true },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('imageUrl') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[chat POST] imageUrl column missing, creating message without it');
+        return prisma.chatMessage.create({
+          data: { threadId, senderId: userId, content: redactPII(content.trim()) },
+          select: { id: true, threadId: true, senderId: true, content: true, createdAt: true },
+        });
+      }
+      throw err;
     });
 
     return NextResponse.json(message);

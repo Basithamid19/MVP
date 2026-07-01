@@ -34,6 +34,7 @@ interface Message {
   id: string;
   senderId: string;
   content: string;
+  imageUrl?: string | null;
   createdAt: string;
 }
 
@@ -53,6 +54,7 @@ function MessagesContent() {
 
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
   const [newMsg, setNewMsg] = useState('');
@@ -66,14 +68,30 @@ function MessagesContent() {
     if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Fetch thread list
+  // Fetch thread list. Polled, not one-shot: a single failed fetch right
+  // after login (cold serverless start, transient DB error) used to leave the
+  // inbox permanently on "No conversations yet" until a manual refresh.
   useEffect(() => {
     if (status !== 'authenticated') return;
-    fetch('/api/chat')
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setThreads(d); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    let cancelled = false;
+    const fetchThreads = async () => {
+      try {
+        const r = await fetch('/api/chat');
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        if (!cancelled && Array.isArray(d)) {
+          setThreads(d);
+          setLoadError(false);
+        }
+      } catch {
+        if (!cancelled) setLoadError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchThreads();
+    const interval = setInterval(fetchThreads, 15000);
+    return () => { cancelled = true; clearInterval(interval); };
   }, [status]);
 
   // Fetch messages for active thread
@@ -101,16 +119,25 @@ function MessagesContent() {
     if (!newMsg.trim() || !activeThreadId || sending) return;
     setSending(true);
     try {
-      await fetch('/api/chat', {
+      const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ threadId: activeThreadId, content: newMsg.trim() }),
       });
+      if (!res.ok) {
+        // Keep the draft so the user can retry; surface why it failed
+        // (locked thread, network, auth) instead of silently dropping it.
+        const d = await res.json().catch(() => ({} as any));
+        alert(d.error ?? 'Message failed to send. Please try again.');
+        return;
+      }
       setNewMsg('');
       // Immediately fetch updated messages
       const r = await fetch(`/api/chat?threadId=${activeThreadId}`);
       const d = await r.json();
       if (Array.isArray(d)) setMessages(d);
+    } catch {
+      alert('Message failed to send. Please check your connection and try again.');
     } finally {
       setSending(false);
     }
@@ -167,6 +194,9 @@ function MessagesContent() {
                       ? 'bg-brand text-white rounded-br-md'
                       : 'bg-white border border-border-dim text-ink rounded-bl-md'
                   }`}>
+                    {m.imageUrl && (
+                      <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
+                    )}
                     <p>{m.content}</p>
                     <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
                       {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
@@ -201,7 +231,17 @@ function MessagesContent() {
       </div>
   ) : null;
 
-  const emptyState = (
+  const emptyState = loadError ? (
+    <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
+      <div className="w-14 h-14 bg-caution-surface rounded-full flex items-center justify-center mx-auto mb-4">
+        <MessageCircle className="w-6 h-6 text-caution" />
+      </div>
+      <p className="font-semibold text-base text-ink mb-1">Couldn&apos;t load your conversations</p>
+      <p className="text-sm text-ink-sub max-w-xs mx-auto">
+        We&apos;ll keep retrying automatically. Check your connection if this persists.
+      </p>
+    </div>
+  ) : (
     <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
       <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
         <MessageCircle className="w-6 h-6 text-ink-dim" />
@@ -342,6 +382,9 @@ function MessagesContent() {
                                 ? 'bg-brand text-white rounded-br-md'
                                 : 'bg-white border border-border-dim text-ink rounded-bl-md'
                             }`}>
+                              {m.imageUrl && (
+                                <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
+                              )}
                               <p>{m.content}</p>
                               <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
                                 {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
