@@ -48,9 +48,9 @@ function SettingsRow({
 }
 
 /* ── Section wrapper ── */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div id={id} className="scroll-mt-24">
       <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
       <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
         {children}
@@ -147,11 +147,35 @@ export default function AccountPage({
         </div>
       </header>
 
-      {/* ── Centered desktop container ── */}
-      <div className="max-w-4xl mx-auto w-full px-4 sm:px-6">
+      {/* ── Desktop shell: section nav + content pane ── */}
+      <div className="max-w-6xl mx-auto w-full px-4 lg:px-6 lg:flex lg:gap-10 lg:pt-8">
+
+        {/* Section nav — desktop only */}
+        <aside className="hidden lg:block w-48 shrink-0">
+          <nav className="sticky top-24 space-y-0.5">
+            {[
+              { id: 'profile',  label: 'Profile'  },
+              { id: 'activity', label: 'Activity' },
+              { id: 'personal', label: 'Personal' },
+              { id: 'support',  label: 'Support'  },
+              { id: 'account',  label: 'Account'  },
+            ].map(s => (
+              <a
+                key={s.id}
+                href={`#${s.id}`}
+                className="block px-3 py-2 rounded-xl text-sm font-medium text-ink-sub hover:bg-white hover:text-ink transition-all"
+              >
+                {s.label}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Content pane */}
+        <div className="flex-1 min-w-0 lg:max-w-2xl">
 
       {/* ── Profile hero ── */}
-      <div className="pt-5 pb-1">
+      <div id="profile" className="scroll-mt-24 pt-5 pb-1 lg:pt-0">
         <div className="bg-brand rounded-2xl p-4 sm:p-5 relative overflow-hidden">
           <div className="absolute inset-0 opacity-[0.07]" style={{
             backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)'
@@ -202,14 +226,11 @@ export default function AccountPage({
         </div>
       </div>
 
-      {/* ── Sections — single column on mobile, balanced two columns on desktop ── */}
-      <div className="pt-4 flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
-
-        {/* Left column */}
-        <div className="flex flex-col gap-6">
+      {/* ── Sections ── */}
+      <div className="pt-6 flex flex-col gap-6">
 
         {/* Activity */}
-        <Section title="Activity">
+        <Section title="Activity" id="activity">
           {/* Invoices — expandable */}
           <div>
             <button
@@ -327,18 +348,13 @@ export default function AccountPage({
         </Section>
 
         {/* Personal */}
-        <Section title="Personal">
+        <Section title="Personal" id="personal">
           <SettingsRow icon={MapPin} label="Saved Addresses" sub="Manage your home & work" href="/account" />
           <SettingsRow icon={Heart}  label="Favourite Pros"  sub="Bookmarked professionals" href="/browse" />
         </Section>
 
-        </div>
-
-        {/* Right column */}
-        <div className="flex flex-col gap-6">
-
         {/* Support */}
-        <Section title="Support">
+        <Section title="Support" id="support">
           <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:aladdin@gmail.com" />
           <SettingsRow icon={HelpCircle}    label="Help Centre"      sub="FAQs and how-to guides"     href="/account" />
           <SettingsRow icon={LifeBuoy}      label="Dispute a booking" sub="Report an issue with a job" href="/bookings" />
@@ -360,7 +376,7 @@ export default function AccountPage({
         </div>
 
         {/* Log out */}
-        <div className="pb-4">
+        <div id="account" className="scroll-mt-24 pb-4">
           <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Account</p>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
@@ -371,10 +387,9 @@ export default function AccountPage({
           </button>
         </div>
 
-        </div>
-      </div>
-
-      </div>
+      </div>{/* sections */}
+        </div>{/* content pane */}
+      </div>{/* shell */}
 
       <MobileNav />
     </div>
