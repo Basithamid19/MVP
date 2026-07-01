@@ -473,9 +473,9 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
 
-              {/* Floating trust slideshow — sits fully inside the photo
-                  (the old static badge overhung the rounded corner) */}
-              <div className="absolute bottom-4 left-4 right-4">
+              {/* Floating trust slideshow — compact card in the photo's
+                  bottom-left corner, same footprint as the old badge */}
+              <div className="absolute bottom-4 left-4 w-[310px] max-w-[calc(100%-2rem)]">
                 <TrustSlideshow overlay />
               </div>
 
