@@ -110,13 +110,13 @@ const TESTIMONIALS = [
 ];
 
 type CardKey = 'plumbing' | 'electrical' | 'cleaning' | 'repairs' | 'logistics' | 'assembly';
-const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean }[] = [
-  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false },
-  { bg: '#D2E8D2', cardKey: 'electrical', popular: false },
-  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true  },
-  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true  },
-  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false },
-  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false },
+const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean; img: string; price: string }[] = [
+  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false, img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?q=80&w=600&auto=format&fit=crop', price: 'From €40' },
+  { bg: '#D2E8D2', cardKey: 'electrical', popular: false, img: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=600&auto=format&fit=crop', price: 'From €45' },
+  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true,  img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=600&auto=format&fit=crop', price: 'From €30' },
+  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true,  img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=600&auto=format&fit=crop', price: 'From €35' },
+  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false, img: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?q=80&w=600&auto=format&fit=crop', price: 'From €50' },
+  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false, img: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=600&auto=format&fit=crop', price: 'From €40' },
 ];
 
 /* ─── Trust Carousel ─── */
@@ -618,8 +618,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
           })}
         </div>
 
-        {/* Desktop: 3-col grid */}
-        <div className="hidden lg:grid grid-cols-3 gap-5 max-w-7xl mx-auto px-8">
+        {/* Desktop: photo-card grid */}
+        <div className="hidden lg:grid grid-cols-4 gap-6 max-w-7xl mx-auto px-8">
           {categories.map((cat, idx) => {
             const theme = SERVICE_CARD_THEMES[idx];
             const card = t.serviceCards[theme.cardKey];
@@ -627,35 +627,26 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               <button
                 key={cat.slug}
                 onClick={() => handleCategoryRequest(cat.slug)}
-                style={{ background: theme.bg }}
-                className="h-full rounded-3xl p-7 flex flex-col items-start text-left hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] transition-all duration-200 relative"
+                className="group text-left bg-white rounded-2xl border border-border-dim overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
               >
-                {/* Popular badge */}
-                {theme.popular && (
-                  <span className="absolute top-4 right-4 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
-                    {t.services.popularBadge}
-                  </span>
-                )}
-                {/* Tag */}
-                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
-                  {card.tag}
-                </span>
-                {/* Title */}
-                <p className="text-xl font-bold text-gray-900 leading-tight mb-2">{card.title}</p>
-                {/* Desc */}
-                <p className="text-sm text-gray-700 leading-relaxed">{card.desc}</p>
-                {/* Trust banner + CTA row — pinned to bottom */}
-                <div className="w-full mt-auto pt-6">
-                  <div className="w-full border-t border-black/10 mb-4" />
-                  <div className="w-full flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                      <span className="text-[11px] font-semibold text-black/60 leading-tight">{card.trust}</span>
-                    </div>
-                    <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
-                      <ArrowRight className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
+                {/* Photo */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-surface-alt">
+                  <img
+                    src={theme.img}
+                    alt={card.title}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://picsum.photos/seed/${theme.cardKey}/600/450`; }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  {theme.popular && (
+                    <span className="absolute top-3 left-3 px-2 py-0.5 bg-white/90 text-ink text-[9px] font-bold uppercase tracking-widest rounded-full shadow-sm">
+                      {t.services.popularBadge}
+                    </span>
+                  )}
+                </div>
+                {/* Label */}
+                <div className="p-4">
+                  <p className="font-bold text-ink text-[15px] leading-tight">{card.title}</p>
+                  <p className="text-xs text-ink-sub mt-1">{theme.price}</p>
                 </div>
               </button>
             );
