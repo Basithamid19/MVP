@@ -114,26 +114,42 @@ export async function GET(request: Request) {
       throw err;
     });
 
-    // Sort by last message date (threads with recent messages first)
-    const sorted = threads.sort((a, b) => {
+    // Rank threads so the meaningful one per counterpart wins: threads with
+    // messages outrank empty ones, then most recent activity first.
+    const ranked = threads.sort((a, b) => {
+      const aHas = a.messages.length > 0;
+      const bHas = b.messages.length > 0;
+      if (aHas !== bHas) return aHas ? -1 : 1;
       const aDate = a.messages[0]?.createdAt ?? a.createdAt;
       const bDate = b.messages[0]?.createdAt ?? b.createdAt;
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
-    const result = sorted
-      .map(t => {
-        const otherP = t.participants.find(p => p.id !== userId) ?? t.participants[0] ?? null;
-        if (!otherP) return null;
-        return {
-          id: t.id,
-          otherParticipant: otherP,
-          lastMessage: t.messages[0] ?? null,
-          category: t.request?.category?.name ?? 'Service',
-          createdAt: t.createdAt,
-        };
-      })
-      .filter(Boolean);
+    // Collapse duplicates: legacy data holds several threads per
+    // customer↔provider pair (one per request). Surface one conversation per
+    // counterpart — the ranked-best thread — so the inbox never shows the
+    // same person twice.
+    const seen = new Set<string>();
+    const result: any[] = [];
+    for (const t of ranked) {
+      const otherP = t.participants.find((p: any) => p.id !== userId) ?? t.participants[0] ?? null;
+      if (!otherP || seen.has(otherP.id)) continue;
+      seen.add(otherP.id);
+      result.push({
+        id: t.id,
+        otherParticipant: otherP,
+        lastMessage: t.messages[0] ?? null,
+        category: t.request?.category?.name ?? 'Service',
+        createdAt: t.createdAt,
+      });
+    }
+
+    // Final display order: latest activity first.
+    result.sort((a, b) => {
+      const aDate = a.lastMessage?.createdAt ?? a.createdAt;
+      const bDate = b.lastMessage?.createdAt ?? b.createdAt;
+      return new Date(bDate).getTime() - new Date(aDate).getTime();
+    });
 
     return NextResponse.json(result);
   } catch (err) {

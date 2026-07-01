@@ -53,6 +53,50 @@ export async function POST(request: Request) {
     const customerId = userRole === 'PROVIDER' ? provider.userId : userId;
     const providerUserId = userRole === 'PROVIDER' ? userId : provider.userId;
 
+    // One conversation per customer↔provider pair: if ANY thread already
+    // exists between these two people, continue it — never spawn a new one
+    // keyed to whatever the customer's latest request happens to be. Prefer
+    // the thread that already has messages, then most recent activity.
+    type PairThread = { id: string; createdAt: Date; messages: { createdAt: Date }[] };
+    const PAIR_SELECT = {
+      id: true,
+      createdAt: true,
+      messages: { orderBy: { createdAt: 'desc' as const }, take: 1, select: { createdAt: true } },
+    } as const;
+
+    const pairThreads: PairThread[] = await prisma.chatThread.findMany({
+      where: { customerId, providerId: providerUserId },
+      select: PAIR_SELECT,
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('customerId') || msg.includes('providerId') || msg.includes('column') || msg.includes('P2022')) {
+        // Scalar columns missing (20260403 migration not applied) — fall back
+        // to the participants relation.
+        return prisma.chatThread.findMany({
+          where: {
+            AND: [
+              { participants: { some: { id: customerId } } },
+              { participants: { some: { id: providerUserId } } },
+            ],
+          },
+          select: PAIR_SELECT,
+        }).catch(() => []);
+      }
+      return [];
+    });
+
+    if (pairThreads.length > 0) {
+      const best = [...pairThreads].sort((a, b) => {
+        const aHas = a.messages.length > 0;
+        const bHas = b.messages.length > 0;
+        if (aHas !== bHas) return aHas ? -1 : 1;
+        const aDate = a.messages[0]?.createdAt ?? a.createdAt;
+        const bDate = b.messages[0]?.createdAt ?? b.createdAt;
+        return new Date(bDate).getTime() - new Date(aDate).getTime();
+      })[0];
+      return NextResponse.json({ threadId: best.id });
+    }
+
     // Resolve requestId
     let requestId = suppliedRequestId || null;
 

@@ -58,6 +58,7 @@ function MessagesContent() {
   const [newMsg, setNewMsg] = useState('');
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const deskScrollRef = useRef<HTMLDivElement>(null);
   const userId = (session?.user as any)?.id;
 
   // Redirect if not authenticated
@@ -90,9 +91,10 @@ function MessagesContent() {
     return () => clearInterval(interval);
   }, [activeThreadId]);
 
-  // Auto-scroll on new messages
+  // Auto-scroll on new messages (mobile and desktop panes mount separately)
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    deskScrollRef.current?.scrollTo({ top: deskScrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages]);
 
   const handleSend = async () => {
@@ -124,9 +126,10 @@ function MessagesContent() {
     );
   }
 
-  // Mobile: if thread is selected, show chat full-screen
-  if (activeThreadId && activeThread) {
-    return (
+  // Mobile: full-screen chat overlay when a thread is open. Rendered as a
+  // fragment (not an early return) so the desktop two-pane below still
+  // renders — the old early return blanked the page on md+ viewports.
+  const mobileChat = activeThreadId && activeThread ? (
       <div className="flex flex-col h-[calc(100dvh-4rem)] md:hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border-dim bg-white shrink-0">
@@ -196,27 +199,31 @@ function MessagesContent() {
           </div>
         </div>
       </div>
-    );
-  }
+  ) : null;
+
+  const emptyState = (
+    <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
+      <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
+        <MessageCircle className="w-6 h-6 text-ink-dim" />
+      </div>
+      <p className="font-semibold text-base text-ink mb-1">No conversations yet</p>
+      <p className="text-sm text-ink-sub max-w-xs mx-auto">
+        Conversations are created automatically when a pro sends you a quote or you message a pro.
+      </p>
+    </div>
+  );
 
   return (
-    <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8 pb-28 md:pb-8">
-      <div className="flex items-center gap-2 mb-1">
-        <CustomerMenuDrawer />
-        <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Messages</h1>
-      </div>
+    <>
+      {mobileChat}
+
+      {/* ── Mobile: inbox list (hidden while a chat is open) ── */}
+      <div className={`md:hidden max-w-3xl mx-auto p-4 pb-28 ${mobileChat ? 'hidden' : ''}`}>
+      <h1 className="text-xl font-semibold tracking-tight text-ink mb-1">Messages</h1>
       <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
 
       {threads.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
-          <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
-            <MessageCircle className="w-6 h-6 text-ink-dim" />
-          </div>
-          <p className="font-semibold text-base text-ink mb-1">No conversations yet</p>
-          <p className="text-sm text-ink-sub max-w-xs mx-auto">
-            Conversations are created automatically when a pro sends you a quote or you message a pro.
-          </p>
-        </div>
+        emptyState
       ) : (
         <div className="bg-white rounded-2xl border border-border-dim overflow-hidden divide-y divide-border-dim">
           {threads.map(t => (
@@ -251,69 +258,139 @@ function MessagesContent() {
         </div>
       )}
 
-      {/* Desktop: inline chat panel */}
-      {activeThreadId && activeThread && (
-        <div className="hidden md:block mt-6">
-          <div className="bg-white rounded-2xl border border-border-dim overflow-hidden" style={{ height: '500px' }}>
-            {/* Header */}
-            <div className="flex items-center gap-3 px-5 py-3 border-b border-border-dim">
-              <img
-                src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name)}
-                alt=""
-                className="w-9 h-9 rounded-full object-cover"
-              />
-              <div>
-                <p className="font-semibold text-sm text-ink">{activeThread.otherParticipant.name}</p>
-                <p className="text-[10px] text-ink-dim">{activeThread.category}</p>
-              </div>
+      </div>
+
+      {/* ── Desktop: two-pane inbox ── */}
+      <div className="hidden md:block max-w-6xl mx-auto p-6 lg:p-8">
+        <div className="flex items-center gap-2 mb-1">
+          <CustomerMenuDrawer />
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">Messages</h1>
+        </div>
+        <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
+
+        {threads.length === 0 ? (
+          emptyState
+        ) : (
+          <div className="flex h-[calc(100dvh-15rem)] min-h-[480px] bg-white rounded-2xl border border-border-dim overflow-hidden">
+            {/* Left: thread list */}
+            <div className="w-80 lg:w-96 shrink-0 border-r border-border-dim overflow-y-auto divide-y divide-border-dim">
+              {threads.map(t => (
+                <Link
+                  key={t.id}
+                  href={`/messages?thread=${t.id}`}
+                  className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
+                    t.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
+                  }`}
+                >
+                  <img
+                    src={t.otherParticipant.image || avatarUrl(t.otherParticipant.name)}
+                    alt=""
+                    className="w-11 h-11 rounded-full object-cover shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-sm text-ink truncate">{t.otherParticipant.name}</p>
+                      {t.lastMessage && (
+                        <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(t.lastMessage.createdAt)}</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-ink-dim mt-0.5 truncate">
+                      {t.lastMessage
+                        ? `${t.lastMessage.senderId === userId ? 'You: ' : ''}${t.lastMessage.content}`
+                        : `${t.category} · No messages yet`
+                      }
+                    </p>
+                  </div>
+                </Link>
+              ))}
             </div>
 
-            {/* Messages */}
-            <div ref={scrollRef} className="overflow-y-auto px-5 py-4 space-y-2 bg-canvas" style={{ height: 'calc(100% - 120px)' }}>
-              {messages.map(m => {
-                const isMine = m.senderId === userId;
-                return (
-                  <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[70%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                      isMine
-                        ? 'bg-brand text-white rounded-br-md'
-                        : 'bg-white border border-border-dim text-ink rounded-bl-md'
-                    }`}>
-                      <p>{m.content}</p>
-                      <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
-                        {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+            {/* Right: conversation pane */}
+            <div className="flex-1 min-w-0 flex flex-col bg-canvas">
+              {activeThreadId && activeThread ? (
+                <>
+                  {/* Header */}
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-border-dim bg-white shrink-0">
+                    <img
+                      src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name)}
+                      alt=""
+                      className="w-9 h-9 rounded-full object-cover"
+                    />
+                    <div>
+                      <p className="font-semibold text-sm text-ink">{activeThread.otherParticipant.name}</p>
+                      <p className="text-[10px] text-ink-dim">{activeThread.category}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
 
-            {/* Input */}
-            <div className="px-4 py-3 border-t border-border-dim bg-white">
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={newMsg}
-                  onChange={e => setNewMsg(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2.5 bg-canvas border border-border-dim rounded-full text-sm outline-none focus:ring-2 focus:ring-brand"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!newMsg.trim() || sending}
-                  className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center shrink-0 disabled:opacity-40 transition-opacity"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
+                  {/* Messages */}
+                  <div ref={deskScrollRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-2">
+                    {msgLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-6 h-6 animate-spin text-ink-dim" />
+                      </div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center py-12">
+                        <p className="text-sm text-ink-dim">No messages yet. Say hello!</p>
+                      </div>
+                    ) : (
+                      messages.map(m => {
+                        const isMine = m.senderId === userId;
+                        return (
+                          <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
+                            <div className={`max-w-[70%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                              isMine
+                                ? 'bg-brand text-white rounded-br-md'
+                                : 'bg-white border border-border-dim text-ink rounded-bl-md'
+                            }`}>
+                              <p>{m.content}</p>
+                              <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
+                                {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  {/* Input */}
+                  <div className="px-4 py-3 border-t border-border-dim bg-white shrink-0">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newMsg}
+                        onChange={e => setNewMsg(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                        placeholder="Type a message..."
+                        className="flex-1 px-4 py-2.5 bg-canvas border border-border-dim rounded-full text-sm outline-none focus:ring-2 focus:ring-brand"
+                      />
+                      <button
+                        onClick={handleSend}
+                        disabled={!newMsg.trim() || sending}
+                        className="w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center shrink-0 disabled:opacity-40 transition-opacity"
+                      >
+                        <Send className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mb-4">
+                    <MessageCircle className="w-6 h-6 text-ink-dim" />
+                  </div>
+                  <p className="font-semibold text-base text-ink mb-1">Select a conversation</p>
+                  <p className="text-sm text-ink-sub max-w-xs">
+                    Choose a conversation from the list to see the messages.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <MobileNav />
-    </div>
+    </>
   );
 }
