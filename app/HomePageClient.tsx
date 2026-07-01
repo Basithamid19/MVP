@@ -123,7 +123,10 @@ const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean; img
 
 const TRUST_ICONS = [CheckCircle2, FileText, BadgeCheck, Shield];
 
-function TrustCarousel() {
+// Single-card trust slideshow (the mobile design): white card with icon tile,
+// side arrows, dot pager, 5s auto-advance and swipe. `overlay` renders the
+// dots in white so they read on top of the hero photo.
+function TrustSlideshow({ overlay = false }: { overlay?: boolean }) {
   const tb = useTranslation().trustBanner;
   const items = [
     { title: tb.guaranteeTitle, desc: tb.guaranteeDesc },
@@ -155,83 +158,78 @@ function TrustCarousel() {
   const Icon = TRUST_ICONS[active];
 
   return (
-    <div className="mt-8 lg:mt-12 -mx-2 sm:mx-0">
-      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1 md:bg-transparent md:rounded-none md:p-0">
+    <div>
+      <div className="relative flex items-center">
+        <button
+          onClick={prev}
+          className={`absolute -left-1 z-10 w-10 h-10 flex items-center justify-center active:scale-90 transition-all ${
+            overlay ? 'text-white/60 hover:text-white' : 'text-ink-dim/40 hover:text-ink-dim'
+          }`}
+          aria-label="Previous"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
 
-        {/* Mobile: single-card carousel */}
-        <div className="md:hidden">
-          <div className="relative flex items-center">
-            <button
-              onClick={prev}
-              className="absolute -left-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
-              aria-label="Previous"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            <div
-              className="w-full overflow-hidden mx-2"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              <motion.div
-                key={active}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                className="bg-white border border-border-dim/60 rounded-2xl px-4 py-2.5 flex items-center gap-4 shadow-card min-h-[58px]"
-              >
-                <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                  <Icon className="w-[17px] h-[17px] text-brand" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
-                  <p className="text-[13px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
-                </div>
-              </motion.div>
+        <div
+          className="w-full overflow-hidden mx-2"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <motion.div
+            key={active}
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+            className="bg-white border border-border-dim/60 rounded-2xl px-4 py-2.5 flex items-center gap-4 shadow-card min-h-[58px]"
+          >
+            <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+              <Icon className="w-[17px] h-[17px] text-brand" />
             </div>
-
-            <button
-              onClick={next}
-              className="absolute -right-1 z-10 w-10 h-10 flex items-center justify-center text-ink-dim/40 hover:text-ink-dim active:scale-90 transition-all"
-              aria-label="Next"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Dots */}
-          <div className="flex items-center justify-center gap-1.5 mt-2">
-            {items.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActive(i)}
-                className={`rounded-full transition-all duration-300 ${
-                  i === active ? 'w-5 h-1.5 bg-brand' : 'w-1.5 h-1.5 bg-ink-dim/25'
-                }`}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
+            <div className="min-w-0">
+              <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
+              <p className="text-[13px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Desktop: full-width 4-column strip */}
-        <div className="hidden md:grid md:grid-cols-4 gap-4">
-          {items.map((item, i) => {
-            const TIcon = TRUST_ICONS[i];
-            return (
-              <div key={i} className="bg-white border border-border-dim/60 rounded-2xl px-4 py-3.5 flex items-start gap-3 shadow-card">
-                <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
-                  <TIcon className="w-[17px] h-[17px] text-brand" />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[13px] font-bold text-ink leading-tight">{item.title}</p>
-                  <p className="text-[11px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <button
+          onClick={next}
+          className={`absolute -right-1 z-10 w-10 h-10 flex items-center justify-center active:scale-90 transition-all ${
+            overlay ? 'text-white/60 hover:text-white' : 'text-ink-dim/40 hover:text-ink-dim'
+          }`}
+          aria-label="Next"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Dots */}
+      <div className="flex items-center justify-center gap-1.5 mt-2">
+        {items.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            className={`rounded-full transition-all duration-300 ${
+              i === active
+                ? `w-5 h-1.5 ${overlay ? 'bg-white' : 'bg-brand'}`
+                : `w-1.5 h-1.5 ${overlay ? 'bg-white/40' : 'bg-ink-dim/25'}`
+            }`}
+            aria-label={`Go to slide ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Below-hero placement for viewports without the hero photo (< lg). On lg+
+// the same slideshow lives inside the trust badge on the hero image instead
+// of the old 4-column card strip.
+function TrustCarousel() {
+  return (
+    <div className="mt-8 -mx-2 sm:mx-0 lg:hidden">
+      <div className="bg-surface-alt rounded-2xl px-2 pt-3 pb-1">
+        <TrustSlideshow />
       </div>
     </div>
   );
@@ -475,15 +473,10 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
               </div>
 
-              {/* Floating Trust Badge */}
-              <div className="absolute bottom-4 left-4 bg-white p-4 rounded-panel shadow-float border border-border-dim flex items-center gap-4">
-                <div className="w-12 h-12 bg-trust-surface rounded-full flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-6 h-6 text-trust" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-ink">{t.hero.verified}</p>
-                  <p className="text-xs text-ink-dim">{t.hero.professionalsInVilnius}</p>
-                </div>
+              {/* Floating trust slideshow — sits fully inside the photo
+                  (the old static badge overhung the rounded corner) */}
+              <div className="absolute bottom-4 left-4 right-4">
+                <TrustSlideshow overlay />
               </div>
 
               {/* Floating Pro Badge */}
