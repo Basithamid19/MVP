@@ -111,12 +111,12 @@ const TESTIMONIALS = [
 
 type CardKey = 'plumbing' | 'electrical' | 'cleaning' | 'repairs' | 'logistics' | 'assembly';
 const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean; img: string; price: string }[] = [
-  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false, img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?q=80&w=600&auto=format&fit=crop', price: 'From €40' },
+  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false, img: 'https://loremflickr.com/600/450/plumber,pipe,repair?lock=21',      price: 'From €40' },
   { bg: '#D2E8D2', cardKey: 'electrical', popular: false, img: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=600&auto=format&fit=crop', price: 'From €45' },
-  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true,  img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=600&auto=format&fit=crop', price: 'From €30' },
-  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true,  img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=600&auto=format&fit=crop', price: 'From €35' },
-  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false, img: 'https://images.unsplash.com/photo-1600585152220-90363fe7e115?q=80&w=600&auto=format&fit=crop', price: 'From €50' },
-  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false, img: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?q=80&w=600&auto=format&fit=crop', price: 'From €40' },
+  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true,  img: 'https://loremflickr.com/600/450/home,cleaning?lock=23',            price: 'From €30' },
+  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true,  img: 'https://loremflickr.com/600/450/handyman,tools?lock=24',           price: 'From €35' },
+  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false, img: 'https://loremflickr.com/600/450/movers,boxes,van?lock=25',         price: 'From €50' },
+  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false, img: 'https://loremflickr.com/600/450/furniture,carpenter?lock=26',      price: 'From €40' },
 ];
 
 /* ─── Trust Carousel ─── */
