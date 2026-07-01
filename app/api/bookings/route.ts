@@ -16,14 +16,36 @@ export async function GET(request: Request) {
   const id = searchParams.get('id');
 
   if (id) {
-    // Explicit select avoids selecting new columns (depositAmount, canceledAt on Booking;
-    // stripeAccountId/stripeOnboarded on ProviderProfile; new Payment fields)
-    // that may not exist in the DB until the migration runs.
+    // Narrow user selects everywhere — `user: true` serializes the full User
+    // row (password hash, email) to the counterparty.
+    const SAFE_USER = { select: { id: true, name: true, image: true } } as const;
+
+    // The full provider include pulls every ProviderProfile column, including
+    // stripeOnboarded (needed by the provider job page). If those columns are
+    // missing (20260412/20260417 not applied) the fallback below retries with
+    // only pre-migration provider columns.
     const BOOKING_DETAIL_SELECT = {
       id: true, customerId: true, providerId: true, quoteId: true,
       status: true, scheduledAt: true, totalAmount: true, createdAt: true,
-      customer: { include: { user: true } },
-      provider: { include: { user: true, categories: true } },
+      customer: { include: { user: SAFE_USER } },
+      provider: { include: { user: SAFE_USER, categories: true } },
+      payment: { select: { id: true, bookingId: true, amount: true, depositAmount: true, status: true, createdAt: true } },
+      review: true,
+      quote: { include: { request: { include: { category: true } } } },
+    } as const;
+
+    const BOOKING_DETAIL_FALLBACK_SELECT = {
+      id: true, customerId: true, providerId: true, quoteId: true,
+      status: true, scheduledAt: true, totalAmount: true, createdAt: true,
+      customer: { include: { user: SAFE_USER } },
+      provider: {
+        select: {
+          id: true, userId: true, bio: true, serviceArea: true, languages: true,
+          ratingAvg: true, completedJobs: true, isVerified: true,
+          verificationTier: true, responseTime: true,
+          user: SAFE_USER, categories: true,
+        },
+      },
       payment: { select: { id: true, bookingId: true, amount: true, status: true, createdAt: true } },
       review: true,
       quote: { include: { request: { include: { category: true } } } },
@@ -36,7 +58,7 @@ export async function GET(request: Request) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('column') || msg.includes('P2022')) {
         console.warn('[bookings GET] column error, retrying with safe select');
-        return prisma.booking.findUnique({ where: { id }, select: BOOKING_DETAIL_SELECT }).catch(() => null);
+        return prisma.booking.findUnique({ where: { id }, select: BOOKING_DETAIL_FALLBACK_SELECT }).catch(() => null);
       }
       return null;
     });
@@ -92,7 +114,7 @@ export async function GET(request: Request) {
     if (!customer) return NextResponse.json([]);
     const bookings = await prisma.booking.findMany({
       where: { customerId: customer.id },
-      include: { provider: { include: { user: true } }, review: true },
+      include: { provider: { include: { user: { select: { id: true, name: true, image: true } } } }, review: true },
       orderBy: { scheduledAt: 'desc' },
     });
     return NextResponse.json(bookings);
@@ -106,7 +128,7 @@ export async function GET(request: Request) {
     const PROVIDER_BOOKING_SAFE_SELECT = {
       id: true, customerId: true, providerId: true, quoteId: true,
       status: true, scheduledAt: true, totalAmount: true, createdAt: true,
-      customer: { include: { user: true } },
+      customer: { include: { user: { select: { id: true, name: true, image: true } } } },
       quote: { include: { request: { include: { category: true } } } },
       payment: { select: { id: true, bookingId: true, amount: true, status: true, createdAt: true } },
       review: true,
@@ -125,7 +147,7 @@ export async function GET(request: Request) {
           select: {
             id: true, customerId: true, providerId: true, quoteId: true,
             status: true, scheduledAt: true, totalAmount: true, createdAt: true,
-            customer: { include: { user: true } },
+            customer: { include: { user: { select: { id: true, name: true, image: true } } } },
             quote: { include: { request: { include: { category: true } } } },
             review: true,
           },

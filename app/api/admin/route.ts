@@ -11,6 +11,12 @@ async function requireAdmin() {
   return session;
 }
 
+// Admin may see emails, but the password hash must never leave the DB layer —
+// use this instead of `user: true` anywhere a User relation is serialized.
+const ADMIN_USER_SELECT = {
+  select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
+} as const;
+
 export async function GET(request: Request) {
   const session = await requireAdmin();
   if (!session) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -41,7 +47,7 @@ export async function GET(request: Request) {
           docUrl: true,
           status: true,
           createdAt: true,
-          provider: { include: { user: true } },
+          provider: { include: { user: ADMIN_USER_SELECT } },
         },
       }),
       prisma.serviceRequest.count(),
@@ -75,7 +81,7 @@ export async function GET(request: Request) {
   if (section === 'providers') {
     const providers = await prisma.providerProfile.findMany({
       include: {
-        user: true,
+        user: ADMIN_USER_SELECT,
         categories: true,
         // Use select to avoid the missing rejectionReason column
         verifications: {
@@ -93,8 +99,8 @@ export async function GET(request: Request) {
   if (section === 'bookings') {
     const bookings = await prisma.booking.findMany({
       include: {
-        customer: { include: { user: true } },
-        provider: { include: { user: true, categories: true } },
+        customer: { include: { user: ADMIN_USER_SELECT } },
+        provider: { include: { user: ADMIN_USER_SELECT, categories: true } },
         payment: true,
         quote: { include: { request: { include: { category: true } } } },
       },
@@ -106,8 +112,8 @@ export async function GET(request: Request) {
   if (section === 'reviews') {
     const reviews = await prisma.review.findMany({
       include: {
-        customer: { include: { user: true } },
-        provider: { include: { user: true } },
+        customer: { include: { user: ADMIN_USER_SELECT } },
+        provider: { include: { user: ADMIN_USER_SELECT } },
         booking: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -117,7 +123,8 @@ export async function GET(request: Request) {
 
   if (section === 'users') {
     const users = await prisma.user.findMany({
-      include: {
+      select: {
+        id: true, name: true, email: true, image: true, role: true, createdAt: true,
         customerProfile: true,
         providerProfile: { select: { ratingAvg: true, completedJobs: true, isVerified: true, verificationTier: true } },
       },

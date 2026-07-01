@@ -11,7 +11,7 @@ async function getInitialBookings(userId: string) {
     // Postgres joins on the relation directly in one query.
     const bookings = await prisma.booking.findMany({
       where: { customer: { userId } },
-      include: { provider: { include: { user: true } }, review: true },
+      include: { provider: { include: { user: { select: { id: true, name: true, image: true } } } }, review: true },
       orderBy: { scheduledAt: 'desc' },
     });
     return JSON.parse(JSON.stringify(bookings));

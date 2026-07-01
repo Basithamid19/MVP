@@ -44,7 +44,9 @@ const SINGLE_SELECT = {
   availability: true,
   reviews: {
     where: { isHidden: false },
-    include: { customer: { include: { user: true } } },
+    // Reviewer identity only — this endpoint is public and edge-cached, so a
+    // full user include would publish reviewers' password hashes and emails.
+    include: { customer: { include: { user: { select: { id: true, name: true, image: true } } } } },
     orderBy: { createdAt: 'desc' } as const,
     take: 20,
   },

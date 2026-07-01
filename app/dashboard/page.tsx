@@ -21,7 +21,7 @@ async function getInitialData(userId: string) {
       }),
       prisma.booking.findMany({
         where: { customer: { userId } },
-        include: { provider: { include: { user: true } }, review: true },
+        include: { provider: { include: { user: { select: { id: true, name: true, image: true } } } }, review: true },
         orderBy: { scheduledAt: 'desc' },
       }),
     ]);
