@@ -34,6 +34,13 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { documents, identity, businessType } = body;
   // documents: [{ docType: 'ID' | 'CERTIFICATE' | 'INSURANCE' | 'SELFIE', docUrl: string }]
+  // identity: { fullName, phone, companyName, vatNumber }
+  // Note: raw national ID number is intentionally NOT persisted — it lives only
+  // in the uploaded verification document, never as a plaintext column.
+
+  if (!Array.isArray(documents)) {
+    return NextResponse.json({ error: 'documents array required' }, { status: 400 });
+  }
 
   let provider = await prisma.providerProfile.findUnique({
     where: { userId: (session.user as any).id },
@@ -66,13 +73,31 @@ export async function POST(request: Request) {
     created.push(verification);
   }
 
-  // Update provider profile with phone if provided
-  if (identity?.phone) {
+  // Persist business identity from onboarding. companyName/businessType/
+  // vatNumber are new columns (20260703) — guard with a P2022 fallback that
+  // still writes the bio seed if the columns aren't there yet.
+  const profileUpdate: Record<string, unknown> = {};
+  if (identity?.companyName) profileUpdate.companyName = String(identity.companyName).trim();
+  if (identity?.vatNumber) profileUpdate.vatNumber = String(identity.vatNumber).trim();
+  if (businessType) profileUpdate.businessType = String(businessType).trim();
+  if (!provider.bio) {
+    profileUpdate.bio = `${identity?.companyName ? String(identity.companyName).trim() + ' · ' : ''}Verified professional`;
+  }
+
+  if (Object.keys(profileUpdate).length > 0) {
     await prisma.providerProfile.update({
       where: { id: provider.id },
-      data: {
-        bio: provider.bio || `${businessType === 'company' ? (identity.companyName ?? '') + ' · ' : ''}Verified professional`,
-      },
+      data: profileUpdate,
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('companyName') || msg.includes('businessType') || msg.includes('vatNumber') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[verification POST] business columns missing, writing bio only');
+        if (typeof profileUpdate.bio === 'string') {
+          await prisma.providerProfile.update({ where: { id: provider.id }, data: { bio: profileUpdate.bio } }).catch(() => {});
+        }
+      } else {
+        throw err;
+      }
     });
   }
 

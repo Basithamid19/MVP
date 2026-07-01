@@ -94,7 +94,7 @@ export default function OnboardingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           documents,
-          identity: { fullName: identity.fullName, phone: identity.phone, companyName },
+          identity: { fullName: identity.fullName, phone: identity.phone, companyName, vatNumber },
           businessType,
         }),
       });
