@@ -110,13 +110,18 @@ const TESTIMONIALS = [
 ];
 
 type CardKey = 'plumbing' | 'electrical' | 'cleaning' | 'repairs' | 'logistics' | 'assembly';
+// Category photos are topical Unsplash images. loremflickr (previous source)
+// returned random/often-broken images. If any URL fails to load, the card's
+// <img onError> falls back to a stable per-category picsum seed, so a card is
+// never blank. `u()` builds a consistently-cropped 600px Unsplash URL.
+const u = (id: string) => `https://images.unsplash.com/${id}?q=80&w=600&auto=format&fit=crop`;
 const SERVICE_CARD_THEMES: { bg: string; cardKey: CardKey; popular: boolean; img: string; price: string }[] = [
-  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false, img: 'https://loremflickr.com/600/450/plumber,pipe,repair?lock=21',      price: 'From €40' },
-  { bg: '#D2E8D2', cardKey: 'electrical', popular: false, img: 'https://images.unsplash.com/photo-1621905251918-48416bd8575a?q=80&w=600&auto=format&fit=crop', price: 'From €45' },
-  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true,  img: 'https://loremflickr.com/600/450/home,cleaning?lock=23',            price: 'From €30' },
-  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true,  img: 'https://loremflickr.com/600/450/handyman,tools?lock=24',           price: 'From €35' },
-  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false, img: 'https://loremflickr.com/600/450/movers,boxes,van?lock=25',         price: 'From €50' },
-  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false, img: 'https://loremflickr.com/600/450/furniture,carpenter?lock=26',      price: 'From €40' },
+  { bg: '#D2E8D2', cardKey: 'plumbing',   popular: false, img: u('photo-1607472586893-edb57bdc0e39'), price: 'From €40' },
+  { bg: '#D2E8D2', cardKey: 'electrical', popular: false, img: u('photo-1621905251918-48416bd8575a'), price: 'From €45' },
+  { bg: '#D2E8D2', cardKey: 'cleaning',   popular: true,  img: u('photo-1581578731548-c64695cc6952'), price: 'From €30' },
+  { bg: '#D2E8D2', cardKey: 'repairs',    popular: true,  img: u('photo-1581092160562-40aa08e78837'), price: 'From €35' },
+  { bg: '#D2E8D2', cardKey: 'logistics',  popular: false, img: u('photo-1600585152220-90363fe7e115'), price: 'From €50' },
+  { bg: '#D2E8D2', cardKey: 'assembly',   popular: false, img: u('photo-1595428774223-ef52624120d2'), price: 'From €40' },
 ];
 
 /* ─── Trust Carousel ─── */
