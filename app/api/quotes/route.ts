@@ -14,6 +14,11 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { requestId, price, estimatedHours, notes } = body;
 
+  const parsedPrice = parseFloat(price);
+  if (!requestId || !Number.isFinite(parsedPrice) || parsedPrice <= 0) {
+    return NextResponse.json({ error: 'A valid requestId and positive price are required' }, { status: 400 });
+  }
+
   const provider = await prisma.providerProfile.findUnique({
     where: { userId: (session.user as any).id },
     include: { categories: { select: { id: true } } },
@@ -44,7 +49,7 @@ export async function POST(request: Request) {
     data: {
       requestId,
       providerId: provider.id,
-      price: parseFloat(price),
+      price: parsedPrice,
       estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
       notes,
       status: 'PENDING',
@@ -68,7 +73,7 @@ export async function POST(request: Request) {
       userId: customerProfile.userId,
       type: 'quote',
       title: 'New quote received',
-      body: `${providerUser?.name ?? 'A pro'} sent you a quote for €${parseFloat(price).toFixed(0)}`,
+      body: `${providerUser?.name ?? 'A pro'} sent you a quote for €${parsedPrice.toFixed(0)}`,
       href: `/requests/${requestId}`,
     });
   }
@@ -130,6 +135,10 @@ export async function PATCH(request: Request) {
   const body = await request.json();
   const { quoteId, status } = body; // status: 'ACCEPTED' or 'DECLINED'
 
+  if (status !== 'ACCEPTED' && status !== 'DECLINED') {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
   const quote = await prisma.quote.findUnique({
     where: { id: quoteId },
     include: {
@@ -149,6 +158,12 @@ export async function PATCH(request: Request) {
   const callerRole = (session.user as any).role;
   if (callerRole !== 'ADMIN' && quote.request.customer?.userId !== callerId) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Only a PENDING quote can be actioned. Re-sending ACCEPTED for an already
+  // accepted quote used to create a duplicate Booking + Payment on every call.
+  if (quote.status !== 'PENDING') {
+    return NextResponse.json({ error: `Quote already ${quote.status.toLowerCase()}` }, { status: 409 });
   }
 
   const updatedQuote = await prisma.quote.update({

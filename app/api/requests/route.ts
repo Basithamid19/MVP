@@ -79,6 +79,8 @@ export async function GET(request: Request) {
       where: { id },
       select: {
         id: true,
+        status: true,
+        categoryId: true,
         customer: { select: { userId: true } },
       },
     });
@@ -91,14 +93,21 @@ export async function GET(request: Request) {
     if (!authorized && role === 'PROVIDER') {
       const providerProfile = await prisma.providerProfile.findUnique({
         where: { userId },
-        select: { id: true },
+        select: { id: true, categories: { select: { id: true } } },
       });
       if (providerProfile) {
         const quoted = await prisma.quote.findFirst({
           where: { requestId: id, providerId: providerProfile.id },
           select: { id: true },
         });
-        if (quoted) authorized = true;
+        // A provider may read the request if they already quoted on it, OR if
+        // it's an open lead in one of their categories — the Quote Builder
+        // loads this endpoint before the first quote exists, and previously
+        // always got a 403 here (blank request summary on first quote).
+        const isMatchingOpenLead =
+          ['NEW', 'QUOTED'].includes(header.status) &&
+          providerProfile.categories.some(c => c.id === header.categoryId);
+        if (quoted || isMatchingOpenLead) authorized = true;
       }
     }
 
@@ -106,14 +115,17 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Never `include: { user: true }` on cross-party reads — that serializes
+    // the full User row (password hash, email) into the JSON response.
     const req = await prisma.serviceRequest.findUnique({
       where: { id },
       include: {
         category: true,
-        customer: { include: { user: true } },
+        customer: { include: { user: { select: { id: true, name: true, image: true } } } },
         quotes: {
           include: {
-            provider: { include: { user: true, categories: true } },
+            provider: { include: { user: { select: { id: true, name: true, image: true } }, categories: true } },
+            booking: { select: { id: true } },
           },
           orderBy: { createdAt: 'asc' },
         },
@@ -154,7 +166,7 @@ export async function GET(request: Request) {
         ...categoryFilter,
         status: { in: ['NEW', 'QUOTED'] },
       },
-      include: { category: true, customer: { include: { user: true } } },
+      include: { category: true, customer: { include: { user: { select: { id: true, name: true, image: true } } } } },
       orderBy: { createdAt: 'desc' },
     });
     return NextResponse.json(requests);

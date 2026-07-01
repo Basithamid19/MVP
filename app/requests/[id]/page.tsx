@@ -35,6 +35,7 @@ export default function QuoteInboxPage() {
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
+  const [startingChat, setStartingChat] = useState<string | null>(null);
 
   const load = useCallback(() => {
     fetch(`/api/requests?id=${id}`)
@@ -61,6 +62,21 @@ export default function QuoteInboxPage() {
       }
     } finally {
       setActioning(null);
+    }
+  };
+
+  const handleMessagePro = async (providerId: string) => {
+    setStartingChat(providerId);
+    try {
+      const res = await fetch('/api/chat/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ providerId, requestId: id }),
+      });
+      const data = await res.json();
+      if (data.threadId) router.push(`/messages?thread=${data.threadId}`);
+    } finally {
+      setStartingChat(null);
     }
   };
 
@@ -157,7 +173,7 @@ export default function QuoteInboxPage() {
             <p className="text-xs text-white/60 mb-4 leading-relaxed">Your pro will be in touch to confirm the details.</p>
             <div className="flex flex-col sm:flex-row gap-2.5">
               <Link
-                href={`/bookings/${acceptedQuote.bookingId || ''}`}
+                href={acceptedQuote.booking?.id ? `/bookings/${acceptedQuote.booking.id}` : '/bookings'}
                 className="flex-1 flex items-center justify-center gap-2 bg-white text-ink px-5 py-3 rounded-2xl text-sm font-bold hover:bg-surface-alt transition-colors"
               >
                 View Booking <ChevronRight className="w-4 h-4" />
@@ -272,9 +288,11 @@ export default function QuoteInboxPage() {
                           </Link>
                           <button
                             title="Message pro"
-                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-brand hover:text-ink transition-colors"
+                            onClick={() => handleMessagePro(p?.id)}
+                            disabled={startingChat === p?.id}
+                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-brand hover:text-ink transition-colors disabled:opacity-50"
                           >
-                            <MessageSquare className="w-5 h-5" />
+                            {startingChat === p?.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageSquare className="w-5 h-5" />}
                           </button>
                           <button
                             onClick={() => handleQuote(quote.id, 'DECLINED')}
