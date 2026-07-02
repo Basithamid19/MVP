@@ -100,6 +100,11 @@ export default function ProviderJobDetailPage() {
   const flow = STATUS_FLOW[booking.status] ?? STATUS_FLOW.SCHEDULED;
   const isCanceled = booking.status === 'CANCELED';
   const isCompleted = booking.status === 'COMPLETED';
+  // Messaging only unlocks once the booking is confirmed (deposit paid).
+  // Mirrors the server-side gate in lib/chat-access.ts.
+  const chatUnlocked =
+    ['DEPOSIT_HELD', 'PAID', 'PROCESSING'].includes(booking.payment?.status) ||
+    ['IN_PROGRESS', 'COMPLETED'].includes(booking.status);
   const address = booking.quote?.request?.address;
   const mapsUrl = address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : '#';
   const completedTasks = checklist.filter(Boolean).length;
@@ -211,12 +216,14 @@ export default function ProviderJobDetailPage() {
               )}
             </div>
           </div>
-          {/* Action row */}
-          <div className="border-t border-border-dim grid grid-cols-3 divide-x divide-border-dim">
-            <button onClick={() => setShowChat(true)}
-              className="flex items-center justify-center gap-1.5 py-2.5 bg-brand text-white text-xs font-semibold">
-              <MessageSquare className="w-3.5 h-3.5" /> Message
-            </button>
+          {/* Action row — Message only appears once the deposit is paid */}
+          <div className={`border-t border-border-dim grid divide-x divide-border-dim ${chatUnlocked ? 'grid-cols-3' : 'grid-cols-2'}`}>
+            {chatUnlocked && (
+              <button onClick={() => setShowChat(true)}
+                className="flex items-center justify-center gap-1.5 py-2.5 bg-brand text-white text-xs font-semibold">
+                <MessageSquare className="w-3.5 h-3.5" /> Message
+              </button>
+            )}
             <button
               onClick={() => {
                 const phone = customer?.phone;
@@ -267,10 +274,12 @@ export default function ProviderJobDetailPage() {
             >
               <Phone className="w-4 h-4" /> Call
             </button>
-            <button onClick={() => setShowChat(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors">
-              <MessageSquare className="w-4 h-4" /> Message
-            </button>
+            {chatUnlocked && (
+              <button onClick={() => setShowChat(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors">
+                <MessageSquare className="w-4 h-4" /> Message
+              </button>
+            )}
             {address && (
               <a href={mapsUrl} target="_blank" rel="noreferrer"
                 className="flex items-center justify-center gap-2 px-4 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors">

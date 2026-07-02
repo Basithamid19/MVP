@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { redactPII } from '@/lib/pii-filter';
+import { hasConfirmedBookingBetween, CONFIRMED_PAYMENT_STATUSES, ACTIVE_BOOKING_STATUSES } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +56,32 @@ export async function GET(request: Request) {
 
       if (!authorized) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      // Chat gate: conversations only open once a booking between the two
+      // participants is confirmed (deposit paid). Admin exempt.
+      if (role !== 'ADMIN') {
+        const pairIds = thread.participants.map(p => p.id);
+        // Legacy threads may lack the participants relation — fall back to
+        // the scalar customerId/providerId columns for the pair.
+        if (pairIds.length < 2) {
+          try {
+            const scalar: any = await prisma.chatThread.findUnique({
+              where: { id: threadId },
+              select: { customerId: true, providerId: true } as any,
+            });
+            for (const pid of [scalar?.customerId, scalar?.providerId]) {
+              if (pid && !pairIds.includes(pid)) pairIds.push(pid);
+            }
+          } catch { /* scalar columns missing on this DB */ }
+        }
+        const confirmed = await hasConfirmedBookingBetween(pairIds);
+        if (!confirmed) {
+          return NextResponse.json(
+            { error: 'Messaging unlocks once your booking is confirmed.', locked: true },
+            { status: 403 },
+          );
+        }
       }
 
       // Explicit select: imageUrl (migration 20260701*) may not exist in the
@@ -142,6 +169,39 @@ export async function GET(request: Request) {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
+    // Chat gate: the inbox only surfaces conversations with counterparts the
+    // caller has a CONFIRMED booking with (deposit paid / job in progress or
+    // completed). Everything else stays hidden until the booking is paid.
+    // Admin sees all.
+    let confirmedPartnerIds: Set<string> | null = null;
+    if (role !== 'ADMIN') {
+      const confirmedBookings = await prisma.booking.findMany({
+        where: {
+          status: { not: 'CANCELED' },
+          OR: [
+            { customer: { userId } },
+            { provider: { userId } },
+          ],
+          AND: [{
+            OR: [
+              { payment: { status: { in: CONFIRMED_PAYMENT_STATUSES } } },
+              { status: { in: ACTIVE_BOOKING_STATUSES as any } },
+            ],
+          }],
+        },
+        select: {
+          customer: { select: { userId: true } },
+          provider: { select: { userId: true } },
+        },
+      });
+      confirmedPartnerIds = new Set<string>();
+      for (const b of confirmedBookings) {
+        for (const pid of [b.customer?.userId, b.provider?.userId]) {
+          if (pid && pid !== userId) confirmedPartnerIds.add(pid);
+        }
+      }
+    }
+
     // Collapse duplicates: legacy data holds several threads per
     // customer↔provider pair (one per request). Surface one conversation per
     // counterpart — the ranked-best thread — so the inbox never shows the
@@ -151,6 +211,7 @@ export async function GET(request: Request) {
     for (const t of ranked) {
       const otherP = t.participants.find((p: any) => p.id !== userId) ?? t.participants[0] ?? null;
       if (!otherP || seen.has(otherP.id)) continue;
+      if (confirmedPartnerIds && !confirmedPartnerIds.has(otherP.id)) continue;
       seen.add(otherP.id);
       result.push({
         id: t.id,
@@ -224,15 +285,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Check if thread is locked (deposit not yet paid). Separate query so a
-    // missing isLocked column (pre-20260403 DB) doesn't break the auth check.
-    const lock = await prisma.chatThread.findUnique({
-      where: { id: threadId },
-      select: { isLocked: true },
-    }).catch(() => null);
-
-    if (lock?.isLocked) {
-      return NextResponse.json({ error: 'Chat is locked. Pay the deposit to unlock messaging.', locked: true }, { status: 403 });
+    // Chat gate: messaging only opens once a booking between the two
+    // participants is confirmed (deposit paid). This replaces the old
+    // per-thread isLocked flag — the flag could be stale for reused
+    // pair-threads keyed to a different request, letting messages through
+    // before payment. Admin exempt.
+    if (role !== 'ADMIN') {
+      const pairIds = thread.participants.map(p => p.id);
+      if (pairIds.length < 2) {
+        try {
+          const scalar: any = await prisma.chatThread.findUnique({
+            where: { id: threadId },
+            select: { customerId: true, providerId: true } as any,
+          });
+          for (const pid of [scalar?.customerId, scalar?.providerId]) {
+            if (pid && !pairIds.includes(pid)) pairIds.push(pid);
+          }
+        } catch { /* scalar columns missing on this DB */ }
+      }
+      const confirmed = await hasConfirmedBookingBetween(pairIds);
+      if (!confirmed) {
+        return NextResponse.json(
+          { error: 'Messaging unlocks once your booking is confirmed (deposit paid).', locked: true },
+          { status: 403 },
+        );
+      }
     }
 
     const safeImageUrl =

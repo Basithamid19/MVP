@@ -248,7 +248,7 @@ function MessagesContent() {
       </div>
       <p className="font-semibold text-base text-ink mb-1">No conversations yet</p>
       <p className="text-sm text-ink-sub max-w-xs mx-auto">
-        Conversations are created automatically when a pro sends you a quote or you message a pro.
+        Messaging opens once a booking is confirmed. Accept a quote and pay the deposit to start chatting with your pro.
       </p>
     </div>
   );

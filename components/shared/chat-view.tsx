@@ -69,7 +69,14 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
   const [loading, setLoading] = useState(false);
   const [sendingImage, setSendingImage] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
-  const [isLocked, setIsLocked] = useState(booking?.payment?.status === 'PENDING');
+  // Locked until the booking is confirmed (deposit held / job progressed) —
+  // mirrors the server-side gate in lib/chat-access.ts.
+  const [isLocked, setIsLocked] = useState(
+    !(
+      ['DEPOSIT_HELD', 'PAID', 'PROCESSING'].includes(booking?.payment?.status) ||
+      ['IN_PROGRESS', 'COMPLETED'].includes(booking?.status)
+    )
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();

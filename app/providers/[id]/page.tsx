@@ -7,7 +7,6 @@ import {
   Star,
   ShieldCheck,
   MapPin,
-  MessageSquare,
   Clock,
   Languages,
   CheckCircle2,
@@ -33,7 +32,6 @@ export default function ProviderProfilePage() {
   const { data: session } = useSession();
   const [provider, setProvider] = useState<any>(null);
   const [reviews,  setReviews]  = useState<any[]>([]);
-  const [chatLoading, setChatLoading] = useState(false);
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
@@ -509,37 +507,8 @@ export default function ProviderProfilePage() {
               Send Service Request
             </Link>
 
-            <button
-              disabled={chatLoading}
-              onClick={async () => {
-                if (chatLoading) return;
-                setChatLoading(true);
-                try {
-                  const res = await fetch('/api/chat/start', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ providerId: provider.id }),
-                  });
-                  if (!res.ok) {
-                    if (res.status === 401) { router.push('/login'); return; }
-                    let msg = 'Could not start chat';
-                    try { const data = await res.json(); msg = data.error || msg; } catch {}
-                    alert(msg);
-                    return;
-                  }
-                  const { threadId } = await res.json();
-                  router.push(`/messages?thread=${threadId}`);
-                } catch {
-                  alert('Something went wrong. Please try again.');
-                } finally {
-                  setChatLoading(false);
-                }
-              }}
-              className="w-full bg-surface-alt text-ink text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-border transition-all flex items-center justify-center gap-2 border border-border-dim text-sm sm:text-base disabled:opacity-50"
-            >
-              <MessageSquare className="w-4 h-4" />
-              {chatLoading ? 'Opening chat...' : 'Chat with Pro'}
-            </button>
+            {/* Chat entry removed: messaging only unlocks after a booking is
+                confirmed (deposit paid) — see lib/chat-access.ts. */}
 
             {/* Mini availability — driven by saved AvailabilitySlot rows */}
             {(() => {

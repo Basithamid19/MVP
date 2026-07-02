@@ -35,7 +35,6 @@ export default function QuoteInboxPage() {
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
-  const [startingChat, setStartingChat] = useState<string | null>(null);
 
   const load = useCallback(() => {
     fetch(`/api/requests?id=${id}`)
@@ -62,21 +61,6 @@ export default function QuoteInboxPage() {
       }
     } finally {
       setActioning(null);
-    }
-  };
-
-  const handleMessagePro = async (providerId: string) => {
-    setStartingChat(providerId);
-    try {
-      const res = await fetch('/api/chat/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ providerId, requestId: id }),
-      });
-      const data = await res.json();
-      if (data.threadId) router.push(`/messages?thread=${data.threadId}`);
-    } finally {
-      setStartingChat(null);
     }
   };
 
@@ -286,14 +270,8 @@ export default function QuoteInboxPage() {
                           >
                             Profile
                           </Link>
-                          <button
-                            title="Message pro"
-                            onClick={() => handleMessagePro(p?.id)}
-                            disabled={startingChat === p?.id}
-                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-brand hover:text-ink transition-colors disabled:opacity-50"
-                          >
-                            {startingChat === p?.id ? <Loader2 className="w-5 h-5 animate-spin" /> : <MessageSquare className="w-5 h-5" />}
-                          </button>
+                          {/* Chat entry removed: messaging unlocks only after
+                              the booking deposit is paid. */}
                           <button
                             onClick={() => handleQuote(quote.id, 'DECLINED')}
                             disabled={!!actioning}

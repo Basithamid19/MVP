@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { hasConfirmedBookingBetween } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,18 @@ export async function POST(request: Request) {
     // Determine customer and provider user IDs
     const customerId = userRole === 'PROVIDER' ? provider.userId : userId;
     const providerUserId = userRole === 'PROVIDER' ? userId : provider.userId;
+
+    // Chat gate: conversations can only be started once a booking between the
+    // pair is confirmed (deposit paid). Admin exempt for moderation flows.
+    if (userRole !== 'ADMIN') {
+      const confirmed = await hasConfirmedBookingBetween([customerId, providerUserId]);
+      if (!confirmed) {
+        return NextResponse.json(
+          { error: 'Messaging unlocks once a booking is confirmed (deposit paid).', locked: true },
+          { status: 403 },
+        );
+      }
+    }
 
     // One conversation per customer↔provider pair: if ANY thread already
     // exists between these two people, continue it — never spawn a new one

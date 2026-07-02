@@ -177,6 +177,11 @@ export default function BookingPage() {
   const stepIdx = STEP_INDEX[booking.status] ?? 0;
   const isCanceled = booking.status === 'CANCELED';
   const isCompleted = booking.status === 'COMPLETED';
+  // Messaging only unlocks once the booking is confirmed: deposit held (or
+  // later). Mirrors the server-side gate in lib/chat-access.ts.
+  const chatUnlocked =
+    ['DEPOSIT_HELD', 'PAID', 'PROCESSING'].includes(booking.payment?.status) ||
+    ['IN_PROGRESS', 'COMPLETED'].includes(booking.status);
   const eta = deriveEta(booking);
   const quotedPrice = booking.quote?.price;
   const finalPrice = booking.totalAmount;
@@ -345,12 +350,14 @@ export default function BookingPage() {
             >
               <Phone className="w-4 h-4" /> Call
             </button>
-            <button
-              onClick={() => setShowChat(true)}
-              className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
-            >
-              <MessageSquare className="w-4 h-4" /> Message
-            </button>
+            {chatUnlocked && (
+              <button
+                onClick={() => setShowChat(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
+              >
+                <MessageSquare className="w-4 h-4" /> Message
+              </button>
+            )}
             <Link
               href={`/providers/${provider?.id}`}
               className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
