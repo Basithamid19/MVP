@@ -499,9 +499,19 @@ export default function ProviderProfilePage() {
             </div>
 
             <Link
-              href={session
-                ? `/requests/new?providerId=${provider.id}&category=${provider.categories[0]?.slug}`
-                : `/login?callbackUrl=/providers/${provider.id}`}
+              href={
+                !session
+                  ? `/login?callbackUrl=/providers/${provider.id}`
+                  : (provider.categories?.length ?? 0) === 1
+                    // Single-service pro: pre-select it and skip to the details step.
+                    ? `/requests/new?providerId=${provider.id}&category=${provider.categories[0].slug}`
+                    : (provider.categories?.length ?? 0) > 1
+                      // Multi-service pro: let the customer choose which service,
+                      // scoped to just this pro's services (no more defaulting to
+                      // the first category / skipping the picker).
+                      ? `/requests/new?providerId=${provider.id}&providerCategories=${provider.categories.map((c: any) => c.slug).join(',')}`
+                      : `/requests/new?providerId=${provider.id}`
+              }
               className="block w-full bg-brand text-white text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-brand-dark transition-all mb-3 shadow-sm hover:shadow-elevated text-sm sm:text-base"
             >
               Send Service Request

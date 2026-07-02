@@ -55,6 +55,12 @@ function NewRequestContent() {
   const initialSlug        = searchParams.get('category')    || '';
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
+  // When arriving from a multi-service provider profile, scope the step-1
+  // service picker to just that provider's services (comma-separated slugs).
+  const providerCatSlugs = (searchParams.get('providerCategories') || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
 
   const startStep = initialSlug && initialSubcategory ? 3 : initialSlug ? 2 : 1;
   const [step, setStep] = useState(startStep);
@@ -217,7 +223,10 @@ function NewRequestContent() {
             <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">What do you need help with?</h1>
             <p className="text-ink-sub text-sm mb-7">Choose a service to get matched with local pros.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {categories.map((cat) => {
+              {(providerCatSlugs.length
+                ? categories.filter(c => providerCatSlugs.includes(c.slug))
+                : categories
+              ).map((cat) => {
                 const Icon = ICON_MAP[cat.slug] || Wrench;
                 const selected = form.categoryId === cat.id;
                 return (
