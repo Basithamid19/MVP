@@ -31,13 +31,32 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Provider profile not found' }, { status: 404 });
   }
 
-  const serviceRequest = await prisma.serviceRequest.findUnique({
+  // targetProviderId is a new column (20260706) — fall back to a select
+  // without it on un-migrated DBs.
+  const serviceRequest: any = await prisma.serviceRequest.findUnique({
     where: { id: requestId },
-    select: { categoryId: true, customerId: true, status: true },
+    select: { categoryId: true, customerId: true, status: true, targetProviderId: true },
+  }).catch(async (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('targetProviderId') || msg.includes('column') || msg.includes('P2022')) {
+      return prisma.serviceRequest.findUnique({
+        where: { id: requestId },
+        select: { categoryId: true, customerId: true, status: true },
+      });
+    }
+    throw err;
   });
 
   if (!serviceRequest) {
     return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
+  }
+
+  // Direct requests can only be quoted by their target provider.
+  if (serviceRequest.targetProviderId && serviceRequest.targetProviderId !== provider.id) {
+    return NextResponse.json(
+      { error: 'This request was sent directly to another provider.' },
+      { status: 403 },
+    );
   }
 
   // Only open requests can be quoted. Without this a provider could quote a

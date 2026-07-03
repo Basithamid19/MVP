@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { categoryId, address, description, dateWindow, budget, isUrgent, timeOfDay, photoUrls } = body;
+  const { categoryId, address, description, dateWindow, budget, isUrgent, timeOfDay, photoUrls, providerId } = body;
 
   const customer = await prisma.customerProfile.findUnique({
     where: { userId: (session.user as any).id },
@@ -31,6 +31,20 @@ export async function POST(request: Request) {
     ? photoUrls.filter((u: unknown) => typeof u === 'string' && /^https?:\/\//.test(u)).slice(0, 10)
     : [];
 
+  // Direct request (from a provider's profile): validate the target exists
+  // and actually offers the chosen category; otherwise fall back to an open
+  // broadcast so a stale/foreign providerId never blackholes the request.
+  let targetProviderId: string | null = null;
+  if (typeof providerId === 'string' && providerId) {
+    const target = await prisma.providerProfile.findUnique({
+      where: { id: providerId },
+      select: { id: true, userId: true, categories: { select: { id: true } } },
+    });
+    if (target && target.categories.some(c => c.id === categoryId)) {
+      targetProviderId = target.id;
+    }
+  }
+
   const baseData = {
     customerId: customer.id,
     categoryId,
@@ -42,36 +56,53 @@ export async function POST(request: Request) {
     status: 'NEW' as const,
   };
 
-  // Persist timeOfDay + photoUrls; fall back to a create without the newer
-  // columns if the migrations (20260702, 20260704) haven't run yet.
+  // Persist timeOfDay + photoUrls + targetProviderId; fall back to a create
+  // without the newer columns if migrations (20260702/04/06) haven't run yet.
   const serviceRequest = await prisma.serviceRequest.create({
-    data: { ...baseData, timeOfDay: normalizedTimeOfDay, photoUrls: safePhotoUrls },
+    data: { ...baseData, timeOfDay: normalizedTimeOfDay, photoUrls: safePhotoUrls, targetProviderId },
     include: { category: true },
   }).catch(async (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes('timeOfDay') || msg.includes('photoUrls') || msg.includes('column') || msg.includes('P2022')) {
+    if (msg.includes('timeOfDay') || msg.includes('photoUrls') || msg.includes('targetProviderId') || msg.includes('column') || msg.includes('P2022')) {
       console.warn('[requests POST] new columns missing, creating without them');
       return prisma.serviceRequest.create({ data: baseData, include: { category: true } });
     }
     throw err;
   });
 
-  // Notify all providers who have this category in their profile
-  const matchingProviders = await prisma.providerProfile.findMany({
-    where: { categories: { some: { id: categoryId } } },
-    select: { userId: true },
-  });
-
   const categoryName = serviceRequest.category?.name ?? 'service';
   const urgentPrefix = isUrgent ? '🔴 Urgent: ' : '';
-  for (const provider of matchingProviders) {
-    createNotification({
-      userId: provider.userId,
-      type: 'lead',
-      title: `${urgentPrefix}New ${categoryName} lead`,
-      body: `A customer needs ${categoryName.toLowerCase()} help${address ? ` in ${address}` : ''}. Send a quote now.`,
-      href: '/provider/leads',
+
+  if (targetProviderId) {
+    // Direct request: notify ONLY the chosen provider.
+    const target = await prisma.providerProfile.findUnique({
+      where: { id: targetProviderId },
+      select: { userId: true },
     });
+    if (target) {
+      createNotification({
+        userId: target.userId,
+        type: 'lead',
+        title: `${urgentPrefix}You've received a direct request`,
+        body: `A customer chose you for a ${categoryName.toLowerCase()} job${address ? ` in ${address}` : ''}. Send your quote.`,
+        href: '/provider/leads',
+      });
+    }
+  } else {
+    // Open request: broadcast to all providers in this category.
+    const matchingProviders = await prisma.providerProfile.findMany({
+      where: { categories: { some: { id: categoryId } } },
+      select: { userId: true },
+    });
+    for (const provider of matchingProviders) {
+      createNotification({
+        userId: provider.userId,
+        type: 'lead',
+        title: `${urgentPrefix}New ${categoryName} lead`,
+        body: `A customer needs ${categoryName.toLowerCase()} help${address ? ` in ${address}` : ''}. Send a quote now.`,
+        href: '/provider/leads',
+      });
+    }
   }
 
   return NextResponse.json(serviceRequest);
@@ -95,14 +126,25 @@ export async function GET(request: Request) {
     // request. Category-matched providers who have NOT quoted yet are NOT
     // authorized here — lead visibility with a narrower field set will be
     // handled in a dedicated endpoint in a later block.
-    const header = await prisma.serviceRequest.findUnique({
+    // targetProviderId is a new column (20260706) — fall back without it.
+    const header: any = await prisma.serviceRequest.findUnique({
       where: { id },
       select: {
         id: true,
         status: true,
         categoryId: true,
+        targetProviderId: true,
         customer: { select: { userId: true } },
       },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('targetProviderId') || msg.includes('column') || msg.includes('P2022')) {
+        return prisma.serviceRequest.findUnique({
+          where: { id },
+          select: { id: true, status: true, categoryId: true, customer: { select: { userId: true } } },
+        });
+      }
+      throw err;
     });
     if (!header) {
       return NextResponse.json(null);
@@ -120,14 +162,19 @@ export async function GET(request: Request) {
           where: { requestId: id, providerId: providerProfile.id },
           select: { id: true },
         });
-        // A provider may read the request if they already quoted on it, OR if
-        // it's an open lead in one of their categories — the Quote Builder
-        // loads this endpoint before the first quote exists, and previously
-        // always got a 403 here (blank request summary on first quote).
-        const isMatchingOpenLead =
-          ['NEW', 'QUOTED'].includes(header.status) &&
-          providerProfile.categories.some(c => c.id === header.categoryId);
-        if (quoted || isMatchingOpenLead) authorized = true;
+        if (header.targetProviderId) {
+          // Direct request: readable only by its target (or a provider who
+          // already quoted, for legacy safety).
+          if (quoted || header.targetProviderId === providerProfile.id) authorized = true;
+        } else {
+          // A provider may read the request if they already quoted on it, OR
+          // if it's an open lead in one of their categories — the Quote
+          // Builder loads this endpoint before the first quote exists.
+          const isMatchingOpenLead =
+            ['NEW', 'QUOTED'].includes(header.status) &&
+            providerProfile.categories.some((c: any) => c.id === header.categoryId);
+          if (quoted || isMatchingOpenLead) authorized = true;
+        }
       }
     }
 
@@ -181,13 +228,34 @@ export async function GET(request: Request) {
       ? { categoryId: { in: categoryIds } }
       : {};
 
+    // Direct requests are visible only to their target provider (see
+    // /api/provider/leads for the same rule); open requests broadcast.
+    const providerBaseWhere = {
+      ...categoryFilter,
+      status: { in: ['NEW', 'QUOTED'] as any },
+    };
+    const PROVIDER_LIST_INCLUDE = {
+      category: true,
+      customer: { include: { user: { select: { id: true, name: true, image: true } } } },
+    } as const;
+
     const requests = await prisma.serviceRequest.findMany({
       where: {
-        ...categoryFilter,
-        status: { in: ['NEW', 'QUOTED'] },
+        ...providerBaseWhere,
+        OR: [{ targetProviderId: null }, { targetProviderId: provider.id }],
       },
-      include: { category: true, customer: { include: { user: { select: { id: true, name: true, image: true } } } } },
+      include: PROVIDER_LIST_INCLUDE,
       orderBy: { createdAt: 'desc' },
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('targetProviderId') || msg.includes('column') || msg.includes('P2022')) {
+        return prisma.serviceRequest.findMany({
+          where: providerBaseWhere,
+          include: PROVIDER_LIST_INCLUDE,
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+      throw err;
     });
     return NextResponse.json(requests);
   }

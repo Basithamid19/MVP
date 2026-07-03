@@ -36,6 +36,16 @@ export default function QuoteInboxPage() {
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [targetProviderName, setTargetProviderName] = useState<string | null>(null);
+
+  // For direct requests, resolve the target pro's name for the waiting copy.
+  useEffect(() => {
+    if (!request?.targetProviderId) return;
+    fetch(`/api/providers?id=${request.targetProviderId}`)
+      .then(r => r.json())
+      .then(d => { if (d?.user?.name) setTargetProviderName(d.user.name); })
+      .catch(() => {});
+  }, [request?.targetProviderId]);
 
   const load = useCallback(() => {
     fetch(`/api/requests?id=${id}`)
@@ -211,8 +221,31 @@ export default function QuoteInboxPage() {
             <div className="w-14 h-14 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="w-7 h-7 text-ink-dim" />
             </div>
-            <p className="font-bold text-base mb-1.5">Waiting for quotes</p>
-            <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">Verified pros are reviewing your request. Most respond within 1 hour.</p>
+            {request.targetProviderId ? (
+              <>
+                <p className="font-bold text-base mb-1.5">
+                  Waiting for {targetProviderName ?? 'your chosen pro'} to respond
+                </p>
+                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">
+                  You sent this request directly to one pro. Most respond within 1 hour.
+                </p>
+                <p className="text-xs text-ink-dim mt-3 max-w-xs mx-auto">
+                  Not hearing back?{' '}
+                  <Link
+                    href={`/requests/new?category=${request.category?.slug ?? ''}`}
+                    className="font-semibold text-brand hover:underline"
+                  >
+                    Post an open request
+                  </Link>{' '}
+                  to reach all {request.category?.name?.toLowerCase() ?? ''} pros.
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="font-bold text-base mb-1.5">Waiting for quotes</p>
+                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">Verified pros are reviewing your request. Most respond within 1 hour.</p>
+              </>
+            )}
             <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-xl px-4 py-2.5 transition-colors">
               <RefreshCcw className="w-3.5 h-3.5" /> Check for updates
             </button>

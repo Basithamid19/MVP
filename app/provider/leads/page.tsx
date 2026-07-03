@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Loader2, AlertCircle, MapPin, Clock, RefreshCcw,
-  ChevronRight, Timer, DollarSign, Search, Inbox,
+  ChevronRight, Timer, DollarSign, Search, Inbox, Send,
 } from 'lucide-react';
 
 function ResponseTimer({ createdAt }: { createdAt: string }) {
@@ -206,6 +206,11 @@ export default function ProviderLeadsPage() {
                         <span className="text-[10px] font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                           {lead.category?.name}
                         </span>
+                        {lead.targetProviderId && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark bg-brand-muted px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                            <Send className="w-3 h-3" /> Direct request
+                          </span>
+                        )}
                         {lead.isUrgent && (
                           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution bg-caution-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                             <AlertCircle className="w-3 h-3" /> Urgent

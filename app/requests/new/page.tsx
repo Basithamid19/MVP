@@ -68,6 +68,9 @@ function NewRequestContent() {
   const initialSlug        = searchParams.get('category')    || '';
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
+  // Direct request: arriving from a provider's profile targets that provider
+  // only — the request is sent to them alone, not broadcast to the category.
+  const targetProviderId   = searchParams.get('providerId')  || '';
   // When arriving from a multi-service provider profile, scope the step-1
   // service picker to just that provider's services (comma-separated slugs).
   const providerCatSlugs = (searchParams.get('providerCategories') || '')
@@ -94,7 +97,17 @@ function NewRequestContent() {
   });
   const [photos, setPhotos] = useState<{ file: File; preview: string; url?: string }[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [targetProviderName, setTargetProviderName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Resolve the target provider's name for the "To:" chip on Review.
+  useEffect(() => {
+    if (!targetProviderId) return;
+    fetch(`/api/providers?id=${targetProviderId}`)
+      .then(r => r.json())
+      .then(d => { if (d?.user?.name) setTargetProviderName(d.user.name); })
+      .catch(() => {});
+  }, [targetProviderId]);
 
   useEffect(() => {
     const savedAddr = localStorage.getItem('vp_saved_address');
@@ -182,6 +195,7 @@ function NewRequestContent() {
           budget: form.budget ? form.budget : null,
           isUrgent: form.isUrgent,
           photoUrls: photos.map(p => p.url).filter(Boolean),
+          providerId: targetProviderId || null,
         }),
       });
       if (res.ok) {
@@ -517,7 +531,21 @@ function NewRequestContent() {
               <CheckCircle2 className="w-6 h-6 text-brand shrink-0" />
               <h1 className="text-2xl font-bold tracking-tight text-ink">Review your request</h1>
             </div>
-            <p className="text-ink-sub text-sm mb-6 pl-8">Looks good? Post it and get quotes from local pros.</p>
+            <p className="text-ink-sub text-sm mb-6 pl-8">
+              {targetProviderId
+                ? 'Looks good? This request goes directly to your chosen pro.'
+                : 'Looks good? Post it and get quotes from local pros.'}
+            </p>
+
+            {/* Direct-request chip */}
+            {targetProviderId && (
+              <div className="inline-flex items-center gap-2 px-3.5 py-2 mb-4 bg-brand-muted rounded-full">
+                <Send className="w-3.5 h-3.5 text-brand-dark" />
+                <span className="text-xs font-bold text-brand-dark">
+                  To: {targetProviderName ?? 'your chosen pro'} only
+                </span>
+              </div>
+            )}
 
             {/* Review card */}
             <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden mb-4">

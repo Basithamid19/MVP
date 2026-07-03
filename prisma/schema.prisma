@@ -146,6 +146,7 @@ model ServiceRequest {
   dateWindow        DateTime
   timeOfDay         String?              // "morning" | "afternoon" | "evening" | "flexible"
   photoUrls         String[]             @default([])
+  targetProviderId  String?              // set = direct request to ONE provider (ProviderProfile.id); null = open category broadcast
   budget            Float?
   isUrgent          Boolean              @default(false)
   status            ServiceRequestStatus @default(NEW)

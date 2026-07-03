@@ -24,21 +24,43 @@ export async function GET() {
       ? { categoryId: { in: categoryIds } }
       : {};
 
+    // Direct requests are visible ONLY to their target provider; open
+    // requests (targetProviderId null) broadcast to the whole category.
+    // Falls back to the unfiltered query if the 20260706 migration hasn't run.
+    const baseWhere = {
+      ...categoryFilter,
+      status: { in: ['NEW', 'QUOTED'] as any },
+      quotes: { none: { providerId: profile.id } },
+    };
+    const LEAD_INCLUDE = {
+      category: true,
+      quotes: { select: { id: true } },
+    } as const;
+    const LEAD_ORDER = [
+      { isUrgent: 'desc' as const },
+      { createdAt: 'desc' as const },
+    ];
+
     const requests = await prisma.serviceRequest.findMany({
       where: {
-        ...categoryFilter,
-        status: { in: ['NEW', 'QUOTED'] },
-        quotes: { none: { providerId: profile.id } },
+        ...baseWhere,
+        OR: [{ targetProviderId: null }, { targetProviderId: profile.id }],
       },
-      include: {
-        category: true,
-        quotes: { select: { id: true } },
-      },
-      orderBy: [
-        { isUrgent: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      include: LEAD_INCLUDE,
+      orderBy: LEAD_ORDER,
       take: 50,
+    }).catch(async (err: unknown) => {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('targetProviderId') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[provider/leads GET] targetProviderId column missing, falling back');
+        return prisma.serviceRequest.findMany({
+          where: baseWhere,
+          include: LEAD_INCLUDE,
+          orderBy: LEAD_ORDER,
+          take: 50,
+        });
+      }
+      throw err;
     });
 
     return NextResponse.json(requests);
