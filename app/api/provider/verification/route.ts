@@ -59,6 +59,21 @@ export async function POST(request: Request) {
     });
   }
 
+  // Resubmission dedupe: replace this provider's prior PENDING/REJECTED rows
+  // for the doc types being resubmitted (keep APPROVED). Without this, every
+  // pass through onboarding accumulated duplicate rows — old REJECTED docs
+  // next to new PENDING ones for the same document.
+  const resubmittedTypes = [...new Set(documents.map((d: any) => d.docType).filter(Boolean))];
+  if (resubmittedTypes.length > 0) {
+    await prisma.providerVerification.deleteMany({
+      where: {
+        providerProfileId: provider.id,
+        docType: { in: resubmittedTypes as string[] },
+        status: { in: ['PENDING', 'REJECTED'] },
+      },
+    }).catch(() => {});
+  }
+
   // Create verification records for each document
   const created = [];
   for (const doc of documents) {
