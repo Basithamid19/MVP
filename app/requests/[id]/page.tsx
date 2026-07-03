@@ -21,6 +21,15 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   EXPIRED:  { label: 'Expired',            color: 'bg-surface-alt text-ink-sub' },
 };
 
+function expiresLabel(expiresAt?: string | null): string | null {
+  if (!expiresAt) return null;
+  const ms = new Date(expiresAt).getTime() - Date.now();
+  if (ms <= 0) return 'Expired';
+  const hours = Math.floor(ms / 3600000);
+  if (hours < 24) return `Expires in ${Math.max(1, hours)}h`;
+  return `Expires in ${Math.floor(hours / 24)}d`;
+}
+
 function etaFromResponse(responseTime: string | undefined): string {
   if (!responseTime) return 'Today';
   if (responseTime.includes('min') || responseTime.includes('hour') || responseTime.includes('hr')) {
@@ -103,7 +112,9 @@ export default function QuoteInboxPage() {
   }
 
   const status = STATUS_LABELS[request.status] ?? { label: request.status, color: 'bg-surface-alt text-ink-sub' };
-  const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING');
+  const isExpired = (q: any) => q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
+  const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && !isExpired(q));
+  const expiredCount = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && isExpired(q)).length;
   const acceptedQuote = (request.quotes ?? []).find((q: any) => q.status === 'ACCEPTED');
 
   const prices = pendingQuotes.map((q: any) => q.price).filter(Boolean);
@@ -246,6 +257,11 @@ export default function QuoteInboxPage() {
                 <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">Verified pros are reviewing your request. Most respond within 1 hour.</p>
               </>
             )}
+            {expiredCount > 0 && (
+              <p className="text-xs text-ink-dim mt-3">
+                {expiredCount} earlier quote{expiredCount > 1 ? 's' : ''} expired before you responded.
+              </p>
+            )}
             <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-xl px-4 py-2.5 transition-colors">
               <RefreshCcw className="w-3.5 h-3.5" /> Check for updates
             </button>
@@ -302,6 +318,9 @@ export default function QuoteInboxPage() {
                           <p className="text-xl font-bold">€{quote.price?.toFixed(2)}</p>
                           {quote.estimatedHours && (
                             <p className="text-xs text-ink-dim mt-0.5">~{quote.estimatedHours}h</p>
+                          )}
+                          {expiresLabel(quote.expiresAt) && (
+                            <p className="text-[11px] text-caution mt-0.5">{expiresLabel(quote.expiresAt)}</p>
                           )}
                           {minPrice !== null && maxPrice !== null && maxPrice > minPrice && (
                             <p className="text-[11px] text-ink-dim mt-0.5">

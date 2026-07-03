@@ -166,6 +166,7 @@ model Quote {
   estimatedHours    Float?
   notes             String?
   status            String          // "PENDING", "ACCEPTED", "DECLINED"
+  expiresAt         DateTime?       // quote can't be accepted after this
   createdAt         DateTime        @default(now())
   
   booking           Booking?

@@ -15,12 +15,16 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { requestId, price, estimatedHours, notes } = body;
+  const { requestId, price, estimatedHours, notes, expiresInDays } = body;
 
   const parsedPrice = parseFloat(price);
   if (!requestId || !Number.isFinite(parsedPrice) || parsedPrice <= 0) {
     return NextResponse.json({ error: 'A valid requestId and positive price are required' }, { status: 400 });
   }
+
+  // Quote validity window: 1–14 days, default 3.
+  const days = Math.min(14, Math.max(1, parseInt(expiresInDays, 10) || 3));
+  const expiresAt = new Date(Date.now() + days * 86400000);
 
   const provider = await prisma.providerProfile.findUnique({
     where: { userId: (session.user as any).id },
@@ -89,6 +93,7 @@ export async function POST(request: Request) {
     );
   }
 
+  // expiresAt is a new column (20260707) — fall back to a create without it.
   const quote = await prisma.quote.create({
     data: {
       requestId,
@@ -97,7 +102,24 @@ export async function POST(request: Request) {
       estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
       notes,
       status: 'PENDING',
+      expiresAt,
     },
+  }).catch(async (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('expiresAt') || msg.includes('column') || msg.includes('P2022')) {
+      console.warn('[quotes POST] expiresAt column missing, creating without it');
+      return prisma.quote.create({
+        data: {
+          requestId,
+          providerId: provider.id,
+          price: parsedPrice,
+          estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
+          notes,
+          status: 'PENDING',
+        },
+      });
+    }
+    throw err;
   });
 
   await prisma.serviceRequest.update({
@@ -186,7 +208,7 @@ export async function PATCH(request: Request) {
   // Explicit select (not include) so we can guard the new ServiceRequest
   // .timeOfDay column with a P2022 fallback per the migration-safety pattern.
   const QUOTE_SELECT = {
-    id: true, price: true, providerId: true, requestId: true, status: true,
+    id: true, price: true, providerId: true, requestId: true, status: true, expiresAt: true,
     request: {
       select: {
         id: true, customerId: true, status: true, dateWindow: true, timeOfDay: true,
@@ -231,6 +253,14 @@ export async function PATCH(request: Request) {
   // accepted quote used to create a duplicate Booking + Payment on every call.
   if (quote.status !== 'PENDING') {
     return NextResponse.json({ error: `Quote already ${quote.status.toLowerCase()}` }, { status: 409 });
+  }
+
+  // Expired quotes can't be accepted (the provider set a validity window).
+  if (status === 'ACCEPTED' && quote.expiresAt && new Date(quote.expiresAt) < new Date()) {
+    return NextResponse.json(
+      { error: 'This quote has expired. Ask the pro for a new quote or pick another one.' },
+      { status: 409 },
+    );
   }
 
   // Request-level double-booking guard: a request yields at most one booking.

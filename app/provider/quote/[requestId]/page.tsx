@@ -49,6 +49,7 @@ export default function QuoteBuilderPage() {
         body: JSON.stringify({
           requestId,
           price: totalPrice(),
+          expiresInDays,
           estimatedHours: estimatedHours ? parseFloat(estimatedHours) : null,
           notes: [
             notes,
