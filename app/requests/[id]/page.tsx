@@ -35,6 +35,7 @@ export default function QuoteInboxPage() {
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const load = useCallback(() => {
     fetch(`/api/requests?id=${id}`)
@@ -47,18 +48,28 @@ export default function QuoteInboxPage() {
 
   const handleQuote = async (quoteId: string, status: 'ACCEPTED' | 'DECLINED') => {
     setActioning(quoteId);
+    setActionError(null);
     try {
       const res = await fetch('/api/quotes', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quoteId, status }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({} as any));
+      if (!res.ok) {
+        // Surface the server's reason (availability conflict, request already
+        // booked, quote expired…) — this used to be silently discarded.
+        setActionError(data.error ?? 'Could not update the quote. Please try again.');
+        load();
+        return;
+      }
       if (status === 'ACCEPTED' && data.bookingId) {
         router.push(`/bookings/${data.bookingId}`);
       } else {
         load();
       }
+    } catch {
+      setActionError('Network error. Please check your connection and try again.');
     } finally {
       setActioning(null);
     }
@@ -107,6 +118,19 @@ export default function QuoteInboxPage() {
       </div>
 
       <div className="space-y-5">
+        {/* Action error (accept/decline failed) */}
+        {actionError && (
+          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-caution leading-relaxed">{actionError}</p>
+            </div>
+            <button onClick={() => setActionError(null)} className="shrink-0 text-caution hover:opacity-70">
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* Request summary */}
         <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-6 shadow-sm">
           <div className="flex items-start justify-between gap-4 mb-3">

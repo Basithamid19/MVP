@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import {
   ArrowLeft, ArrowRight, Calendar,
   AlertCircle, Loader2, CheckCircle2, Send,
@@ -52,6 +53,18 @@ function ReviewRow({
 function NewRequestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const pathname = usePathname();
+  const { status: authStatus } = useSession();
+
+  // Posting requires an account — redirect to login up front instead of
+  // letting a guest fill all five steps and hit a silent 401 on submit.
+  useEffect(() => {
+    if (authStatus === 'unauthenticated') {
+      const callback = `${pathname}?${searchParams.toString()}`;
+      router.push(`/login?callbackUrl=${encodeURIComponent(callback)}`);
+    }
+  }, [authStatus, router, pathname, searchParams]);
+
   const initialSlug        = searchParams.get('category')    || '';
   const initialSubcategory = searchParams.get('subcategory') || '';
   const initialDescription = searchParams.get('description') || '';
@@ -65,6 +78,7 @@ function NewRequestContent() {
   const startStep = initialSlug && initialSubcategory ? 3 : initialSlug ? 2 : 1;
   const [step, setStep] = useState(startStep);
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const [form, setForm] = useState({
     categoryId: '',
@@ -146,6 +160,7 @@ function NewRequestContent() {
 
   const handleSubmit = async () => {
     setLoading(true);
+    setSubmitError(null);
     try {
       const res = await fetch('/api/requests', {
         method: 'POST',
@@ -163,9 +178,18 @@ function NewRequestContent() {
       if (res.ok) {
         const data = await res.json();
         router.push(`/requests/${data.id}`);
+        return;
       }
+      if (res.status === 401) {
+        const callback = `${pathname}?${searchParams.toString()}`;
+        router.push(`/login?callbackUrl=${encodeURIComponent(callback)}`);
+        return;
+      }
+      const d = await res.json().catch(() => ({} as any));
+      setSubmitError(d.error ?? 'Could not post your request. Please try again.');
     } catch (err) {
       console.error(err);
+      setSubmitError('Network error. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -553,6 +577,14 @@ function NewRequestContent() {
       {/* ── Sticky bottom CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
         <div className="max-w-2xl mx-auto px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
+          {/* Submit error — a failed POST used to be completely invisible */}
+          {submitError && step === 5 && (
+            <div className="flex items-start gap-2.5 px-4 py-3 mb-2.5 bg-caution-surface border border-caution-edge rounded-2xl">
+              <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
+              <p className="text-sm font-medium text-caution leading-relaxed">{submitError}</p>
+            </div>
+          )}
+
           {/* Step indicator */}
           <p className="text-center text-[11px] font-semibold text-ink-dim mb-2.5 tracking-wide">
             Step {step} of {STEPS.length}

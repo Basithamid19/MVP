@@ -34,9 +34,14 @@ export default function LoginPage() {
       } else {
         const session = await getSession();
         const role = (session?.user as any)?.role;
+        // Honor a same-origin callbackUrl (e.g. the request wizard sends
+        // guests here and expects to resume). Read at submit time to avoid
+        // the useSearchParams Suspense requirement.
+        const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
+        const safeCallback = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : null;
         if (role === 'PROVIDER') router.push('/provider/dashboard');
         else if (role === 'ADMIN') router.push('/admin/dashboard');
-        else router.push('/');
+        else router.push(safeCallback ?? '/');
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
