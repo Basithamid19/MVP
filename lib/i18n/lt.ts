@@ -610,6 +610,8 @@ export const lt: Dictionary = {
     activeJobs: 'Aktyvūs darbai',
     emptyLeadsTitle: 'Užpildykite profilį, kad gautumėte užklausų',
     emptyLeadsDesc: 'Užklausos parenkamos pagal jūsų paslaugas ir zoną.',
+    noLeadsTitle: 'Šiuo metu naujų užklausų nėra',
+    noLeadsDesc: 'Viskas paruošta — naujos užklausos jūsų kategorijose atsiras čia.',
     completeYourProfile: 'Užpildykite profilį',
     emptyJobsTitle: 'Šiuo metu aktyvių darbų nėra',
     emptyJobsDesc: 'Darbai atsiranda čia, kai klientai priima jūsų pasiūlymus.',

@@ -395,30 +395,45 @@ export default function DashboardClient({
               </Link>
             </div>
             {leads.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
-                    <Inbox className="w-4 h-4 text-brand" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm text-ink">{t.providerDashboard.emptyLeadsTitle}</p>
-                    <p className="text-xs text-ink-sub mt-0.5">{t.providerDashboard.emptyLeadsDesc}</p>
-                  </div>
-                </div>
-                <div className="space-y-2 mb-4">
-                  {completenessSteps.map(({ done, label }) => (
-                    <div key={label} className="flex items-center gap-2.5 text-xs">
-                      <CheckCircle2 className={`w-4 h-4 shrink-0 ${done ? 'text-brand' : 'text-ink-dim/30'}`} />
-                      <span className={done ? 'text-ink-sub line-through' : 'text-ink font-medium'}>{label}</span>
+              // The setup checklist is only useful while the profile is
+              // incomplete — a fully-set-up provider with zero open leads was
+              // seeing a card of crossed-out to-dos instead of a plain
+              // "no leads right now" state.
+              completePct < 100 ? (
+                <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                      <Inbox className="w-4 h-4 text-brand" />
                     </div>
-                  ))}
-                </div>
-                {completePct < 100 && (
+                    <div>
+                      <p className="font-semibold text-sm text-ink">{t.providerDashboard.emptyLeadsTitle}</p>
+                      <p className="text-xs text-ink-sub mt-0.5">{t.providerDashboard.emptyLeadsDesc}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    {completenessSteps.map(({ done, label }) => (
+                      <div key={label} className="flex items-center gap-2.5 text-xs">
+                        <CheckCircle2 className={`w-4 h-4 shrink-0 ${done ? 'text-brand' : 'text-ink-dim/30'}`} />
+                        <span className={done ? 'text-ink-sub line-through' : 'text-ink font-medium'}>{label}</span>
+                      </div>
+                    ))}
+                  </div>
                   <Link href="/provider/settings" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors">
                     {t.providerDashboard.completeYourProfile} <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
-                )}
-              </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-2xl border border-dashed border-border-dim p-5 sm:p-8 shadow-sm text-center">
+                  <div className="w-10 h-10 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-3">
+                    <Inbox className="w-4 h-4 text-ink-dim" />
+                  </div>
+                  <p className="font-semibold text-sm text-ink mb-1">{t.providerDashboard.noLeadsTitle}</p>
+                  <p className="text-xs text-ink-sub mb-4 max-w-xs mx-auto">{t.providerDashboard.noLeadsDesc}</p>
+                  <Link href="/provider/leads" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors">
+                    {t.providerDashboard.browseLeads} <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              )
             ) : (
               <div className="space-y-2.5 sm:space-y-4">
                 {leads.slice(0, 3).map((lead: any) => (

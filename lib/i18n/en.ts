@@ -610,6 +610,8 @@ export const en: Dictionary = {
     activeJobs: 'Active Jobs',
     emptyLeadsTitle: 'Complete your profile to start receiving leads',
     emptyLeadsDesc: 'Leads are matched based on your services and area.',
+    noLeadsTitle: 'No open leads right now',
+    noLeadsDesc: 'You\'re all set — new requests in your categories will appear here as they come in.',
     completeYourProfile: 'Complete your profile',
     emptyJobsTitle: 'No active jobs right now',
     emptyJobsDesc: 'Jobs appear here when customers accept your quotes.',

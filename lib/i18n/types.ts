@@ -639,6 +639,8 @@ export interface Dictionary {
     activeJobs: string;
     emptyLeadsTitle: string;
     emptyLeadsDesc: string;
+    noLeadsTitle: string;
+    noLeadsDesc: string;
     completeYourProfile: string;
     emptyJobsTitle: string;
     emptyJobsDesc: string;
