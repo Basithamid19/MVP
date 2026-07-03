@@ -45,6 +45,7 @@ export default function QuoteInboxPage() {
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmAcceptId, setConfirmAcceptId] = useState<string | null>(null);
   const [targetProviderName, setTargetProviderName] = useState<string | null>(null);
 
   // For direct requests, resolve the target pro's name for the waiting copy.
@@ -342,7 +343,7 @@ export default function QuoteInboxPage() {
                       )}
                       <div className="space-y-2 sm:space-y-0 sm:flex sm:gap-2">
                         <button
-                          onClick={() => handleQuote(quote.id, 'ACCEPTED')}
+                          onClick={() => setConfirmAcceptId(quote.id)}
                           disabled={actioning === quote.id}
                           className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-2xl font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
                         >
@@ -373,6 +374,41 @@ export default function QuoteInboxPage() {
           </div>
         )}
       </div>
+
+      {/* Accept confirmation — accepting is one-shot and auto-declines the
+          other quotes, so make that explicit before committing. */}
+      {confirmAcceptId && (() => {
+        const q = pendingQuotes.find((x: any) => x.id === confirmAcceptId);
+        const othersCount = pendingQuotes.length - 1;
+        return (
+          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+            <div className="bg-white rounded-panel p-6 w-full max-w-sm">
+              <h2 className="font-bold text-lg mb-2">Accept this quote?</h2>
+              <p className="text-sm text-ink-sub mb-1.5">
+                {q?.provider?.user?.name} · <span className="font-bold text-ink">€{q?.price?.toFixed(2)}</span>
+              </p>
+              <p className="text-sm text-ink-sub mb-6">
+                A booking will be created and you&apos;ll pay a 20% deposit to confirm it.
+                {othersCount > 0 && ` Your ${othersCount} other quote${othersCount > 1 ? 's' : ''} will be declined.`}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmAcceptId(null)}
+                  className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={() => { const id = confirmAcceptId; setConfirmAcceptId(null); handleQuote(id, 'ACCEPTED'); }}
+                  className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark flex items-center justify-center gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4" /> Accept
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </CustomerLayout>
   );
 }
