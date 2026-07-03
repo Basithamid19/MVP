@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
@@ -66,6 +66,27 @@ export default function BookingPage() {
   }, [id]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Stripe return feedback: checkout redirects back with ?payment=success|canceled.
+  // Read from window.location (not useSearchParams) to avoid the Suspense
+  // requirement. On success, poll until the webhook lands so the page flips to
+  // 'deposit paid' without a manual refresh.
+  const [paymentBanner, setPaymentBanner] = useState<'success' | 'canceled' | null>(null);
+  const pollAttempts = useRef(0);
+
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get('payment');
+    if (p === 'success' || p === 'canceled') setPaymentBanner(p);
+  }, []);
+
+  const paymentConfirmed = ['DEPOSIT_HELD', 'PAID', 'PROCESSING'].includes(booking?.payment?.status);
+
+  useEffect(() => {
+    if (paymentBanner !== 'success' || paymentConfirmed) return;
+    if (pollAttempts.current >= 10) return;
+    const t = setTimeout(() => { pollAttempts.current += 1; load(); }, 3000);
+    return () => clearTimeout(t);
+  }, [paymentBanner, paymentConfirmed, load]);
 
   const updateStatus = async (status: string) => {
     setActioning(true);
@@ -251,6 +272,30 @@ export default function BookingPage() {
           <div className="bg-danger-surface border border-danger-edge rounded-card p-4 flex items-center gap-3">
             <XCircle className="w-5 h-5 text-danger shrink-0" />
             <p className="text-sm font-medium text-danger">This booking has been canceled.</p>
+          </div>
+        )}
+
+        {/* Stripe return feedback */}
+        {paymentBanner === 'success' && (
+          paymentConfirmed ? (
+            <div className="flex items-center gap-3 px-4 py-3 bg-trust-surface border border-trust-edge rounded-card">
+              <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
+              <p className="text-sm font-medium text-trust">Deposit received — your booking is confirmed. You can now message your pro.</p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 px-4 py-3 bg-info-surface border border-info-edge rounded-card">
+              <Loader2 className="w-5 h-5 text-info shrink-0 animate-spin" />
+              <p className="text-sm font-medium text-info">Payment received — finalizing your booking…</p>
+            </div>
+          )
+        )}
+        {paymentBanner === 'canceled' && (
+          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
+            <div className="flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-caution shrink-0" />
+              <p className="text-sm font-medium text-caution">Payment canceled — your booking isn&apos;t confirmed yet. You can pay the deposit whenever you&apos;re ready.</p>
+            </div>
+            <button onClick={() => setPaymentBanner(null)} className="shrink-0 text-caution hover:opacity-70 text-xs font-bold">Dismiss</button>
           </div>
         )}
 
