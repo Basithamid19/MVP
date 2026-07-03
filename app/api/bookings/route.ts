@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
 import { stripe } from '@/lib/stripe';
+import { CONFIRMED_PAYMENT_STATUSES } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -141,7 +142,7 @@ export async function GET(request: Request) {
     }).catch(async (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes('column') || msg.includes('P2022')) {
-        console.warn('[bookings GET provider] column error, retrying without payment select');
+        console.warn('[bookings GET provider] column error, retrying with reduced payment select');
         return prisma.booking.findMany({
           where: { providerId: provider.id },
           select: {
@@ -149,6 +150,9 @@ export async function GET(request: Request) {
             status: true, scheduledAt: true, totalAmount: true, createdAt: true,
             customer: { include: { user: { select: { id: true, name: true, image: true } } } },
             quote: { include: { request: { include: { category: true } } } },
+            // Keep payment.status even on the fallback path — the deposit/chat
+            // gating on the job pages reads it (status is an init-era column).
+            payment: { select: { id: true, bookingId: true, amount: true, status: true, createdAt: true } },
             review: true,
           },
           orderBy: { scheduledAt: 'desc' },
@@ -188,6 +192,7 @@ export async function PATCH(request: Request) {
       id: true,
       customer: { select: { userId: true } },
       provider: { select: { userId: true } },
+      payment: { select: { status: true } },
     },
   });
   if (!existing) {
@@ -200,6 +205,21 @@ export async function PATCH(request: Request) {
     existing.customer?.userId === callerId || existing.provider?.userId === callerId;
   if (callerRole !== 'ADMIN' && !isParticipant) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
+
+  // Deposit gate: a job cannot be started or completed until the deposit is
+  // held. Without this, completing an unpaid booking incremented completedJobs,
+  // told both parties "payment processing" while the payment stayed PENDING
+  // forever, and starting an unpaid job flipped it IN_PROGRESS — which unlocks
+  // chat, defeating the deposit-gated messaging rule. Cancel remains allowed;
+  // admin retained for repair flows.
+  if (callerRole !== 'ADMIN' && (status === 'IN_PROGRESS' || status === 'COMPLETED')) {
+    if (!CONFIRMED_PAYMENT_STATUSES.includes(existing.payment?.status ?? '')) {
+      return NextResponse.json(
+        { error: 'The deposit has not been paid yet. The job can start once the customer pays the deposit.' },
+        { status: 409 },
+      );
+    }
   }
 
   // Use explicit select to avoid failing on new columns (depositAmount, canceledAt)

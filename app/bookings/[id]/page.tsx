@@ -69,11 +69,15 @@ export default function BookingPage() {
   const updateStatus = async (status: string) => {
     setActioning(true);
     try {
-      await fetch('/api/bookings', {
+      const res = await fetch('/api/bookings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookingId: id, status }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({} as any));
+        alert(d.error ?? 'Could not update the booking. Please try again.');
+      }
       load();
     } finally {
       setActioning(false);
@@ -577,7 +581,8 @@ export default function BookingPage() {
         </div>
       )}
 
-      {/* Bottom action bar */}
+      {/* Bottom action bar — Mark Complete only exists once the deposit is
+          paid (server enforces the same rule with a 409). */}
       {!isCanceled && !isCompleted && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4 z-30">
           <div className="max-w-2xl mx-auto flex gap-3">
@@ -588,13 +593,15 @@ export default function BookingPage() {
             >
               Cancel
             </button>
-            <button
-              onClick={() => updateStatus('COMPLETED')}
-              disabled={actioning}
-              className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Mark Complete</>}
-            </button>
+            {chatUnlocked && (
+              <button
+                onClick={() => updateStatus('COMPLETED')}
+                disabled={actioning}
+                className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Mark Complete</>}
+              </button>
+            )}
           </div>
         </div>
       )}

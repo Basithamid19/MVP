@@ -52,11 +52,15 @@ export default function ProviderJobDetailPage() {
   const updateStatus = async (status: string) => {
     setActioning(true);
     try {
-      await fetch('/api/bookings', {
+      const res = await fetch('/api/bookings', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ bookingId, status }),
       });
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({} as any));
+        alert(d.error ?? 'Could not update the job. Please try again.');
+      }
       load();
     } finally {
       setActioning(false);
@@ -130,9 +134,18 @@ export default function ProviderJobDetailPage() {
               <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? 'Job'}</h1>
               <p className="text-[10px] text-ink-dim mt-0.5 font-medium">ID: {booking.id.slice(0, 8)}…</p>
             </div>
-            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide shrink-0 ${flow.color}`}>
-              {flow.label}
-            </span>
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${flow.color}`}>
+                {flow.label}
+              </span>
+              {!isCanceled && !isCompleted && (
+                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                  chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
+                }`}>
+                  {chatUnlocked ? 'Deposit paid' : 'Deposit pending'}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Key details strip */}
@@ -169,6 +182,13 @@ export default function ProviderJobDetailPage() {
           <h1 className="font-bold">{booking.quote?.request?.category?.name ?? 'Job'}</h1>
           <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
         </div>
+        {!isCanceled && !isCompleted && (
+          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
+            chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
+          }`}>
+            {chatUnlocked ? 'Deposit paid' : 'Deposit pending'}
+          </span>
+        )}
         <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${flow.color}`}>
           {flow.label}
         </span>
@@ -441,18 +461,29 @@ export default function ProviderJobDetailPage() {
         )}
       </div>
 
-      {/* Bottom action bar */}
+      {/* Bottom action bar — status can only advance once the deposit is paid
+          (server enforces the same rule with a 409). Until then, show an
+          explicit "awaiting deposit" state so the provider knows not to start. */}
       {!isCanceled && !isCompleted && flow.next && (
         <div className="fixed bottom-0 left-0 right-0 z-40">
           <div className="bg-white/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
             <div className="max-w-2xl mx-auto">
-              <button
-                onClick={() => updateStatus(flow.next)}
-                disabled={actioning}
-                className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-2xl sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
-              >
-                {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {flow.nextLabel}</>}
-              </button>
+              {chatUnlocked ? (
+                <button
+                  onClick={() => updateStatus(flow.next)}
+                  disabled={actioning}
+                  className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-2xl sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
+                >
+                  {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {flow.nextLabel}</>}
+                </button>
+              ) : (
+                <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-2xl sm:rounded-card">
+                  <Clock className="w-4 h-4 text-caution shrink-0" />
+                  <p className="text-sm font-semibold text-caution">
+                    Awaiting customer deposit — don&apos;t start work yet
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
