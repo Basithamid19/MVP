@@ -8,10 +8,12 @@ import {
   DollarSign, Clock, AlertCircle, FileText, Calendar,
 } from 'lucide-react';
 import { TIME_OF_DAY_LABELS } from '@/lib/time';
+import { useTranslation } from '@/lib/i18n';
 
 export default function QuoteBuilderPage() {
   const { requestId } = useParams<{ requestId: string }>();
   const router = useRouter();
+  const t = useTranslation();
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -64,10 +66,10 @@ export default function QuoteBuilderPage() {
         setSubmitted(true);
       } else {
         const d = await res.json().catch(() => ({} as any));
-        setSubmitError(d.error ?? 'Could not send the quote. Please try again.');
+        setSubmitError(d.error ?? t.quoteBuilder.sendFailed);
       }
     } catch {
-      setSubmitError('Network error. Please check your connection and try again.');
+      setSubmitError(t.common.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -81,10 +83,10 @@ export default function QuoteBuilderPage() {
         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-10 h-10 text-green-600" />
         </div>
-        <h1 className="text-2xl font-bold mb-3">Quote sent!</h1>
-        <p className="text-ink-dim mb-8">Your quote of <strong>€{totalPrice().toFixed(2)}</strong> has been sent to the customer. You'll be notified if they accept.</p>
+        <h1 className="text-2xl font-bold mb-3">{t.quoteBuilder.sentTitle}</h1>
+        <p className="text-ink-dim mb-8">{t.quoteBuilder.sentDescPrefix} <strong>€{totalPrice().toFixed(2)}</strong> {t.quoteBuilder.sentDescSuffix}</p>
         <Link href="/provider/leads" className="bg-brand text-white px-8 py-3 rounded-card font-bold hover:bg-gray-800 transition-all">
-          Back to Leads
+          {t.quoteBuilder.backToLeads}
         </Link>
       </div>
     );
@@ -97,7 +99,7 @@ export default function QuoteBuilderPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">Quote Builder</h1>
+          <h1 className="text-xl font-bold tracking-tight">{t.quoteBuilder.title}</h1>
           <p className="text-sm text-ink-dim">{request?.category?.name}</p>
         </div>
       </div>
@@ -108,7 +110,7 @@ export default function QuoteBuilderPage() {
           <div className="flex items-center gap-2 mb-2">
             {request.isUrgent && (
               <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
-                <AlertCircle className="w-3 h-3" /> Urgent
+                <AlertCircle className="w-3 h-3" /> {t.leadsPage.badgeUrgent}
               </span>
             )}
             <span className="text-xs bg-border text-ink-sub px-2 py-0.5 rounded-full font-bold">{request.category?.name}</span>
@@ -128,8 +130,8 @@ export default function QuoteBuilderPage() {
             <span>·</span>
             <span>{new Date(request.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
             <span>·</span>
-            <span>{TIME_OF_DAY_LABELS[request.timeOfDay] ?? 'Flexible'}</span>
-            {request.budget && <><span>·</span><span className="text-green-600 font-bold">Budget: €{request.budget}</span></>}
+            <span>{TIME_OF_DAY_LABELS[request.timeOfDay] ?? t.wizard.timeFlexible}</span>
+            {request.budget && <><span>·</span><span className="text-green-600 font-bold">{t.quoteInbox.budgetLabel} €{request.budget}</span></>}
           </div>
         </div>
       )}
@@ -137,10 +139,10 @@ export default function QuoteBuilderPage() {
       <div className="space-y-5">
         {/* Base price */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="font-bold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4" /> Pricing</p>
+          <p className="font-bold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4" /> {t.quoteBuilder.pricing}</p>
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Base price *</label>
+              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.basePrice} *</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold">€</span>
                 <input
@@ -154,20 +156,20 @@ export default function QuoteBuilderPage() {
             </div>
             <div>
               <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Estimated hours
+                <Clock className="w-3 h-3" /> {t.jobDetail.estimatedHours}
               </label>
               <input
                 type="number"
                 value={estimatedHours}
                 onChange={e => setEstimatedHours(e.target.value)}
-                placeholder="e.g. 2.5"
+                placeholder={t.quoteBuilder.hoursPlaceholder}
                 className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
               />
             </div>
           </div>
 
           {/* Line items */}
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Optional line items</p>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">{t.quoteBuilder.optionalLineItems}</p>
           <div className="space-y-2 mb-3">
             {lineItems.map((item, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -175,7 +177,7 @@ export default function QuoteBuilderPage() {
                   type="text"
                   value={item.name}
                   onChange={e => setLineItems(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x))}
-                  placeholder="Item description"
+                  placeholder={t.quoteBuilder.itemPlaceholder}
                   className="flex-1 px-3 py-2 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand"
                 />
                 <div className="relative w-28 shrink-0">
@@ -198,13 +200,13 @@ export default function QuoteBuilderPage() {
             onClick={() => setLineItems(p => [...p, { name: '', amount: '' }])}
             className="flex items-center gap-1.5 text-sm font-bold text-ink-dim hover:text-ink transition-colors"
           >
-            <Plus className="w-4 h-4" /> Add line item
+            <Plus className="w-4 h-4" /> {t.quoteBuilder.addLineItem}
           </button>
 
           {/* Total */}
           {(basePrice || lineItems.length > 0) && (
             <div className="mt-4 pt-4 border-t border-border-dim flex justify-between items-center">
-              <span className="font-bold text-ink-dim">Total quote</span>
+              <span className="font-bold text-ink-dim">{t.quoteBuilder.totalQuote}</span>
               <span className="text-2xl font-bold">€{totalPrice().toFixed(2)}</span>
             </div>
           )}
@@ -212,34 +214,34 @@ export default function QuoteBuilderPage() {
 
         {/* Notes */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card space-y-4">
-          <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Notes & Terms</p>
+          <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> {t.quoteBuilder.notesTerms}</p>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Message to customer</label>
+            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.messageToCustomer}</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
-              placeholder="Introduce yourself, mention your approach, ask any clarifying questions..."
+              placeholder={t.quoteBuilder.messagePlaceholder}
               className="w-full p-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Materials note</label>
+            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.materialsNoteLabel}</label>
             <input
               type="text"
               value={materialsNote}
               onChange={e => setMaterialsNote(e.target.value)}
-              placeholder="e.g. Basic materials included. Specialist parts extra."
+              placeholder={t.quoteBuilder.materialsPlaceholder}
               className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Exclusions</label>
+            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.exclusionsLabel}</label>
             <input
               type="text"
               value={exclusions}
               onChange={e => setExclusions(e.target.value)}
-              placeholder="e.g. Does not include wall patching after pipe work."
+              placeholder={t.quoteBuilder.exclusionsPlaceholder}
               className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
             />
           </div>
@@ -247,17 +249,17 @@ export default function QuoteBuilderPage() {
 
         {/* Expiry */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="font-bold mb-4 flex items-center gap-2"><Calendar className="w-4 h-4" /> Quote expiry</p>
+          <p className="font-bold mb-4 flex items-center gap-2"><Calendar className="w-4 h-4" /> {t.quoteBuilder.quoteExpiry}</p>
           <div className="flex gap-2">
             {['1', '2', '3', '7'].map(d => (
               <button key={d} onClick={() => setExpiresInDays(d)}
                 className={`flex-1 py-2.5 rounded-input border-2 text-sm font-bold transition-all ${expiresInDays === d ? 'border-brand bg-brand text-white' : 'border-border hover:border-border'}`}>
-                {d}d
+                {d}{t.quoteBuilder.daysShortBtn}
               </button>
             ))}
           </div>
           <p className="text-xs text-ink-dim mt-2">
-            Expires: {new Date(Date.now() + parseInt(expiresInDays) * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
+            {t.quoteBuilder.expiresPrefix} {new Date(Date.now() + parseInt(expiresInDays) * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
         </div>
 
@@ -273,7 +275,7 @@ export default function QuoteBuilderPage() {
           disabled={!basePrice || parseFloat(basePrice) <= 0 || submitting}
           className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
         >
-          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Send Quote · €{totalPrice().toFixed(2)}</>}
+          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> {t.leadsPage.sendQuote} · €{totalPrice().toFixed(2)}</>}
         </button>
       </div>
     </div>

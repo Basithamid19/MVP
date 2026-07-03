@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
+import { useTranslation, type Dictionary } from '@/lib/i18n';
 
 function capitalize(name?: string | null) {
   if (!name) return '';
@@ -26,11 +27,11 @@ function getInitials(name?: string | null) {
     .slice(0, 2);
 }
 
-function getAgeLabel(createdAt: string) {
+function getAgeLabel(createdAt: string, t: Dictionary) {
   const mins = Math.floor((Date.now() - new Date(createdAt).getTime()) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
-  return `${Math.floor(mins / 1440)}d ago`;
+  if (mins < 60) return `${t.messagesPage.agoPrefix}${mins}${t.messagesPage.minutesSuffix}`;
+  if (mins < 1440) return `${t.messagesPage.agoPrefix}${Math.floor(mins / 60)}${t.messagesPage.hoursSuffix}`;
+  return `${t.messagesPage.agoPrefix}${Math.floor(mins / 1440)}${t.messagesPage.daysSuffix}`;
 }
 
 type DashboardClientProps = {
@@ -48,6 +49,7 @@ export default function DashboardClient({
   initialBookings,
   loadError,
 }: DashboardClientProps) {
+  const t = useTranslation();
   const profile = initialProfile ?? {};
   const leads = initialLeads;
   const bookings = initialBookings;
@@ -67,11 +69,11 @@ export default function DashboardClient({
   const hasCategories = (profile?.categories ?? []).length > 0;
   const hasOfferings = (profile?.offerings ?? []).length > 0;
   const completenessSteps = [
-    { done: hasAvatar, label: 'Add a profile photo' },
-    { done: hasBio, label: 'Write a bio (50+ chars)' },
-    { done: hasArea, label: 'Set your service area' },
-    { done: hasCategories, label: 'Choose service categories' },
-    { done: hasOfferings, label: 'Add service offerings' },
+    { done: hasAvatar, label: t.providerDashboard.stepAddPhoto },
+    { done: hasBio, label: t.providerDashboard.stepWriteBio },
+    { done: hasArea, label: t.providerDashboard.stepSetArea },
+    { done: hasCategories, label: t.providerDashboard.stepChooseCategories },
+    { done: hasOfferings, label: t.providerDashboard.stepAddOfferings },
   ];
   const completedCount = completenessSteps.filter(s => s.done).length;
   const completePct = Math.round((completedCount / completenessSteps.length) * 100);
@@ -87,41 +89,41 @@ export default function DashboardClient({
   });
 
   const ctaLabel = freshLeads.length > 0
-    ? `View ${freshLeads.length} New Lead${freshLeads.length > 1 ? 's' : ''}`
-    : leads.length > 0 ? 'View Leads' : 'Browse Leads';
+    ? `${t.providerDashboard.ctaViewPrefix} ${freshLeads.length} ${freshLeads.length > 1 ? t.providerDashboard.newLeadsPlural : t.providerDashboard.newLeadSingular}`
+    : leads.length > 0 ? t.providerDashboard.viewLeads : t.providerDashboard.browseLeads;
 
   const stats = [
     {
-      label: 'New Leads',
+      label: t.providerDashboard.statNewLeads,
       value: leads.length,
-      sub: leads.length > 0 ? `${freshLeads.length} new today` : 'None yet',
+      sub: leads.length > 0 ? `${freshLeads.length} ${t.providerDashboard.newTodaySuffix}` : t.providerDashboard.noneYet,
       icon: Inbox,
       color: 'bg-brand-muted text-brand',
       href: '/provider/leads',
       badge: urgentLeads.length > 0 ? urgentLeads.length : null,
     },
     {
-      label: 'Active Jobs',
+      label: t.providerDashboard.statActiveJobs,
       value: activeJobs.length,
-      sub: activeJobs.length > 0 ? `${activeJobs.filter((b: any) => b.status === 'IN_PROGRESS').length} in progress` : 'None scheduled',
+      sub: activeJobs.length > 0 ? `${activeJobs.filter((b: any) => b.status === 'IN_PROGRESS').length} ${t.providerDashboard.inProgressSuffix}` : t.providerDashboard.noneScheduled,
       icon: Briefcase,
       color: 'bg-brand-muted text-brand',
       href: '/provider/jobs',
       badge: null,
     },
     {
-      label: 'Completed',
+      label: t.providerDashboard.statCompleted,
       value: completedJobs.length,
-      sub: 'All time',
+      sub: t.providerDashboard.allTime,
       icon: CheckCircle2,
       color: 'bg-brand-muted text-brand',
       href: '/provider/jobs',
       badge: null,
     },
     {
-      label: 'Earnings',
+      label: t.providerDashboard.statEarnings,
       value: `€${totalEarnings.toFixed(0)}`,
-      sub: 'Net earned',
+      sub: t.providerDashboard.netEarned,
       icon: DollarSign,
       color: 'bg-brand-muted text-brand',
       href: '/provider/earnings',
@@ -129,10 +131,10 @@ export default function DashboardClient({
     },
   ];
 
-  const tierLabel = profile?.verificationTier === 'TIER3_ENHANCED' ? 'Enhanced'
-    : profile?.verificationTier === 'TIER2_TRADE_VERIFIED' ? 'Trade Verified'
-    : profile?.verificationTier === 'TIER1_ID_VERIFIED' ? 'ID Verified'
-    : 'Basic';
+  const tierLabel = profile?.verificationTier === 'TIER3_ENHANCED' ? t.verificationPage.tierEnhanced
+    : profile?.verificationTier === 'TIER2_TRADE_VERIFIED' ? t.verificationPage.tierTradeVerified
+    : profile?.verificationTier === 'TIER1_ID_VERIFIED' ? t.verificationPage.tierIdVerified
+    : t.verificationPage.tierBasic;
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
@@ -141,7 +143,7 @@ export default function DashboardClient({
         <div className="mb-4 flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-xl px-3 py-2.5 sm:px-4 sm:py-3">
           <AlertCircle className="w-4 h-4 text-caution shrink-0" />
           <p className="text-xs sm:text-sm text-caution flex-1">
-            <span className="font-bold">We couldn&apos;t load your dashboard data.</span> Refresh to try again.
+            <span className="font-bold">{t.providerDashboard.loadErrorBold}</span> {t.providerDashboard.loadErrorRest}
           </p>
         </div>
       )}
@@ -158,7 +160,7 @@ export default function DashboardClient({
               }
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-lg font-semibold tracking-tight truncate">Hello, {firstName}</p>
+              <p className="text-lg font-semibold tracking-tight truncate">{t.providerDashboard.hello} {firstName}</p>
               <div className="flex items-center gap-2 mt-0.5">
                 <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/60">
                   <ShieldCheck className="w-3 h-3" /> {tierLabel}
@@ -184,9 +186,9 @@ export default function DashboardClient({
           <div className="flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-xl px-3 py-2.5 mb-3">
             <Timer className="w-4 h-4 text-caution shrink-0" />
             <p className="text-xs text-caution flex-1">
-              <span className="font-bold">{freshLeads.length} fresh lead{freshLeads.length > 1 ? 's' : ''}</span> — respond within 15 min for 40% better odds
+              <span className="font-bold">{freshLeads.length} {freshLeads.length > 1 ? t.providerDashboard.freshLeadsPlural : t.providerDashboard.freshLeadSingular}</span> {t.providerDashboard.freshLeadMobileRest}
             </p>
-            <Link href="/provider/leads" className="text-[10px] font-bold text-caution uppercase tracking-wide shrink-0">Go</Link>
+            <Link href="/provider/leads" className="text-[10px] font-bold text-caution uppercase tracking-wide shrink-0">{t.providerDashboard.go}</Link>
           </div>
         )}
 
@@ -195,7 +197,7 @@ export default function DashboardClient({
           <Link href="/provider/onboarding" className="flex items-center gap-2.5 bg-brand-muted rounded-xl px-3 py-2.5 mb-3 group">
             <ShieldCheck className="w-4 h-4 text-brand shrink-0" />
             <p className="text-xs text-brand flex-1">
-              <span className="font-bold">Complete verification</span> — get up to 3× more visibility
+              <span className="font-bold">{t.providerDashboard.completeVerificationBold}</span> {t.providerDashboard.completeVerificationRest}
             </p>
             <ChevronRight className="w-3.5 h-3.5 text-brand shrink-0 group-hover:translate-x-0.5 transition-transform" />
           </Link>
@@ -213,8 +215,8 @@ export default function DashboardClient({
               <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-brand">{completePct}%</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-ink">Profile {completePct}% complete</p>
-              {nextStep && <p className="text-[10px] text-ink-sub mt-0.5">Next: {nextStep.label}</p>}
+              <p className="text-xs font-bold text-ink">{t.providerDashboard.profilePrefix} {completePct}% {t.providerDashboard.completeSuffix}</p>
+              {nextStep && <p className="text-[10px] text-ink-sub mt-0.5">{t.providerDashboard.nextPrefix} {nextStep.label}</p>}
             </div>
             <ChevronRight className="w-3.5 h-3.5 text-ink-dim shrink-0 group-hover:translate-x-0.5 transition-transform" />
           </Link>
@@ -231,17 +233,17 @@ export default function DashboardClient({
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-amber-800">
-                {freshLeads.length} fresh lead{freshLeads.length > 1 ? 's' : ''} waiting
+                {freshLeads.length} {freshLeads.length > 1 ? t.providerDashboard.freshWaitingPlural : t.providerDashboard.freshWaitingSingular}
               </p>
               <p className="text-xs text-amber-600 mt-0.5">
-                Responding within 15 minutes increases your chance of winning the job by 40%.
+                {t.providerDashboard.respondHint}
               </p>
             </div>
             <Link
               href="/provider/leads"
               className="shrink-0 bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-600 transition-colors"
             >
-              Respond Now
+              {t.providerDashboard.respondNow}
             </Link>
           </div>
         )}
@@ -253,16 +255,16 @@ export default function DashboardClient({
               <ShieldCheck className="w-4 h-4 text-brand" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-brand">Complete verification to receive more leads</p>
+              <p className="text-sm font-bold text-brand">{t.providerDashboard.verifyBannerTitle}</p>
               <p className="text-xs text-brand/70 mt-0.5">
-                Verified providers get up to 3× more visibility in search results.
+                {t.providerDashboard.verifyBannerDesc}
               </p>
             </div>
             <Link
               href="/provider/onboarding"
               className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
             >
-              Get Verified
+              {t.providerDashboard.getVerified}
             </Link>
           </div>
         )}
@@ -279,16 +281,16 @@ export default function DashboardClient({
               <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-brand">{completePct}%</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-ink">Your profile is {completePct}% complete</p>
+              <p className="text-sm font-bold text-ink">{t.providerDashboard.profileBannerPrefix} {completePct}% {t.providerDashboard.completeSuffix}</p>
               <p className="text-xs text-ink-sub mt-0.5">
-                {nextStep ? `Next step: ${nextStep.label}` : 'Almost there!'} — complete profiles attract more customers.
+                {nextStep ? `${t.providerDashboard.nextStepPrefix} ${nextStep.label}` : t.providerDashboard.almostThere} {t.providerDashboard.completeProfilesAttract}
               </p>
             </div>
             <Link
               href="/provider/settings"
               className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
             >
-              Complete Profile
+              {t.providerDashboard.completeProfileBtn}
             </Link>
           </div>
         )}
@@ -301,7 +303,7 @@ export default function DashboardClient({
             </div>
             <div>
               <h1 className="text-4xl font-semibold tracking-tight text-ink">
-                Hello, {firstName}
+                {t.providerDashboard.hello} {firstName}
               </h1>
               <div className="flex items-center gap-3 mt-2">
                 <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
@@ -371,7 +373,7 @@ export default function DashboardClient({
               <div className="flex items-center gap-2 mb-2.5 sm:mb-3">
                 <AlertCircle className="w-4 h-4 text-caution" />
                 <h2 className="font-bold text-xs uppercase tracking-widest text-caution">
-                  {urgentLeads.length} Urgent Lead{urgentLeads.length > 1 ? 's' : ''}
+                  {urgentLeads.length} {urgentLeads.length > 1 ? t.providerDashboard.urgentLeadsPlural : t.providerDashboard.urgentLeadSingular}
                 </h2>
               </div>
               <div className="space-y-2.5 sm:space-y-3">
@@ -387,9 +389,9 @@ export default function DashboardClient({
           {/* Recent leads */}
           <section>
             <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-              <h2 className="text-base sm:text-xl font-semibold text-ink">Recent Leads</h2>
+              <h2 className="text-base sm:text-xl font-semibold text-ink">{t.providerDashboard.recentLeads}</h2>
               <Link href="/provider/leads" className="text-xs sm:text-sm font-semibold text-brand hover:text-brand-dark transition-colors">
-                View all
+                {t.providerDashboard.viewAll}
               </Link>
             </div>
             {leads.length === 0 ? (
@@ -399,8 +401,8 @@ export default function DashboardClient({
                     <Inbox className="w-4 h-4 text-brand" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-ink">Complete your profile to start receiving leads</p>
-                    <p className="text-xs text-ink-sub mt-0.5">Leads are matched based on your services and area.</p>
+                    <p className="font-semibold text-sm text-ink">{t.providerDashboard.emptyLeadsTitle}</p>
+                    <p className="text-xs text-ink-sub mt-0.5">{t.providerDashboard.emptyLeadsDesc}</p>
                   </div>
                 </div>
                 <div className="space-y-2 mb-4">
@@ -413,7 +415,7 @@ export default function DashboardClient({
                 </div>
                 {completePct < 100 && (
                   <Link href="/provider/settings" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors">
-                    Complete your profile <ArrowRight className="w-3.5 h-3.5" />
+                    {t.providerDashboard.completeYourProfile} <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 )}
               </div>
@@ -431,9 +433,9 @@ export default function DashboardClient({
           {/* Active jobs */}
           <section>
             <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-              <h2 className="text-base sm:text-xl font-semibold text-ink">Active Jobs</h2>
+              <h2 className="text-base sm:text-xl font-semibold text-ink">{t.providerDashboard.activeJobs}</h2>
               <Link href="/provider/jobs" className="text-xs sm:text-sm font-semibold text-brand hover:text-brand-dark transition-colors">
-                View all
+                {t.providerDashboard.viewAll}
               </Link>
             </div>
             {activeJobs.length === 0 ? (
@@ -443,12 +445,12 @@ export default function DashboardClient({
                     <Briefcase className="w-4 h-4 text-ink-dim" />
                   </div>
                   <div>
-                    <p className="font-semibold text-sm text-ink">No active jobs right now</p>
-                    <p className="text-xs text-ink-sub mt-0.5">Jobs appear here when customers accept your quotes.</p>
+                    <p className="font-semibold text-sm text-ink">{t.providerDashboard.emptyJobsTitle}</p>
+                    <p className="text-xs text-ink-sub mt-0.5">{t.providerDashboard.emptyJobsDesc}</p>
                   </div>
                 </div>
                 <Link href="/provider/leads" className="inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark transition-colors mt-2">
-                  Browse available leads <ArrowRight className="w-3.5 h-3.5" />
+                  {t.providerDashboard.browseAvailableLeads} <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>
             ) : (
@@ -458,7 +460,7 @@ export default function DashboardClient({
                     className="flex items-center gap-3 sm:gap-4 bg-white rounded-2xl border border-border-dim p-3.5 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all shadow-sm">
                     <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 ${b.status === 'IN_PROGRESS' ? 'bg-caution' : 'bg-info'}`} />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? 'Job'}</p>
+                      <p className="font-semibold text-sm sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
                       <p className="text-xs sm:text-sm text-ink-sub flex items-center gap-1 sm:gap-1.5 mt-0.5 sm:mt-1">
                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                         {formatVilnius(b.scheduledAt, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
@@ -477,13 +479,13 @@ export default function DashboardClient({
         <div className="hidden lg:block space-y-5">
           {/* Quick actions */}
           <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Quick Actions</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.providerDashboard.quickActions}</p>
             <div className="space-y-1">
               {[
-                { label: 'Browse Leads',    href: '/provider/leads',       icon: Inbox },
-                { label: 'Manage Settings', href: '/provider/settings',    icon: Calendar },
-                { label: 'View Earnings',   href: '/provider/earnings',    icon: DollarSign },
-                { label: 'Stats',           href: '/provider/performance', icon: TrendingUp },
+                { label: t.providerDashboard.browseLeads,    href: '/provider/leads',       icon: Inbox },
+                { label: t.providerDashboard.manageSettings, href: '/provider/settings',    icon: Calendar },
+                { label: t.providerDashboard.viewEarnings,   href: '/provider/earnings',    icon: DollarSign },
+                { label: t.mobileNav.stats,                  href: '/provider/performance', icon: TrendingUp },
               ].map(({ label, href, icon: Icon }) => (
                 <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
                   <div className="w-7 h-7 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
@@ -503,7 +505,7 @@ export default function DashboardClient({
                 <ShieldCheck className="w-5 h-5 text-brand" />
               </div>
               <div>
-                <p className="font-bold text-sm">Verification</p>
+                <p className="font-bold text-sm">{t.providerNav.verification}</p>
                 <p className="text-xs text-ink-dim">{tierLabel}</p>
               </div>
             </div>
@@ -511,22 +513,22 @@ export default function DashboardClient({
               <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${verificationProgress}%` }} />
             </div>
             <Link href="/provider/onboarding" className="text-xs font-bold text-brand hover:underline flex items-center gap-1">
-              {verificationProgress < 100 ? 'Complete verification' : 'Manage verification'} <ChevronRight className="w-3 h-3" />
+              {verificationProgress < 100 ? t.providerDashboard.completeVerification : t.providerDashboard.manageVerification} <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
 
           {/* Rating */}
           <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">Your Rating</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{t.providerDashboard.yourRating}</p>
             <div className="flex items-end gap-2 mb-2">
               <span className="text-4xl font-bold tracking-tight">
                 {profile?.ratingAvg > 0 ? profile.ratingAvg.toFixed(1) : '—'}
               </span>
               <Star className="w-6 h-6 text-brand fill-brand mb-1" />
             </div>
-            <p className="text-xs text-ink-dim">{profile?.completedJobs ?? completedJobs.length} completed jobs</p>
+            <p className="text-xs text-ink-dim">{profile?.completedJobs ?? completedJobs.length} {t.providerDashboard.completedJobsSuffix}</p>
             <Link href="/provider/performance" className="text-xs font-bold text-ink hover:underline flex items-center gap-1 mt-3">
-              Full performance <ChevronRight className="w-3 h-3" />
+              {t.providerDashboard.fullPerformance} <ChevronRight className="w-3 h-3" />
             </Link>
           </div>
         </div>
@@ -540,7 +542,7 @@ export default function DashboardClient({
             <div className="p-3.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-brand" />
-                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Verification</p>
+                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.providerNav.verification}</p>
               </div>
               <p className="text-sm font-semibold text-ink mb-2">{tierLabel}</p>
               <div className="w-full bg-surface-alt rounded-full h-1">
@@ -550,18 +552,18 @@ export default function DashboardClient({
             <div className="p-3.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <Star className="w-3.5 h-3.5 text-brand" />
-                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Rating</p>
+                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.providerProfile.rating}</p>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <p className="text-xl font-bold text-ink leading-none">{profile?.ratingAvg > 0 ? profile.ratingAvg.toFixed(1) : '—'}</p>
                 {profile?.ratingAvg > 0 && <Star className="w-3 h-3 text-brand fill-brand" />}
               </div>
-              <p className="text-[10px] text-ink-dim mt-1">{completedJobs.length} jobs done</p>
+              <p className="text-[10px] text-ink-dim mt-1">{completedJobs.length} {t.providerDashboard.jobsDoneSuffix}</p>
             </div>
           </div>
           {/* CTA row */}
           <Link href="/provider/performance" className="border-t border-border-dim flex items-center justify-between px-3.5 py-2.5 group hover:bg-surface-alt/50 transition-colors">
-            <span className="text-xs font-semibold text-brand">View full performance</span>
+            <span className="text-xs font-semibold text-brand">{t.providerDashboard.viewFullPerformance}</span>
             <ChevronRight className="w-3.5 h-3.5 text-brand group-hover:translate-x-0.5 transition-transform" />
           </Link>
         </div>
@@ -572,7 +574,8 @@ export default function DashboardClient({
 
 /* ─── Lead Card Component ─── */
 function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
-  const ageLabel = getAgeLabel(lead.createdAt);
+  const t = useTranslation();
+  const ageLabel = getAgeLabel(lead.createdAt, t);
   const responders = lead.quotes?.length ?? 0;
   const hasBudget = lead.budget != null && lead.budget > 0;
 
@@ -593,7 +596,7 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
             </span>
             {lead.isUrgent && (
               <span className="flex items-center gap-0.5 text-[10px] font-bold text-caution">
-                <Zap className="w-3 h-3" /> Urgent
+                <Zap className="w-3 h-3" /> {t.providerDashboard.urgent}
               </span>
             )}
             <span className="text-[10px] text-ink-dim ml-auto sm:ml-0">{ageLabel}</span>
@@ -613,7 +616,7 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
             {responders > 0 && (
               <span className="flex items-center gap-1 text-xs font-medium text-caution">
                 <Users className="w-3 h-3 sm:w-4 sm:h-4" />
-                {responders} quote{responders > 1 ? 's' : ''}
+                {responders} {responders > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}
               </span>
             )}
             {hasBudget && (
@@ -631,7 +634,7 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
               : 'bg-brand text-white hover:bg-brand-dark'
           }`}
         >
-          Respond
+          {t.providerDashboard.respond}
         </Link>
       </div>
     </div>

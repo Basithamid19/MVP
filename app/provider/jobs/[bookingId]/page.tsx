@@ -11,35 +11,40 @@ import {
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
-import { bookingStatus } from '@/lib/status-labels';
+import { localizedStatus } from '@/lib/status-labels';
+import { useTranslation } from '@/lib/i18n';
 
 // Transition map only — labels/colors come from the shared status module so
-// every surface reads the same vocabulary.
-const STATUS_FLOW: Record<string, { next: string; nextLabel: string }> = {
-  SCHEDULED:   { next: 'IN_PROGRESS', nextLabel: 'Mark Arrived / Start Job' },
-  IN_PROGRESS: { next: 'COMPLETED',   nextLabel: 'Mark Complete' },
-  COMPLETED:   { next: '',            nextLabel: '' },
-  CANCELED:    { next: '',            nextLabel: '' },
+// every surface reads the same vocabulary. Button labels are resolved from the
+// dictionary in the component (they need the active locale).
+const STATUS_FLOW: Record<string, { next: string }> = {
+  SCHEDULED:   { next: 'IN_PROGRESS' },
+  IN_PROGRESS: { next: 'COMPLETED' },
+  COMPLETED:   { next: '' },
+  CANCELED:    { next: '' },
 };
 
-const DEFAULT_CHECKLIST = [
-  'Confirm address and access with customer',
-  'Inspect scope of work on arrival',
-  'Take before photos',
-  'Complete the job',
-  'Clean up the work area',
-  'Take after photos',
-  'Confirm completion with customer',
-];
+// Dictionary keys only — stable length for the localStorage-persisted state;
+// labels are looked up through `t.jobDetail` at render time.
+const CHECKLIST_KEYS = [
+  'checkConfirmAddress',
+  'checkInspectScope',
+  'checkBeforePhotos',
+  'checkCompleteJob',
+  'checkCleanUp',
+  'checkAfterPhotos',
+  'checkConfirmCompletion',
+] as const;
 
 export default function ProviderJobDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const router = useRouter();
+  const t = useTranslation();
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [checklist, setChecklist] = useState<boolean[]>(DEFAULT_CHECKLIST.map(() => false));
+  const [checklist, setChecklist] = useState<boolean[]>(CHECKLIST_KEYS.map(() => false));
   const [photos, setPhotos] = useState<{ preview: string; label: string }[]>([]);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -52,7 +57,7 @@ export default function ProviderJobDetailPage() {
   useEffect(() => {
     try {
       const savedChecklist = JSON.parse(localStorage.getItem(`aladdin_job_checklist_${bookingId}`) ?? 'null');
-      if (Array.isArray(savedChecklist) && savedChecklist.length === DEFAULT_CHECKLIST.length) {
+      if (Array.isArray(savedChecklist) && savedChecklist.length === CHECKLIST_KEYS.length) {
         setChecklist(savedChecklist.map(Boolean));
       }
       const savedPhotos = JSON.parse(localStorage.getItem(`aladdin_job_photos_${bookingId}`) ?? 'null');
@@ -92,7 +97,7 @@ export default function ProviderJobDetailPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? 'Could not update the job. Please try again.');
+        alert(d.error ?? t.jobDetail.updateFailed);
       }
       load();
     } finally {
@@ -119,14 +124,14 @@ export default function ProviderJobDetailPage() {
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
-  if (!booking) return <div className="p-8 text-center"><p className="text-ink-dim">Booking not found.</p></div>;
+  if (!booking) return <div className="p-8 text-center"><p className="text-ink-dim">{t.jobDetail.notFound}</p></div>;
 
   if (showChat) {
     if (!booking.chatThread?.id) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-          <p className="text-ink-sub text-sm mb-4">No conversation started yet for this booking.</p>
-          <button onClick={() => setShowChat(false)} className="text-brand font-semibold text-sm">Go Back</button>
+          <p className="text-ink-sub text-sm mb-4">{t.bookingDetail.noChat}</p>
+          <button onClick={() => setShowChat(false)} className="text-brand font-semibold text-sm">{t.bookingDetail.goBack}</button>
         </div>
       );
     }
@@ -135,6 +140,9 @@ export default function ProviderJobDetailPage() {
 
   const customer = booking.customer;
   const flow = STATUS_FLOW[booking.status] ?? STATUS_FLOW.SCHEDULED;
+  const nextLabel =
+    flow.next === 'IN_PROGRESS' ? t.jobDetail.startJob :
+    flow.next === 'COMPLETED' ? t.bookingDetail.markComplete : '';
   const isCanceled = booking.status === 'CANCELED';
   const isCompleted = booking.status === 'COMPLETED';
   // Messaging only unlocks once the booking is confirmed (deposit paid).
@@ -157,25 +165,25 @@ export default function ProviderJobDetailPage() {
           <Link href="/provider/jobs" className="p-1.5 -ml-1.5 hover:bg-surface-alt rounded-xl transition-colors">
             <ArrowLeft className="w-5 h-5 text-ink-sub" />
           </Link>
-          <span className="text-xs text-ink-dim">Back to jobs</span>
+          <span className="text-xs text-ink-dim">{t.jobDetail.backToJobs}</span>
         </div>
 
         {/* Title + status + earnings hero */}
         <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 mb-3">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? 'Job'}</h1>
-              <p className="text-[10px] text-ink-dim mt-0.5 font-medium">ID: {booking.id.slice(0, 8)}…</p>
+              <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
+              <p className="text-[10px] text-ink-dim mt-0.5 font-medium">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${bookingStatus(booking.status).cls}`}>
-                {bookingStatus(booking.status).label}
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${localizedStatus(t, 'booking', booking.status).cls}`}>
+                {localizedStatus(t, 'booking', booking.status).label}
               </span>
               {!isCanceled && !isCompleted && (
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
                   chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
                 }`}>
-                  {chatUnlocked ? 'Deposit paid' : 'Deposit pending'}
+                  {chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
                 </span>
               )}
             </div>
@@ -184,11 +192,11 @@ export default function ProviderJobDetailPage() {
           {/* Key details strip */}
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-dim">
             <div>
-              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Earnings</p>
+              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.earnings}</p>
               <p className="text-base font-bold text-trust">€{earnings}</p>
             </div>
             <div>
-              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Scheduled</p>
+              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.scheduled}</p>
               <p className="text-xs font-semibold text-ink">
                 {formatVilnius(booking.scheduledAt, { day: 'numeric', month: 'short' })}
               </p>
@@ -198,7 +206,7 @@ export default function ProviderJobDetailPage() {
             </div>
             {booking.quote?.estimatedHours && (
               <div>
-                <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">Duration</p>
+                <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.duration}</p>
                 <p className="text-xs font-semibold text-ink">~{booking.quote.estimatedHours}h</p>
               </div>
             )}
@@ -212,18 +220,18 @@ export default function ProviderJobDetailPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
-          <h1 className="font-bold">{booking.quote?.request?.category?.name ?? 'Job'}</h1>
-          <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
+          <h1 className="font-bold">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
+          <p className="text-xs text-ink-dim">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
         </div>
         {!isCanceled && !isCompleted && (
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
             chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
           }`}>
-            {chatUnlocked ? 'Deposit paid' : 'Deposit pending'}
+            {chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
           </span>
         )}
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${bookingStatus(booking.status).cls}`}>
-          {bookingStatus(booking.status).label}
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${localizedStatus(t, 'booking', booking.status).cls}`}>
+          {localizedStatus(t, 'booking', booking.status).label}
         </span>
       </div>
 
@@ -234,9 +242,9 @@ export default function ProviderJobDetailPage() {
           <div className="bg-caution-surface border border-caution-edge rounded-2xl p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-bold text-caution text-sm">Set up payouts to receive payment</p>
+              <p className="font-bold text-caution text-sm">{t.jobDetail.stripeTitle}</p>
               <p className="text-xs text-caution mt-0.5 mb-3 leading-relaxed">
-                Connect your bank account via Stripe to receive earnings for completed jobs.
+                {t.earningsPage.payoutSetupDesc}
               </p>
               <button
                 onClick={async () => {
@@ -246,7 +254,7 @@ export default function ProviderJobDetailPage() {
                 }}
                 className="text-xs font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
               >
-                Set up payouts
+                {t.earningsPage.setUpPayouts}
               </button>
             </div>
           </div>
@@ -274,23 +282,23 @@ export default function ProviderJobDetailPage() {
             {chatUnlocked && (
               <button onClick={() => setShowChat(true)}
                 className="flex items-center justify-center gap-1.5 py-2.5 bg-brand text-white text-xs font-semibold">
-                <MessageSquare className="w-3.5 h-3.5" /> Message
+                <MessageSquare className="w-3.5 h-3.5" /> {t.bookingDetail.message}
               </button>
             )}
             <button
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
-                else alert('Call masking active — your call will be connected through Aladdin.');
+                else alert(t.bookingDetail.callMasking);
               }}
               className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors"
             >
-              <Phone className="w-3.5 h-3.5" /> Call
+              <Phone className="w-3.5 h-3.5" /> {t.bookingDetail.call}
             </button>
             {address ? (
               <a href={mapsUrl} target="_blank" rel="noreferrer"
                 className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors">
-                <Navigation className="w-3.5 h-3.5" /> Navigate
+                <Navigation className="w-3.5 h-3.5" /> {t.jobDetail.navigate}
               </a>
             ) : (
               <div className="flex items-center justify-center py-2.5 text-xs text-ink-dim">—</div>
@@ -300,7 +308,7 @@ export default function ProviderJobDetailPage() {
 
         {/* ── Desktop: Customer card (original) ── */}
         <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Customer</p>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
           <div className="flex items-center gap-3 mb-4">
             <img
               src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
@@ -321,22 +329,22 @@ export default function ProviderJobDetailPage() {
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
-                else alert('Call masking active — your call will be connected through Aladdin.');
+                else alert(t.bookingDetail.callMasking);
               }}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors"
             >
-              <Phone className="w-4 h-4" /> Call
+              <Phone className="w-4 h-4" /> {t.bookingDetail.call}
             </button>
             {chatUnlocked && (
               <button onClick={() => setShowChat(true)}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors">
-                <MessageSquare className="w-4 h-4" /> Message
+                <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
               </button>
             )}
             {address && (
               <a href={mapsUrl} target="_blank" rel="noreferrer"
                 className="flex items-center justify-center gap-2 px-4 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors">
-                <Navigation className="w-4 h-4" /> Navigate
+                <Navigation className="w-4 h-4" /> {t.jobDetail.navigate}
               </a>
             )}
           </div>
@@ -344,28 +352,28 @@ export default function ProviderJobDetailPage() {
 
         {/* ── Desktop: Job details (original) ── */}
         <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">Job Details</p>
+          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.jobDetails}</p>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
-              <span className="text-ink-dim flex items-center gap-2"><Clock className="w-4 h-4" /> Scheduled</span>
+              <span className="text-ink-dim flex items-center gap-2"><Clock className="w-4 h-4" /> {t.jobDetail.scheduled}</span>
               <span className="font-semibold">
                 {formatVilnius(booking.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-ink-dim">Your earnings</span>
+              <span className="text-ink-dim">{t.jobDetail.yourEarnings}</span>
               <span className="font-bold text-trust">€{earnings}</span>
             </div>
             {booking.quote?.estimatedHours && (
               <div className="flex justify-between">
-                <span className="text-ink-dim">Estimated hours</span>
+                <span className="text-ink-dim">{t.jobDetail.estimatedHours}</span>
                 <span className="font-semibold">~{booking.quote.estimatedHours}h</span>
               </div>
             )}
           </div>
           {booking.quote?.notes && (
             <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim">
-              <p className="text-xs text-ink-dim font-bold uppercase tracking-widest mb-1">Job notes</p>
+              <p className="text-xs text-ink-dim font-bold uppercase tracking-widest mb-1">{t.jobDetail.jobNotes}</p>
               <p className="text-sm text-ink-sub whitespace-pre-wrap">{booking.quote.notes}</p>
             </div>
           )}
@@ -374,7 +382,7 @@ export default function ProviderJobDetailPage() {
         {/* ── Mobile: Job notes (if present) ── */}
         {booking.quote?.notes && (
           <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 shadow-sm">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1.5">Job Notes</p>
+            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1.5">{t.jobDetail.jobNotes}</p>
             <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
           </div>
         )}
@@ -382,22 +390,22 @@ export default function ProviderJobDetailPage() {
         {/* ── Checklist ── */}
         <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
           <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-            <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">Checklist</p>
+            <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              completedTasks === DEFAULT_CHECKLIST.length
+              completedTasks === CHECKLIST_KEYS.length
                 ? 'bg-trust-surface text-trust'
                 : 'bg-surface-alt text-ink-dim'
             }`}>
-              {completedTasks}/{DEFAULT_CHECKLIST.length}
+              {completedTasks}/{CHECKLIST_KEYS.length}
             </span>
           </div>
           <div className="w-full bg-surface-alt rounded-full h-1 sm:h-1.5 mb-3 sm:mb-4">
             <div className={`h-full rounded-full transition-all ${
-              completedTasks === DEFAULT_CHECKLIST.length ? 'bg-trust' : 'bg-brand'
-            }`} style={{ width: `${(completedTasks / DEFAULT_CHECKLIST.length) * 100}%` }} />
+              completedTasks === CHECKLIST_KEYS.length ? 'bg-trust' : 'bg-brand'
+            }`} style={{ width: `${(completedTasks / CHECKLIST_KEYS.length) * 100}%` }} />
           </div>
           <div className="space-y-0.5 sm:space-y-2">
-            {DEFAULT_CHECKLIST.map((task, i) => (
+            {CHECKLIST_KEYS.map((taskKey, i) => (
               <button
                 key={i}
                 onClick={() => setChecklist(prev => prev.map((v, j) => j === i ? !v : v))}
@@ -413,7 +421,7 @@ export default function ProviderJobDetailPage() {
                 }
                 <span className={`text-[13px] sm:text-sm leading-snug ${
                   checklist[i] ? 'line-through text-ink-dim' : 'font-medium text-ink'
-                }`}>{task}</span>
+                }`}>{t.jobDetail[taskKey]}</span>
               </button>
             ))}
           </div>
@@ -424,9 +432,9 @@ export default function ProviderJobDetailPage() {
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
-              <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">Documentation</p>
+              <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.documentation}</p>
             </div>
-            <span className="text-[10px] font-medium text-ink-dim">{photos.length} photo{photos.length !== 1 ? 's' : ''} · this device only</span>
+            <span className="text-[10px] font-medium text-ink-dim">{photos.length} {photos.length !== 1 ? t.jobDetail.photosPlural : t.jobDetail.photoSingular} · {t.jobDetail.thisDeviceOnly}</span>
           </div>
           <input
             ref={fileRef}
@@ -449,8 +457,8 @@ export default function ProviderJobDetailPage() {
                 }
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-ink">Add photos</p>
-                <p className="text-[11px] text-ink-dim">Before, during & after — document your work</p>
+                <p className="text-sm font-semibold text-ink">{t.jobDetail.addPhotos}</p>
+                <p className="text-[11px] text-ink-dim">{t.jobDetail.addPhotosDesc}</p>
               </div>
             </button>
           ) : (
@@ -472,7 +480,7 @@ export default function ProviderJobDetailPage() {
                 disabled={uploadingPhoto}
                 className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
               >
-                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-[9px] font-bold">Add</span></>}
+                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-[9px] font-bold">{t.jobDetail.add}</span></>}
               </button>
             </div>
           )}
@@ -486,8 +494,8 @@ export default function ProviderJobDetailPage() {
               <AlertTriangle className="w-4 h-4 text-ink-dim group-hover:text-caution transition-colors" />
             </div>
             <div className="flex-1">
-              <p className="text-xs font-semibold text-ink">Report an issue</p>
-              <p className="text-[10px] text-ink-dim">Problems, disputes or safety concerns</p>
+              <p className="text-xs font-semibold text-ink">{t.bookingDetail.reportIssue}</p>
+              <p className="text-[10px] text-ink-dim">{t.jobDetail.reportIssueDesc}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
           </Link>
@@ -507,13 +515,13 @@ export default function ProviderJobDetailPage() {
                   disabled={actioning}
                   className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-2xl sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
                 >
-                  {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {flow.nextLabel}</>}
+                  {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {nextLabel}</>}
                 </button>
               ) : (
                 <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-2xl sm:rounded-card">
                   <Clock className="w-4 h-4 text-caution shrink-0" />
                   <p className="text-sm font-semibold text-caution">
-                    Awaiting customer deposit — don&apos;t start work yet
+                    {t.jobDetail.awaitingDeposit}
                   </p>
                 </div>
               )}

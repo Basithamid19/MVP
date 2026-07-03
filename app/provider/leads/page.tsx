@@ -9,8 +9,10 @@ import {
   ChevronRight, Timer, DollarSign, Search, Inbox, Send,
 } from 'lucide-react';
 import { TIME_OF_DAY_LABELS } from '@/lib/time';
+import { useTranslation } from '@/lib/i18n';
 
 function ResponseTimer({ createdAt }: { createdAt: string }) {
+  const t = useTranslation();
   const [elapsed, setElapsed] = useState('');
 
   useEffect(() => {
@@ -19,14 +21,14 @@ function ResponseTimer({ createdAt }: { createdAt: string }) {
       const mins = Math.floor(ms / 60000);
       const hrs = Math.floor(mins / 60);
       const days = Math.floor(hrs / 24);
-      if (days > 0) setElapsed(`${days}d ago`);
-      else if (hrs > 0) setElapsed(`${hrs}h ${mins % 60}m ago`);
-      else setElapsed(`${mins}m ago`);
+      if (days > 0) setElapsed(`${t.messagesPage.agoPrefix}${days}${t.messagesPage.daysSuffix}`);
+      else if (hrs > 0) setElapsed(`${t.messagesPage.agoPrefix}${hrs}${t.leadsPage.hoursShortSuffix} ${mins % 60}${t.messagesPage.minutesSuffix}`);
+      else setElapsed(`${t.messagesPage.agoPrefix}${mins}${t.messagesPage.minutesSuffix}`);
     };
     update();
-    const t = setInterval(update, 30000);
-    return () => clearInterval(t);
-  }, [createdAt]);
+    const timer = setInterval(update, 30000);
+    return () => clearInterval(timer);
+  }, [createdAt, t]);
 
   return <span className="text-[11px] sm:text-xs text-ink-dim">{elapsed}</span>;
 }
@@ -34,6 +36,7 @@ function ResponseTimer({ createdAt }: { createdAt: string }) {
 export default function ProviderLeadsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [leads, setLeads] = useState<any[]>([]);
   const [hasCategories, setHasCategories] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -102,18 +105,18 @@ export default function ProviderLeadsPage() {
       {/* Mobile-only section tabs */}
       <div className="md:hidden flex gap-1 p-1 bg-canvas rounded-2xl border border-border-dim mb-5">
         <div className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
-          Leads
+          {t.providerNav.leads}
         </div>
         <Link href="/provider/jobs" className="flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
-          Jobs
+          {t.providerNav.jobs}
         </Link>
       </div>
 
       <div className="flex items-center justify-between mb-4 sm:mb-8">
         <div>
-          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Lead Inbox</h1>
+          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">{t.leadsPage.title}</h1>
           <p className="text-xs sm:text-sm text-ink-sub mt-0.5 sm:mt-1">
-            {visibleLeads.length} open request{visibleLeads.length !== 1 ? 's' : ''}{urgentCt > 0 ? ` · ${urgentCt} urgent` : ''}
+            {visibleLeads.length} {visibleLeads.length !== 1 ? t.leadsPage.openRequestsPlural : t.leadsPage.openRequestSingular}{urgentCt > 0 ? ` · ${urgentCt} ${t.leadsPage.urgentCountSuffix}` : ''}
           </p>
         </div>
         <button onClick={load} className="p-2 border border-border-dim rounded-xl hover:bg-surface-alt transition-colors">
@@ -129,8 +132,8 @@ export default function ProviderLeadsPage() {
         >
           <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-900">Set your service categories</p>
-            <p className="text-xs text-amber-700 mt-0.5">You're seeing all open leads. Add your categories in settings so we can match the right jobs to you.</p>
+            <p className="text-sm font-semibold text-amber-900">{t.leadsPage.setCategoriesTitle}</p>
+            <p className="text-xs text-amber-700 mt-0.5">{t.leadsPage.setCategoriesDesc}</p>
           </div>
           <ChevronRight className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         </Link>
@@ -145,16 +148,16 @@ export default function ProviderLeadsPage() {
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              placeholder="Search leads…"
+              placeholder={t.leadsPage.searchPlaceholder}
               className="w-full pl-10 pr-4 py-3 sm:py-3 bg-white border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-sm transition-all shadow-sm"
             />
           </div>
         )}
         <div className="flex gap-1.5">
           {([
-            { key: 'all' as const, label: 'All', count: visibleLeads.length },
-            { key: 'urgent' as const, label: 'Urgent', count: urgentCt },
-            { key: 'new' as const, label: 'New', count: newCt },
+            { key: 'all' as const, label: t.leadsPage.filterAll, count: visibleLeads.length },
+            { key: 'urgent' as const, label: t.leadsPage.filterUrgent, count: urgentCt },
+            { key: 'new' as const, label: t.leadsPage.filterNew, count: newCt },
           ]).map(f => (
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
@@ -173,15 +176,15 @@ export default function ProviderLeadsPage() {
           <div className="w-10 h-10 sm:w-14 sm:h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
             <Inbox className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
           </div>
-          <p className="font-semibold text-base mb-1 text-ink">{leads.length === 0 ? 'No leads yet' : 'No matches'}</p>
+          <p className="font-semibold text-base mb-1 text-ink">{leads.length === 0 ? t.leadsPage.emptyNoLeadsTitle : t.leadsPage.emptyNoMatchesTitle}</p>
           <p className="text-sm text-ink-sub mb-4">
             {leads.length === 0
-              ? 'Leads are matched based on your service categories and area. Make sure your profile is complete to start receiving leads.'
-              : 'Try changing your filter or search term.'}
+              ? t.leadsPage.emptyNoLeadsDesc
+              : t.leadsPage.emptyNoMatchesDesc}
           </p>
           {leads.length === 0 && (
             <Link href="/provider/settings" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-brand-dark transition-colors">
-              Check your profile <ChevronRight className="w-4 h-4" />
+              {t.leadsPage.checkProfile} <ChevronRight className="w-4 h-4" />
             </Link>
           )}
         </div>
@@ -209,19 +212,19 @@ export default function ProviderLeadsPage() {
                         </span>
                         {lead.targetProviderId && (
                           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark bg-brand-muted px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
-                            <Send className="w-3 h-3" /> Direct request
+                            <Send className="w-3 h-3" /> {t.leadsPage.badgeDirect}
                           </span>
                         )}
                         {lead.isUrgent && (
                           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution bg-caution-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
-                            <AlertCircle className="w-3 h-3" /> Urgent
+                            <AlertCircle className="w-3 h-3" /> {t.leadsPage.badgeUrgent}
                           </span>
                         )}
                         {isNew && !lead.isUrgent && (
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-info bg-info-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">New</span>
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-info bg-info-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">{t.leadsPage.badgeNew}</span>
                         )}
                         {quoteCount > 0 && (
-                          <span className="text-[11px] sm:text-xs font-medium text-ink-sub ml-0.5 sm:ml-1">{quoteCount} quote{quoteCount > 1 ? 's' : ''}</span>
+                          <span className="text-[11px] sm:text-xs font-medium text-ink-sub ml-0.5 sm:ml-1">{quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}</span>
                         )}
                       </div>
                       <p className="text-[15px] sm:text-base font-semibold text-ink line-clamp-2">{lead.description}</p>
@@ -244,7 +247,7 @@ export default function ProviderLeadsPage() {
                     <div className="hidden sm:flex sm:flex-col items-end justify-start gap-2 shrink-0">
                       {lead.isUrgent && (
                         <span className="flex items-center gap-1 text-[10px] font-bold text-caution uppercase tracking-widest">
-                          <Timer className="w-3 h-3" /> Respond fast
+                          <Timer className="w-3 h-3" /> {t.leadsPage.respondFast}
                         </span>
                       )}
                       <ChevronRight className={`w-5 h-5 text-ink-dim transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
@@ -273,13 +276,13 @@ export default function ProviderLeadsPage() {
                     )}
                     <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4 mb-4 sm:mb-5 text-sm">
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
-                        <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">Preferred date</p>
+                        <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.dateLabel}</p>
                         <p className="font-semibold text-sm sm:text-base text-ink">{new Date(lead.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                        <p className="text-[11px] sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? 'Flexible'}</p>
+                        <p className="text-[11px] sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? t.wizard.timeFlexible}</p>
                       </div>
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
-                        <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">Budget</p>
-                        <p className="font-semibold text-sm sm:text-base text-ink">{lead.budget ? `€${lead.budget}` : 'Not specified'}</p>
+                        <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.reviewBudget}</p>
+                        <p className="font-semibold text-sm sm:text-base text-ink">{lead.budget ? `€${lead.budget}` : t.leadsPage.notSpecified}</p>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
@@ -287,13 +290,13 @@ export default function ProviderLeadsPage() {
                         href={`/provider/quote/${lead.id}`}
                         className="flex-1 bg-brand text-white py-3 sm:py-3.5 rounded-full text-sm font-medium text-center hover:bg-brand-dark transition-all shadow-sm hover:shadow-md"
                       >
-                        Send Quote
+                        {t.leadsPage.sendQuote}
                       </Link>
                       <button
                         onClick={() => passLead(lead.id)}
                         className="px-6 py-3 sm:py-3.5 border border-border-dim rounded-full text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-colors"
                       >
-                        Pass
+                        {t.leadsPage.pass}
                       </button>
                     </div>
                   </div>

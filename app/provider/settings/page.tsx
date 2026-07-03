@@ -10,6 +10,7 @@ import {
   UserCircle2, Briefcase, Calendar,
   LifeBuoy, Mail, BarChart2, LogOut, AlertCircle,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 /* ── Reusable row ── */
 function SettingsRow({
@@ -59,6 +60,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function ProviderSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -125,7 +127,7 @@ export default function ProviderSettingsPage() {
             // doesn't see a photo that isn't actually saved.
             const err = await res.json().catch(() => ({}));
             setLocalAvatar(null);
-            setAvatarError(err.error || `Upload failed (${res.status}). Please try again.`);
+            setAvatarError(err.error || `${t.providerSettingsHub.uploadFailedPrefix} (${res.status}). ${t.providerSettingsHub.uploadFailedSuffix}`);
             return;
           }
           const data = await res.json().catch(() => ({}));
@@ -138,7 +140,7 @@ export default function ProviderSettingsPage() {
           await updateSession({ user: { image: persistedImage } });
         } catch {
           setLocalAvatar(null);
-          setAvatarError('Network error. Please check your connection and try again.');
+          setAvatarError(t.common.networkError);
         } finally {
           setAvatarUploading(false);
         }
@@ -159,13 +161,13 @@ export default function ProviderSettingsPage() {
   if (loadError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-6">
-        <p className="text-base font-semibold text-ink">Could not load your profile</p>
-        <p className="text-sm text-ink-sub max-w-xs leading-relaxed">There was a problem fetching your data. Check your connection and try again.</p>
+        <p className="text-base font-semibold text-ink">{t.providerSettingsHub.loadErrorTitle}</p>
+        <p className="text-sm text-ink-sub max-w-xs leading-relaxed">{t.providerSettingsHub.loadErrorDesc}</p>
         <button
           onClick={() => { setLoading(true); setRetryCount(c => c + 1); }}
           className="px-6 py-2.5 bg-brand text-white rounded-full font-medium text-sm hover:bg-brand-dark transition-colors"
         >
-          Retry
+          {t.providerSettingsHub.retry}
         </button>
       </div>
     );
@@ -182,7 +184,7 @@ export default function ProviderSettingsPage() {
       {/* ── Top bar (mobile only — desktop has sidebar) ── */}
       <header className="bg-white border-b border-border-dim sticky top-0 z-20 w-full md:hidden">
         <div className="flex items-center px-4 h-14">
-          <h1 className="text-base font-bold text-ink">Account</h1>
+          <h1 className="text-base font-bold text-ink">{t.providerSettingsHub.headerAccount}</h1>
         </div>
       </header>
 
@@ -224,15 +226,15 @@ export default function ProviderSettingsPage() {
                 {verificationTier === 'TIER0_BASIC' ? (
                   <>
                     <Shield className="w-3 h-3 text-white/70" />
-                    <span className="text-[10px] font-semibold text-white/70">Not verified</span>
+                    <span className="text-[10px] font-semibold text-white/70">{t.providerSettingsHub.notVerified}</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-3 h-3 text-white/70" />
                     <span className="text-[10px] font-semibold text-white/70">
-                      {verificationTier === 'TIER1_ID_VERIFIED' ? 'ID Verified'
-                        : verificationTier === 'TIER2_TRADE_VERIFIED' ? 'Trade Verified'
-                        : 'Enhanced'}
+                      {verificationTier === 'TIER1_ID_VERIFIED' ? t.verificationPage.tierIdVerified
+                        : verificationTier === 'TIER2_TRADE_VERIFIED' ? t.verificationPage.tierTradeVerified
+                        : t.verificationPage.tierEnhanced}
                     </span>
                   </>
                 )}
@@ -243,9 +245,9 @@ export default function ProviderSettingsPage() {
           {/* Stats */}
           <div className="relative z-10 grid grid-cols-3 mt-3.5 pt-3 border-t border-white/10">
             {[
-              { value: completedJobs, label: 'Jobs done' },
-              { value: ratingAvg != null ? ratingAvg.toFixed(1) : '—', label: 'Rating' },
-              { value: reviewCount, label: 'Reviews' },
+              { value: completedJobs, label: t.providerProfile.statJobsDone },
+              { value: ratingAvg != null ? ratingAvg.toFixed(1) : '—', label: t.providerProfile.rating },
+              { value: reviewCount, label: t.providerProfile.reviewsTitle },
             ].map((stat, i) => (
               <div key={stat.label} className={`text-center ${i > 0 ? 'border-l border-white/10' : ''}`}>
                 <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
@@ -260,14 +262,14 @@ export default function ProviderSettingsPage() {
       <div className="flex flex-col gap-6 pt-4">
 
         {/* Setup */}
-        <Section title="Setup">
-          <SettingsRow icon={UserCircle2} label="Profile" sub="Bio, coverage area, languages" href="/provider/settings/profile" />
-          <SettingsRow icon={Briefcase} label="Services" sub="Offerings, pricing, instant book" href="/provider/settings/services" />
-          <SettingsRow icon={Calendar} label="Availability" sub="Working hours, days off" href="/provider/settings/availability" />
+        <Section title={t.providerSettingsHub.sectionSetup}>
+          <SettingsRow icon={UserCircle2} label={t.common.profile} sub={t.providerSettingsHub.rowProfileSub} href="/provider/settings/profile" />
+          <SettingsRow icon={Briefcase} label={t.providerSettingsHub.rowServices} sub={t.providerSettingsHub.rowServicesSub} href="/provider/settings/services" />
+          <SettingsRow icon={Calendar} label={t.providerSettingsHub.rowAvailability} sub={t.providerSettingsHub.rowAvailabilitySub} href="/provider/settings/availability" />
         </Section>
 
         {/* Activity */}
-        <Section title="Activity">
+        <Section title={t.providerSettingsHub.sectionActivity}>
           <div>
             <button
               onClick={() => setShowInvoices(v => !v)}
@@ -277,9 +279,9 @@ export default function ProviderSettingsPage() {
                 <Receipt className="w-4 h-4 text-brand" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-ink">Invoices</p>
+                <p className="text-[13px] font-semibold text-ink">{t.providerSettingsHub.invoices}</p>
                 <p className="text-[11px] text-ink-dim mt-0.5">
-                  {invoices.length} invoice{invoices.length !== 1 ? 's' : ''} · €{totalEarned.toFixed(2)}
+                  {invoices.length} {invoices.length !== 1 ? t.providerSettingsHub.invoicesPlural : t.providerSettingsHub.invoiceSingular} · €{totalEarned.toFixed(2)}
                 </p>
               </div>
               <ChevronRight className={`w-3.5 h-3.5 text-ink-dim/40 shrink-0 transition-transform duration-200 ${showInvoices ? 'rotate-90' : ''}`} />
@@ -288,7 +290,7 @@ export default function ProviderSettingsPage() {
             {showInvoices && (
               <div className="border-t border-border-dim bg-surface-alt/50">
                 {invoices.length === 0 ? (
-                  <p className="px-5 py-4 text-xs text-ink-dim text-center">No invoices yet.</p>
+                  <p className="px-5 py-4 text-xs text-ink-dim text-center">{t.providerSettingsHub.noInvoices}</p>
                 ) : (
                   <div className="p-3 space-y-2">
                     {invoices.map(b => {
@@ -299,7 +301,7 @@ export default function ProviderSettingsPage() {
                           {/* Top: service + amount */}
                           <div className="flex items-start justify-between gap-2 mb-2.5">
                             <div className="min-w-0">
-                              <p className="font-semibold text-sm text-ink truncate">{b.quote?.request?.category?.name ?? 'Service'}</p>
+                              <p className="font-semibold text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
                               <p className="text-[10px] text-ink-dim mt-0.5">{date} · <span className="font-mono">{invoiceNo}</span></p>
                             </div>
                             <div className="text-right shrink-0">
@@ -310,25 +312,25 @@ export default function ProviderSettingsPage() {
                                 : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'bg-info-surface text-info'
                                 : 'bg-surface-alt text-ink-sub'
                               }`}>{
-                                b.payment?.status === 'PAID' ? 'Paid'
-                                : b.payment?.status === 'REFUNDED' ? 'Refunded'
-                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'Processing'
-                                : 'Pending'
+                                b.payment?.status === 'PAID' ? t.statuses.payment.PAID
+                                : b.payment?.status === 'REFUNDED' ? t.statuses.payment.REFUNDED
+                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? t.statuses.payment.PROCESSING
+                                : t.providerSettingsHub.invoicePending
                               }</span>
                             </div>
                           </div>
                           {/* Details */}
                           <div className="bg-surface-alt rounded-lg p-2.5 text-[11px] space-y-1 mb-2.5">
                             <div className="flex justify-between text-ink-sub">
-                              <span>Customer</span>
-                              <span className="font-medium text-ink truncate ml-2">{b.customer?.user?.name ?? 'Customer'}</span>
+                              <span>{t.jobDetail.customer}</span>
+                              <span className="font-medium text-ink truncate ml-2">{b.customer?.user?.name ?? t.providerProfile.customerFallback}</span>
                             </div>
                             <div className="flex justify-between text-ink-sub">
-                              <span>Service</span>
+                              <span>{t.bookingDetail.service}</span>
                               <span>€{Number(b.totalAmount).toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between font-medium text-ink pt-1 border-t border-border-dim">
-                              <span>Total earned</span>
+                              <span>{t.providerSettingsHub.totalEarnedRow}</span>
                               <span>€{Number(b.totalAmount).toFixed(2)}</span>
                             </div>
                           </div>
@@ -338,7 +340,7 @@ export default function ProviderSettingsPage() {
                               href={`/provider/jobs/${b.id}`}
                               className="flex-1 text-center py-2 border border-border-dim rounded-lg text-[11px] font-semibold text-ink hover:bg-surface-alt transition-colors"
                             >
-                              View booking
+                              {t.quoteInbox.viewBooking}
                             </Link>
                             <button
                               onClick={() => {
@@ -372,16 +374,16 @@ export default function ProviderSettingsPage() {
         </Section>
 
         {/* Support */}
-        <Section title="Support">
-          <SettingsRow icon={AlertCircle} label="Report an issue" sub="Disputes, refunds, no-shows" href="/provider/disputes" />
-          <SettingsRow icon={LifeBuoy} label="Help Centre" sub="FAQs and how-to guides" href="/provider/disputes" />
-          <SettingsRow icon={Mail} label="Email us" sub="support@aladdin.lt" href="mailto:support@aladdin.lt" muted />
+        <Section title={t.providerSettingsHub.sectionSupport}>
+          <SettingsRow icon={AlertCircle} label={t.bookingDetail.reportIssue} sub={t.providerSettingsHub.rowReportIssueSub} href="/provider/disputes" />
+          <SettingsRow icon={LifeBuoy} label={t.providerSettingsHub.helpCentre} sub={t.providerSettingsHub.helpCentreSub} href="/provider/disputes" />
+          <SettingsRow icon={Mail} label={t.providerSettingsHub.emailUs} sub="support@aladdin.lt" href="mailto:support@aladdin.lt" muted />
         </Section>
 
         {/* Account */}
-        <Section title="Account">
-          <SettingsRow icon={ShieldCheck} label="Verification" sub="ID, trade certificates, insurance" href="/provider/verification" />
-          <SettingsRow icon={BarChart2} label="Earnings" sub="Payouts & revenue history" href="/provider/earnings" />
+        <Section title={t.providerSettingsHub.sectionAccount}>
+          <SettingsRow icon={ShieldCheck} label={t.providerNav.verification} sub={t.providerSettingsHub.rowVerificationSub} href="/provider/verification" />
+          <SettingsRow icon={BarChart2} label={t.providerNav.earnings} sub={t.providerSettingsHub.rowEarningsSub} href="/provider/earnings" />
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-alt/50 transition-colors text-left"
@@ -390,7 +392,7 @@ export default function ProviderSettingsPage() {
               <LogOut className="w-4 h-4 text-ink-dim" strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-danger">Log out</p>
+              <p className="text-[13px] font-semibold text-danger">{t.nav.logOut}</p>
             </div>
           </button>
         </Section>

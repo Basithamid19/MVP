@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { PLATFORM_FEE_RATE } from '@/lib/fees';
+import { useTranslation } from '@/lib/i18n';
 
 // The real platform fee charged by the payment code (Stripe application_fee).
 // This page previously hardcoded a fabricated 12%.
@@ -18,6 +19,7 @@ const PLATFORM_FEE = PLATFORM_FEE_RATE;
 export default function EarningsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'overview' | 'history' | 'payouts'>('overview');
@@ -44,7 +46,7 @@ export default function EarningsPage() {
       const res = await fetch('/api/provider/stripe-connect', { method: 'POST' });
       const data = await res.json().catch(() => ({} as any));
       if (data.url) { window.location.href = data.url; return; }
-      alert(data.error ?? 'Could not start payout setup. Please try again.');
+      alert(data.error ?? t.earningsPage.setupFailed);
     } finally {
       setConnectingStripe(false);
     }
@@ -103,18 +105,18 @@ export default function EarningsPage() {
       {/* Mobile-only section tabs */}
       <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-2xl shadow-sm mb-4">
         <Link href="/provider/performance" className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
-          Performance
+          {t.providerNav.performance}
         </Link>
         <div className="flex-1 py-2 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
-          Earnings
+          {t.providerNav.earnings}
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Earnings & Payouts</h1>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">{t.earningsPage.title}</h1>
         {/* Tax Export — desktop only in header */}
         <button onClick={exportTaxCSV} className="hidden sm:flex items-center gap-2 text-sm font-medium border border-border-dim px-5 py-2.5 rounded-full hover:border-brand/30 hover:shadow-sm transition-all bg-white">
-          <Download className="w-4 h-4" /> Tax Export
+          <Download className="w-4 h-4" /> {t.earningsPage.taxExport}
         </button>
       </div>
 
@@ -123,17 +125,17 @@ export default function EarningsPage() {
         {/* Total earned — enriched hero */}
         <div className="bg-brand text-white rounded-2xl p-4 shadow-md mb-2.5">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Net Earned</p>
+            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
             <div className="flex items-center gap-1 text-white/50">
               <Briefcase className="w-3 h-3" />
-              <span className="text-[10px] font-bold">{completed.length} jobs</span>
+              <span className="text-[10px] font-bold">{completed.length} {t.earningsPage.jobsSuffix}</span>
             </div>
           </div>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
           {totalGross > 0 && (
             <p className="text-xs text-white/40 mt-1">
-              €{totalGross.toFixed(2)} gross · 10% platform fee
-              {processingNet > 0 && <> · €{processingNet.toFixed(2)} still processing</>}
+              €{totalGross.toFixed(2)} {t.earningsPage.grossSuffix} · {t.earningsPage.platformFeeShort}
+              {processingNet > 0 && <> · €{processingNet.toFixed(2)} {t.earningsPage.stillProcessing}</>}
             </p>
           )}
         </div>
@@ -142,18 +144,18 @@ export default function EarningsPage() {
           <div className="flex items-center justify-between bg-white border border-border-dim rounded-xl px-3.5 py-2.5 shadow-sm">
             <div className="flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-ink-dim" />
-              <span className="text-xs font-medium text-ink-sub">Pending</span>
+              <span className="text-xs font-medium text-ink-sub">{t.earningsPage.pendingLabel}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-ink">€{pendingAmount.toFixed(2)}</span>
-              <span className="text-[10px] text-ink-dim">{pending.length} job{pending.length !== 1 ? 's' : ''}</span>
+              <span className="text-[10px] text-ink-dim">{pending.length} {pending.length !== 1 ? t.earningsPage.jobsPlural : t.earningsPage.jobSingular}</span>
             </div>
           </div>
         ) : (
           <div className="flex items-center justify-between bg-surface-alt rounded-xl px-3.5 py-2.5">
             <div className="flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-ink-dim" />
-              <span className="text-xs text-ink-dim">No pending earnings</span>
+              <span className="text-xs text-ink-dim">{t.earningsPage.noPendingEarnings}</span>
             </div>
             <span className="text-sm font-medium text-ink-dim">€0.00</span>
           </div>
@@ -163,20 +165,20 @@ export default function EarningsPage() {
       {/* ── Desktop: Original summary cards grid ── */}
       <div className="hidden sm:grid sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-brand text-white rounded-2xl p-6 shadow-md">
-          <p className="text-[10px] text-white/60 font-bold uppercase tracking-widest mb-2">Total Earned</p>
+          <p className="text-[10px] text-white/60 font-bold uppercase tracking-widest mb-2">{t.earningsPage.totalEarned}</p>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
-          <p className="text-sm text-white/60 mt-2">{completed.length} jobs</p>
+          <p className="text-sm text-white/60 mt-2">{completed.length} {t.earningsPage.jobsSuffix}</p>
         </div>
         <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
-          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Pending</p>
+          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.pendingLabel}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{pendingAmount.toFixed(2)}</p>
-          <p className="text-sm text-ink-sub mt-2">{pending.length} active jobs</p>
+          <p className="text-sm text-ink-sub mt-2">{pending.length} {t.earningsPage.activeJobsSuffix}</p>
         </div>
         <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
-          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Settled</p>
+          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.settled}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{settledNet.toFixed(2)}</p>
           <p className="text-sm text-ink-sub mt-2">
-            {processingNet > 0 ? `€${processingNet.toFixed(2)} processing` : `10% fee · €${(totalGross * PLATFORM_FEE).toFixed(2)} total`}
+            {processingNet > 0 ? `€${processingNet.toFixed(2)} ${t.earningsPage.processingSuffix}` : `${t.earningsPage.feeLabel} · €${(totalGross * PLATFORM_FEE).toFixed(2)} ${t.earningsPage.totalSuffix}`}
           </p>
         </div>
       </div>
@@ -188,10 +190,10 @@ export default function EarningsPage() {
         }`}>
           <div className="flex items-center justify-between mb-3 sm:mb-5">
             <p className="font-semibold text-ink text-sm sm:text-base flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-ink-dim" /> Monthly earnings
+              <TrendingUp className="w-4 h-4 text-ink-dim" /> {t.earningsPage.monthlyEarnings}
             </p>
             {months.length > 1 && (
-              <p className="text-[10px] text-ink-dim font-medium">Last {months.length} months</p>
+              <p className="text-[10px] text-ink-dim font-medium">{t.earningsPage.lastPrefix} {months.length} {t.earningsPage.monthsSuffix}</p>
             )}
           </div>
 
@@ -205,7 +207,7 @@ export default function EarningsPage() {
                 <p className="text-lg font-semibold text-ink">€{months[0][1].toFixed(2)}</p>
                 <p className="text-xs text-ink-dim">{months[0][0]}</p>
               </div>
-              <p className="text-[10px] text-ink-dim">First month</p>
+              <p className="text-[10px] text-ink-dim">{t.earningsPage.firstMonth}</p>
             </div>
           ) : (
             /* Multi-month bar chart */
@@ -235,12 +237,16 @@ export default function EarningsPage() {
 
       {/* Earnings sub-tabs — tighter to content */}
       <div className="flex gap-1 p-1 bg-surface-alt rounded-xl sm:rounded-2xl mb-3.5 sm:mb-8 overflow-x-auto">
-        {(['overview', 'history', 'payouts'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
+        {([
+          { key: 'overview' as const, label: t.earningsPage.tabOverview },
+          { key: 'history' as const, label: t.earningsPage.tabHistory },
+          { key: 'payouts' as const, label: t.earningsPage.tabPayouts },
+        ]).map(({ key, label }) => (
+          <button key={key} onClick={() => setTab(key)}
             className={`flex-1 py-2 rounded-lg sm:rounded-xl text-xs transition-all capitalize ${
-              tab === t ? 'bg-white text-brand shadow-card font-semibold' : 'text-ink-sub hover:text-ink font-medium'
+              tab === key ? 'bg-white text-brand shadow-card font-semibold' : 'text-ink-sub hover:text-ink font-medium'
             }`}>
-            {t}
+            {label}
           </button>
         ))}
       </div>
@@ -248,15 +254,15 @@ export default function EarningsPage() {
       {/* Overview */}
       {tab === 'overview' && (
         <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 shadow-sm">
-          <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">Earnings breakdown</p>
+          <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">{t.earningsPage.earningsBreakdown}</p>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-ink-sub">Gross revenue</span><span className="font-semibold">€{totalGross.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-ink-sub">Platform fee (10%)</span><span className="text-ink-sub">−€{(totalGross * PLATFORM_FEE).toFixed(2)}</span></div>
-            <div className="flex justify-between font-bold pt-2 border-t border-border-dim text-base sm:text-lg"><span>Net earnings</span><span className="text-brand">€{totalNet.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-ink-sub">{t.earningsPage.grossRevenue}</span><span className="font-semibold">€{totalGross.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-ink-sub">{t.earningsPage.platformFee}</span><span className="text-ink-sub">−€{(totalGross * PLATFORM_FEE).toFixed(2)}</span></div>
+            <div className="flex justify-between font-bold pt-2 border-t border-border-dim text-base sm:text-lg"><span>{t.earningsPage.netEarnings}</span><span className="text-brand">€{totalNet.toFixed(2)}</span></div>
           </div>
           <div className="mt-3 pt-3 border-t border-border-dim flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 text-ink-dim shrink-0" />
-            <p className="text-xs text-ink-sub">Paid out via Stripe — funds arrive 1–2 business days after each completed job.</p>
+            <p className="text-xs text-ink-sub">{t.earningsPage.payoutNote}</p>
           </div>
         </div>
       )}
@@ -267,8 +273,8 @@ export default function EarningsPage() {
           {completed.length === 0 ? (
             <div className="bg-white rounded-2xl border border-dashed border-border p-6 sm:p-10 text-center">
               <DollarSign className="w-7 h-7 text-ink-dim mx-auto mb-2" />
-              <p className="font-semibold text-sm mb-1">No completed jobs yet</p>
-              <p className="text-xs text-ink-dim">Earnings from completed bookings will appear here.</p>
+              <p className="font-semibold text-sm mb-1">{t.earningsPage.noCompletedTitle}</p>
+              <p className="text-xs text-ink-dim">{t.earningsPage.noCompletedDesc}</p>
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
@@ -279,7 +285,7 @@ export default function EarningsPage() {
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-trust" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[13px] sm:text-sm text-ink truncate">{b.quote?.request?.category?.name ?? 'Service'}</p>
+                    <p className="font-semibold text-[13px] sm:text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
                     <p className="text-[11px] text-ink-dim mt-0.5">
                       {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       {b.customer?.user?.name && <span> · {b.customer.user.name}</span>}
@@ -288,7 +294,7 @@ export default function EarningsPage() {
                   <div className="text-right shrink-0">
                     <p className="font-semibold text-trust text-[13px] sm:text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
                     <p className={`text-[10px] ${b.payment?.status === 'PAID' ? 'text-trust' : 'text-caution'}`}>
-                      {b.payment?.status === 'PAID' ? 'paid out' : 'processing'}
+                      {b.payment?.status === 'PAID' ? t.earningsPage.paidOut : t.earningsPage.processing}
                     </p>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-ink-dim/50 shrink-0 hidden sm:block" />
@@ -310,16 +316,16 @@ export default function EarningsPage() {
                   <CheckCircle2 className="w-4 h-4 text-trust" />
                 </div>
                 <div>
-                  <p className="font-semibold text-sm sm:text-base text-ink">Payouts active</p>
-                  <p className="text-[11px] sm:text-xs text-ink-dim">Connected via Stripe</p>
+                  <p className="font-semibold text-sm sm:text-base text-ink">{t.earningsPage.payoutsActive}</p>
+                  <p className="text-[11px] sm:text-xs text-ink-dim">{t.earningsPage.connectedViaStripe}</p>
                 </div>
               </div>
               <div className="space-y-1.5 text-[13px] sm:text-sm">
                 {[
-                  ['Method', 'Stripe (bank account)'],
-                  ['When', 'After each completed job'],
-                  ['Processing', '1–2 business days'],
-                  ['Platform fee', '10%'],
+                  [t.earningsPage.rowMethod, t.earningsPage.rowMethodValue],
+                  [t.earningsPage.rowWhen, t.earningsPage.rowWhenValue],
+                  [t.earningsPage.rowProcessing, t.earningsPage.rowProcessingValue],
+                  [t.earningsPage.rowPlatformFee, '10%'],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between py-0.5">
                     <span className="text-ink-sub">{label}</span>
@@ -332,7 +338,7 @@ export default function EarningsPage() {
                 disabled={connectingStripe}
                 className="mt-3 text-xs font-bold text-brand hover:underline disabled:opacity-50"
               >
-                {connectingStripe ? 'Opening Stripe…' : 'Manage payout details'}
+                {connectingStripe ? t.earningsPage.openingStripe : t.earningsPage.managePayouts}
               </button>
             </div>
           ) : (
@@ -340,16 +346,16 @@ export default function EarningsPage() {
               <div className="flex items-start gap-3">
                 <Landmark className="w-5 h-5 text-caution shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-bold text-caution text-sm sm:text-base">Set up payouts to get paid</p>
+                  <p className="font-bold text-caution text-sm sm:text-base">{t.earningsPage.setupTitle}</p>
                   <p className="text-xs sm:text-sm text-caution mt-0.5 mb-3 leading-relaxed">
-                    Connect your bank account via Stripe to receive earnings for completed jobs.
+                    {t.earningsPage.payoutSetupDesc}
                   </p>
                   <button
                     onClick={setUpPayouts}
                     disabled={connectingStripe || stripeOnboarded === null}
                     className="text-xs sm:text-sm font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
-                    {connectingStripe ? 'Opening Stripe…' : 'Set up payouts'}
+                    {connectingStripe ? t.earningsPage.openingStripe : t.earningsPage.setUpPayouts}
                   </button>
                 </div>
               </div>
@@ -363,8 +369,8 @@ export default function EarningsPage() {
                 <FileText className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
               </div>
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-ink">Tax export</p>
-                <p className="text-[11px] text-ink-dim">Download CSV for your records</p>
+                <p className="text-sm font-semibold text-ink">{t.earningsPage.taxExportMobile}</p>
+                <p className="text-[11px] text-ink-dim">{t.earningsPage.taxExportDesc}</p>
               </div>
               <Download className="w-4 h-4 text-ink-dim shrink-0" />
             </button>

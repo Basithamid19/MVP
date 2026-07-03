@@ -10,11 +10,13 @@ import {
 } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
-import { bookingStatus } from '@/lib/status-labels';
+import { localizedStatus } from '@/lib/status-labels';
+import { useTranslation } from '@/lib/i18n';
 
 export default function ProviderJobsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'active' | 'completed' | 'all'>('active');
@@ -39,9 +41,9 @@ export default function ProviderJobsPage() {
   });
 
   const emptyState = {
-    active: { title: 'No active jobs', desc: 'Jobs appear here when customers accept your quotes. Browse leads and send quotes to get started.', showCta: true },
-    completed: { title: 'No completed jobs yet', desc: 'Finished work will appear here after you complete a job. Active jobs can be marked complete from the job detail page.', showCta: false },
-    all: { title: 'No jobs yet', desc: 'Jobs appear here when customers accept your quotes. Browse available leads and send your first quote to get started.', showCta: true },
+    active: { title: t.jobsPage.emptyActiveTitle, desc: t.jobsPage.emptyActiveDesc, showCta: true },
+    completed: { title: t.jobsPage.emptyCompletedTitle, desc: t.jobsPage.emptyCompletedDesc, showCta: false },
+    all: { title: t.jobsPage.emptyAllTitle, desc: t.jobsPage.emptyAllDesc, showCta: true },
   }[filter];
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
@@ -51,20 +53,20 @@ export default function ProviderJobsPage() {
       {/* Mobile-only section tabs */}
       <div className="md:hidden flex gap-1 p-1 bg-canvas rounded-2xl border border-border-dim mb-5">
         <Link href="/provider/leads" className="flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
-          Leads
+          {t.providerNav.leads}
         </Link>
         <div className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
-          Jobs
+          {t.providerNav.jobs}
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
-        <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Jobs</h1>
+        <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">{t.jobsPage.title}</h1>
         <div className="flex gap-1.5">
           {([
-            { key: 'active' as const, label: 'Active', count: activeCt },
-            { key: 'completed' as const, label: 'Completed', count: completedCt },
-            { key: 'all' as const, label: 'All', count: bookings.length },
+            { key: 'active' as const, label: t.jobsPage.filterActive, count: activeCt },
+            { key: 'completed' as const, label: t.jobsPage.filterCompleted, count: completedCt },
+            { key: 'all' as const, label: t.jobsPage.filterAll, count: bookings.length },
           ]).map(f => (
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
@@ -87,7 +89,7 @@ export default function ProviderJobsPage() {
           <p className="text-sm text-ink-sub mb-4">{emptyState.desc}</p>
           {emptyState.showCta && (
             <Link href="/provider/leads" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand-dark transition-colors">
-              Browse Leads <ChevronRight className="w-4 h-4" />
+              {t.providerDashboard.browseLeads} <ChevronRight className="w-4 h-4" />
             </Link>
           )}
         </div>
@@ -104,9 +106,9 @@ export default function ProviderJobsPage() {
                 }`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-[15px] sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? 'Job'}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${bookingStatus(b.status).cls}`}>
-                      {bookingStatus(b.status).label}
+                    <p className="font-semibold text-[15px] sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${localizedStatus(t, 'booking', b.status).cls}`}>
+                      {localizedStatus(t, 'booking', b.status).label}
                     </span>
                   </div>
                   <p className="hidden sm:flex text-sm text-ink-sub items-center gap-1.5 mb-1">
@@ -122,7 +124,7 @@ export default function ProviderJobsPage() {
               <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-5.5 sm:ml-0 pl-0 sm:pl-0">
                 <div className="text-left sm:text-right shrink-0">
                   <p className="font-semibold text-[15px] sm:text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
-                  <p className="text-[11px] sm:text-xs text-ink-dim">your share</p>
+                  <p className="text-[11px] sm:text-xs text-ink-dim">{t.jobsPage.yourShare}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-ink-dim shrink-0" />
               </div>

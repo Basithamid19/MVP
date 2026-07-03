@@ -12,38 +12,7 @@ import {
 } from 'lucide-react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import MobileNav from '@/components/MobileNav';
-
-const NAV_GROUPS = [
-  {
-    label: 'Overview',
-    items: [
-      { href: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    ],
-  },
-  {
-    label: 'Work',
-    items: [
-      { href: '/provider/leads',    label: 'Leads',     icon: Inbox },
-      { href: '/provider/quotes',   label: 'My Quotes', icon: FileText },
-      { href: '/provider/jobs',     label: 'Jobs',      icon: Briefcase },
-      { href: '/messages',          label: 'Messages',  icon: MessageSquare },
-    ],
-  },
-  {
-    label: 'Business',
-    items: [
-      { href: '/provider/earnings',    label: 'Earnings',    icon: DollarSign },
-      { href: '/provider/performance', label: 'Performance', icon: BarChart2 },
-    ],
-  },
-  {
-    label: 'Account',
-    items: [
-      { href: '/provider/settings', label: 'Settings', icon: Settings },
-      { href: '/provider/disputes', label: 'Support',  icon: LifeBuoy },
-    ],
-  },
-];
+import { useTranslation, type Dictionary } from '@/lib/i18n';
 
 interface Notification {
   id: string;
@@ -55,14 +24,14 @@ interface Notification {
   createdAt: string;
 }
 
-function timeAgo(date: string) {
+function timeAgo(date: string, t: Dictionary) {
   const ms = Date.now() - new Date(date).getTime();
   const mins = Math.floor(ms / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 1) return t.messagesPage.justNow;
+  if (mins < 60) return `${t.messagesPage.agoPrefix}${mins}${t.messagesPage.minutesSuffix}`;
   const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+  if (hrs < 24) return `${t.messagesPage.agoPrefix}${hrs}${t.messagesPage.hoursSuffix}`;
+  return `${t.messagesPage.agoPrefix}${Math.floor(hrs / 24)}${t.messagesPage.daysSuffix}`;
 }
 
 const NOTIF_ICON: Record<string, React.ElementType> = {
@@ -88,9 +57,43 @@ const NOTIF_COLOR: Record<string, string> = {
 export default function ProviderLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const t = useTranslation();
   const [showNotifs, setShowNotifs] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Inside the component so labels re-render on locale change.
+  const NAV_GROUPS = [
+    {
+      label: t.providerNav.overview,
+      items: [
+        { href: '/provider/dashboard', label: t.providerNav.dashboard, icon: LayoutDashboard },
+      ],
+    },
+    {
+      label: t.providerNav.work,
+      items: [
+        { href: '/provider/leads',    label: t.providerNav.leads,    icon: Inbox },
+        { href: '/provider/quotes',   label: t.providerNav.myQuotes, icon: FileText },
+        { href: '/provider/jobs',     label: t.providerNav.jobs,     icon: Briefcase },
+        { href: '/messages',          label: t.providerNav.messages, icon: MessageSquare },
+      ],
+    },
+    {
+      label: t.providerNav.business,
+      items: [
+        { href: '/provider/earnings',    label: t.providerNav.earnings,    icon: DollarSign },
+        { href: '/provider/performance', label: t.providerNav.performance, icon: BarChart2 },
+      ],
+    },
+    {
+      label: t.providerNav.account,
+      items: [
+        { href: '/provider/settings', label: t.providerNav.settings, icon: Settings },
+        { href: '/provider/disputes', label: t.providerNav.support,  icon: LifeBuoy },
+      ],
+    },
+  ];
 
   // Fetch notifications from persistent API
   useEffect(() => {
@@ -180,14 +183,14 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-info hover:bg-info-surface transition-all"
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span className="hidden lg:block">Verification</span>
+            <span className="hidden lg:block">{t.providerNav.verification}</span>
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            <span className="hidden lg:block">Log Out</span>
+            <span className="hidden lg:block">{t.providerNav.logOut}</span>
           </button>
         </div>
       </aside>
@@ -222,13 +225,13 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
               <div className="absolute right-0 top-14 w-80 sm:w-96 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden z-50">
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-border-dim">
-                  <h3 className="font-semibold text-base text-ink">Notifications</h3>
+                  <h3 className="font-semibold text-base text-ink">{t.providerNav.notifications}</h3>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
                       className="text-xs font-medium text-ink-dim hover:text-brand transition-colors"
                     >
-                      Mark all read
+                      {t.providerNav.markAllRead}
                     </button>
                   )}
                 </div>
@@ -240,7 +243,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                       <div className="w-12 h-12 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
                         <Bell className="w-5 h-5 text-ink-dim" />
                       </div>
-                      <p className="text-sm font-medium text-ink-sub">You're all caught up</p>
+                      <p className="text-sm font-medium text-ink-sub">{t.providerNav.allCaughtUp}</p>
                     </div>
                   ) : (
                     visibleNotifs.slice(0, 10).map(n => {
@@ -260,7 +263,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                             <p className={`text-sm ${!n.isRead ? 'font-bold' : 'font-medium'} text-ink mb-0.5`}>{n.title}</p>
                             <p className="text-xs text-ink-sub truncate">{n.body}</p>
                             <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1">
-                              <Clock className="w-3 h-3" /> {timeAgo(n.createdAt)}
+                              <Clock className="w-3 h-3" /> {timeAgo(n.createdAt, t)}
                             </p>
                           </div>
                           {!n.isRead && (
@@ -284,7 +287,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                       onClick={() => { markAllRead(); setShowNotifs(false); }}
                       className="text-xs font-medium text-ink-sub hover:text-ink transition-colors"
                     >
-                      Mark all as read
+                      {t.providerNav.markAllAsRead}
                     </button>
                   </div>
                 )}

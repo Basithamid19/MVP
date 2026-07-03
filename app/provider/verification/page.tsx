@@ -7,6 +7,7 @@ import {
   ShieldCheck, Clock, CheckCircle2, XCircle, FileText,
   ArrowRight, Loader2, AlertCircle,
 } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 
 interface VerificationDoc {
   id: string;
@@ -17,27 +18,15 @@ interface VerificationDoc {
   createdAt: string;
 }
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; icon: React.ElementType; label: string }> = {
-  PENDING:  { bg: 'bg-yellow-50', text: 'text-yellow-700', icon: Clock, label: 'Under Review' },
-  APPROVED: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2, label: 'Approved' },
-  REJECTED: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle, label: 'Rejected' },
-};
-
-const DOC_TYPE_LABELS: Record<string, string> = {
-  ID: 'Identity Document',
-  CERTIFICATE: 'Trade Certificate',
-  INSURANCE: 'Liability Insurance',
-  SELFIE: 'Selfie Proof',
-};
-
-const TIER_LABELS: Record<string, { label: string; desc: string; color: string }> = {
-  TIER0_BASIC: { label: 'Basic', desc: 'Complete verification to unlock your badge', color: 'text-ink-dim' },
-  TIER1_ID_VERIFIED: { label: 'ID Verified', desc: 'Your identity has been confirmed', color: 'text-blue-600' },
-  TIER2_TRADE_VERIFIED: { label: 'Trade Verified', desc: 'Identity and trade credentials confirmed', color: 'text-brand' },
-  TIER3_ENHANCED: { label: 'Enhanced', desc: 'Fully verified with insurance coverage', color: 'text-green-600' },
+// Style-only map — labels come from the dictionary in the component.
+const STATUS_STYLES: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
+  PENDING:  { bg: 'bg-yellow-50', text: 'text-yellow-700', icon: Clock },
+  APPROVED: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2 },
+  REJECTED: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle },
 };
 
 export default function VerificationStatusPage() {
+  const t = useTranslation();
   const { data: session, status: authStatus } = useSession();
   const [loading, setLoading] = useState(true);
   const [isVerified, setIsVerified] = useState(false);
@@ -65,6 +54,26 @@ export default function VerificationStatusPage() {
     );
   }
 
+  const STATUS_LABELS: Record<string, string> = {
+    PENDING: t.verificationPage.stUnderReview,
+    APPROVED: t.verificationPage.stApproved,
+    REJECTED: t.verificationPage.stRejected,
+  };
+
+  const DOC_TYPE_LABELS: Record<string, string> = {
+    ID: t.verificationPage.docId,
+    CERTIFICATE: t.verificationPage.docCertificate,
+    INSURANCE: t.verificationPage.docInsurance,
+    SELFIE: t.verificationPage.docSelfie,
+  };
+
+  const TIER_LABELS: Record<string, { label: string; desc: string; color: string }> = {
+    TIER0_BASIC: { label: t.verificationPage.tierBasic, desc: t.verificationPage.tierBasicDesc, color: 'text-ink-dim' },
+    TIER1_ID_VERIFIED: { label: t.verificationPage.tierIdVerified, desc: t.verificationPage.tierIdVerifiedDesc, color: 'text-blue-600' },
+    TIER2_TRADE_VERIFIED: { label: t.verificationPage.tierTradeVerified, desc: t.verificationPage.tierTradeVerifiedDesc, color: 'text-brand' },
+    TIER3_ENHANCED: { label: t.verificationPage.tierEnhanced, desc: t.verificationPage.tierEnhancedDesc, color: 'text-green-600' },
+  };
+
   const tierInfo = TIER_LABELS[tier] ?? TIER_LABELS.TIER0_BASIC;
   const pendingCount = documents.filter(d => d.status === 'PENDING').length;
   const approvedCount = documents.filter(d => d.status === 'APPROVED').length;
@@ -72,8 +81,8 @@ export default function VerificationStatusPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">Verification Status</h1>
-      <p className="text-sm text-ink-dim mb-8">Track your verification progress and manage your documents.</p>
+      <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">{t.verificationPage.title}</h1>
+      <p className="text-sm text-ink-dim mb-8">{t.verificationPage.subtitle}</p>
 
       {/* Tier card */}
       <div className={`rounded-2xl border p-6 mb-6 ${isVerified ? 'bg-green-50 border-green-200' : 'bg-white border-border-dim'}`}>
@@ -86,7 +95,7 @@ export default function VerificationStatusPage() {
               <h2 className={`text-lg font-bold ${tierInfo.color}`}>{tierInfo.label}</h2>
               {isVerified && (
                 <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
-                  Verified
+                  {t.common.verified}
                 </span>
               )}
             </div>
@@ -100,15 +109,15 @@ export default function VerificationStatusPage() {
         <div className="grid grid-cols-3 gap-3 mb-6">
           <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
             <p className="text-2xl font-bold text-yellow-700">{pendingCount}</p>
-            <p className="text-xs font-medium text-yellow-600">Pending</p>
+            <p className="text-xs font-medium text-yellow-600">{t.verificationPage.statPending}</p>
           </div>
           <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
             <p className="text-2xl font-bold text-green-700">{approvedCount}</p>
-            <p className="text-xs font-medium text-green-600">Approved</p>
+            <p className="text-xs font-medium text-green-600">{t.verificationPage.statApproved}</p>
           </div>
           <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
             <p className="text-2xl font-bold text-red-700">{rejectedCount}</p>
-            <p className="text-xs font-medium text-red-600">Rejected</p>
+            <p className="text-xs font-medium text-red-600">{t.verificationPage.statRejected}</p>
           </div>
         </div>
       )}
@@ -116,7 +125,7 @@ export default function VerificationStatusPage() {
       {/* Documents list */}
       {documents.length > 0 ? (
         <div className="space-y-3 mb-8">
-          <h3 className="text-xs font-bold text-ink-dim uppercase tracking-widest">Submitted Documents</h3>
+          <h3 className="text-xs font-bold text-ink-dim uppercase tracking-widest">{t.verificationPage.submittedDocuments}</h3>
           {documents.map(doc => {
             const st = STATUS_STYLES[doc.status] ?? STATUS_STYLES.PENDING;
             const Icon = st.icon;
@@ -129,12 +138,12 @@ export default function VerificationStatusPage() {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-ink">{DOC_TYPE_LABELS[doc.docType] ?? doc.docType}</p>
                     <p className="text-xs text-ink-dim">
-                      Submitted {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {t.verificationPage.submittedPrefix} {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
                   </div>
                   <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${st.bg} ${st.text}`}>
                     <Icon className="w-3.5 h-3.5" />
-                    <span className="text-xs font-bold">{st.label}</span>
+                    <span className="text-xs font-bold">{STATUS_LABELS[doc.status] ?? STATUS_LABELS.PENDING}</span>
                   </div>
                 </div>
                 {doc.status === 'REJECTED' && doc.rejectionReason && (
@@ -152,15 +161,15 @@ export default function VerificationStatusPage() {
           <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-ink-dim" />
           </div>
-          <h3 className="text-lg font-bold text-ink mb-2">No documents submitted</h3>
+          <h3 className="text-lg font-bold text-ink mb-2">{t.verificationPage.emptyTitle}</h3>
           <p className="text-sm text-ink-sub mb-6 max-w-sm mx-auto">
-            Complete the verification process to earn your verified badge and build trust with customers.
+            {t.verificationPage.emptyDesc}
           </p>
           <Link
             href="/provider/onboarding"
             className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-dark transition-colors"
           >
-            Start Verification <ArrowRight className="w-4 h-4" />
+            {t.verificationPage.startVerification} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       )}
@@ -171,15 +180,15 @@ export default function VerificationStatusPage() {
           <div className="flex items-start gap-3">
             <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-sm text-red-900 mb-1">Some documents were rejected</p>
+              <p className="font-bold text-sm text-red-900 mb-1">{t.verificationPage.rejectedTitle}</p>
               <p className="text-xs text-red-700 mb-3">
-                Please re-submit the rejected documents with clearer images or updated credentials.
+                {t.verificationPage.rejectedDesc}
               </p>
               <Link
                 href="/provider/onboarding"
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 hover:text-red-900 transition-colors"
               >
-                Resubmit documents <ArrowRight className="w-3.5 h-3.5" />
+                {t.verificationPage.resubmit} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
@@ -192,9 +201,9 @@ export default function VerificationStatusPage() {
           <div className="flex items-start gap-3">
             <Clock className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-sm text-yellow-900 mb-1">Verification in progress</p>
+              <p className="font-bold text-sm text-yellow-900 mb-1">{t.verificationPage.pendingTitle}</p>
               <p className="text-xs text-yellow-700">
-                Our team typically reviews documents within 24 hours. You&apos;ll receive a notification once your verification is complete.
+                {t.verificationPage.pendingDesc}
               </p>
             </div>
           </div>

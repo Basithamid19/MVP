@@ -7,30 +7,34 @@ import {
   ArrowLeft, ArrowRight, CheckCircle2, Loader2,
   User, Building2, FileText, Camera, Shield, Upload, X,
 } from 'lucide-react';
-
-const STEPS = [
-  { id: 1, label: 'Identity',    icon: User },
-  { id: 2, label: 'Business',    icon: Building2 },
-  { id: 3, label: 'Credentials', icon: FileText },
-  { id: 4, label: 'Selfie',      icon: Camera },
-  { id: 5, label: 'Done',        icon: Shield },
-];
-
-const BUSINESS_TYPES = [
-  { id: 'sole_trader', label: 'Sole Trader', desc: 'Working independently under your own name' },
-  { id: 'company',     label: 'Registered Company', desc: 'You operate via a registered LT business entity' },
-  { id: 'freelancer',  label: 'Freelancer / Contractor', desc: 'Self-employed under freelance agreement' },
-];
-
-const DOC_TYPES = [
-  { id: 'id_card',     label: 'National ID Card',       required: true },
-  { id: 'passport',    label: 'Passport',               required: false },
-  { id: 'certificate', label: 'Trade Certificate',      required: false },
-  { id: 'insurance',   label: 'Liability Insurance',    required: false },
-];
+import { useTranslation } from '@/lib/i18n';
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const t = useTranslation();
+
+  // Built inside the component so labels follow the active locale.
+  const STEPS = [
+    { id: 1, label: t.onboarding.stepIdentity,    icon: User },
+    { id: 2, label: t.onboarding.stepBusiness,    icon: Building2 },
+    { id: 3, label: t.onboarding.stepCredentials, icon: FileText },
+    { id: 4, label: t.onboarding.stepSelfie,      icon: Camera },
+    { id: 5, label: t.onboarding.stepDone,        icon: Shield },
+  ];
+
+  const BUSINESS_TYPES = [
+    { id: 'sole_trader', label: t.onboarding.btSoleTrader, desc: t.onboarding.btSoleTraderDesc },
+    { id: 'company',     label: t.onboarding.btCompany, desc: t.onboarding.btCompanyDesc },
+    { id: 'freelancer',  label: t.onboarding.btFreelancer, desc: t.onboarding.btFreelancerDesc },
+  ];
+
+  const DOC_TYPES = [
+    { id: 'id_card',     label: t.onboarding.docIdCard,      required: true },
+    { id: 'passport',    label: t.onboarding.docPassport,    required: false },
+    { id: 'certificate', label: t.onboarding.docCertificate, required: false },
+    { id: 'insurance',   label: t.onboarding.docInsurance,   required: false },
+  ];
+
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const fileRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -93,7 +97,7 @@ export default function OnboardingPage() {
 
       // Nothing actually finished uploading → don't fake a success screen.
       if (documents.length === 0) {
-        setFinishError('Your documents are still uploading or failed to upload. Please re-add them and try again.');
+        setFinishError(t.onboarding.errNoDocs);
         return;
       }
 
@@ -109,12 +113,12 @@ export default function OnboardingPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({} as any));
-        setFinishError(d.error ?? 'Submission failed. Please try again.');
+        setFinishError(d.error ?? t.onboarding.errSubmitFailed);
         return;
       }
       setStep(5);
     } catch {
-      setFinishError('Network error. Please check your connection and try again.');
+      setFinishError(t.common.networkError);
     } finally {
       setSaving(false);
     }
@@ -165,11 +169,11 @@ export default function OnboardingPage() {
         {/* Step 1: Identity */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Identity details</h1>
-            <p className="text-ink-dim text-sm mb-8">This information is verified by our team and never shown publicly.</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-1">{t.onboarding.identityTitle}</h1>
+            <p className="text-ink-dim text-sm mb-8">{t.onboarding.identitySubtitle}</p>
             <div className="space-y-5">
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Full legal name</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.fullLegalName}</label>
                 <input
                   type="text"
                   value={identity.fullName}
@@ -179,7 +183,7 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Phone number</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.phoneNumber}</label>
                 <input
                   type="tel"
                   value={identity.phone}
@@ -189,17 +193,17 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">National ID number <span className="normal-case font-normal">(optional, encrypted)</span></label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.nationalIdLabel} <span className="normal-case font-normal">{t.onboarding.optionalEncrypted}</span></label>
                 <input
                   type="text"
                   value={identity.idNumber}
                   onChange={e => setIdentity(p => ({ ...p, idNumber: e.target.value }))}
-                  placeholder="Personal code or ID number"
+                  placeholder={t.onboarding.idPlaceholder}
                   className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
               <div className="p-4 bg-blue-50 border border-blue-100 rounded-card text-xs text-info leading-relaxed">
-                <strong>Privacy:</strong> Your personal data is encrypted at rest and only used for verification. It is never shared with customers.
+                <strong>{t.onboarding.privacyBold}</strong> {t.onboarding.privacyNote}
               </div>
             </div>
           </div>
@@ -208,8 +212,8 @@ export default function OnboardingPage() {
         {/* Step 2: Business type */}
         {step === 2 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Business type</h1>
-            <p className="text-ink-dim text-sm mb-8">How do you operate your services?</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-1">{t.onboarding.businessTitle}</h1>
+            <p className="text-ink-dim text-sm mb-8">{t.onboarding.businessSubtitle}</p>
             <div className="space-y-3 mb-6">
               {BUSINESS_TYPES.map(bt => (
                 <button
@@ -228,17 +232,17 @@ export default function OnboardingPage() {
             {businessType === 'company' && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Company name</label>
+                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.companyName}</label>
                   <input
                     type="text"
                     value={companyName}
                     onChange={e => setCompanyName(e.target.value)}
-                    placeholder="UAB Your Company"
+                    placeholder={t.onboarding.companyPlaceholder}
                     className="w-full px-4 py-4 bg-white border border-border rounded-card focus:ring-2 focus:ring-brand outline-none text-sm"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">VAT number <span className="normal-case font-normal">(optional)</span></label>
+                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.vatNumber} <span className="normal-case font-normal">{t.wizard.optional}</span></label>
                   <input
                     type="text"
                     value={vatNumber}
@@ -255,8 +259,8 @@ export default function OnboardingPage() {
         {/* Step 3: Documents */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Documents & credentials</h1>
-            <p className="text-ink-dim text-sm mb-8">Upload your ID and any relevant trade certificates.</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-1">{t.onboarding.docsTitle}</h1>
+            <p className="text-ink-dim text-sm mb-8">{t.onboarding.docsSubtitle}</p>
             <div className="space-y-4">
               {DOC_TYPES.map(doc => {
                 const uploaded = docs[doc.id];
@@ -270,7 +274,7 @@ export default function OnboardingPage() {
                           {doc.label}
                           {doc.required && <span className="ml-1 text-red-500">*</span>}
                         </p>
-                        {!doc.required && <p className="text-xs text-ink-dim">Optional — increases your trust score</p>}
+                        {!doc.required && <p className="text-xs text-ink-dim">{t.onboarding.optionalTrust}</p>}
                       </div>
                       {uploaded?.uploaded && <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />}
                     </div>
@@ -282,7 +286,7 @@ export default function OnboardingPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-ink-sub truncate">{uploaded.file.name}</p>
-                          <p className="text-[10px] text-ink-dim">{uploaded.uploaded ? 'Uploaded ✓' : 'Uploading…'}</p>
+                          <p className="text-[10px] text-ink-dim">{uploaded.uploaded ? t.onboarding.uploadedCheck : t.onboarding.uploading}</p>
                         </div>
                         <button onClick={() => setDocs(prev => { const n = { ...prev }; delete n[doc.id]; return n; })} className="text-ink-dim hover:text-red-500 transition-colors">
                           <X className="w-4 h-4" />
@@ -301,7 +305,7 @@ export default function OnboardingPage() {
                           onClick={() => fileRefs.current[doc.id]?.click()}
                           className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-border rounded-input text-sm font-bold text-ink-dim hover:border-brand hover:text-ink transition-colors"
                         >
-                          <Upload className="w-4 h-4" /> Upload file
+                          <Upload className="w-4 h-4" /> {t.onboarding.uploadFile}
                         </button>
                       </>
                     )}
@@ -315,8 +319,8 @@ export default function OnboardingPage() {
         {/* Step 4: Selfie */}
         {step === 4 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight mb-1">Selfie proof</h1>
-            <p className="text-ink-dim text-sm mb-8">Take a photo holding your ID to confirm your identity. This is reviewed only by our compliance team.</p>
+            <h1 className="text-2xl font-bold tracking-tight mb-1">{t.onboarding.selfieTitle}</h1>
+            <p className="text-ink-dim text-sm mb-8">{t.onboarding.selfieSubtitle}</p>
             <input
               ref={selfieRef}
               type="file"
@@ -339,8 +343,8 @@ export default function OnboardingPage() {
                 <div className="p-4 bg-green-50 border border-green-100 rounded-card flex items-center gap-3">
                   <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
                   <div>
-                    <p className="font-bold text-sm text-green-900">Looking good!</p>
-                    <p className="text-xs text-trust">Our team will review within 24 hours.</p>
+                    <p className="font-bold text-sm text-green-900">{t.onboarding.lookingGood}</p>
+                    <p className="text-xs text-trust">{t.onboarding.reviewIn24h}</p>
                   </div>
                 </div>
               </div>
@@ -353,14 +357,14 @@ export default function OnboardingPage() {
                   <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center">
                     <Camera className="w-8 h-8" />
                   </div>
-                  <p className="font-bold">Take selfie with ID</p>
-                  <p className="text-xs text-ink-dim">Or tap to upload a photo</p>
+                  <p className="font-bold">{t.onboarding.takeSelfie}</p>
+                  <p className="text-xs text-ink-dim">{t.onboarding.orTapUpload}</p>
                 </button>
                 <div className="p-4 bg-surface-alt border border-border-dim rounded-card text-xs text-ink-dim space-y-1">
-                  <p className="font-bold text-ink-sub">Tips for a good selfie:</p>
-                  <p>• Hold your ID clearly visible next to your face</p>
-                  <p>• Make sure your face and ID text are both in focus</p>
-                  <p>• Use good lighting — avoid glare on the ID</p>
+                  <p className="font-bold text-ink-sub">{t.onboarding.tipsTitle}</p>
+                  <p>• {t.onboarding.tip1}</p>
+                  <p>• {t.onboarding.tip2}</p>
+                  <p>• {t.onboarding.tip3}</p>
                 </div>
               </div>
             )}
@@ -373,16 +377,16 @@ export default function OnboardingPage() {
             <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
               <Shield className="w-10 h-10 text-green-600" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-3">Verification submitted!</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-3">{t.onboarding.doneTitle}</h1>
             <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
-              Our compliance team will review your documents within <strong>24 hours</strong>. You'll receive a notification once approved.
+              {t.onboarding.doneDescPrefix} <strong>{t.onboarding.done24h}</strong>{t.onboarding.doneDescSuffix}
             </p>
             <div className="bg-white rounded-panel border border-border-dim p-6 text-left max-w-sm mx-auto mb-8 shadow-card space-y-3">
               {[
-                { label: 'Identity details', done: true },
-                { label: 'Business type', done: true },
-                { label: 'Documents uploaded', done: Object.keys(docs).length > 0 },
-                { label: 'Selfie proof', done: !!selfie },
+                { label: t.onboarding.identityTitle, done: true },
+                { label: t.onboarding.businessTitle, done: true },
+                { label: t.onboarding.reviewDocsUploaded, done: Object.keys(docs).length > 0 },
+                { label: t.onboarding.selfieTitle, done: !!selfie },
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-3">
                   <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${item.done ? 'bg-green-500' : 'bg-border'}`}>
@@ -396,7 +400,7 @@ export default function OnboardingPage() {
               href="/provider/dashboard"
               className="inline-flex items-center gap-2 bg-brand text-white px-8 py-4 rounded-card font-bold hover:bg-gray-800 transition-all"
             >
-              Go to Dashboard <ArrowRight className="w-4 h-4" />
+              {t.onboarding.goToDashboard} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         )}
@@ -417,7 +421,7 @@ export default function OnboardingPage() {
                 disabled={!canProceed()}
                 className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                Continue <ArrowRight className="w-4 h-4" />
+                {t.wizard.continueBtn} <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
@@ -425,7 +429,7 @@ export default function OnboardingPage() {
                 disabled={!canProceed() || saving}
                 className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
-                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Shield className="w-4 h-4" /> Submit for Review</>}
+                {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Shield className="w-4 h-4" /> {t.onboarding.submitForReview}</>}
               </button>
             )}
           </div>
