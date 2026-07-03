@@ -291,7 +291,7 @@ export default function ProviderServicesSettingsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">Instant book</p>
-                <p className="text-[11px] text-ink-dim mt-0.5 leading-relaxed">Let customers book without approval</p>
+                <p className="text-[11px] text-ink-dim mt-0.5 leading-relaxed">Shows an Instant Book badge on your public profile</p>
               </div>
               <button onClick={() => setInstantBook(!instantBook)} className="shrink-0">
                 {instantBook

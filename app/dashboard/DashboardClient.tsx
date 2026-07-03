@@ -47,7 +47,8 @@ function getJobAction(req: any): { label: string; primary: boolean } {
   const q = req.quotes?.length ?? 0;
   if (req.status === 'COMPLETED') return { label: 'Leave a Review',  primary: false };
   if (req.status === 'ACCEPTED')  return { label: 'View Booking',    primary: true };
-  if (req.status === 'CHATTING')  return { label: 'Continue Chat',   primary: true };
+  // Chat is deposit-gated, so "Continue Chat" was a dead end pre-booking.
+  if (req.status === 'CHATTING')  return { label: 'View Request',    primary: true };
   if (q > 0)                      return { label: `Review ${q} Quote${q > 1 ? 's' : ''}`, primary: true };
   return                                  { label: 'View Details',   primary: false };
 }

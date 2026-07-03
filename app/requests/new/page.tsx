@@ -356,7 +356,7 @@ function NewRequestContent() {
                   className="w-full p-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-base leading-relaxed"
                 />
                 <div className="flex justify-between items-center mt-1.5">
-                  <p className="text-xs text-ink-dim">{form.description.length} characters — aim for at least 50</p>
+                  <p className="text-xs text-ink-dim">{form.description.length} characters — minimum 10, more detail gets better quotes</p>
                   {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-trust shrink-0" />}
                 </div>
               </div>

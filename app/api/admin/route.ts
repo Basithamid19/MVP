@@ -61,10 +61,12 @@ export async function GET(request: Request) {
     ]);
 
     // Weekly activity — real counts for the last 7 days (was hardcoded mock in
-    // the dashboard). Grouped in JS from a date-filtered fetch.
+    // the dashboard). Window and bucket keys are computed in UTC end-to-end:
+    // mixing server-local midnight with toISOString() keys shifted every
+    // bucket a day back on non-UTC servers and silently dropped today's rows.
     const windowStart = new Date();
-    windowStart.setHours(0, 0, 0, 0);
-    windowStart.setDate(windowStart.getDate() - 6);
+    windowStart.setUTCHours(0, 0, 0, 0);
+    windowStart.setUTCDate(windowStart.getUTCDate() - 6);
 
     const [recentRequests, recentBookings] = await Promise.all([
       prisma.serviceRequest.findMany({ where: { createdAt: { gte: windowStart } }, select: { createdAt: true } }),
@@ -75,8 +77,8 @@ export async function GET(request: Request) {
     const dayKey = (d: Date) => new Date(d).toISOString().slice(0, 10);
     const buckets = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(windowStart);
-      d.setDate(windowStart.getDate() + i);
-      return { key: dayKey(d), name: DAY_LABELS[d.getDay()], requests: 0, bookings: 0 };
+      d.setUTCDate(windowStart.getUTCDate() + i);
+      return { key: dayKey(d), name: DAY_LABELS[d.getUTCDay()], requests: 0, bookings: 0 };
     });
     for (const r of recentRequests) {
       const b = buckets.find((x) => x.key === dayKey(r.createdAt));

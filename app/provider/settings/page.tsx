@@ -292,7 +292,7 @@ export default function ProviderSettingsPage() {
                 ) : (
                   <div className="p-3 space-y-2">
                     {invoices.map(b => {
-                      const invoiceNo = `VP-${b.id.slice(0, 8).toUpperCase()}`;
+                      const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
                       const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                       return (
                         <div key={b.id} className="bg-white rounded-xl p-3.5 shadow-sm border border-border-dim">

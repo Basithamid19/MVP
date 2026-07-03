@@ -61,8 +61,11 @@ export default function OnboardingPage() {
     setSelfie({ file, preview: URL.createObjectURL(file) });
   };
 
+  const [finishError, setFinishError] = useState<string | null>(null);
+
   const handleFinish = async () => {
     setSaving(true);
+    setFinishError(null);
     try {
       // Upload selfie first
       let selfieUrl = '';
@@ -88,8 +91,14 @@ export default function OnboardingPage() {
         documents.push({ docType: 'SELFIE', docUrl: selfieUrl });
       }
 
-      // Submit verification documents to DB
-      await fetch('/api/provider/verification', {
+      // Nothing actually finished uploading → don't fake a success screen.
+      if (documents.length === 0) {
+        setFinishError('Your documents are still uploading or failed to upload. Please re-add them and try again.');
+        return;
+      }
+
+      // Submit verification documents to DB — only advance on success.
+      const res = await fetch('/api/provider/verification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -98,15 +107,24 @@ export default function OnboardingPage() {
           businessType,
         }),
       });
-    } catch {}
-    setSaving(false);
-    setStep(5);
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({} as any));
+        setFinishError(d.error ?? 'Submission failed. Please try again.');
+        return;
+      }
+      setStep(5);
+    } catch {
+      setFinishError('Network error. Please check your connection and try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const canProceed = () => {
     if (step === 1) return identity.fullName.trim().length > 2 && identity.phone.trim().length > 6;
     if (step === 2) return !!businessType;
-    if (step === 3) return !!docs['id_card'];
+    // Require the ID document to have finished uploading, not just be selected.
+    if (step === 3) return !!docs['id_card']?.uploaded && !!docs['id_card']?.url;
     if (step === 4) return !!selfie;
     return true;
   };
@@ -388,6 +406,11 @@ export default function OnboardingPage() {
       {step < 5 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4">
           <div className="max-w-2xl mx-auto">
+            {finishError && step === 4 && (
+              <div className="px-4 py-3 mb-3 bg-caution-surface border border-caution-edge rounded-2xl text-sm font-medium text-caution leading-relaxed">
+                {finishError}
+              </div>
+            )}
             {step < 4 ? (
               <button
                 onClick={() => setStep(s => s + 1)}

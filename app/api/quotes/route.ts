@@ -237,7 +237,10 @@ export async function PATCH(request: Request) {
 
   // Compute the booking instant in Vilnius local time (date + time-of-day),
   // used both for the availability check and the stored scheduledAt.
-  const scheduledAt = buildVilniusScheduledAt(quote.request.dateWindow, quote.request.timeOfDay ?? null);
+  // ACCEPTED-only — declines never need it.
+  const scheduledAt = status === 'ACCEPTED'
+    ? buildVilniusScheduledAt(quote.request.dateWindow, quote.request.timeOfDay ?? null)
+    : quote.request.dateWindow;
 
   // Enforce provider availability (blackout dates / working hours / buffer)
   // before committing. Degrades to allow on un-migrated DBs.
@@ -361,7 +364,7 @@ export async function PATCH(request: Request) {
         type: 'booking',
         title: 'Quote accepted!',
         body: `${customerUser?.name ?? 'A customer'} accepted your quote for €${quote.price.toFixed(0)}. Waiting for deposit.`,
-        href: `/provider/jobs`,
+        href: `/provider/jobs/${booking.id}`,
       });
     }
 

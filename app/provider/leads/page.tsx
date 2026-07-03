@@ -39,6 +39,25 @@ export default function ProviderLeadsPage() {
   const [filter, setFilter] = useState<'all' | 'urgent' | 'new'>('all');
   const [search, setSearch] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
+  // Leads the provider dismissed with "Pass" — device-local only, so the lead
+  // reappears on another device but stays hidden here.
+  const [passed, setPassed] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('aladdin_passed_leads') ?? '[]');
+      if (Array.isArray(stored)) setPassed(stored);
+    } catch {}
+  }, []);
+
+  const passLead = (id: string) => {
+    setPassed(prev => {
+      const next = [...new Set([...prev, id])].slice(-200);
+      try { localStorage.setItem('aladdin_passed_leads', JSON.stringify(next)); } catch {}
+      return next;
+    });
+    setExpanded(null);
+  };
 
   const load = useCallback(() => {
     Promise.allSettled([
@@ -60,10 +79,11 @@ export default function ProviderLeadsPage() {
     if (status === 'authenticated') load();
   }, [status, router, load]);
 
-  const urgentCt = leads.filter(l => l.isUrgent).length;
-  const newCt = leads.filter(l => !l.quotes?.length).length;
+  const visibleLeads = leads.filter(l => !passed.includes(l.id));
+  const urgentCt = visibleLeads.filter(l => l.isUrgent).length;
+  const newCt = visibleLeads.filter(l => !l.quotes?.length).length;
 
-  const filtered = leads.filter(l => {
+  const filtered = visibleLeads.filter(l => {
     if (filter === 'urgent' && !l.isUrgent) return false;
     if (filter === 'new' && l.quotes?.length > 0) return false;
     if (search && !l.description?.toLowerCase().includes(search.toLowerCase()) &&
@@ -92,7 +112,7 @@ export default function ProviderLeadsPage() {
         <div>
           <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">Lead Inbox</h1>
           <p className="text-xs sm:text-sm text-ink-sub mt-0.5 sm:mt-1">
-            {leads.length} open request{leads.length !== 1 ? 's' : ''}{urgentCt > 0 ? ` · ${urgentCt} urgent` : ''}
+            {visibleLeads.length} open request{visibleLeads.length !== 1 ? 's' : ''}{urgentCt > 0 ? ` · ${urgentCt} urgent` : ''}
           </p>
         </div>
         <button onClick={load} className="p-2 border border-border-dim rounded-xl hover:bg-surface-alt transition-colors">
@@ -117,7 +137,7 @@ export default function ProviderLeadsPage() {
 
       {/* Search + filter — only show search when leads exist */}
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-5 sm:mb-8">
-        {leads.length > 0 && (
+        {visibleLeads.length > 0 && (
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim" />
             <input
@@ -131,7 +151,7 @@ export default function ProviderLeadsPage() {
         )}
         <div className="flex gap-1.5">
           {([
-            { key: 'all' as const, label: 'All', count: leads.length },
+            { key: 'all' as const, label: 'All', count: visibleLeads.length },
             { key: 'urgent' as const, label: 'Urgent', count: urgentCt },
             { key: 'new' as const, label: 'New', count: newCt },
           ]).map(f => (
@@ -262,7 +282,10 @@ export default function ProviderLeadsPage() {
                       >
                         Send Quote
                       </Link>
-                      <button className="px-6 py-3 sm:py-3.5 border border-border-dim rounded-full text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-colors">
+                      <button
+                        onClick={() => passLead(lead.id)}
+                        className="px-6 py-3 sm:py-3.5 border border-border-dim rounded-full text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-colors"
+                      >
                         Pass
                       </button>
                     </div>
