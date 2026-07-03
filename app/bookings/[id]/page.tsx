@@ -14,9 +14,9 @@ import {
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
 import { DEPOSIT_RATE } from '@/lib/fees';
-import { bookingStatus, paymentStatus } from '@/lib/status-labels';
-
-const BOOKING_STEPS = ['Scheduled', 'In Progress', 'Completed'];
+import { localizedStatus } from '@/lib/status-labels';
+import { useTranslation } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
 
 const STEP_INDEX: Record<string, number> = {
   SCHEDULED: 0,
@@ -25,26 +25,33 @@ const STEP_INDEX: Record<string, number> = {
   CANCELED: -1,
 };
 
-function deriveEta(booking: any): string | null {
+function deriveEta(booking: any, s: Dictionary['bookingDetail']): string | null {
   if (!booking) return null;
   if (booking.status === 'COMPLETED' || booking.status === 'CANCELED') return null;
-  if (booking.status === 'IN_PROGRESS') return 'En route / On site';
+  if (booking.status === 'IN_PROGRESS') return s.enRoute;
   const scheduled = new Date(booking.scheduledAt);
   const now = new Date();
   const diffMs = scheduled.getTime() - now.getTime();
-  if (diffMs <= 0) return 'Arriving soon';
+  if (diffMs <= 0) return s.arrivingSoon;
   const diffH = Math.floor(diffMs / (1000 * 60 * 60));
   const diffM = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   if (diffH > 24) {
-    return `In ${Math.floor(diffH / 24)} day${Math.floor(diffH / 24) > 1 ? 's' : ''}`;
+    return `${s.inPrefix} ${Math.floor(diffH / 24)} ${Math.floor(diffH / 24) > 1 ? s.days : s.day}`;
   }
-  if (diffH > 0) return `In ~${diffH}h ${diffM}m`;
-  return `In ~${diffM} min`;
+  if (diffH > 0) return `${s.inPrefix} ~${diffH}${s.hoursShort} ${diffM}${s.minutesShort}`;
+  return `${s.inPrefix} ~${diffM} ${s.minutesLong}`;
 }
 
 export default function BookingPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const t = useTranslation();
+
+  const BOOKING_STEPS = [
+    t.bookingDetail.stepScheduled,
+    t.bookingDetail.stepInProgress,
+    t.bookingDetail.stepCompleted,
+  ];
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState(false);
@@ -75,13 +82,13 @@ export default function BookingPage() {
       if (res.ok) {
         setReportingIssue(false);
         setIssueText('');
-        alert('Issue reported. Our support team will be in touch within 24 hours.');
+        alert(t.bookingDetail.issueReported);
       } else {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? 'Could not submit the report. Please try again.');
+        alert(d.error ?? t.bookingDetail.issueFailed);
       }
     } catch {
-      alert('Network error. Please try again.');
+      alert(t.common.networkError);
     } finally {
       setSubmittingIssue(false);
     }
@@ -127,7 +134,7 @@ export default function BookingPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? 'Could not update the booking. Please try again.');
+        alert(d.error ?? t.bookingDetail.updateFailed);
       }
       load();
     } finally {
@@ -163,7 +170,7 @@ export default function BookingPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error ?? 'Could not start checkout. Please try again.');
+        alert(data.error ?? t.bookingDetail.checkoutFailed);
       }
     } finally {
       setPayingDeposit(false);
@@ -204,8 +211,8 @@ export default function BookingPage() {
   if (!booking) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-center p-4">
-        <p className="text-xl font-bold mb-2">Booking not found</p>
-        <Link href="/dashboard" className="text-brand font-bold hover:underline">Back to dashboard</Link>
+        <p className="text-xl font-bold mb-2">{t.bookingDetail.notFound}</p>
+        <Link href="/dashboard" className="text-brand font-bold hover:underline">{t.common.backToDashboard}</Link>
       </div>
     );
   }
@@ -214,8 +221,8 @@ export default function BookingPage() {
     if (!booking.chatThread?.id) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-          <p className="text-ink-sub text-sm mb-4">No conversation started yet for this booking.</p>
-          <button onClick={() => setShowChat(false)} className="text-brand font-semibold text-sm">Go Back</button>
+          <p className="text-ink-sub text-sm mb-4">{t.bookingDetail.noChat}</p>
+          <button onClick={() => setShowChat(false)} className="text-brand font-semibold text-sm">{t.bookingDetail.goBack}</button>
         </div>
       );
     }
@@ -237,7 +244,7 @@ export default function BookingPage() {
   const chatUnlocked =
     ['DEPOSIT_HELD', 'PAID', 'PROCESSING'].includes(booking.payment?.status) ||
     ['IN_PROGRESS', 'COMPLETED'].includes(booking.status);
-  const eta = deriveEta(booking);
+  const eta = deriveEta(booking, t.bookingDetail);
   const quotedPrice = booking.quote?.price;
   const finalPrice = booking.totalAmount;
   const priceAdjusted = quotedPrice && finalPrice && Math.abs(finalPrice - quotedPrice) > 0.01;
@@ -250,11 +257,11 @@ export default function BookingPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1">
-          <h1 className="font-bold text-lg">{category?.name ?? 'Booking'}</h1>
+          <h1 className="font-bold text-lg">{category?.name ?? t.bookingDetail.bookingFallback}</h1>
           <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${bookingStatus(booking.status).cls}`}>
-          {bookingStatus(booking.status).label}
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${localizedStatus(t, 'booking', booking.status).cls}`}>
+          {localizedStatus(t, 'booking', booking.status).label}
         </span>
       </div>
 
@@ -262,7 +269,7 @@ export default function BookingPage() {
         {/* Status timeline */}
         {!isCanceled && (
           <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Job Progress</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.jobProgress}</p>
             <div className="flex items-center mb-4">
               {BOOKING_STEPS.map((s, i) => (
                 <React.Fragment key={s}>
@@ -284,7 +291,7 @@ export default function BookingPage() {
               <div className="flex items-center gap-3 px-4 py-3 bg-info-surface rounded-card border border-info-edge">
                 <Timer className="w-5 h-5 text-info shrink-0" />
                 <div>
-                  <p className="text-sm font-bold text-info">Provider ETA</p>
+                  <p className="text-sm font-bold text-info">{t.bookingDetail.providerEta}</p>
                   <p className="text-xs text-info">{eta}</p>
                 </div>
               </div>
@@ -295,7 +302,7 @@ export default function BookingPage() {
         {isCanceled && (
           <div className="bg-danger-surface border border-danger-edge rounded-card p-4 flex items-center gap-3">
             <XCircle className="w-5 h-5 text-danger shrink-0" />
-            <p className="text-sm font-medium text-danger">This booking has been canceled.</p>
+            <p className="text-sm font-medium text-danger">{t.bookingDetail.canceledNotice}</p>
           </div>
         )}
 
@@ -304,12 +311,12 @@ export default function BookingPage() {
           paymentConfirmed ? (
             <div className="flex items-center gap-3 px-4 py-3 bg-trust-surface border border-trust-edge rounded-card">
               <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
-              <p className="text-sm font-medium text-trust">Deposit received — your booking is confirmed. You can now message your pro.</p>
+              <p className="text-sm font-medium text-trust">{t.bookingDetail.depositReceived}</p>
             </div>
           ) : (
             <div className="flex items-center gap-3 px-4 py-3 bg-info-surface border border-info-edge rounded-card">
               <Loader2 className="w-5 h-5 text-info shrink-0 animate-spin" />
-              <p className="text-sm font-medium text-info">Payment received — finalizing your booking…</p>
+              <p className="text-sm font-medium text-info">{t.bookingDetail.finalizing}</p>
             </div>
           )
         )}
@@ -317,9 +324,9 @@ export default function BookingPage() {
           <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
             <div className="flex items-center gap-3">
               <XCircle className="w-5 h-5 text-caution shrink-0" />
-              <p className="text-sm font-medium text-caution">Payment canceled — your booking isn&apos;t confirmed yet. You can pay the deposit whenever you&apos;re ready.</p>
+              <p className="text-sm font-medium text-caution">{t.bookingDetail.paymentCanceled}</p>
             </div>
-            <button onClick={() => setPaymentBanner(null)} className="shrink-0 text-caution hover:opacity-70 text-xs font-bold">Dismiss</button>
+            <button onClick={() => setPaymentBanner(null)} className="shrink-0 text-caution hover:opacity-70 text-xs font-bold">{t.bookingDetail.dismiss}</button>
           </div>
         )}
 
@@ -329,9 +336,9 @@ export default function BookingPage() {
             <div className="flex items-start gap-3 mb-4">
               <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-caution">Deposit required to confirm booking</p>
+                <p className="font-bold text-caution">{t.bookingDetail.depositRequiredTitle}</p>
                 <p className="text-sm text-caution mt-1 leading-relaxed">
-                  Pay a <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)} deposit (20%)</span> to confirm your booking and unlock messaging with your provider.
+                  {t.bookingDetail.depositPayPrefix} <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)} {t.bookingDetail.depositBold}</span> {t.bookingDetail.depositPaySuffix}
                 </p>
               </div>
             </div>
@@ -340,7 +347,7 @@ export default function BookingPage() {
               disabled={payingDeposit}
               className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> Pay deposit · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)}</>}
+              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> {t.bookingDetail.payDepositBtn} · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)}</>}
             </button>
           </div>
         )}
@@ -351,10 +358,10 @@ export default function BookingPage() {
             <div className="flex items-start gap-3 mb-4">
               <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-caution">Final price adjusted</p>
+                <p className="font-bold text-caution">{t.bookingDetail.priceAdjustedTitle}</p>
                 <p className="text-sm text-caution mt-0.5 leading-relaxed">
-                  The pro adjusted the final price from <span className="font-bold">€{quotedPrice?.toFixed(2)}</span> to <span className="font-bold">€{finalPrice?.toFixed(2)}</span>.
-                  Please approve or dispute before leaving a review.
+                  {t.bookingDetail.priceAdjustedFrom} <span className="font-bold">€{quotedPrice?.toFixed(2)}</span> {t.bookingDetail.priceAdjustedTo} <span className="font-bold">€{finalPrice?.toFixed(2)}</span>.
+                  {' '}{t.bookingDetail.priceAdjustedAction}
                 </p>
               </div>
             </div>
@@ -364,13 +371,13 @@ export default function BookingPage() {
                 disabled={approvingPrice}
                 className="flex-1 bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {approvingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Approve €{finalPrice?.toFixed(2)}</>}
+                {approvingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.bookingDetail.approveBtn} €{finalPrice?.toFixed(2)}</>}
               </button>
               <button
                 onClick={() => setReportingIssue(true)}
                 className="px-4 py-3 border border-danger-edge text-danger rounded-input font-bold text-sm hover:bg-danger-surface transition-colors"
               >
-                Dispute
+                {t.bookingDetail.dispute}
               </button>
             </div>
           </div>
@@ -379,13 +386,13 @@ export default function BookingPage() {
         {priceAdjusted && priceApproved && (
           <div className="flex items-center gap-3 px-4 py-3 bg-trust-surface rounded-card border border-trust-edge">
             <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
-            <p className="text-sm font-medium text-trust">Final price approved. Thank you!</p>
+            <p className="text-sm font-medium text-trust">{t.bookingDetail.priceApprovedNotice}</p>
           </div>
         )}
 
         {/* Provider card */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Your Pro</p>
+          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.yourPro}</p>
           <div className="flex items-start gap-4 mb-4">
             <img
               src={provider?.user?.image || avatarUrl(provider?.user?.name, 150)}
@@ -397,7 +404,7 @@ export default function BookingPage() {
                 <span className="font-bold text-lg">{provider?.user?.name}</span>
                 {provider?.isVerified && (
                   <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[11px] font-bold uppercase">
-                    <ShieldCheck className="w-3 h-3" /> Verified
+                    <ShieldCheck className="w-3 h-3" /> {t.common.verified}
                   </span>
                 )}
               </div>
@@ -406,8 +413,8 @@ export default function BookingPage() {
                   <Star className="w-3 h-3 text-brand fill-current" />
                   <span className="font-bold text-ink">{provider?.ratingAvg?.toFixed(1)}</span>
                 </span>
-                <span>{provider?.completedJobs} jobs</span>
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{provider?.responseTime ?? 'Fast reply'}</span>
+                <span>{provider?.completedJobs} {t.meetPros.jobs}</span>
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{provider?.responseTime ?? t.bookingDetail.fastReply}</span>
               </div>
             </div>
           </div>
@@ -417,45 +424,45 @@ export default function BookingPage() {
                 if (provider?.phone) {
                   window.location.href = `tel:${provider.phone}`;
                 } else {
-                  alert('Call masking active. Your call will be connected securely through Aladdin.');
+                  alert(t.bookingDetail.callMasking);
                 }
               }}
               className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
             >
-              <Phone className="w-4 h-4" /> Call
+              <Phone className="w-4 h-4" /> {t.bookingDetail.call}
             </button>
             {chatUnlocked && (
               <button
                 onClick={() => setShowChat(true)}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
               >
-                <MessageSquare className="w-4 h-4" /> Message
+                <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
               </button>
             )}
             <Link
               href={`/providers/${provider?.id}`}
               className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
             >
-              Profile
+              {t.common.profile}
             </Link>
           </div>
         </div>
 
         {/* Booking details */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Booking Details</p>
+          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.bookingDetails}</p>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-ink-sub"><Calendar className="w-4 h-4" /> Date</span>
+              <span className="flex items-center gap-2 text-ink-sub"><Calendar className="w-4 h-4" /> {t.common.date}</span>
               <span className="font-semibold">{formatVilnius(booking.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-ink-sub"><Clock className="w-4 h-4" /> Time</span>
+              <span className="flex items-center gap-2 text-ink-sub"><Clock className="w-4 h-4" /> {t.common.time}</span>
               <span className="font-semibold">{formatVilnius(booking.scheduledAt, { hour: '2-digit', minute: '2-digit' })}</span>
             </div>
             {booking.quote?.request?.address && (
               <div className="flex items-start justify-between">
-                <span className="flex items-center gap-2 text-ink-sub"><MapPin className="w-4 h-4 shrink-0" /> Address</span>
+                <span className="flex items-center gap-2 text-ink-sub"><MapPin className="w-4 h-4 shrink-0" /> {t.common.address}</span>
                 <span className="font-semibold text-right max-w-[60%]">{booking.quote.request.address}</span>
               </div>
             )}
@@ -464,20 +471,20 @@ export default function BookingPage() {
 
         {/* Payment */}
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Payment</p>
+          <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.paymentTitle}</p>
           <div className="space-y-2 text-sm mb-4">
             {quotedPrice && quotedPrice !== booking.totalAmount && (
               <div className="flex justify-between text-ink-dim">
-                <span>Original quote</span>
+                <span>{t.bookingDetail.originalQuote}</span>
                 <span className="line-through">€{quotedPrice.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-ink-sub">Service</span>
+              <span className="text-ink-sub">{t.bookingDetail.service}</span>
               <span className="font-semibold">€{booking.totalAmount?.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-2 border-t border-border-dim">
-              <span className="font-bold">Total</span>
+              <span className="font-bold">{t.bookingDetail.total}</span>
               <span className="font-bold text-lg">€{booking.totalAmount?.toFixed(2)}</span>
             </div>
           </div>
@@ -488,10 +495,10 @@ export default function BookingPage() {
             // special cases: a completed booking without a settled payment
             // reads as Processing, and no payment record at all reads as
             // awaiting completion.
-            const mapped = paymentStatus(payStatus);
+            const mapped = payStatus ? localizedStatus(t, 'payment', payStatus) : null;
             const info = bkCompleted && (!mapped || payStatus === 'PENDING')
-              ? { label: 'Processing', cls: 'bg-info-surface text-info' }
-              : mapped ?? { label: 'Awaiting completion', cls: 'bg-surface-alt text-ink-sub' };
+              ? { label: t.statuses.payment.PROCESSING, cls: 'bg-info-surface text-info' }
+              : mapped ?? { label: t.bookingDetail.awaitingCompletion, cls: 'bg-surface-alt text-ink-sub' };
             const label = info.label;
             const style = info.cls;
             return (
@@ -505,32 +512,32 @@ export default function BookingPage() {
                 </div>
                 {payStatus === 'DEPOSIT_HELD' && (
                   <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
-                    €{booking.payment?.depositAmount?.toFixed(2)} deposit confirmed. Remaining balance collected after job completion.
+                    €{booking.payment?.depositAmount?.toFixed(2)} {t.bookingDetail.depositConfirmedSuffix}
                   </p>
                 )}
                 {(payStatus === 'PROCESSING' || (bkCompleted && !payStatus)) && (
                   <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
-                    Payment is confirmed after job completion. You&apos;ll receive a receipt by email within 24 hours.
+                    {t.bookingDetail.processingNote}
                   </p>
                 )}
               </div>
             );
           })()}
           <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim text-xs text-ink-sub leading-relaxed">
-            <span className="font-bold text-ink-sub">Cancellation policy: </span>
-            Free cancellation more than 24 hours before the scheduled time. Cancellations within 24 hours are non-refundable.
+            <span className="font-bold text-ink-sub">{t.bookingDetail.cancellationPolicyLabel} </span>
+            {t.bookingDetail.cancellationPolicyText}
           </div>
         </div>
 
         {/* Review section */}
         {isCompleted && (!priceAdjusted || priceApproved) && (
           <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">Rate your experience</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.rateExperience}</p>
             {booking.review || reviewSubmitted ? (
               <div className="flex flex-col items-center py-4 text-center">
                 <CheckCircle2 className="w-10 h-10 text-trust mb-2" />
-                <p className="font-bold">Review submitted!</p>
-                <p className="text-sm text-ink-dim mt-1">Thank you for your feedback.</p>
+                <p className="font-bold">{t.bookingDetail.reviewSubmittedTitle}</p>
+                <p className="text-sm text-ink-dim mt-1">{t.bookingDetail.thanksFeedback}</p>
                 {booking.review && (
                   <div className="flex items-center gap-1 mt-3">
                     {[1,2,3,4,5].map(i => (
@@ -556,7 +563,7 @@ export default function BookingPage() {
                   value={review.comment}
                   onChange={e => setReview(r => ({ ...r, comment: e.target.value }))}
                   rows={3}
-                  placeholder="Tell others about your experience (optional)..."
+                  placeholder={t.bookingDetail.reviewPlaceholder}
                   className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand resize-none"
                 />
                 <button
@@ -564,7 +571,7 @@ export default function BookingPage() {
                   disabled={!review.rating || submittingReview}
                   className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
                 >
-                  {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Star className="w-4 h-4" /> Submit Review</>}
+                  {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Star className="w-4 h-4" /> {t.bookingDetail.submitReview}</>}
                 </button>
               </div>
             )}
@@ -577,13 +584,13 @@ export default function BookingPage() {
             {reportingIssue ? (
               <div>
                 <p className="font-bold mb-3 flex items-center gap-2">
-                  <LifeBuoy className="w-5 h-5 text-danger" /> Report an issue
+                  <LifeBuoy className="w-5 h-5 text-danger" /> {t.bookingDetail.reportIssue}
                 </p>
                 <textarea
                   value={issueText}
                   onChange={e => setIssueText(e.target.value)}
                   rows={3}
-                  placeholder="Describe the issue (e.g. price dispute, no-show, quality concern)..."
+                  placeholder={t.bookingDetail.issuePlaceholder}
                   className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand resize-none mb-3"
                 />
                 <div className="flex gap-3">
@@ -591,14 +598,14 @@ export default function BookingPage() {
                     onClick={() => { setReportingIssue(false); setIssueText(''); }}
                     className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim transition-colors"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                   <button
                     onClick={submitIssue}
                     disabled={!issueText.trim() || submittingIssue}
                     className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 transition-colors disabled:opacity-40 flex items-center justify-center"
                   >
-                    {submittingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Report'}
+                    {submittingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : t.bookingDetail.submitReport}
                   </button>
                 </div>
               </div>
@@ -607,15 +614,15 @@ export default function BookingPage() {
                 <div className="flex items-center gap-3">
                   <LifeBuoy className="w-5 h-5 text-ink-dim" />
                   <div>
-                    <p className="font-bold text-sm">Need help?</p>
-                    <p className="text-xs text-ink-dim">Contact support or report an issue</p>
+                    <p className="font-bold text-sm">{t.bookingDetail.needHelp}</p>
+                    <p className="text-xs text-ink-dim">{t.bookingDetail.contactSupport}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setReportingIssue(true)}
                   className="flex items-center gap-1 text-sm font-bold text-ink hover:underline"
                 >
-                  Contact <ChevronRight className="w-4 h-4" />
+                  {t.bookingDetail.contact} <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -627,21 +634,21 @@ export default function BookingPage() {
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
           <div className="bg-white rounded-panel p-6 w-full max-w-sm">
-            <h2 className="font-bold text-lg mb-2">Cancel booking?</h2>
-            <p className="text-sm text-ink-sub mb-6">This action cannot be undone. Cancellation fees may apply if within 24 hours of the appointment.</p>
+            <h2 className="font-bold text-lg mb-2">{t.bookingDetail.cancelTitle}</h2>
+            <p className="text-sm text-ink-sub mb-6">{t.bookingDetail.cancelDesc}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowCancelConfirm(false)}
                 className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
               >
-                Keep booking
+                {t.bookingDetail.keepBooking}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={actioning}
                 className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Yes, cancel'}
+                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : t.bookingDetail.yesCancel}
               </button>
             </div>
           </div>
@@ -658,7 +665,7 @@ export default function BookingPage() {
               disabled={actioning}
               className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-danger-edge hover:text-danger transition-all disabled:opacity-50"
             >
-              Cancel
+              {t.common.cancel}
             </button>
             {chatUnlocked && (
               <button
@@ -666,7 +673,7 @@ export default function BookingPage() {
                 disabled={actioning}
                 className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Mark Complete</>}
+                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.bookingDetail.markComplete}</>}
               </button>
             )}
           </div>

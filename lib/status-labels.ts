@@ -4,6 +4,8 @@
 // "Booked" depending on the surface. Display-layer only; enum values in the
 // DB are untouched. Pure module — safe for client components.
 
+import type { Dictionary } from '@/lib/i18n/types';
+
 export type StatusInfo = { label: string; cls: string };
 
 const FALLBACK: StatusInfo = { label: '', cls: 'bg-surface-alt text-ink-sub' };
@@ -44,4 +46,24 @@ export function bookingStatus(status: string): StatusInfo {
 export function paymentStatus(status: string | undefined | null): StatusInfo | null {
   if (!status) return null;
   return PAYMENT_STATUS[status] ?? { ...FALLBACK, label: status };
+}
+
+// Locale-aware variant: returns the dictionary translation for known statuses
+// while keeping the canonical badge classes. Falls back to the English label
+// already defined above for unknown/unmapped statuses. Enum values and class
+// strings are untouched — display layer only.
+export function localizedStatus(
+  dict: Dictionary,
+  kind: 'request' | 'booking' | 'payment',
+  status: string,
+): StatusInfo {
+  const base =
+    kind === 'request'
+      ? requestStatus(status)
+      : kind === 'booking'
+      ? bookingStatus(status)
+      : paymentStatus(status) ?? { ...FALLBACK, label: status };
+  const section = dict.statuses[kind] as Record<string, string>;
+  const label = section[status];
+  return label ? { label, cls: base.cls } : base;
 }

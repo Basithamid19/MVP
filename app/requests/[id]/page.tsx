@@ -12,19 +12,24 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
-import { requestStatus } from '@/lib/status-labels';
+import { localizedStatus } from '@/lib/status-labels';
+import { useTranslation } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
 
-function expiresLabel(expiresAt?: string | null): string | null {
+function expiresLabel(
+  expiresAt: string | null | undefined,
+  s: Dictionary['quoteInbox'],
+): string | null {
   if (!expiresAt) return null;
   const ms = new Date(expiresAt).getTime() - Date.now();
-  if (ms <= 0) return 'Expired';
+  if (ms <= 0) return s.expired;
   const hours = Math.floor(ms / 3600000);
-  if (hours < 24) return `Expires in ${Math.max(1, hours)}h`;
-  return `Expires in ${Math.floor(hours / 24)}d`;
+  if (hours < 24) return `${s.expiresIn} ${Math.max(1, hours)}${s.hoursShort}`;
+  return `${s.expiresIn} ${Math.floor(hours / 24)}${s.daysShort}`;
 }
 
-function etaFromResponse(responseTime: string | undefined): string {
-  if (!responseTime) return 'Today';
+function etaFromResponse(responseTime: string | undefined, todayLabel: string): string {
+  if (!responseTime) return todayLabel;
   if (responseTime.includes('min') || responseTime.includes('hour') || responseTime.includes('hr')) {
     return responseTime;
   }
@@ -34,6 +39,7 @@ function etaFromResponse(responseTime: string | undefined): string {
 export default function QuoteInboxPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const t = useTranslation();
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
@@ -72,7 +78,7 @@ export default function QuoteInboxPage() {
       if (!res.ok) {
         // Surface the server's reason (availability conflict, request already
         // booked, quote expired…) — this used to be silently discarded.
-        setActionError(data.error ?? 'Could not update the quote. Please try again.');
+        setActionError(data.error ?? t.quoteInbox.updateFailed);
         load();
         return;
       }
@@ -82,7 +88,7 @@ export default function QuoteInboxPage() {
         load();
       }
     } catch {
-      setActionError('Network error. Please check your connection and try again.');
+      setActionError(t.common.networkError);
     } finally {
       setActioning(null);
     }
@@ -99,13 +105,13 @@ export default function QuoteInboxPage() {
   if (!request) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-center p-4">
-        <p className="text-xl font-bold mb-2">Request not found</p>
-        <Link href="/dashboard" className="text-brand font-bold hover:underline">Back to dashboard</Link>
+        <p className="text-xl font-bold mb-2">{t.quoteInbox.notFound}</p>
+        <Link href="/dashboard" className="text-brand font-bold hover:underline">{t.common.backToDashboard}</Link>
       </div>
     );
   }
 
-  const status = requestStatus(request.status);
+  const status = localizedStatus(t, 'request', request.status);
   const isExpired = (q: any) => q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
   const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && !isExpired(q));
   const expiredCount = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && isExpired(q)).length;
@@ -123,7 +129,7 @@ export default function QuoteInboxPage() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-base sm:text-lg leading-tight">Quote Inbox</h1>
+          <h1 className="font-bold text-base sm:text-lg leading-tight">{t.quoteInbox.title}</h1>
           <p className="text-xs text-ink-dim">{request.category?.name}</p>
         </div>
         <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${status.cls}`}>{status.label}</span>
@@ -156,7 +162,7 @@ export default function QuoteInboxPage() {
                 </span>
                 {request.isUrgent && (
                   <span className="px-2.5 py-1 bg-caution-surface text-caution text-[11px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> Urgent
+                    <AlertCircle className="w-3 h-3" /> {t.hero.urgent}
                   </span>
                 )}
               </div>
@@ -175,7 +181,7 @@ export default function QuoteInboxPage() {
           <div className="flex flex-wrap gap-3 text-xs text-ink-dim font-medium pt-3 border-t border-border-dim">
             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{request.address}</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{new Date(request.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-            {request.budget && <span className="flex items-center gap-1">Budget: €{request.budget}</span>}
+            {request.budget && <span className="flex items-center gap-1">{t.quoteInbox.budgetLabel} €{request.budget}</span>}
           </div>
         </div>
 
@@ -185,9 +191,9 @@ export default function QuoteInboxPage() {
             <TrendingDown className="w-5 h-5 text-trust shrink-0" />
             <div>
               <p className="text-sm font-bold text-ink">
-                Price range: <span className="text-trust">€{minPrice.toFixed(0)}</span> – <span className="text-ink-sub">€{maxPrice?.toFixed(0)}</span>
+                {t.quoteInbox.priceRangeLabel} <span className="text-trust">€{minPrice.toFixed(0)}</span> – <span className="text-ink-sub">€{maxPrice?.toFixed(0)}</span>
               </p>
-              <p className="text-xs text-ink-dim mt-0.5">Pick the quote that fits your budget — all pros are verified.</p>
+              <p className="text-xs text-ink-dim mt-0.5">{t.quoteInbox.priceRangeHint}</p>
             </div>
           </div>
         )}
@@ -197,24 +203,24 @@ export default function QuoteInboxPage() {
           <div className="bg-brand text-white rounded-2xl p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-2.5">
               <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
-              <span className="font-bold text-sm sm:text-base">Quote accepted — booking confirmed!</span>
+              <span className="font-bold text-sm sm:text-base">{t.quoteInbox.acceptedTitle}</span>
             </div>
             <p className="text-sm text-white/80 mb-1.5">
               {acceptedQuote.provider?.user?.name} · €{acceptedQuote.price?.toFixed(2)}
             </p>
-            <p className="text-xs text-white/60 mb-4 leading-relaxed">Your pro will be in touch to confirm the details.</p>
+            <p className="text-xs text-white/60 mb-4 leading-relaxed">{t.quoteInbox.acceptedHint}</p>
             <div className="flex flex-col sm:flex-row gap-2.5">
               <Link
                 href={acceptedQuote.booking?.id ? `/bookings/${acceptedQuote.booking.id}` : '/bookings'}
                 className="flex-1 flex items-center justify-center gap-2 bg-white text-ink px-5 py-3 rounded-2xl text-sm font-bold hover:bg-surface-alt transition-colors"
               >
-                View Booking <ChevronRight className="w-4 h-4" />
+                {t.quoteInbox.viewBooking} <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/dashboard"
                 className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white/15 text-white px-5 py-3 sm:py-2.5 rounded-2xl text-sm font-medium hover:bg-white/25 transition-colors"
               >
-                Dashboard
+                {t.nav.dashboard}
               </Link>
             </div>
           </div>
@@ -229,35 +235,35 @@ export default function QuoteInboxPage() {
             {request.targetProviderId ? (
               <>
                 <p className="font-bold text-base mb-1.5">
-                  Waiting for {targetProviderName ?? 'your chosen pro'} to respond
+                  {t.quoteInbox.waitingForPrefix} {targetProviderName ?? t.wizard.chosenProFallback} {t.quoteInbox.waitingForSuffix}
                 </p>
                 <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">
-                  You sent this request directly to one pro. Most respond within 1 hour.
+                  {t.quoteInbox.directWaitingDesc}
                 </p>
                 <p className="text-xs text-ink-dim mt-3 max-w-xs mx-auto">
-                  Not hearing back?{' '}
+                  {t.quoteInbox.notHearingBack}{' '}
                   <Link
                     href={`/requests/new?category=${request.category?.slug ?? ''}`}
                     className="font-semibold text-brand hover:underline"
                   >
-                    Post an open request
+                    {t.quoteInbox.postOpenRequest}
                   </Link>{' '}
-                  to reach all {request.category?.name?.toLowerCase() ?? ''} pros.
+                  {t.quoteInbox.toReachAll} {request.category?.name?.toLowerCase() ?? ''} {t.quoteInbox.prosSuffix}
                 </p>
               </>
             ) : (
               <>
-                <p className="font-bold text-base mb-1.5">Waiting for quotes</p>
-                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">Verified pros are reviewing your request. Most respond within 1 hour.</p>
+                <p className="font-bold text-base mb-1.5">{t.quoteInbox.waitingTitle}</p>
+                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">{t.quoteInbox.waitingDesc}</p>
               </>
             )}
             {expiredCount > 0 && (
               <p className="text-xs text-ink-dim mt-3">
-                {expiredCount} earlier quote{expiredCount > 1 ? 's' : ''} expired before you responded.
+                {expiredCount} {expiredCount > 1 ? t.quoteInbox.expiredPlural : t.quoteInbox.expiredSingular}
               </p>
             )}
             <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-xl px-4 py-2.5 transition-colors">
-              <RefreshCcw className="w-3.5 h-3.5" /> Check for updates
+              <RefreshCcw className="w-3.5 h-3.5" /> {t.quoteInbox.checkForUpdates}
             </button>
           </div>
         )}
@@ -265,20 +271,20 @@ export default function QuoteInboxPage() {
         {/* Quotes list */}
         {!acceptedQuote && pendingQuotes.length > 0 && (
           <div>
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{pendingQuotes.length} quote{pendingQuotes.length > 1 ? 's' : ''} received</p>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{pendingQuotes.length} {pendingQuotes.length > 1 ? t.quoteInbox.quotesReceived : t.quoteInbox.quoteReceived}</p>
             <div className="space-y-4">
               {pendingQuotes
                 .slice()
                 .sort((a: any, b: any) => (b.provider?.ratingAvg ?? 0) - (a.provider?.ratingAvg ?? 0))
                 .map((quote: any, i: number) => {
                   const p = quote.provider;
-                  const eta = etaFromResponse(p?.responseTime);
+                  const eta = etaFromResponse(p?.responseTime, t.quoteInbox.today);
                   return (
                     <div key={quote.id} className={`bg-white rounded-2xl border p-4 sm:p-6 shadow-sm ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star className="w-3.5 h-3.5 text-brand fill-current" />
-                          <span className="text-[11px] font-bold text-brand uppercase tracking-widest">Best match</span>
+                          <span className="text-[11px] font-bold text-brand uppercase tracking-widest">{t.quoteInbox.bestMatch}</span>
                         </div>
                       )}
                       <div className="flex items-start gap-4 mb-4">
@@ -292,7 +298,7 @@ export default function QuoteInboxPage() {
                             <span className="font-bold">{p?.user?.name}</span>
                             {p?.isVerified && (
                               <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide">
-                                <ShieldCheck className="w-3 h-3" /> Verified
+                                <ShieldCheck className="w-3 h-3" /> {t.common.verified}
                               </span>
                             )}
                           </div>
@@ -301,9 +307,9 @@ export default function QuoteInboxPage() {
                               <Star className="w-3 h-3 text-brand fill-current" />
                               <span className="font-bold text-ink">{p?.ratingAvg?.toFixed(1)}</span>
                             </span>
-                            <span>{p?.completedJobs} jobs</span>
+                            <span>{p?.completedJobs} {t.meetPros.jobs}</span>
                             <span className="flex items-center gap-1 text-trust font-bold">
-                              <Timer className="w-3 h-3" /> ETA: {eta}
+                              <Timer className="w-3 h-3" /> {t.quoteInbox.etaLabel} {eta}
                             </span>
                           </div>
                           <p className="text-xs text-ink-dim mt-1 truncate">{p?.categories?.map((c: any) => c.name).join(', ')}</p>
@@ -313,17 +319,17 @@ export default function QuoteInboxPage() {
                           {quote.estimatedHours && (
                             <p className="text-xs text-ink-dim mt-0.5">~{quote.estimatedHours}h</p>
                           )}
-                          {expiresLabel(quote.expiresAt) && (
-                            <p className="text-[11px] text-caution mt-0.5">{expiresLabel(quote.expiresAt)}</p>
+                          {expiresLabel(quote.expiresAt, t.quoteInbox) && (
+                            <p className="text-[11px] text-caution mt-0.5">{expiresLabel(quote.expiresAt, t.quoteInbox)}</p>
                           )}
                           {minPrice !== null && maxPrice !== null && maxPrice > minPrice && (
                             <p className="text-[11px] text-ink-dim mt-0.5">
                               {quote.price === minPrice ? (
-                                <span className="text-trust font-bold">Lowest</span>
+                                <span className="text-trust font-bold">{t.quoteInbox.lowest}</span>
                               ) : quote.price === maxPrice ? (
-                                <span className="text-ink-sub">Highest</span>
+                                <span className="text-ink-sub">{t.quoteInbox.highest}</span>
                               ) : (
-                                <span className="text-ink-dim">Mid range</span>
+                                <span className="text-ink-dim">{t.quoteInbox.midRange}</span>
                               )}
                             </p>
                           )}
@@ -340,14 +346,14 @@ export default function QuoteInboxPage() {
                           disabled={actioning === quote.id}
                           className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-2xl font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
                         >
-                          {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> Accept Quote</>}
+                          {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.quoteInbox.acceptQuote}</>}
                         </button>
                         <div className="flex gap-2">
                           <Link
                             href={`/providers/${p?.id}`}
                             className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 border border-border-dim rounded-2xl font-bold text-sm text-ink hover:bg-surface-alt transition-colors"
                           >
-                            Profile
+                            {t.common.profile}
                           </Link>
                           {/* Chat entry removed: messaging unlocks only after
                               the booking deposit is paid. */}
@@ -376,26 +382,26 @@ export default function QuoteInboxPage() {
         return (
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
             <div className="bg-white rounded-panel p-6 w-full max-w-sm">
-              <h2 className="font-bold text-lg mb-2">Accept this quote?</h2>
+              <h2 className="font-bold text-lg mb-2">{t.quoteInbox.confirmTitle}</h2>
               <p className="text-sm text-ink-sub mb-1.5">
                 {q?.provider?.user?.name} · <span className="font-bold text-ink">€{q?.price?.toFixed(2)}</span>
               </p>
               <p className="text-sm text-ink-sub mb-6">
-                A booking will be created and you&apos;ll pay a 20% deposit to confirm it.
-                {othersCount > 0 && ` Your ${othersCount} other quote${othersCount > 1 ? 's' : ''} will be declined.`}
+                {t.quoteInbox.confirmDeposit}
+                {othersCount > 0 && ` ${t.quoteInbox.othersPrefix} ${othersCount} ${othersCount > 1 ? t.quoteInbox.othersDeclinedPlural : t.quoteInbox.otherDeclinedSingular}`}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmAcceptId(null)}
                   className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
                 >
-                  Back
+                  {t.common.back}
                 </button>
                 <button
                   onClick={() => { const id = confirmAcceptId; setConfirmAcceptId(null); handleQuote(id, 'ACCEPTED'); }}
                   className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="w-4 h-4" /> Accept
+                  <CheckCircle2 className="w-4 h-4" /> {t.quoteInbox.accept}
                 </button>
               </div>
             </div>

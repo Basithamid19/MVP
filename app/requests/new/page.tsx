@@ -12,6 +12,7 @@ import {
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { SUBCATEGORIES } from '@/lib/subcategories';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { useTranslation } from '@/lib/i18n';
 
 const ICON_MAP: Record<string, React.ElementType> = {
   plumber:              Wrench,
@@ -22,18 +23,10 @@ const ICON_MAP: Record<string, React.ElementType> = {
   'moving-help':        Truck,
 };
 
-const STEPS = ['Service', 'Type', 'Details', 'Schedule', 'Review'];
-
-const TIME_PREFS = [
-  { id: 'morning',   label: 'Morning',   sub: '8am – 12pm' },
-  { id: 'afternoon', label: 'Afternoon', sub: '12pm – 5pm' },
-  { id: 'evening',   label: 'Evening',   sub: '5pm – 9pm' },
-  { id: 'flexible',  label: 'Flexible',  sub: 'Any time' },
-];
-
 function ReviewRow({
   label, value, onEdit, multiline,
 }: { label: string; value: string; onEdit: () => void; multiline?: boolean }) {
+  const t = useTranslation();
   return (
     <div className="flex items-start justify-between gap-4 py-3.5">
       <div className="flex-1 min-w-0">
@@ -44,7 +37,7 @@ function ReviewRow({
         onClick={onEdit}
         className="text-xs font-bold text-brand hover:text-brand-dark transition-colors shrink-0 mt-0.5 px-2 py-0.5 rounded-md hover:bg-brand-muted"
       >
-        Edit
+        {t.common.edit}
       </button>
     </div>
   );
@@ -55,6 +48,22 @@ function NewRequestContent() {
   const router = useRouter();
   const pathname = usePathname();
   const { status: authStatus } = useSession();
+  const t = useTranslation();
+
+  const STEPS = [
+    t.wizard.stepService,
+    t.wizard.stepType,
+    t.wizard.stepDetails,
+    t.wizard.stepSchedule,
+    t.wizard.stepReview,
+  ];
+
+  const TIME_PREFS = [
+    { id: 'morning',   label: t.wizard.timeMorning,   sub: t.wizard.timeMorningSub },
+    { id: 'afternoon', label: t.wizard.timeAfternoon, sub: t.wizard.timeAfternoonSub },
+    { id: 'evening',   label: t.wizard.timeEvening,   sub: t.wizard.timeEveningSub },
+    { id: 'flexible',  label: t.wizard.timeFlexible,  sub: t.wizard.timeFlexibleSub },
+  ];
 
   // Posting requires an account — redirect to login up front instead of
   // letting a guest fill all five steps and hit a silent 401 on submit.
@@ -134,11 +143,11 @@ function NewRequestContent() {
           // Drop the tile instead of leaving a spinner overlay that never
           // resolves (p.url stays unset forever on a failed upload).
           setPhotos(prev => prev.filter(p => p.preview !== preview));
-          alert('Photo upload failed. Please try again.');
+          alert(t.wizard.uploadFailed);
         }
       } catch {
         setPhotos(prev => prev.filter(p => p.preview !== preview));
-        alert('Photo upload failed. Please check your connection and try again.');
+        alert(t.wizard.uploadFailedNetwork);
       }
     }
     setUploadingPhoto(false);
@@ -209,10 +218,10 @@ function NewRequestContent() {
         return;
       }
       const d = await res.json().catch(() => ({} as any));
-      setSubmitError(d.error ?? 'Could not post your request. Please try again.');
+      setSubmitError(d.error ?? t.wizard.submitFailed);
     } catch (err) {
       console.error(err);
-      setSubmitError('Network error. Please check your connection and try again.');
+      setSubmitError(t.common.networkError);
     } finally {
       setLoading(false);
     }
@@ -227,7 +236,7 @@ function NewRequestContent() {
           <button
             onClick={back}
             className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0"
-            aria-label="Go back"
+            aria-label={t.common.back}
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -267,8 +276,8 @@ function NewRequestContent() {
         {/* ── Step 1: Category ── */}
         {step === 1 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">What do you need help with?</h1>
-            <p className="text-ink-sub text-sm mb-7">Choose a service to get matched with local pros.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">{t.wizard.step1Title}</h1>
+            <p className="text-ink-sub text-sm mb-7">{t.wizard.step1Subtitle}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {(providerCatSlugs.length
                 ? categories.filter(c => providerCatSlugs.includes(c.slug))
@@ -305,9 +314,9 @@ function NewRequestContent() {
           return (
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">
-                {catData?.description ?? 'What type of work do you need?'}
+                {catData?.description ?? t.wizard.step2Fallback}
               </h1>
-              <p className="text-ink-sub text-sm mb-6">Pick the closest match — or skip and describe it yourself.</p>
+              <p className="text-ink-sub text-sm mb-6">{t.wizard.step2Subtitle}</p>
               <div className="grid grid-cols-2 gap-2.5 mb-5">
                 {(catData?.items ?? []).map((item) => {
                   const Icon = item.Icon;
@@ -343,7 +352,7 @@ function NewRequestContent() {
                 onClick={() => setStep(3)}
                 className="w-full py-3.5 rounded-2xl border border-border-dim bg-white text-ink-sub text-sm font-medium hover:bg-surface-alt hover:text-ink transition-all flex items-center justify-center gap-2"
               >
-                Something else
+                {t.wizard.somethingElse}
                 <ArrowRight className="w-4 h-4 text-ink-dim" />
               </button>
             </div>
@@ -353,24 +362,24 @@ function NewRequestContent() {
         {/* ── Step 3: Details ── */}
         {step === 3 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">Describe the job</h1>
-            <p className="text-ink-sub text-sm mb-6">More detail means better, faster quotes from pros.</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">{t.wizard.step3Title}</h1>
+            <p className="text-ink-sub text-sm mb-6">{t.wizard.step3Subtitle}</p>
             <div className="space-y-5">
 
               {/* Textarea */}
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
-                  What needs to be done?
+                  {t.wizard.descLabel}
                 </label>
                 <textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={4}
-                  placeholder={`e.g. "Leaking pipe under kitchen sink, dripping for 2 days. Shutoff valve still works. 3rd floor apartment."`}
+                  placeholder={t.wizard.descPlaceholder}
                   className="w-full p-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-base leading-relaxed"
                 />
                 <div className="flex justify-between items-center mt-1.5">
-                  <p className="text-xs text-ink-dim">{form.description.length} characters — minimum 10, more detail gets better quotes</p>
+                  <p className="text-xs text-ink-dim">{form.description.length} {t.wizard.charHint}</p>
                   {form.description.length >= 10 && <CheckCircle2 className="w-4 h-4 text-trust shrink-0" />}
                 </div>
               </div>
@@ -378,7 +387,7 @@ function NewRequestContent() {
               {/* Photo upload */}
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
-                  Photos <span className="normal-case font-normal text-ink-dim">(optional)</span>
+                  {t.wizard.photosLabel} <span className="normal-case font-normal text-ink-dim">{t.wizard.optional}</span>
                 </label>
                 <input
                   ref={fileInputRef}
@@ -413,11 +422,11 @@ function NewRequestContent() {
                     className="w-[76px] h-[76px] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand hover:bg-brand-muted/30 transition-all text-ink-dim hover:text-brand disabled:opacity-50"
                   >
                     <ImagePlus className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">Add photo</span>
+                    <span className="text-[10px] font-bold">{t.wizard.addPhoto}</span>
                   </button>
                 </div>
                 {photos.length > 0 && (
-                  <p className="text-xs text-ink-dim mt-2">{photos.length} photo{photos.length > 1 ? 's' : ''} attached</p>
+                  <p className="text-xs text-ink-dim mt-2">{photos.length} {photos.length > 1 ? t.wizard.photosAttached : t.wizard.photoAttached}</p>
                 )}
               </div>
 
@@ -438,9 +447,9 @@ function NewRequestContent() {
                     <Zap className={`w-4 h-4 ${form.isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
                   </div>
                   <div>
-                    <p className={`font-bold text-sm ${form.isUrgent ? 'text-orange-900' : 'text-ink'}`}>Mark as urgent</p>
+                    <p className={`font-bold text-sm ${form.isUrgent ? 'text-orange-900' : 'text-ink'}`}>{t.wizard.markUrgent}</p>
                     <p className={`text-xs mt-0.5 ${form.isUrgent ? 'text-caution' : 'text-ink-sub'}`}>
-                      {form.isUrgent ? 'Pros get instant notification to respond faster.' : 'Pros respond within a few hours.'}
+                      {form.isUrgent ? t.wizard.urgentOn : t.wizard.urgentOff}
                     </p>
                   </div>
                 </div>
@@ -456,21 +465,21 @@ function NewRequestContent() {
         {/* ── Step 4: Schedule ── */}
         {step === 4 && (
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">Location & schedule</h1>
-            <p className="text-ink-sub text-sm mb-6">Where is the job and when do you need it done?</p>
+            <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">{t.wizard.step4Title}</h1>
+            <p className="text-ink-sub text-sm mb-6">{t.wizard.step4Subtitle}</p>
             <div className="space-y-5">
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Address in Vilnius</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.addressLabel}</label>
                 <AddressAutocomplete
                   value={form.address}
                   onChange={v => setForm(f => ({ ...f, address: v }))}
-                  placeholder="Street name, house number, apartment"
+                  placeholder={t.wizard.addressPlaceholder}
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Preferred date</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.dateLabel}</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
                   <input
@@ -484,20 +493,20 @@ function NewRequestContent() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Time of day</label>
+                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.timeLabel}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {TIME_PREFS.map(t => (
+                  {TIME_PREFS.map(pref => (
                     <button
-                      key={t.id}
-                      onClick={() => setForm(f => ({ ...f, timePreference: t.id }))}
+                      key={pref.id}
+                      onClick={() => setForm(f => ({ ...f, timePreference: pref.id }))}
                       className={`py-3.5 px-2 rounded-xl border-2 text-center transition-all active:scale-[0.97] ${
-                        form.timePreference === t.id
+                        form.timePreference === pref.id
                           ? 'border-brand bg-brand shadow-sm'
                           : 'border-border-dim bg-white shadow-sm hover:border-brand/40'
                       }`}
                     >
-                      <p className={`font-bold text-xs ${form.timePreference === t.id ? 'text-white' : 'text-ink'}`}>{t.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${form.timePreference === t.id ? 'text-white/75' : 'text-ink-dim'}`}>{t.sub}</p>
+                      <p className={`font-bold text-xs ${form.timePreference === pref.id ? 'text-white' : 'text-ink'}`}>{pref.label}</p>
+                      <p className={`text-[10px] mt-0.5 ${form.timePreference === pref.id ? 'text-white/75' : 'text-ink-dim'}`}>{pref.sub}</p>
                     </button>
                   ))}
                 </div>
@@ -505,7 +514,7 @@ function NewRequestContent() {
 
               <div>
                 <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
-                  Budget estimate <span className="normal-case font-normal">(optional)</span>
+                  {t.wizard.budgetLabel} <span className="normal-case font-normal">{t.wizard.optional}</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-base pointer-events-none">€</span>
@@ -513,11 +522,11 @@ function NewRequestContent() {
                     type="number"
                     value={form.budget}
                     onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
-                    placeholder="e.g. 80"
+                    placeholder={t.wizard.budgetPlaceholder}
                     className="w-full pl-10 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
                   />
                 </div>
-                <p className="text-xs text-ink-dim mt-1.5">Helps pros calibrate their quotes. You&apos;re not locked in.</p>
+                <p className="text-xs text-ink-dim mt-1.5">{t.wizard.budgetHint}</p>
               </div>
             </div>
           </div>
@@ -529,12 +538,12 @@ function NewRequestContent() {
             {/* Premium heading with trust signal */}
             <div className="flex items-center gap-2.5 mb-1">
               <CheckCircle2 className="w-6 h-6 text-brand shrink-0" />
-              <h1 className="text-2xl font-bold tracking-tight text-ink">Review your request</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-ink">{t.wizard.step5Title}</h1>
             </div>
             <p className="text-ink-sub text-sm mb-6 pl-8">
               {targetProviderId
-                ? 'Looks good? This request goes directly to your chosen pro.'
-                : 'Looks good? Post it and get quotes from local pros.'}
+                ? t.wizard.step5SubtitleDirect
+                : t.wizard.step5SubtitleOpen}
             </p>
 
             {/* Direct-request chip */}
@@ -542,7 +551,7 @@ function NewRequestContent() {
               <div className="inline-flex items-center gap-2 px-3.5 py-2 mb-4 bg-brand-muted rounded-full">
                 <Send className="w-3.5 h-3.5 text-brand-dark" />
                 <span className="text-xs font-bold text-brand-dark">
-                  To: {targetProviderName ?? 'your chosen pro'} only
+                  {t.wizard.toPrefix} {targetProviderName ?? t.wizard.chosenProFallback} {t.wizard.toSuffix}
                 </span>
               </div>
             )}
@@ -558,35 +567,35 @@ function NewRequestContent() {
                   onClick={() => setStep(1)}
                   className="text-xs font-bold text-brand hover:text-brand-dark px-2 py-0.5 rounded-md hover:bg-brand-muted transition-all"
                 >
-                  Change
+                  {t.wizard.change}
                 </button>
               </div>
 
               {/* Review rows */}
               <div className="px-5 divide-y divide-border-dim">
-                <ReviewRow label="Description" value={form.description} onEdit={() => setStep(3)} multiline />
+                <ReviewRow label={t.wizard.reviewDescription} value={form.description} onEdit={() => setStep(3)} multiline />
                 {form.isUrgent && (
                   <div className="py-3.5 flex items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-caution-surface text-caution text-xs font-bold rounded-full">
-                      <Zap className="w-3 h-3" /> Urgent
+                      <Zap className="w-3 h-3" /> {t.hero.urgent}
                     </span>
                   </div>
                 )}
-                <ReviewRow label="Address" value={form.address} onEdit={() => setStep(4)} />
+                <ReviewRow label={t.common.address} value={form.address} onEdit={() => setStep(4)} />
                 <ReviewRow
-                  label="Date"
+                  label={t.common.date}
                   value={new Date(form.dateWindow).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
                   onEdit={() => setStep(4)}
                 />
                 <ReviewRow
-                  label="Time"
-                  value={TIME_PREFS.find(t => t.id === form.timePreference)?.label || 'Flexible'}
+                  label={t.common.time}
+                  value={TIME_PREFS.find(p => p.id === form.timePreference)?.label || t.wizard.timeFlexible}
                   onEdit={() => setStep(4)}
                 />
-                {form.budget && <ReviewRow label="Budget" value={`€${form.budget}`} onEdit={() => setStep(4)} />}
+                {form.budget && <ReviewRow label={t.wizard.reviewBudget} value={`€${form.budget}`} onEdit={() => setStep(4)} />}
                 {photos.length > 0 && (
                   <div className="py-3.5">
-                    <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">Photos</p>
+                    <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">{t.wizard.reviewPhotos}</p>
                     <div className="flex gap-2 flex-wrap">
                       {photos.map(p => (
                         <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-xl object-cover border border-border-dim" />
@@ -603,8 +612,8 @@ function NewRequestContent() {
                 <Zap className="w-4 h-4 text-brand" />
               </div>
               <p className="text-sm text-ink-sub leading-relaxed">
-                Verified local pros will review and send quotes. Most requests get a response within{' '}
-                <span className="font-bold text-ink">1 hour</span>.
+                {t.wizard.calloutPrefix}{' '}
+                <span className="font-bold text-ink">{t.wizard.calloutBold}</span>.
               </p>
             </div>
           </div>
@@ -624,7 +633,7 @@ function NewRequestContent() {
 
           {/* Step indicator */}
           <p className="text-center text-[11px] font-semibold text-ink-dim mb-2.5 tracking-wide">
-            Step {step} of {STEPS.length}
+            {t.wizard.stepLabel} {step} {t.wizard.stepOf} {STEPS.length}
           </p>
 
           {step < 5 ? (
@@ -633,7 +642,7 @@ function NewRequestContent() {
               disabled={!canProceed()}
               className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Continue <ArrowRight className="w-4 h-4" />
+              {t.wizard.continueBtn} <ArrowRight className="w-4 h-4" />
             </button>
           ) : (
             <button
@@ -641,7 +650,7 @@ function NewRequestContent() {
               disabled={loading}
               className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> Post Request</>}
+              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> {t.wizard.postRequest}</>}
             </button>
           )}
         </div>

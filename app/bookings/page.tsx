@@ -7,11 +7,13 @@ import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Loader2, Clock, Star, FileText, Search } from 'lucide-react';
 import { avatarUrl } from '@/lib/avatar';
-import { bookingStatus } from '@/lib/status-labels';
+import { localizedStatus } from '@/lib/status-labels';
+import { useTranslation } from '@/lib/i18n';
 
 export default function BookingsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,24 +41,24 @@ export default function BookingsPage() {
   return (
     <CustomerLayout maxWidth="max-w-2xl">
       <div className="space-y-5">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">My Bookings</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">{t.bookingsList.title}</h1>
 
         {bookings.length === 0 ? (
           <div className="bg-white rounded-panel border border-dashed border-border-dim p-12 text-center">
             <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="w-7 h-7 text-ink-dim" />
             </div>
-            <p className="font-bold mb-1">No bookings yet</p>
-            <p className="text-sm text-ink-dim mb-6">Find a pro and book your first service.</p>
+            <p className="font-bold mb-1">{t.bookingsList.emptyTitle}</p>
+            <p className="text-sm text-ink-dim mb-6">{t.bookingsList.emptyDesc}</p>
             <Link href="/browse" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brand-dark transition-all">
-              <Search className="w-4 h-4" /> Browse Pros
+              <Search className="w-4 h-4" /> {t.bookingsList.browsePros}
             </Link>
           </div>
         ) : (
           <>
             {ongoing.length > 0 && (
               <section>
-                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">Ongoing</p>
+                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">{t.bookingsList.ongoing}</p>
                 <div className="space-y-2">
                   {ongoing.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
                 </div>
@@ -65,7 +67,7 @@ export default function BookingsPage() {
 
             {completed.length > 0 && (
               <section>
-                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">Completed</p>
+                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">{t.bookingsList.completed}</p>
                 <div className="space-y-2">
                   {completed.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
                 </div>
@@ -74,8 +76,8 @@ export default function BookingsPage() {
 
             {ongoing.length === 0 && completed.length === 0 && (
               <div className="bg-white rounded-panel border border-dashed border-border-dim p-12 text-center">
-                <p className="font-bold mb-1">No active bookings</p>
-                <p className="text-sm text-ink-dim">Your ongoing and completed bookings will appear here.</p>
+                <p className="font-bold mb-1">{t.bookingsList.noActiveTitle}</p>
+                <p className="text-sm text-ink-dim">{t.bookingsList.noActiveDesc}</p>
               </div>
             )}
           </>
@@ -86,6 +88,7 @@ export default function BookingsPage() {
 }
 
 function BookingCard({ b }: { b: any }) {
+  const t = useTranslation();
   return (
     <Link
       href={`/bookings/${b.id}`}
@@ -98,15 +101,15 @@ function BookingCard({ b }: { b: any }) {
       />
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm truncate">{b.provider?.user?.name}</p>
-        <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? 'Service'}</p>
+        <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
         <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
           <Clock className="w-3 h-3" />
           {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>
       <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${bookingStatus(b.status).cls}`}>
-          {bookingStatus(b.status).label}
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${localizedStatus(t, 'booking', b.status).cls}`}>
+          {localizedStatus(t, 'booking', b.status).label}
         </span>
         <span className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</span>
         {b.review && <Star className="w-3 h-3 text-brand fill-current" />}

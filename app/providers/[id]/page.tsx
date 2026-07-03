@@ -21,15 +21,25 @@ import {
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { avatarUrl } from '@/lib/avatar';
-
-// Day-of-week index (0 = Sun … 6 = Sat) → short label. Matches DB convention
-// used by `AvailabilitySlot.dayOfWeek`.
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+import { useTranslation } from '@/lib/i18n';
 
 export default function ProviderProfilePage() {
   const { id }   = useParams();
   const router   = useRouter();
   const { data: session } = useSession();
+  const t = useTranslation();
+
+  // Day-of-week index (0 = Sun … 6 = Sat) → short label. Matches DB convention
+  // used by `AvailabilitySlot.dayOfWeek`.
+  const DAY_LABELS = [
+    t.providerProfile.daySun,
+    t.providerProfile.dayMon,
+    t.providerProfile.dayTue,
+    t.providerProfile.dayWed,
+    t.providerProfile.dayThu,
+    t.providerProfile.dayFri,
+    t.providerProfile.daySat,
+  ];
   const [provider, setProvider] = useState<any>(null);
   const [reviews,  setReviews]  = useState<any[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -67,8 +77,8 @@ export default function ProviderProfilePage() {
   if (!provider) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-canvas p-4 text-center">
-        <h1 className="text-2xl font-bold mb-4">Provider not found</h1>
-        <Link href="/browse" className="text-brand font-bold hover:underline">Back to browse</Link>
+        <h1 className="text-2xl font-bold mb-4">{t.providerProfile.notFound}</h1>
+        <Link href="/browse" className="text-brand font-bold hover:underline">{t.providerProfile.backToBrowse}</Link>
       </div>
     );
   }
@@ -80,10 +90,10 @@ export default function ProviderProfilePage() {
   const maxCount = Math.max(...ratingDistribution.map(r => r.count), 1);
 
   const qualityIndicators = [
-    { label: 'Jobs completed', value: `${provider.completedJobs}+`,           icon: CheckCircle2, positive: true },
-    { label: 'Response time',  value: provider.responseTime,                   icon: Clock,        positive: true },
-    { label: 'Rating',         value: `${provider.ratingAvg.toFixed(1)} / 5`, icon: Star,         positive: true },
-    { label: 'ID Verified',    value: provider.isVerified ? 'Yes' : 'No',     icon: ShieldCheck,  positive: provider.isVerified },
+    { label: t.providerProfile.jobsCompleted, value: `${provider.completedJobs}+`,           icon: CheckCircle2, positive: true },
+    { label: t.providerProfile.responseTime,  value: provider.responseTime,                   icon: Clock,        positive: true },
+    { label: t.providerProfile.rating,        value: `${provider.ratingAvg.toFixed(1)} / 5`, icon: Star,         positive: true },
+    { label: t.providerProfile.idVerified,    value: provider.isVerified ? t.providerProfile.yes : t.providerProfile.no, icon: ShieldCheck, positive: provider.isVerified },
   ];
 
   return (
@@ -96,7 +106,7 @@ export default function ProviderProfilePage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="font-bold text-base sm:text-lg flex-1">Professional Profile</h1>
+        <h1 className="font-bold text-base sm:text-lg flex-1">{t.providerProfile.title}</h1>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
@@ -126,13 +136,13 @@ export default function ProviderProfilePage() {
                   {provider.isVerified && (
                     <div className="flex items-center gap-1 bg-trust-surface text-trust px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide mt-0.5 sm:mt-1.5 shrink-0">
                       <ShieldCheck className="w-3 h-3" />
-                      Verified
+                      {t.common.verified}
                     </div>
                   )}
                   {provider.instantBook && (
                     <div className="flex items-center gap-1 bg-brand-muted text-brand-dark px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide mt-0.5 sm:mt-1.5 shrink-0">
                       <Zap className="w-3 h-3" />
-                      Instant Book
+                      {t.providerProfile.instantBook}
                     </div>
                   )}
                 </div>
@@ -150,7 +160,7 @@ export default function ProviderProfilePage() {
                     <Star className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-current" />
                     <span className="text-ink font-bold text-sm sm:text-base">{provider.ratingAvg.toFixed(1)}</span>
                     <span className="text-ink-dim text-[11px] sm:text-sm font-medium ml-0.5">
-                      ({provider._count?.reviews ?? reviews.length} reviews)
+                      ({provider._count?.reviews ?? reviews.length} {t.meetPros.reviews})
                     </span>
                   </div>
                   <div className="flex items-center gap-1 text-ink-dim text-[11px] sm:text-sm font-medium">
@@ -163,7 +173,7 @@ export default function ProviderProfilePage() {
                 <p className="hidden sm:block text-ink-sub leading-relaxed mb-5">
                   {provider.bio && provider.bio.trim().length > 0
                     ? provider.bio
-                    : `${provider.categories?.map((c: any) => c.name).join(', ') || 'Professional'}${provider.serviceArea ? ` in ${provider.serviceArea}` : ''}`
+                    : `${provider.categories?.map((c: any) => c.name).join(', ') || t.providerProfile.professionalFallback}${provider.serviceArea ? ` ${t.providerProfile.inArea} ${provider.serviceArea}` : ''}`
                   }
                 </p>
 
@@ -171,13 +181,13 @@ export default function ProviderProfilePage() {
                 <div className="hidden sm:grid grid-cols-2 md:grid-cols-3 gap-3">
                   <div className="p-3 bg-surface-alt rounded-card border border-border-dim">
                     <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-1">
-                      <Clock className="w-3 h-3" /> Response
+                      <Clock className="w-3 h-3" /> {t.providerProfile.statResponse}
                     </div>
                     <div className="text-sm font-bold">{provider.responseTime}</div>
                   </div>
                   <div className="p-3 bg-surface-alt rounded-card border border-border-dim">
                     <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-1">
-                      <Languages className="w-3 h-3" /> Languages
+                      <Languages className="w-3 h-3" /> {t.providerProfile.statLanguages}
                     </div>
                     <div className="text-sm font-bold">
                       {provider.languages?.length ? provider.languages.join(', ') : '—'}
@@ -185,7 +195,7 @@ export default function ProviderProfilePage() {
                   </div>
                   <div className="p-3 bg-surface-alt rounded-card border border-border-dim">
                     <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-1">
-                      <CheckCircle2 className="w-3 h-3" /> Jobs done
+                      <CheckCircle2 className="w-3 h-3" /> {t.providerProfile.statJobsDone}
                     </div>
                     <div className="text-sm font-bold">{provider.completedJobs}+</div>
                   </div>
@@ -197,19 +207,19 @@ export default function ProviderProfilePage() {
             <p className="sm:hidden text-sm text-ink-sub leading-relaxed mt-3.5 mb-4">
               {provider.bio && provider.bio.trim().length > 0
                 ? provider.bio
-                : `${provider.categories?.map((c: any) => c.name).join(', ') || 'Professional'}${provider.serviceArea ? ` in ${provider.serviceArea}` : ''}`
+                : `${provider.categories?.map((c: any) => c.name).join(', ') || t.providerProfile.professionalFallback}${provider.serviceArea ? ` ${t.providerProfile.inArea} ${provider.serviceArea}` : ''}`
               }
             </p>
             <div className="sm:hidden grid grid-cols-3 gap-2">
               <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5" /> Responds
+                  <Clock className="w-2.5 h-2.5" /> {t.providerProfile.statResponds}
                 </p>
                 <p className="text-[11px] font-bold text-ink leading-tight">{provider.responseTime}</p>
               </div>
               <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
-                  <Languages className="w-2.5 h-2.5" /> Speaks
+                  <Languages className="w-2.5 h-2.5" /> {t.providerProfile.statSpeaks}
                 </p>
                 <p className="text-[11px] font-bold text-ink leading-tight">
                   {provider.languages?.length ? provider.languages.join(', ') : '—'}
@@ -217,7 +227,7 @@ export default function ProviderProfilePage() {
               </div>
               <div className="p-3 bg-surface-alt rounded-2xl text-center">
                 <p className="text-[10px] font-bold text-ink-dim uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
-                  <CheckCircle2 className="w-2.5 h-2.5" /> Jobs
+                  <CheckCircle2 className="w-2.5 h-2.5" /> {t.providerProfile.statJobs}
                 </p>
                 <p className="text-[11px] font-bold text-ink leading-tight">{provider.completedJobs}+</p>
               </div>
@@ -228,7 +238,7 @@ export default function ProviderProfilePage() {
           <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
             <div className="flex items-center gap-2 mb-4 sm:mb-5">
               <Award className="w-4 h-4 sm:w-5 sm:h-5 text-brand" />
-              <h3 className="text-base sm:text-lg font-bold">Quality Indicators</h3>
+              <h3 className="text-base sm:text-lg font-bold">{t.providerProfile.qualityIndicators}</h3>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
               {qualityIndicators.map((qi, i) => (
@@ -245,7 +255,7 @@ export default function ProviderProfilePage() {
 
           {/* Services */}
           <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
-            <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-5">Services</h3>
+            <h3 className="text-base sm:text-lg font-bold mb-4 sm:mb-5">{t.providerProfile.services}</h3>
 
             {/* Categories the pro is qualified in */}
             {provider.categories?.length > 0 && (
@@ -267,14 +277,14 @@ export default function ProviderProfilePage() {
               <div className="space-y-2.5 sm:space-y-3">
                 {provider.offerings.map((offering: any) => {
                   const price = Number(offering.price);
-                  const priceLabel = offering.priceType === 'FIXED' ? 'Fixed'
-                    : offering.priceType === 'FROM' ? 'From'
-                    : '/hr';
+                  const priceLabel = offering.priceType === 'FIXED' ? t.providerProfile.priceFixed
+                    : offering.priceType === 'FROM' ? t.providerProfile.priceFrom
+                    : t.providerProfile.priceHourly;
                   const priceSuffix = offering.priceType === 'HOURLY' ? (
-                    <span className="text-ink-dim text-[11px] sm:text-xs font-medium ml-1">/hr</span>
+                    <span className="text-ink-dim text-[11px] sm:text-xs font-medium ml-1">{t.providerProfile.priceHourly}</span>
                   ) : null;
                   const priceHeader = offering.priceType === 'FROM' ? (
-                    <div className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-0.5 sm:mb-1">From</div>
+                    <div className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-0.5 sm:mb-1">{t.providerProfile.priceFrom}</div>
                   ) : null;
                   return (
                     <div
@@ -307,7 +317,7 @@ export default function ProviderProfilePage() {
                             )}
                           </>
                         ) : (
-                          <div className="text-xs sm:text-sm font-medium text-ink-dim">Price on request</div>
+                          <div className="text-xs sm:text-sm font-medium text-ink-dim">{t.providerProfile.priceOnRequest}</div>
                         )}
                       </div>
                     </div>
@@ -315,7 +325,7 @@ export default function ProviderProfilePage() {
                 })}
               </div>
             ) : (
-              <p className="text-xs sm:text-sm text-ink-dim">No specific services listed yet — contact the pro for a quote.</p>
+              <p className="text-xs sm:text-sm text-ink-dim">{t.providerProfile.noOfferings}</p>
             )}
           </div>
 
@@ -336,7 +346,7 @@ export default function ProviderProfilePage() {
               <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
                 <div className="flex items-center gap-2 mb-4 sm:mb-5">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
-                  <h3 className="text-base sm:text-lg font-bold">Typical Availability</h3>
+                  <h3 className="text-base sm:text-lg font-bold">{t.providerProfile.typicalAvailability}</h3>
                 </div>
 
                 {hasAnyAvailability ? (
@@ -355,7 +365,7 @@ export default function ProviderProfilePage() {
                             {label}
                           </span>
                           {isOff ? (
-                            <span className="text-xs text-ink-dim font-medium">Off</span>
+                            <span className="text-xs text-ink-dim font-medium">{t.providerProfile.off}</span>
                           ) : (
                             <div className="flex flex-wrap gap-1.5">
                               {daySlots.map((s, i) => (
@@ -373,7 +383,7 @@ export default function ProviderProfilePage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-xs sm:text-sm text-ink-dim">No hours published yet — message the pro to check availability.</p>
+                  <p className="text-xs sm:text-sm text-ink-dim">{t.providerProfile.noHours}</p>
                 )}
 
                 {/* Upcoming days off (blackout dates the provider has set) */}
@@ -387,7 +397,7 @@ export default function ProviderProfilePage() {
                   return (
                     <div className="mt-4 pt-4 border-t border-border-dim">
                       <div className="flex items-center gap-1.5 text-ink-dim text-[11px] font-bold uppercase tracking-widest mb-2">
-                        <CalendarOff className="w-3 h-3" /> Upcoming days off
+                        <CalendarOff className="w-3 h-3" /> {t.providerProfile.upcomingDaysOff}
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {upcoming.map((d) => (
@@ -403,7 +413,7 @@ export default function ProviderProfilePage() {
                   );
                 })()}
 
-                <p className="text-[10px] text-ink-dim/60 mt-3">Times are approximate — confirm when booking</p>
+                <p className="text-[10px] text-ink-dim/60 mt-3">{t.providerProfile.timesApproximate}</p>
               </div>
             );
           })()}
@@ -411,7 +421,7 @@ export default function ProviderProfilePage() {
           {/* Reviews */}
           <div className="bg-white p-4 sm:p-6 rounded-panel border border-border-dim shadow-sm">
             <div className="flex items-center justify-between mb-4 sm:mb-5">
-              <h3 className="text-base sm:text-lg font-bold">Reviews</h3>
+              <h3 className="text-base sm:text-lg font-bold">{t.providerProfile.reviewsTitle}</h3>
               <div className="flex items-center gap-1.5">
                 <Star className="w-4 h-4 text-brand fill-current" />
                 <span className="font-bold text-sm">{provider.ratingAvg.toFixed(1)}</span>
@@ -440,7 +450,7 @@ export default function ProviderProfilePage() {
             {reviews.length === 0 ? (
               <div className="text-center py-8 text-ink-dim">
                 <ThumbsUp className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No reviews yet. Be the first to book!</p>
+                <p className="text-sm">{t.providerProfile.noReviews}</p>
               </div>
             ) : (
               <div className="space-y-3.5 sm:space-y-4">
@@ -454,7 +464,7 @@ export default function ProviderProfilePage() {
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-bold truncate">{review.customer?.user?.name ?? 'Customer'}</span>
+                          <span className="text-sm font-bold truncate">{review.customer?.user?.name ?? t.providerProfile.customerFallback}</span>
                           <span className="text-[11px] text-ink-dim shrink-0">
                             {new Date(review.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </span>
@@ -472,7 +482,7 @@ export default function ProviderProfilePage() {
                   </div>
                 ))}
                 {reviews.length > 5 && (
-                  <p className="text-sm text-ink-dim text-center pt-1">+ {reviews.length - 5} more reviews</p>
+                  <p className="text-sm text-ink-dim text-center pt-1">+ {reviews.length - 5} {t.providerProfile.moreReviews}</p>
                 )}
               </div>
             )}
@@ -482,13 +492,13 @@ export default function ProviderProfilePage() {
         {/* ── Right Column — Booking CTA ── */}
         <div className="lg:col-span-1">
           <div className="bg-white p-5 sm:p-8 rounded-panel border border-border-dim shadow-elevated lg:sticky lg:top-24">
-            <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1.5 sm:mb-2 text-ink">Need help?</h3>
+            <h3 className="text-xl sm:text-2xl font-bold tracking-tight mb-1.5 sm:mb-2 text-ink">{t.providerProfile.needHelp}</h3>
             <p className="text-ink-sub text-sm mb-4 sm:mb-6">
-              Send a request to {provider.user.name.split(' ')[0]} and get a quote within the hour.
+              {t.providerProfile.sendRequestTo} {provider.user.name.split(' ')[0]} {t.providerProfile.ctaDescSuffix}
             </p>
 
             <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-              {['No upfront payment', 'Free cancellation', 'Aladdin Guarantee'].map(item => (
+              {[t.providerProfile.noUpfrontPayment, t.providerProfile.freeCancellation, t.providerProfile.aladdinGuarantee].map(item => (
                 <div key={item} className="flex items-center gap-2.5 sm:gap-3 text-xs sm:text-sm font-medium text-ink-sub">
                   <div className="w-5 h-5 rounded-full bg-trust-surface flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-3 h-3 text-trust" />
@@ -514,7 +524,7 @@ export default function ProviderProfilePage() {
               }
               className="block w-full bg-brand text-white text-center py-3.5 sm:py-4 rounded-card font-bold hover:bg-brand-dark transition-all mb-3 shadow-sm hover:shadow-elevated text-sm sm:text-base"
             >
-              Send Service Request
+              {t.providerProfile.sendServiceRequest}
             </Link>
 
             {/* Chat entry removed: messaging only unlocks after a booking is
@@ -529,7 +539,7 @@ export default function ProviderProfilePage() {
               return (
                 <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border-dim">
                   <p className="text-[10px] sm:text-xs font-bold text-ink-dim uppercase tracking-widest mb-2.5 sm:mb-3">
-                    This week
+                    {t.providerProfile.thisWeek}
                   </p>
                   <div className="flex gap-1 sm:gap-1.5">
                     {DAY_LABELS.map((label, idx) => {

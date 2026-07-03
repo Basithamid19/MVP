@@ -9,17 +9,19 @@ import {
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
+import { useTranslation } from '@/lib/i18n';
+import type { Dictionary } from '@/lib/i18n/types';
 
 function avatarUrl(name?: string | null, size = 40) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name ?? '?')}&size=${size}&background=e8f5e9&color=1B7A5A&bold=true`;
 }
 
-function timeAgo(date: string) {
+function timeAgo(date: string, s: Dictionary['messagesPage']) {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
-  return `${Math.floor(mins / 1440)}d ago`;
+  if (mins < 1) return s.justNow;
+  if (mins < 60) return `${s.agoPrefix}${mins}${s.minutesSuffix}`;
+  if (mins < 1440) return `${s.agoPrefix}${Math.floor(mins / 60)}${s.hoursSuffix}`;
+  return `${s.agoPrefix}${Math.floor(mins / 1440)}${s.daysSuffix}`;
 }
 
 interface Thread {
@@ -49,6 +51,7 @@ export default function MessagesPage() {
 function MessagesContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
   const searchParams = useSearchParams();
   const activeThreadId = searchParams.get('thread');
 
@@ -129,7 +132,7 @@ function MessagesContent() {
         // Keep the draft so the user can retry; surface why it failed
         // (locked thread, network, auth) instead of silently dropping it.
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? 'Message failed to send. Please try again.');
+        alert(d.error ?? t.messagesPage.sendFailed);
         return;
       }
       setNewMsg('');
@@ -138,7 +141,7 @@ function MessagesContent() {
       const d = await r.json();
       if (Array.isArray(d)) setMessages(d);
     } catch {
-      alert('Message failed to send. Please check your connection and try again.');
+      alert(t.messagesPage.sendFailedNetwork);
     } finally {
       setSending(false);
     }
@@ -187,7 +190,7 @@ function MessagesContent() {
             </div>
           ) : messages.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-sm text-ink-dim">No messages yet. Say hello!</p>
+              <p className="text-sm text-ink-dim">{t.messagesPage.noMessagesYet}</p>
             </div>
           ) : (
             messages.map(m => {
@@ -221,7 +224,7 @@ function MessagesContent() {
               value={newMsg}
               onChange={e => setNewMsg(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              placeholder="Type a message..."
+              placeholder={t.messagesPage.typeMessage}
               className="flex-1 px-4 py-2.5 bg-canvas border border-border-dim rounded-full text-sm outline-none focus:ring-2 focus:ring-brand"
             />
             <button
@@ -241,9 +244,9 @@ function MessagesContent() {
       <div className="w-14 h-14 bg-caution-surface rounded-full flex items-center justify-center mx-auto mb-4">
         <MessageCircle className="w-6 h-6 text-caution" />
       </div>
-      <p className="font-semibold text-base text-ink mb-1">Couldn&apos;t load your conversations</p>
+      <p className="font-semibold text-base text-ink mb-1">{t.messagesPage.loadErrorTitle}</p>
       <p className="text-sm text-ink-sub max-w-xs mx-auto">
-        We&apos;ll keep retrying automatically. Check your connection if this persists.
+        {t.messagesPage.loadErrorDesc}
       </p>
     </div>
   ) : (
@@ -251,11 +254,11 @@ function MessagesContent() {
       <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
         <MessageCircle className="w-6 h-6 text-ink-dim" />
       </div>
-      <p className="font-semibold text-base text-ink mb-1">No conversations yet</p>
+      <p className="font-semibold text-base text-ink mb-1">{t.messagesPage.emptyTitle}</p>
       <p className="text-sm text-ink-sub max-w-xs mx-auto">
         {isProvider
-          ? 'Messaging opens once a customer confirms a booking with you (deposit paid).'
-          : 'Messaging opens once a booking is confirmed. Accept a quote and pay the deposit to start chatting with your pro.'}
+          ? t.messagesPage.emptyDescProvider
+          : t.messagesPage.emptyDescCustomer}
       </p>
     </div>
   );
@@ -266,14 +269,14 @@ function MessagesContent() {
 
       {/* ── Mobile: inbox list (hidden while a chat is open) ── */}
       <div className={`md:hidden max-w-3xl mx-auto p-4 pb-28 ${mobileChat ? 'hidden' : ''}`}>
-      <h1 className="text-xl font-semibold tracking-tight text-ink mb-1">Messages</h1>
-      <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
+      <h1 className="text-xl font-semibold tracking-tight text-ink mb-1">{t.messagesPage.title}</h1>
+      <p className="text-sm text-ink-sub mb-6">{t.messagesPage.subtitle}</p>
 
       {threadLocked && (
         <div className="flex items-start gap-3 px-4 py-3 mb-4 bg-caution-surface border border-caution-edge rounded-2xl">
           <Lock className="w-4 h-4 text-caution shrink-0 mt-0.5" />
           <p className="text-sm font-medium text-caution leading-relaxed">
-            This conversation unlocks once the booking is confirmed (deposit paid).
+            {t.messagesPage.lockedNotice}
           </p>
         </div>
       )}
@@ -282,30 +285,30 @@ function MessagesContent() {
         emptyState
       ) : (
         <div className="bg-white rounded-2xl border border-border-dim overflow-hidden divide-y divide-border-dim">
-          {threads.map(t => (
+          {threads.map(th => (
             <Link
-              key={t.id}
-              href={`/messages?thread=${t.id}`}
+              key={th.id}
+              href={`/messages?thread=${th.id}`}
               className={`flex items-center gap-3 px-4 py-3.5 hover:bg-surface-alt transition-colors ${
-                t.id === activeThreadId ? 'bg-brand-muted' : ''
+                th.id === activeThreadId ? 'bg-brand-muted' : ''
               }`}
             >
               <img
-                src={t.otherParticipant.image || avatarUrl(t.otherParticipant.name)}
+                src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name)}
                 alt=""
                 className="w-11 h-11 rounded-full object-cover shrink-0"
               />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold text-sm text-ink truncate">{t.otherParticipant.name}</p>
-                  {t.lastMessage && (
-                    <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(t.lastMessage.createdAt)}</span>
+                  <p className="font-semibold text-sm text-ink truncate">{th.otherParticipant.name}</p>
+                  {th.lastMessage && (
+                    <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
                   )}
                 </div>
                 <p className="text-xs text-ink-dim mt-0.5 truncate">
-                  {t.lastMessage
-                    ? `${t.lastMessage.senderId === userId ? 'You: ' : ''}${t.lastMessage.content}`
-                    : `${t.category} · No messages yet`
+                  {th.lastMessage
+                    ? `${th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}${th.lastMessage.content}`
+                    : `${th.category} · ${t.messagesPage.noMessagesShort}`
                   }
                 </p>
               </div>
@@ -320,9 +323,9 @@ function MessagesContent() {
       <div className="hidden md:block max-w-6xl mx-auto p-6 lg:p-8">
         <div className="flex items-center gap-2 mb-1">
           {!isProvider && <CustomerMenuDrawer />}
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">Messages</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink">{t.messagesPage.title}</h1>
         </div>
-        <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
+        <p className="text-sm text-ink-sub mb-6">{t.messagesPage.subtitle}</p>
 
         {threads.length === 0 ? (
           emptyState
@@ -330,30 +333,30 @@ function MessagesContent() {
           <div className="flex h-[calc(100dvh-15rem)] min-h-[480px] bg-white rounded-2xl border border-border-dim overflow-hidden">
             {/* Left: thread list */}
             <div className="w-80 lg:w-96 shrink-0 border-r border-border-dim overflow-y-auto divide-y divide-border-dim">
-              {threads.map(t => (
+              {threads.map(th => (
                 <Link
-                  key={t.id}
-                  href={`/messages?thread=${t.id}`}
+                  key={th.id}
+                  href={`/messages?thread=${th.id}`}
                   className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
-                    t.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
+                    th.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
                   }`}
                 >
                   <img
-                    src={t.otherParticipant.image || avatarUrl(t.otherParticipant.name)}
+                    src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name)}
                     alt=""
                     className="w-11 h-11 rounded-full object-cover shrink-0"
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-sm text-ink truncate">{t.otherParticipant.name}</p>
-                      {t.lastMessage && (
-                        <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(t.lastMessage.createdAt)}</span>
+                      <p className="font-semibold text-sm text-ink truncate">{th.otherParticipant.name}</p>
+                      {th.lastMessage && (
+                        <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
                       )}
                     </div>
                     <p className="text-xs text-ink-dim mt-0.5 truncate">
-                      {t.lastMessage
-                        ? `${t.lastMessage.senderId === userId ? 'You: ' : ''}${t.lastMessage.content}`
-                        : `${t.category} · No messages yet`
+                      {th.lastMessage
+                        ? `${th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}${th.lastMessage.content}`
+                        : `${th.category} · ${t.messagesPage.noMessagesShort}`
                       }
                     </p>
                   </div>
@@ -386,7 +389,7 @@ function MessagesContent() {
                       </div>
                     ) : messages.length === 0 ? (
                       <div className="text-center py-12">
-                        <p className="text-sm text-ink-dim">No messages yet. Say hello!</p>
+                        <p className="text-sm text-ink-dim">{t.messagesPage.noMessagesYet}</p>
                       </div>
                     ) : (
                       messages.map(m => {
@@ -420,7 +423,7 @@ function MessagesContent() {
                         value={newMsg}
                         onChange={e => setNewMsg(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        placeholder="Type a message..."
+                        placeholder={t.messagesPage.typeMessage}
                         className="flex-1 px-4 py-2.5 bg-canvas border border-border-dim rounded-full text-sm outline-none focus:ring-2 focus:ring-brand"
                       />
                       <button
@@ -438,9 +441,9 @@ function MessagesContent() {
                   <div className="w-14 h-14 bg-caution-surface rounded-full flex items-center justify-center mb-4">
                     <Lock className="w-6 h-6 text-caution" />
                   </div>
-                  <p className="font-semibold text-base text-ink mb-1">Messaging locked</p>
+                  <p className="font-semibold text-base text-ink mb-1">{t.messagesPage.messagingLocked}</p>
                   <p className="text-sm text-ink-sub max-w-xs">
-                    This conversation unlocks once the booking is confirmed (deposit paid).
+                    {t.messagesPage.lockedNotice}
                   </p>
                 </div>
               ) : (
@@ -448,9 +451,9 @@ function MessagesContent() {
                   <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mb-4">
                     <MessageCircle className="w-6 h-6 text-ink-dim" />
                   </div>
-                  <p className="font-semibold text-base text-ink mb-1">Select a conversation</p>
+                  <p className="font-semibold text-base text-ink mb-1">{t.messagesPage.selectConversation}</p>
                   <p className="text-sm text-ink-sub max-w-xs">
-                    Choose a conversation from the list to see the messages.
+                    {t.messagesPage.selectConversationDesc}
                   </p>
                 </div>
               )}
