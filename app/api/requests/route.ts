@@ -12,7 +12,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json();
-  const { categoryId, address, description, dateWindow, budget, isUrgent, timeOfDay } = body;
+  const { categoryId, address, description, dateWindow, budget, isUrgent, timeOfDay, photoUrls } = body;
 
   const customer = await prisma.customerProfile.findUnique({
     where: { userId: (session.user as any).id },
@@ -26,6 +26,11 @@ export async function POST(request: Request) {
   const VALID_TOD = ['morning', 'afternoon', 'evening', 'flexible'];
   const normalizedTimeOfDay = VALID_TOD.includes(timeOfDay) ? timeOfDay : 'flexible';
 
+  // Photo attachments: http(s) URLs only, capped to a sane count.
+  const safePhotoUrls: string[] = Array.isArray(photoUrls)
+    ? photoUrls.filter((u: unknown) => typeof u === 'string' && /^https?:\/\//.test(u)).slice(0, 10)
+    : [];
+
   const baseData = {
     customerId: customer.id,
     categoryId,
@@ -37,15 +42,15 @@ export async function POST(request: Request) {
     status: 'NEW' as const,
   };
 
-  // Persist timeOfDay; fall back to a create without it if the column hasn't
-  // been migrated yet (20260702_add_request_time_of_day).
+  // Persist timeOfDay + photoUrls; fall back to a create without the newer
+  // columns if the migrations (20260702, 20260704) haven't run yet.
   const serviceRequest = await prisma.serviceRequest.create({
-    data: { ...baseData, timeOfDay: normalizedTimeOfDay },
+    data: { ...baseData, timeOfDay: normalizedTimeOfDay, photoUrls: safePhotoUrls },
     include: { category: true },
   }).catch(async (err: unknown) => {
     const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes('timeOfDay') || msg.includes('column') || msg.includes('P2022')) {
-      console.warn('[requests POST] timeOfDay column missing, creating without it');
+    if (msg.includes('timeOfDay') || msg.includes('photoUrls') || msg.includes('column') || msg.includes('P2022')) {
+      console.warn('[requests POST] new columns missing, creating without them');
       return prisma.serviceRequest.create({ data: baseData, include: { category: true } });
     }
     throw err;

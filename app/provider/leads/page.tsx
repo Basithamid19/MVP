@@ -236,6 +236,15 @@ export default function ProviderLeadsPage() {
                     <div className="bg-surface-alt rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-5 text-sm text-ink-sub leading-relaxed">
                       {lead.description}
                     </div>
+                    {Array.isArray(lead.photoUrls) && lead.photoUrls.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4 sm:mb-5">
+                        {lead.photoUrls.map((u: string) => (
+                          <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-xl overflow-hidden border border-border-dim">
+                            <img src={u} alt="Request photo" className="w-full h-full object-cover" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                     <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4 mb-4 sm:mb-5 text-sm">
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">Preferred date</p>

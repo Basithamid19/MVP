@@ -103,6 +103,15 @@ export default function QuoteBuilderPage() {
             <span className="text-xs bg-border text-ink-sub px-2 py-0.5 rounded-full font-bold">{request.category?.name}</span>
           </div>
           <p className="text-sm text-ink-sub leading-relaxed mb-2">{request.description}</p>
+          {Array.isArray(request.photoUrls) && request.photoUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-2">
+              {request.photoUrls.map((u: string) => (
+                <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-14 h-14 rounded-lg overflow-hidden border border-border-dim">
+                  <img src={u} alt="Request photo" className="w-full h-full object-cover" />
+                </a>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 text-xs text-ink-dim">
             <span>{request.address}</span>
             <span>·</span>

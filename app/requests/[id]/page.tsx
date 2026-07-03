@@ -148,6 +148,15 @@ export default function QuoteInboxPage() {
               <p className="text-sm text-ink-sub leading-relaxed">{request.description}</p>
             </div>
           </div>
+          {Array.isArray(request.photoUrls) && request.photoUrls.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {request.photoUrls.map((u: string) => (
+                <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-xl overflow-hidden border border-border-dim">
+                  <img src={u} alt="Request photo" className="w-full h-full object-cover" />
+                </a>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-3 text-xs text-ink-dim font-medium pt-3 border-t border-border-dim">
             <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{request.address}</span>
             <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{new Date(request.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>

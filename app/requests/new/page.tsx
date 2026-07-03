@@ -117,8 +117,16 @@ function NewRequestContent() {
         if (res.ok) {
           const data = await res.json();
           setPhotos(prev => prev.map(p => p.preview === preview ? { ...p, url: data.url } : p));
+        } else {
+          // Drop the tile instead of leaving a spinner overlay that never
+          // resolves (p.url stays unset forever on a failed upload).
+          setPhotos(prev => prev.filter(p => p.preview !== preview));
+          alert('Photo upload failed. Please try again.');
         }
-      } catch {}
+      } catch {
+        setPhotos(prev => prev.filter(p => p.preview !== preview));
+        alert('Photo upload failed. Please check your connection and try again.');
+      }
     }
     setUploadingPhoto(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -173,6 +181,7 @@ function NewRequestContent() {
           timeOfDay: form.timePreference,
           budget: form.budget ? form.budget : null,
           isUrgent: form.isUrgent,
+          photoUrls: photos.map(p => p.url).filter(Boolean),
         }),
       });
       if (res.ok) {
