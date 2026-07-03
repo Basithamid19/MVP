@@ -17,6 +17,15 @@ export const TIME_OF_DAY_HOURS: Record<string, number> = {
   flexible: 9,
 };
 
+// Display labels for the time-of-day preference (shown to providers so they
+// know the window that will drive the booked time).
+export const TIME_OF_DAY_LABELS: Record<string, string> = {
+  morning: 'Morning (8–12)',
+  afternoon: 'Afternoon (12–17)',
+  evening: 'Evening (17–21)',
+  flexible: 'Flexible',
+};
+
 // Millisecond offset of `tz` from UTC at the given instant. Positive = ahead of
 // UTC. Works across DST because it asks Intl what wall-clock time `date` shows
 // in each zone and subtracts; the server's own timezone cancels out.

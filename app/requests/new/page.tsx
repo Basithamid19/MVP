@@ -189,7 +189,7 @@ function NewRequestContent() {
         body: JSON.stringify({
           categoryId: form.categoryId,
           address: form.address,
-          description: `${form.description}${form.timePreference !== 'flexible' ? `\n\nPreferred time: ${form.timePreference}` : ''}`,
+          description: form.description,
           dateWindow: form.dateWindow,
           timeOfDay: form.timePreference,
           budget: form.budget ? form.budget : null,

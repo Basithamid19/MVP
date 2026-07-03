@@ -8,6 +8,7 @@ import {
   Loader2, AlertCircle, MapPin, Clock, RefreshCcw,
   ChevronRight, Timer, DollarSign, Search, Inbox, Send,
 } from 'lucide-react';
+import { TIME_OF_DAY_LABELS } from '@/lib/time';
 
 function ResponseTimer({ createdAt }: { createdAt: string }) {
   const [elapsed, setElapsed] = useState('');
@@ -274,6 +275,7 @@ export default function ProviderLeadsPage() {
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">Preferred date</p>
                         <p className="font-semibold text-sm sm:text-base text-ink">{new Date(lead.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                        <p className="text-[11px] sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? 'Flexible'}</p>
                       </div>
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">Budget</p>

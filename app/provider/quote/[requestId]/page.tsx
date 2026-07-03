@@ -7,6 +7,7 @@ import {
   ArrowLeft, Plus, X, Send, Loader2, CheckCircle2,
   DollarSign, Clock, AlertCircle, FileText, Calendar,
 } from 'lucide-react';
+import { TIME_OF_DAY_LABELS } from '@/lib/time';
 
 export default function QuoteBuilderPage() {
   const { requestId } = useParams<{ requestId: string }>();
@@ -126,6 +127,8 @@ export default function QuoteBuilderPage() {
             <span>{request.address}</span>
             <span>·</span>
             <span>{new Date(request.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
+            <span>·</span>
+            <span>{TIME_OF_DAY_LABELS[request.timeOfDay] ?? 'Flexible'}</span>
             {request.budget && <><span>·</span><span className="text-green-600 font-bold">Budget: €{request.budget}</span></>}
           </div>
         </div>
