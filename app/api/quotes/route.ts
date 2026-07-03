@@ -8,6 +8,67 @@ import { DEPOSIT_RATE, PLATFORM_FEE_RATE } from '@/lib/fees';
 
 export const dynamic = 'force-dynamic';
 
+// GET — the caller's own sent quotes (provider only). Closes the "quote
+// disappears into a black hole" gap: after sending, the lead leaves the
+// inbox and there was no surface listing quote status anywhere.
+export async function GET() {
+  const session = await auth();
+  if (!session?.user || (session.user as any).role !== 'PROVIDER') {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const provider = await prisma.providerProfile.findUnique({
+    where: { userId: (session.user as any).id },
+    select: { id: true },
+  });
+  if (!provider) return NextResponse.json([]);
+
+  // Explicit select; expiresAt (20260707) guarded by a fallback without it.
+  const QUOTE_LIST_SELECT = {
+    id: true, price: true, estimatedHours: true, notes: true,
+    status: true, createdAt: true, expiresAt: true,
+    booking: { select: { id: true } },
+    request: {
+      select: {
+        id: true, description: true, address: true, dateWindow: true, status: true,
+        category: { select: { name: true } },
+      },
+    },
+  } as const;
+
+  const QUOTE_LIST_SELECT_SAFE = {
+    id: true, price: true, estimatedHours: true, notes: true,
+    status: true, createdAt: true,
+    booking: { select: { id: true } },
+    request: {
+      select: {
+        id: true, description: true, address: true, dateWindow: true, status: true,
+        category: { select: { name: true } },
+      },
+    },
+  } as const;
+
+  const quotes = await prisma.quote.findMany({
+    where: { providerId: provider.id },
+    select: QUOTE_LIST_SELECT,
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+  }).catch(async (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes('expiresAt') || msg.includes('column') || msg.includes('P2022')) {
+      return prisma.quote.findMany({
+        where: { providerId: provider.id },
+        select: QUOTE_LIST_SELECT_SAFE,
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+    }
+    throw err;
+  });
+
+  return NextResponse.json(quotes);
+}
+
 export async function POST(request: Request) {
   const session = await auth();
   if (!session || !session.user || (session.user as any).role !== 'PROVIDER') {

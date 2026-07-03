@@ -8,7 +8,7 @@ import { signOut, useSession } from 'next-auth/react';
 import {
   LayoutDashboard, Inbox, Briefcase, DollarSign,
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck, Bell,
-  MessageSquare, X, Clock, Users, CheckCircle2,
+  MessageSquare, X, Clock, Users, CheckCircle2, FileText,
 } from 'lucide-react';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import MobileNav from '@/components/MobileNav';
@@ -23,9 +23,10 @@ const NAV_GROUPS = [
   {
     label: 'Work',
     items: [
-      { href: '/provider/leads',    label: 'Leads',    icon: Inbox },
-      { href: '/provider/jobs',     label: 'Jobs',     icon: Briefcase },
-      { href: '/messages',          label: 'Messages', icon: MessageSquare },
+      { href: '/provider/leads',    label: 'Leads',     icon: Inbox },
+      { href: '/provider/quotes',   label: 'My Quotes', icon: FileText },
+      { href: '/provider/jobs',     label: 'Jobs',      icon: Briefcase },
+      { href: '/messages',          label: 'Messages',  icon: MessageSquare },
     ],
   },
   {
