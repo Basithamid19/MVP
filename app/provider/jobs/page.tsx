@@ -10,13 +10,7 @@ import {
 } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
-
-const STATUS_STYLES: Record<string, string> = {
-  SCHEDULED:   'bg-info-surface text-info',
-  IN_PROGRESS: 'bg-caution-surface text-caution',
-  COMPLETED:   'bg-trust-surface text-trust',
-  CANCELED:    'bg-danger-surface text-danger',
-};
+import { bookingStatus } from '@/lib/status-labels';
 
 export default function ProviderJobsPage() {
   const { data: session, status } = useSession();
@@ -111,8 +105,8 @@ export default function ProviderJobsPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <p className="font-semibold text-[15px] sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? 'Job'}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-sub'}`}>
-                      {b.status.replace('_', ' ')}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${bookingStatus(b.status).cls}`}>
+                      {bookingStatus(b.status).label}
                     </span>
                   </div>
                   <p className="hidden sm:flex text-sm text-ink-sub items-center gap-1.5 mb-1">

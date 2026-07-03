@@ -14,6 +14,7 @@ import {
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
 import { DEPOSIT_RATE } from '@/lib/fees';
+import { bookingStatus, paymentStatus } from '@/lib/status-labels';
 
 const BOOKING_STEPS = ['Scheduled', 'In Progress', 'Completed'];
 
@@ -252,13 +253,8 @@ export default function BookingPage() {
           <h1 className="font-bold text-lg">{category?.name ?? 'Booking'}</h1>
           <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-          isCanceled ? 'bg-danger-surface text-danger' :
-          isCompleted ? 'bg-trust-surface text-trust' :
-          booking.status === 'IN_PROGRESS' ? 'bg-caution-surface text-caution' :
-          'bg-info-surface text-info'
-        }`}>
-          {booking.status.replace('_', ' ')}
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${bookingStatus(booking.status).cls}`}>
+          {bookingStatus(booking.status).label}
         </span>
       </div>
 
@@ -488,19 +484,16 @@ export default function BookingPage() {
           {(() => {
             const payStatus = booking.payment?.status;
             const bkCompleted = booking.status === 'COMPLETED';
-            const label = payStatus === 'PAID' ? 'Paid'
-              : payStatus === 'REFUNDED' ? 'Refunded'
-              : payStatus === 'PARTIAL_REFUND' ? 'Partially refunded'
-              : payStatus === 'DEPOSIT_HELD' ? 'Deposit held'
-              : payStatus === 'PROCESSING' || bkCompleted ? 'Processing'
-              : payStatus === 'PENDING' ? 'Deposit required'
-              : 'Awaiting completion';
-            const style = payStatus === 'PAID' ? 'bg-trust-surface text-trust'
-              : payStatus === 'REFUNDED' || payStatus === 'PARTIAL_REFUND' ? 'bg-surface-alt text-ink-sub'
-              : payStatus === 'DEPOSIT_HELD' ? 'bg-info-surface text-info'
-              : payStatus === 'PROCESSING' || bkCompleted ? 'bg-info-surface text-info'
-              : payStatus === 'PENDING' ? 'bg-caution-surface text-caution'
-              : 'bg-surface-alt text-ink-sub';
+            // Canonical labels/styles from lib/status-labels, with two local
+            // special cases: a completed booking without a settled payment
+            // reads as Processing, and no payment record at all reads as
+            // awaiting completion.
+            const mapped = paymentStatus(payStatus);
+            const info = bkCompleted && (!mapped || payStatus === 'PENDING')
+              ? { label: 'Processing', cls: 'bg-info-surface text-info' }
+              : mapped ?? { label: 'Awaiting completion', cls: 'bg-surface-alt text-ink-sub' };
+            const label = info.label;
+            const style = info.cls;
             return (
               <div>
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-input text-xs font-bold ${style}`}>

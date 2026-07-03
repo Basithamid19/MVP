@@ -6,17 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Loader2, Clock, FileText, Plus, Users, AlertCircle } from 'lucide-react';
-
-// Customer's request list. The dashboard's "View all orders" linked here for a
-// long time while the route didn't exist (404).
-const STATUS_STYLES: Record<string, { label: string; cls: string }> = {
-  NEW:      { label: 'Waiting for quotes', cls: 'bg-info-surface text-info' },
-  CHATTING: { label: 'In discussion',      cls: 'bg-brand-muted text-brand-dark' },
-  QUOTED:   { label: 'Quotes received',    cls: 'bg-trust-surface text-trust' },
-  ACCEPTED: { label: 'Booked',             cls: 'bg-brand text-white' },
-  DECLINED: { label: 'Declined',           cls: 'bg-danger-surface text-danger' },
-  EXPIRED:  { label: 'Expired',            cls: 'bg-surface-alt text-ink-sub' },
-};
+import { requestStatus } from '@/lib/status-labels';
 
 export default function RequestsPage() {
   const { status } = useSession();
@@ -95,7 +85,7 @@ export default function RequestsPage() {
 }
 
 function RequestCard({ r }: { r: any }) {
-  const status = STATUS_STYLES[r.status] ?? { label: r.status, cls: 'bg-surface-alt text-ink-sub' };
+  const status = requestStatus(r.status);
   const quoteCount = Array.isArray(r.quotes) ? r.quotes.filter((q: any) => q.status === 'PENDING').length : 0;
   return (
     <Link

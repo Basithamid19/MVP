@@ -11,12 +11,15 @@ import {
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
+import { bookingStatus } from '@/lib/status-labels';
 
-const STATUS_FLOW: Record<string, { next: string; label: string; nextLabel: string; color: string }> = {
-  SCHEDULED:   { next: 'IN_PROGRESS', label: 'Scheduled',   nextLabel: 'Mark Arrived / Start Job', color: 'bg-info-surface text-info' },
-  IN_PROGRESS: { next: 'COMPLETED',   label: 'In Progress', nextLabel: 'Mark Complete',            color: 'bg-caution-surface text-caution' },
-  COMPLETED:   { next: '',            label: 'Completed',   nextLabel: '',                          color: 'bg-trust-surface text-trust' },
-  CANCELED:    { next: '',            label: 'Canceled',    nextLabel: '',                          color: 'bg-danger-surface text-danger' },
+// Transition map only — labels/colors come from the shared status module so
+// every surface reads the same vocabulary.
+const STATUS_FLOW: Record<string, { next: string; nextLabel: string }> = {
+  SCHEDULED:   { next: 'IN_PROGRESS', nextLabel: 'Mark Arrived / Start Job' },
+  IN_PROGRESS: { next: 'COMPLETED',   nextLabel: 'Mark Complete' },
+  COMPLETED:   { next: '',            nextLabel: '' },
+  CANCELED:    { next: '',            nextLabel: '' },
 };
 
 const DEFAULT_CHECKLIST = [
@@ -165,8 +168,8 @@ export default function ProviderJobDetailPage() {
               <p className="text-[10px] text-ink-dim mt-0.5 font-medium">ID: {booking.id.slice(0, 8)}…</p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${flow.color}`}>
-                {flow.label}
+              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${bookingStatus(booking.status).cls}`}>
+                {bookingStatus(booking.status).label}
               </span>
               {!isCanceled && !isCompleted && (
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
@@ -219,8 +222,8 @@ export default function ProviderJobDetailPage() {
             {chatUnlocked ? 'Deposit paid' : 'Deposit pending'}
           </span>
         )}
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${flow.color}`}>
-          {flow.label}
+        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${bookingStatus(booking.status).cls}`}>
+          {bookingStatus(booking.status).label}
         </span>
       </div>
 

@@ -7,13 +7,7 @@ import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Loader2, Clock, Star, FileText, Search } from 'lucide-react';
 import { avatarUrl } from '@/lib/avatar';
-
-const STATUS_STYLES: Record<string, string> = {
-  SCHEDULED:   'bg-info-surface text-info',
-  IN_PROGRESS: 'bg-caution-surface text-caution',
-  COMPLETED:   'bg-trust-surface text-trust',
-  CANCELED:    'bg-danger-surface text-danger',
-};
+import { bookingStatus } from '@/lib/status-labels';
 
 export default function BookingsPage() {
   const { data: session, status } = useSession();
@@ -111,8 +105,8 @@ function BookingCard({ b }: { b: any }) {
         </p>
       </div>
       <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-sub'}`}>
-          {b.status.replace('_', ' ')}
+        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${bookingStatus(b.status).cls}`}>
+          {bookingStatus(b.status).label}
         </span>
         <span className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</span>
         {b.review && <Star className="w-3 h-3 text-brand fill-current" />}

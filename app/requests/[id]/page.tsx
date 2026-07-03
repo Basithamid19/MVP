@@ -12,14 +12,7 @@ import {
   TrendingDown,
 } from 'lucide-react';
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  NEW:      { label: 'Waiting for quotes', color: 'bg-info-surface text-info' },
-  CHATTING: { label: 'In discussion',      color: 'bg-brand-muted text-brand-dark' },
-  QUOTED:   { label: 'Quotes received',    color: 'bg-trust-surface text-trust' },
-  ACCEPTED: { label: 'Accepted',           color: 'bg-brand text-white' },
-  DECLINED: { label: 'Declined',           color: 'bg-danger-surface text-danger' },
-  EXPIRED:  { label: 'Expired',            color: 'bg-surface-alt text-ink-sub' },
-};
+import { requestStatus } from '@/lib/status-labels';
 
 function expiresLabel(expiresAt?: string | null): string | null {
   if (!expiresAt) return null;
@@ -112,7 +105,7 @@ export default function QuoteInboxPage() {
     );
   }
 
-  const status = STATUS_LABELS[request.status] ?? { label: request.status, color: 'bg-surface-alt text-ink-sub' };
+  const status = requestStatus(request.status);
   const isExpired = (q: any) => q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
   const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && !isExpired(q));
   const expiredCount = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && isExpired(q)).length;
@@ -133,7 +126,7 @@ export default function QuoteInboxPage() {
           <h1 className="font-bold text-base sm:text-lg leading-tight">Quote Inbox</h1>
           <p className="text-xs text-ink-dim">{request.category?.name}</p>
         </div>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${status.color}`}>{status.label}</span>
+        <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${status.cls}`}>{status.label}</span>
         <button onClick={load} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0">
           <RefreshCcw className="w-4 h-4 text-ink-dim" />
         </button>

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { avatarUrl } from '@/lib/avatar';
+import { requestStatus } from '@/lib/status-labels';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 
@@ -26,14 +27,16 @@ const QUICK_JOBS = [
   { label: 'Furniture',  slug: 'furniture-assembly', Icon: Package },
 ];
 
-const STATUS_STAGE: Record<string, { label: string; dot: string; step: number }> = {
-  NEW:      { label: 'Waiting for quotes', dot: 'bg-info',   step: 0 },
-  QUOTED:   { label: 'Quotes received',    dot: 'bg-trust',  step: 1 },
-  CHATTING: { label: 'In discussion',      dot: 'bg-brand-light', step: 1 },
-  ACCEPTED: { label: 'Booked',             dot: 'bg-brand',       step: 2 },
-  DECLINED: { label: 'Declined',           dot: 'bg-border',    step: -1 },
-  EXPIRED:  { label: 'Expired',            dot: 'bg-border',    step: -1 },
-  COMPLETED:{ label: 'Completed',          dot: 'bg-border',    step: 3 },
+// Labels come from the shared status module (lib/status-labels); this map only
+// carries the dashboard-specific stepper extras. (The old map also had a bogus
+// COMPLETED entry — ServiceRequestStatus has no such value.)
+const STATUS_STAGE: Record<string, { dot: string; step: number }> = {
+  NEW:      { dot: 'bg-info',        step: 0 },
+  QUOTED:   { dot: 'bg-trust',       step: 1 },
+  CHATTING: { dot: 'bg-brand-light', step: 1 },
+  ACCEPTED: { dot: 'bg-brand',       step: 2 },
+  DECLINED: { dot: 'bg-border',      step: -1 },
+  EXPIRED:  { dot: 'bg-border',      step: -1 },
 };
 
 /* ─── Helpers ─────────────────────────────────────────────── */
@@ -73,12 +76,12 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-surface-alt rounded-full border border-border-dim">
       <span className={`w-1.5 h-1.5 rounded-full ${stage.dot}`} />
-      <span className="text-xs font-medium text-ink-sub">{stage.label}</span>
+      <span className="text-xs font-medium text-ink-sub">{requestStatus(status).label}</span>
     </span>
   );
 }
 
-const STEPPER_LABELS = ['Posted', 'Quotes', 'Selected', 'Done'];
+const STEPPER_LABELS = ['Posted', 'Quotes', 'Booked', 'Done'];
 
 function JobStepper({ step }: { step: number }) {
   if (step < 0) return null;
@@ -108,7 +111,7 @@ function OrdersList({ requests }: { requests: any[] }) {
   return (
     <div className="space-y-3">
       {requests.slice(0, 6).map(req => {
-        const stage      = STATUS_STAGE[req.status] ?? { label: req.status, dot: 'bg-border', step: 0 };
+        const stage      = STATUS_STAGE[req.status] ?? { dot: 'bg-border', step: 0 };
         const quoteCount = req.quotes?.length ?? 0;
         const action     = getJobAction(req);
         const isBooked   = req.status === 'ACCEPTED';
@@ -142,12 +145,12 @@ function OrdersList({ requests }: { requests: any[] }) {
                 {/* Compact status on mobile */}
                 <div className="flex items-center gap-1 sm:hidden">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${stage.dot}`} />
-                  <span className="text-[10px] font-semibold text-ink-sub whitespace-nowrap max-w-[64px] truncate">{stage.label}</span>
+                  <span className="text-[10px] font-semibold text-ink-sub whitespace-nowrap max-w-[64px] truncate">{requestStatus(req.status).label}</span>
                 </div>
                 {/* Full badge on sm+ */}
                 <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-alt rounded-full border border-border-dim">
                   <span className={`w-1.5 h-1.5 rounded-full ${stage.dot}`} />
-                  <span className="text-xs font-medium text-ink-sub whitespace-nowrap">{stage.label}</span>
+                  <span className="text-xs font-medium text-ink-sub whitespace-nowrap">{requestStatus(req.status).label}</span>
                 </span>
                 <ChevronDown className={`w-4 h-4 text-ink-dim transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
               </div>
