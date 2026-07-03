@@ -21,6 +21,8 @@ export default function EarningsPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'overview' | 'history' | 'payouts'>('overview');
+  const [stripeOnboarded, setStripeOnboarded] = useState<boolean | null>(null);
+  const [connectingStripe, setConnectingStripe] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -29,16 +31,39 @@ export default function EarningsPage() {
         .then(r => r.json())
         .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
         .catch(() => setLoading(false));
+      fetch('/api/provider/profile')
+        .then(r => r.json())
+        .then(p => setStripeOnboarded(Boolean(p?.stripeOnboarded)))
+        .catch(() => {});
     }
   }, [status, router]);
+
+  const setUpPayouts = async () => {
+    setConnectingStripe(true);
+    try {
+      const res = await fetch('/api/provider/stripe-connect', { method: 'POST' });
+      const data = await res.json().catch(() => ({} as any));
+      if (data.url) { window.location.href = data.url; return; }
+      alert(data.error ?? 'Could not start payout setup. Please try again.');
+    } finally {
+      setConnectingStripe(false);
+    }
+  };
 
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
 
   const completed = bookings.filter(b => b.status === 'COMPLETED');
   const pending = bookings.filter(b => b.status === 'SCHEDULED' || b.status === 'IN_PROGRESS');
 
+  // Honest money states: 'settled' = the final payment actually went through
+  // (PAID); everything else completed is still processing.
+  const settled = completed.filter(b => b.payment?.status === 'PAID');
+  const processing = completed.filter(b => b.payment?.status !== 'PAID');
+
   const totalGross = completed.reduce((s, b) => s + (b.totalAmount ?? 0), 0);
   const totalNet = totalGross * (1 - PLATFORM_FEE);
+  const settledNet = settled.reduce((s, b) => s + (b.totalAmount ?? 0), 0) * (1 - PLATFORM_FEE);
+  const processingNet = processing.reduce((s, b) => s + (b.totalAmount ?? 0), 0) * (1 - PLATFORM_FEE);
   const pendingAmount = pending.reduce((s, b) => s + (b.totalAmount ?? 0) * (1 - PLATFORM_FEE), 0);
 
   // Group by month for chart
@@ -106,7 +131,10 @@ export default function EarningsPage() {
           </div>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
           {totalGross > 0 && (
-            <p className="text-xs text-white/40 mt-1">€{totalGross.toFixed(2)} gross · 12% platform fee</p>
+            <p className="text-xs text-white/40 mt-1">
+              €{totalGross.toFixed(2)} gross · 10% platform fee
+              {processingNet > 0 && <> · €{processingNet.toFixed(2)} still processing</>}
+            </p>
           )}
         </div>
         {/* Pending — compact companion */}
@@ -145,9 +173,11 @@ export default function EarningsPage() {
           <p className="text-sm text-ink-sub mt-2">{pending.length} active jobs</p>
         </div>
         <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
-          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Platform fee</p>
-          <p className="text-3xl font-semibold tracking-tight text-ink">12%</p>
-          <p className="text-sm text-ink-sub mt-2">€{(totalGross * PLATFORM_FEE).toFixed(2)} total</p>
+          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">Settled</p>
+          <p className="text-3xl font-semibold tracking-tight text-ink">€{settledNet.toFixed(2)}</p>
+          <p className="text-sm text-ink-sub mt-2">
+            {processingNet > 0 ? `€${processingNet.toFixed(2)} processing` : `10% fee · €${(totalGross * PLATFORM_FEE).toFixed(2)} total`}
+          </p>
         </div>
       </div>
 
@@ -226,7 +256,7 @@ export default function EarningsPage() {
           </div>
           <div className="mt-3 pt-3 border-t border-border-dim flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 text-ink-dim shrink-0" />
-            <p className="text-xs text-ink-sub">Paid weekly every Monday · Min €20 · Bank transfer</p>
+            <p className="text-xs text-ink-sub">Paid out via Stripe — funds arrive 1–2 business days after each completed job.</p>
           </div>
         </div>
       )}
@@ -257,7 +287,9 @@ export default function EarningsPage() {
                   </div>
                   <div className="text-right shrink-0">
                     <p className="font-semibold text-trust text-[13px] sm:text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
-                    <p className="text-[10px] text-ink-dim">net</p>
+                    <p className={`text-[10px] ${b.payment?.status === 'PAID' ? 'text-trust' : 'text-caution'}`}>
+                      {b.payment?.status === 'PAID' ? 'paid out' : 'processing'}
+                    </p>
                   </div>
                   <ChevronRight className="w-3.5 h-3.5 text-ink-dim/50 shrink-0 hidden sm:block" />
                 </Link>
@@ -267,34 +299,27 @@ export default function EarningsPage() {
         </div>
       )}
 
-      {/* Payouts */}
+      {/* Payouts — real Stripe Connect state (the old tab described a SEPA/
+          IBAN system that didn't exist and had an inert Add-bank button). */}
       {tab === 'payouts' && (
         <div className="space-y-3 sm:space-y-4">
-          {/* Next payout */}
-          <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-2.5 sm:mb-3">
-              <p className="font-semibold text-sm sm:text-base">Next payout</p>
-              <span className="text-[10px] font-medium text-ink-dim bg-surface-alt px-2 py-0.5 rounded-full">Monday</span>
-            </div>
-            <p className="text-2xl sm:text-2xl font-bold text-ink mb-2.5">€{Math.max(totalNet, 0).toFixed(2)}</p>
-            <div className="w-full bg-surface-alt rounded-full h-1.5">
-              <div className="bg-brand h-1.5 rounded-full transition-all" style={{ width: `${Math.min((totalNet / 200) * 100, 100)}%` }} />
-            </div>
-            <p className="text-[10px] text-ink-dim mt-1.5">Min threshold: €20</p>
-          </div>
-
-          {/* Finance settings — grouped card */}
-          <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
-            {/* Payout schedule */}
-            <div className="p-4 sm:p-5">
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2.5 sm:mb-3">Payout schedule</p>
+          {stripeOnboarded ? (
+            <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 bg-trust-surface rounded-xl flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4 text-trust" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm sm:text-base text-ink">Payouts active</p>
+                  <p className="text-[11px] sm:text-xs text-ink-dim">Connected via Stripe</p>
+                </div>
+              </div>
               <div className="space-y-1.5 text-[13px] sm:text-sm">
                 {[
-                  ['Frequency', 'Weekly'],
-                  ['Day', 'Every Monday'],
-                  ['Method', 'Bank transfer (SEPA)'],
-                  ['Minimum', '€20.00'],
+                  ['Method', 'Stripe (bank account)'],
+                  ['When', 'After each completed job'],
                   ['Processing', '1–2 business days'],
+                  ['Platform fee', '10%'],
                 ].map(([label, value]) => (
                   <div key={label} className="flex justify-between py-0.5">
                     <span className="text-ink-sub">{label}</span>
@@ -302,35 +327,47 @@ export default function EarningsPage() {
                   </div>
                 ))}
               </div>
-            </div>
-
-            {/* Bank account */}
-            <div className="border-t border-border-dim p-4 sm:p-5">
-              <button className="w-full flex items-center gap-3 group">
-                <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
-                  <Landmark className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
-                </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-ink">Add bank account</p>
-                  <p className="text-[11px] text-ink-dim">IBAN required for automatic payouts</p>
-                </div>
-                <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
+              <button
+                onClick={setUpPayouts}
+                disabled={connectingStripe}
+                className="mt-3 text-xs font-bold text-brand hover:underline disabled:opacity-50"
+              >
+                {connectingStripe ? 'Opening Stripe…' : 'Manage payout details'}
               </button>
             </div>
-
-            {/* Tax export — mobile only */}
-            <div className="sm:hidden border-t border-border-dim p-4">
-              <button onClick={exportTaxCSV} className="w-full flex items-center gap-3 group">
-                <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
-                  <FileText className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
+          ) : (
+            <div className="bg-caution-surface border border-caution-edge rounded-2xl p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <Landmark className="w-5 h-5 text-caution shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-bold text-caution text-sm sm:text-base">Set up payouts to get paid</p>
+                  <p className="text-xs sm:text-sm text-caution mt-0.5 mb-3 leading-relaxed">
+                    Connect your bank account via Stripe to receive earnings for completed jobs.
+                  </p>
+                  <button
+                    onClick={setUpPayouts}
+                    disabled={connectingStripe || stripeOnboarded === null}
+                    className="text-xs sm:text-sm font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                  >
+                    {connectingStripe ? 'Opening Stripe…' : 'Set up payouts'}
+                  </button>
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-semibold text-ink">Tax export</p>
-                  <p className="text-[11px] text-ink-dim">Download CSV for your records</p>
-                </div>
-                <Download className="w-4 h-4 text-ink-dim shrink-0" />
-              </button>
+              </div>
             </div>
+          )}
+
+          {/* Tax export — mobile only */}
+          <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm p-4">
+            <button onClick={exportTaxCSV} className="w-full flex items-center gap-3 group">
+              <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
+                <FileText className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold text-ink">Tax export</p>
+                <p className="text-[11px] text-ink-dim">Download CSV for your records</p>
+              </div>
+              <Download className="w-4 h-4 text-ink-dim shrink-0" />
+            </button>
           </div>
         </div>
       )}
