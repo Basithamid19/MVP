@@ -41,6 +41,35 @@ export default function ProviderJobDetailPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Checklist + photos live on this device (localStorage per booking) — they
+  // used to be plain useState and were wiped by any reload/navigation while
+  // the UI implied saved records. hydratedRef stops the persist effects from
+  // overwriting stored values with defaults before hydration lands.
+  const hydratedRef = useRef(false);
+  useEffect(() => {
+    try {
+      const savedChecklist = JSON.parse(localStorage.getItem(`aladdin_job_checklist_${bookingId}`) ?? 'null');
+      if (Array.isArray(savedChecklist) && savedChecklist.length === DEFAULT_CHECKLIST.length) {
+        setChecklist(savedChecklist.map(Boolean));
+      }
+      const savedPhotos = JSON.parse(localStorage.getItem(`aladdin_job_photos_${bookingId}`) ?? 'null');
+      if (Array.isArray(savedPhotos)) {
+        setPhotos(savedPhotos.filter((p: any) => typeof p?.preview === 'string'));
+      }
+    } catch {}
+    hydratedRef.current = true;
+  }, [bookingId]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try { localStorage.setItem(`aladdin_job_checklist_${bookingId}`, JSON.stringify(checklist)); } catch {}
+  }, [checklist, bookingId]);
+
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try { localStorage.setItem(`aladdin_job_photos_${bookingId}`, JSON.stringify(photos)); } catch {}
+  }, [photos, bookingId]);
+
   const load = useCallback(() => {
     fetch(`/api/bookings?id=${bookingId}`)
       .then(r => r.json())
@@ -394,7 +423,7 @@ export default function ProviderJobDetailPage() {
               <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
               <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">Documentation</p>
             </div>
-            <span className="text-[10px] font-medium text-ink-dim">{photos.length} photo{photos.length !== 1 ? 's' : ''}</span>
+            <span className="text-[10px] font-medium text-ink-dim">{photos.length} photo{photos.length !== 1 ? 's' : ''} · this device only</span>
           </div>
           <input
             ref={fileRef}

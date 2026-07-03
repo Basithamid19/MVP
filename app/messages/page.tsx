@@ -62,6 +62,7 @@ function MessagesContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const deskScrollRef = useRef<HTMLDivElement>(null);
   const userId = (session?.user as any)?.id;
+  const isProvider = (session?.user as any)?.role === 'PROVIDER';
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -252,7 +253,9 @@ function MessagesContent() {
       </div>
       <p className="font-semibold text-base text-ink mb-1">No conversations yet</p>
       <p className="text-sm text-ink-sub max-w-xs mx-auto">
-        Messaging opens once a booking is confirmed. Accept a quote and pay the deposit to start chatting with your pro.
+        {isProvider
+          ? 'Messaging opens once a customer confirms a booking with you (deposit paid).'
+          : 'Messaging opens once a booking is confirmed. Accept a quote and pay the deposit to start chatting with your pro.'}
       </p>
     </div>
   );
@@ -316,7 +319,7 @@ function MessagesContent() {
       {/* ── Desktop: two-pane inbox ── */}
       <div className="hidden md:block max-w-6xl mx-auto p-6 lg:p-8">
         <div className="flex items-center gap-2 mb-1">
-          <CustomerMenuDrawer />
+          {!isProvider && <CustomerMenuDrawer />}
           <h1 className="text-3xl font-semibold tracking-tight text-ink">Messages</h1>
         </div>
         <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
