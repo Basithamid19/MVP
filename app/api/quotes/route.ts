@@ -32,11 +32,21 @@ export async function POST(request: Request) {
 
   const serviceRequest = await prisma.serviceRequest.findUnique({
     where: { id: requestId },
-    select: { categoryId: true, customerId: true },
+    select: { categoryId: true, customerId: true, status: true },
   });
 
   if (!serviceRequest) {
     return NextResponse.json({ error: 'Service request not found' }, { status: 404 });
+  }
+
+  // Only open requests can be quoted. Without this a provider could quote a
+  // request that was already accepted (race with the leads list, or a direct
+  // URL) — a quote that can never be actioned, after a fake success screen.
+  if (!['NEW', 'QUOTED'].includes(serviceRequest.status)) {
+    return NextResponse.json(
+      { error: 'This request is no longer open for quotes.' },
+      { status: 409 },
+    );
   }
 
   const providerCategoryIds = provider.categories.map(c => c.id);
@@ -44,6 +54,18 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: 'You can only quote on requests that match your service categories' },
       { status: 403 },
+    );
+  }
+
+  // One quote per provider per request.
+  const existingQuote = await prisma.quote.findFirst({
+    where: { requestId, providerId: provider.id },
+    select: { id: true },
+  });
+  if (existingQuote) {
+    return NextResponse.json(
+      { error: 'You have already sent a quote for this request.' },
+      { status: 409 },
     );
   }
 
@@ -237,11 +259,30 @@ export async function PATCH(request: Request) {
     });
 
     // Auto-decline the other still-PENDING quotes on this request so the
-    // customer's inbox reflects that the job is now committed.
+    // customer's inbox reflects that the job is now committed — and tell the
+    // losing providers, who previously saw their quote flip to declined with
+    // no signal at all.
+    const siblingQuotes = await prisma.quote.findMany({
+      where: { requestId: quote.requestId, status: 'PENDING', id: { not: quote.id } },
+      select: { id: true, provider: { select: { userId: true } } },
+    }).catch(() => [] as { id: string; provider: { userId: string } | null }[]);
+
     await prisma.quote.updateMany({
       where: { requestId: quote.requestId, status: 'PENDING', id: { not: quote.id } },
       data: { status: 'DECLINED' },
     }).catch(() => {});
+
+    for (const sibling of siblingQuotes) {
+      if (sibling.provider?.userId) {
+        createNotification({
+          userId: sibling.provider.userId,
+          type: 'status',
+          title: 'Quote not selected',
+          body: 'The customer chose another quote for this job. More leads are waiting for you.',
+          href: '/provider/leads',
+        });
+      }
+    }
 
     const depositAmount = quote.price * 0.2;
 

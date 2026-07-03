@@ -15,6 +15,7 @@ export default function QuoteBuilderPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [basePrice, setBasePrice] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
@@ -40,6 +41,7 @@ export default function QuoteBuilderPage() {
   const handleSubmit = async () => {
     if (!basePrice || parseFloat(basePrice) <= 0) return;
     setSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await fetch('/api/quotes', {
         method: 'POST',
@@ -56,7 +58,14 @@ export default function QuoteBuilderPage() {
           ].filter(Boolean).join('\n\n') || null,
         }),
       });
-      if (res.ok) setSubmitted(true);
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        const d = await res.json().catch(() => ({} as any));
+        setSubmitError(d.error ?? 'Could not send the quote. Please try again.');
+      }
+    } catch {
+      setSubmitError('Network error. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -247,6 +256,13 @@ export default function QuoteBuilderPage() {
             Expires: {new Date(Date.now() + parseInt(expiresInDays) * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}
           </p>
         </div>
+
+        {submitError && (
+          <div className="flex items-start gap-2.5 px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl">
+            <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
+            <p className="text-sm font-medium text-caution leading-relaxed">{submitError}</p>
+          </div>
+        )}
 
         <button
           onClick={handleSubmit}
