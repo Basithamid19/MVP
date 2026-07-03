@@ -57,6 +57,34 @@ export default function BookingPage() {
   const [priceApproved, setPriceApproved] = useState(false);
   const [reportingIssue, setReportingIssue] = useState(false);
   const [issueText, setIssueText] = useState('');
+  const [submittingIssue, setSubmittingIssue] = useState(false);
+
+  const submitIssue = async () => {
+    if (!issueText.trim()) return;
+    setSubmittingIssue(true);
+    try {
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: `Booking issue — ${String(id).slice(0, 8)}`,
+          description: issueText.trim(),
+        }),
+      });
+      if (res.ok) {
+        setReportingIssue(false);
+        setIssueText('');
+        alert('Issue reported. Our support team will be in touch within 24 hours.');
+      } else {
+        const d = await res.json().catch(() => ({} as any));
+        alert(d.error ?? 'Could not submit the report. Please try again.');
+      }
+    } catch {
+      alert('Network error. Please try again.');
+    } finally {
+      setSubmittingIssue(false);
+    }
+  };
 
   const load = useCallback(() => {
     fetch(`/api/bookings?id=${id}`)
@@ -573,11 +601,11 @@ export default function BookingPage() {
                     Cancel
                   </button>
                   <button
-                    onClick={() => { setReportingIssue(false); alert('Issue reported. Our support team will be in touch within 24 hours.'); }}
-                    disabled={!issueText.trim()}
-                    className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 transition-colors disabled:opacity-40"
+                    onClick={submitIssue}
+                    disabled={!issueText.trim() || submittingIssue}
+                    className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 transition-colors disabled:opacity-40 flex items-center justify-center"
                   >
-                    Submit Report
+                    {submittingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit Report'}
                   </button>
                 </div>
               </div>

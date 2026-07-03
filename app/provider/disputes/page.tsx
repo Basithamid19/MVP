@@ -27,6 +27,8 @@ export default function DisputesPage() {
   const [uploadingEvidence, setUploadingEvidence] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [ticketId, setTicketId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleEvidenceSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,9 +51,30 @@ export default function DisputesPage() {
   const handleSubmit = async () => {
     if (!ticketType || !subject.trim() || !description.trim()) return;
     setSubmitting(true);
-    await new Promise(r => setTimeout(r, 800));
-    setSubmitting(false);
-    setSubmitted(true);
+    setSubmitError(null);
+    try {
+      const typeLabel = TICKET_TYPES.find(t => t.id === ticketType)?.label ?? 'Support';
+      const res = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subject: `[${typeLabel}] ${subject.trim()}`,
+          description: `${description.trim()}${bookingRef.trim() ? `\n\nBooking ref: ${bookingRef.trim()}` : ''}`,
+        }),
+      });
+      if (res.ok) {
+        const d = await res.json().catch(() => ({} as any));
+        setTicketId(d.id ?? null);
+        setSubmitted(true);
+      } else {
+        const d = await res.json().catch(() => ({} as any));
+        setSubmitError(d.error ?? 'Could not submit the ticket. Please try again.');
+      }
+    } catch {
+      setSubmitError('Network error. Please check your connection and try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -61,7 +84,9 @@ export default function DisputesPage() {
           <CheckCircle2 className="w-10 h-10 text-green-600" />
         </div>
         <h1 className="text-2xl font-bold mb-3">Ticket submitted</h1>
-        <p className="text-ink-dim mb-2">Ticket ID: <span className="font-bold">VP-{Math.random().toString(36).slice(2, 10).toUpperCase()}</span></p>
+        {ticketId && (
+          <p className="text-ink-dim mb-2">Ticket ID: <span className="font-bold">AL-{ticketId.slice(0, 8).toUpperCase()}</span></p>
+        )}
         <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
           Our support team will review your ticket and respond within <strong>24–48 business hours</strong> via email.
         </p>
@@ -198,6 +223,12 @@ export default function DisputesPage() {
               </div>
               <p className="text-xs text-ink-dim">Photos, screenshots, or PDF documents. Max 10MB per file.</p>
             </div>
+
+            {submitError && (
+              <div className="px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl text-sm font-medium text-caution leading-relaxed">
+                {submitError}
+              </div>
+            )}
 
             <button
               onClick={handleSubmit}
