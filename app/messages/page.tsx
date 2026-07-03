@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Loader2, ArrowLeft, MessageCircle, Send, User,
+  Loader2, ArrowLeft, MessageCircle, Send, User, Lock,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
 import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
@@ -144,6 +144,10 @@ function MessagesContent() {
   };
 
   const activeThread = threads.find(t => t.id === activeThreadId);
+  // Deep link (e.g. an old notification) to a conversation that isn't
+  // unlocked yet — the server filters it out of the list and 403s reads, so
+  // without this the pane rendered silently blank.
+  const threadLocked = !!activeThreadId && !activeThread && !loading;
 
   if (status === 'loading' || loading) {
     return (
@@ -261,6 +265,15 @@ function MessagesContent() {
       <div className={`md:hidden max-w-3xl mx-auto p-4 pb-28 ${mobileChat ? 'hidden' : ''}`}>
       <h1 className="text-xl font-semibold tracking-tight text-ink mb-1">Messages</h1>
       <p className="text-sm text-ink-sub mb-6">Your conversations with pros and customers.</p>
+
+      {threadLocked && (
+        <div className="flex items-start gap-3 px-4 py-3 mb-4 bg-caution-surface border border-caution-edge rounded-2xl">
+          <Lock className="w-4 h-4 text-caution shrink-0 mt-0.5" />
+          <p className="text-sm font-medium text-caution leading-relaxed">
+            This conversation unlocks once the booking is confirmed (deposit paid).
+          </p>
+        </div>
+      )}
 
       {threads.length === 0 ? (
         emptyState
@@ -417,6 +430,16 @@ function MessagesContent() {
                     </div>
                   </div>
                 </>
+              ) : threadLocked ? (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                  <div className="w-14 h-14 bg-caution-surface rounded-full flex items-center justify-center mb-4">
+                    <Lock className="w-6 h-6 text-caution" />
+                  </div>
+                  <p className="font-semibold text-base text-ink mb-1">Messaging locked</p>
+                  <p className="text-sm text-ink-sub max-w-xs">
+                    This conversation unlocks once the booking is confirmed (deposit paid).
+                  </p>
+                </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mb-4">
