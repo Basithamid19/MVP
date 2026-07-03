@@ -9,6 +9,7 @@ import {
   Zap, Timer,
 } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
+import { providerNet } from '@/lib/fees';
 
 function capitalize(name?: string | null) {
   if (!name) return '';
@@ -55,7 +56,7 @@ export default function DashboardClient({
   const activeJobs = bookings.filter((b: any) => b.status === 'SCHEDULED' || b.status === 'IN_PROGRESS');
   const completedJobs = bookings.filter((b: any) => b.status === 'COMPLETED');
   const urgentLeads = leads.filter((l: any) => l.isUrgent);
-  const totalEarnings = completedJobs.reduce((s: number, b: any) => s + (b.totalAmount ?? 0) * 0.88, 0);
+  const totalEarnings = completedJobs.reduce((s: number, b: any) => s + providerNet(b.totalAmount ?? 0), 0);
 
   const isVerified = profile?.verificationTier && profile.verificationTier !== 'TIER0_BASIC';
 

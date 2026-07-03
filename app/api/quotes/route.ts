@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
 import { checkAvailability } from '@/lib/availability';
 import { buildVilniusScheduledAt } from '@/lib/time';
+import { DEPOSIT_RATE, PLATFORM_FEE_RATE } from '@/lib/fees';
 
 export const dynamic = 'force-dynamic';
 
@@ -284,7 +285,7 @@ export async function PATCH(request: Request) {
       }
     }
 
-    const depositAmount = quote.price * 0.2;
+    const depositAmount = quote.price * DEPOSIT_RATE;
 
     // Try with depositAmount (new column); fall back to without if migration not applied
     const booking = await prisma.booking.create({
@@ -324,7 +325,7 @@ export async function PATCH(request: Request) {
         bookingId: booking.id,
         amount: quote.price,
         depositAmount,
-        platformFee: quote.price * 0.1,
+        platformFee: quote.price * PLATFORM_FEE_RATE,
         status: 'PENDING',
       },
       select: { id: true },

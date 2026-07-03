@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
 import { stripe } from '@/lib/stripe';
 import { CONFIRMED_PAYMENT_STATUSES } from '@/lib/chat-access';
+import { PLATFORM_FEE_RATE } from '@/lib/fees';
 
 export const dynamic = 'force-dynamic';
 
@@ -265,7 +266,7 @@ export async function PATCH(request: Request) {
 
       if (payment?.status === 'DEPOSIT_HELD' && (payment as any).stripeIntentId && (payment as any).booking?.provider?.stripeAccountId) {
         const remainingAmount = Math.round((booking.totalAmount - ((payment as any).depositAmount ?? 0)) * 100);
-        const platformFeeOnRemainder = Math.round(remainingAmount * 0.1);
+        const platformFeeOnRemainder = Math.round(remainingAmount * PLATFORM_FEE_RATE);
         try {
           const chargeIntent = await stripe.paymentIntents.create({
             amount: remainingAmount,

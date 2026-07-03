@@ -9,6 +9,7 @@ import {
   MapPin, DollarSign, Briefcase,
 } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
+import { providerNet } from '@/lib/fees';
 
 const STATUS_STYLES: Record<string, string> = {
   SCHEDULED:   'bg-info-surface text-info',
@@ -126,7 +127,7 @@ export default function ProviderJobsPage() {
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-5.5 sm:ml-0 pl-0 sm:pl-0">
                 <div className="text-left sm:text-right shrink-0">
-                  <p className="font-semibold text-[15px] sm:text-base text-ink">€{(b.totalAmount * 0.88).toFixed(2)}</p>
+                  <p className="font-semibold text-[15px] sm:text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
                   <p className="text-[11px] sm:text-xs text-ink-dim">your share</p>
                 </div>
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-ink-dim shrink-0" />

@@ -9,8 +9,11 @@ import {
   Briefcase,
 } from 'lucide-react';
 import Link from 'next/link';
+import { PLATFORM_FEE_RATE } from '@/lib/fees';
 
-const PLATFORM_FEE = 0.12;
+// The real platform fee charged by the payment code (Stripe application_fee).
+// This page previously hardcoded a fabricated 12%.
+const PLATFORM_FEE = PLATFORM_FEE_RATE;
 
 export default function EarningsPage() {
   const { data: session, status } = useSession();
@@ -65,7 +68,7 @@ export default function EarningsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `vilniuspro-earnings-${new Date().getFullYear()}.csv`;
+    a.download = `aladdin-earnings-${new Date().getFullYear()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -218,7 +221,7 @@ export default function EarningsPage() {
           <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">Earnings breakdown</p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-ink-sub">Gross revenue</span><span className="font-semibold">€{totalGross.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-ink-sub">Platform fee (12%)</span><span className="text-ink-sub">−€{(totalGross * PLATFORM_FEE).toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-ink-sub">Platform fee (10%)</span><span className="text-ink-sub">−€{(totalGross * PLATFORM_FEE).toFixed(2)}</span></div>
             <div className="flex justify-between font-bold pt-2 border-t border-border-dim text-base sm:text-lg"><span>Net earnings</span><span className="text-brand">€{totalNet.toFixed(2)}</span></div>
           </div>
           <div className="mt-3 pt-3 border-t border-border-dim flex items-center gap-2">

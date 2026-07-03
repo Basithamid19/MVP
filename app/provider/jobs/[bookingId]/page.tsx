@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
+import { providerNet } from '@/lib/fees';
 
 const STATUS_FLOW: Record<string, { next: string; label: string; nextLabel: string; color: string }> = {
   SCHEDULED:   { next: 'IN_PROGRESS', label: 'Scheduled',   nextLabel: 'Mark Arrived / Start Job', color: 'bg-info-surface text-info' },
@@ -112,7 +113,7 @@ export default function ProviderJobDetailPage() {
   const address = booking.quote?.request?.address;
   const mapsUrl = address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : '#';
   const completedTasks = checklist.filter(Boolean).length;
-  const earnings = (booking.totalAmount * 0.88).toFixed(2);
+  const earnings = providerNet(booking.totalAmount).toFixed(2);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto pb-28">

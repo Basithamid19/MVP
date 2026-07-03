@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { stripe } from '@/lib/stripe';
 import { isColumnError } from '@/lib/prisma-errors';
+import { DEPOSIT_RATE, PLATFORM_FEE_RATE } from '@/lib/fees';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,8 +53,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Provider has not set up payouts yet.' }, { status: 400 });
   }
 
-  const depositAmount = Math.round(booking.totalAmount * 0.2 * 100); // 20% in cents
-  const platformFee = Math.round(booking.totalAmount * 0.1 * 100);   // 10% in cents
+  const depositAmount = Math.round(booking.totalAmount * DEPOSIT_RATE * 100);      // cents
+  const platformFee = Math.round(booking.totalAmount * PLATFORM_FEE_RATE * 100);   // cents
   const serviceName = booking.quote?.request?.category?.name ?? 'Service';
   const origin = request.headers.get('origin') ?? process.env.NEXTAUTH_URL ?? '';
 
@@ -89,15 +90,15 @@ export async function POST(request: Request) {
     where: { bookingId },
     update: {
       stripeSessionId: checkoutSession.id,
-      depositAmount: booking.totalAmount * 0.2,
-      platformFee: booking.totalAmount * 0.1,
+      depositAmount: booking.totalAmount * DEPOSIT_RATE,
+      platformFee: booking.totalAmount * PLATFORM_FEE_RATE,
       status: 'PENDING',
     },
     create: {
       bookingId,
       amount: booking.totalAmount,
-      depositAmount: booking.totalAmount * 0.2,
-      platformFee: booking.totalAmount * 0.1,
+      depositAmount: booking.totalAmount * DEPOSIT_RATE,
+      platformFee: booking.totalAmount * PLATFORM_FEE_RATE,
       status: 'PENDING',
       stripeSessionId: checkoutSession.id,
     },

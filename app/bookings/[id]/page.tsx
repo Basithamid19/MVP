@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
 import { formatVilnius } from '@/lib/time';
+import { DEPOSIT_RATE } from '@/lib/fees';
 
 const BOOKING_STEPS = ['Scheduled', 'In Progress', 'Completed'];
 
@@ -261,7 +262,7 @@ export default function BookingPage() {
               <div>
                 <p className="font-bold text-caution">Deposit required to confirm booking</p>
                 <p className="text-sm text-caution mt-1 leading-relaxed">
-                  Pay a <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * 0.2).toFixed(2)} deposit (20%)</span> to confirm your booking and unlock messaging with your provider.
+                  Pay a <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)} deposit (20%)</span> to confirm your booking and unlock messaging with your provider.
                 </p>
               </div>
             </div>
@@ -270,7 +271,7 @@ export default function BookingPage() {
               disabled={payingDeposit}
               className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> Pay deposit · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * 0.2).toFixed(2)}</>}
+              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> Pay deposit · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)}</>}
             </button>
           </div>
         )}
