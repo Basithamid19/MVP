@@ -120,7 +120,12 @@ export interface Dictionary {
     joinAsAPro: string;
     support: string;
     contact: string;
-    copyright: string;
+        copyright: string;
+    company: string;
+    about: string;
+    terms: string;
+    privacy: string;
+    postARequest: string;
   };
 
   // Recent bookings
@@ -428,12 +433,14 @@ export interface Dictionary {
     today: string;
     expired: string;
     expiresIn: string;
+    minutesShort: string;
     hoursShort: string;
     daysShort: string;
     lowest: string;
     highest: string;
     midRange: string;
     acceptQuote: string;
+    dismissQuote: string;
     confirmTitle: string;
     confirmDeposit: string;
     othersPrefix: string;
@@ -441,6 +448,11 @@ export interface Dictionary {
     othersDeclinedPlural: string;
     accept: string;
     updateFailed: string;
+    // Availability conflicts returned by POST /api/quotes (409 + errorCode).
+    errBlackout: string;
+    errDayUnavailable: string;
+    errOutsideHours: string;
+    errTimeConflict: string;
   };
 
   // My requests list (app/requests)
@@ -465,6 +477,7 @@ export interface Dictionary {
     browsePros: string;
     ongoing: string;
     completed: string;
+    past: string;
     noActiveTitle: string;
     noActiveDesc: string;
   };
@@ -694,6 +707,7 @@ export interface Dictionary {
     notifications: string;
     markAllRead: string;
     markAllAsRead: string;
+    moreNotifications: string;
     allCaughtUp: string;
   };
 
@@ -835,6 +849,7 @@ export interface Dictionary {
 
   // Job detail (app/provider/jobs/[bookingId])
   jobDetail: {
+    deviceOnlyNotice: string;
     backToJobs: string;
     idLabel: string;
     notFound: string;

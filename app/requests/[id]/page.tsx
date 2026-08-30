@@ -4,15 +4,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
-import { avatarUrl } from '@/lib/avatar';
+import { cn } from '@/lib/utils';
 import {
-  ArrowLeft, Star, ShieldCheck, Clock, MapPin,
-  CheckCircle2, XCircle, Loader2, MessageSquare,
-  AlertCircle, RefreshCcw, ChevronRight, Timer,
-  TrendingDown,
+  ArrowLeft, ShieldCheck, Clock, MapPin,
+  CheckCircle2, X, MessageSquare, SearchX,
+  RefreshCcw, ChevronRight, TrendingDown,
 } from 'lucide-react';
 
-import { localizedStatus } from '@/lib/status-labels';
+import {
+  Alert, Avatar, Button, buttonVariants, Card, DomainStatusBadge, EmptyState,
+  Modal, ModalFooter, PageHeader, Skeleton, StatusBadge,
+} from '@/components/ui';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
 
@@ -28,22 +30,56 @@ function expiresLabel(
   return `${s.expiresIn} ${Math.floor(hours / 24)}${s.daysShort}`;
 }
 
-function etaFromResponse(responseTime: string | undefined, todayLabel: string): string {
-  if (!responseTime) return todayLabel;
-  if (responseTime.includes('min') || responseTime.includes('hour') || responseTime.includes('hr')) {
-    return responseTime;
+/** True while the quote is inside its last 24 hours — the only case worth shouting about. */
+function expiresSoon(expiresAt: string | null | undefined): boolean {
+  if (!expiresAt) return false;
+  const ms = new Date(expiresAt).getTime() - Date.now();
+  return ms <= 0 || ms < 24 * 3600000;
+}
+
+/* Provider `responseTime` is free text and historically arrived as a whole
+ * sentence ("Usually responds in 1 hour"), which blew out the quote card's
+ * metadata line. Reduce it to a short, chip-sized form. */
+const ETA_LEAD_IN = /^(?:usually\s+)?respond(?:s|ing)?\s+(?:in|within)\s+/i;
+const ETA_VALUE   = /^(?:~|about\s+|approx\.?\s+|under\s+|less\s+than\s+)?(\d+)\s*(min(?:ute)?s?|h(?:ou)?rs?|d(?:ay)?s?)\b/i;
+const ETA_MAX_LEN = 16;
+
+export function etaFromResponse(
+  responseTime: string | undefined,
+  s: Dictionary['quoteInbox'],
+): string {
+  const raw = (responseTime ?? '').trim();
+  if (!raw) return s.today;
+
+  const stripped = raw.replace(ETA_LEAD_IN, '').trim();
+  if (!stripped) return s.today;
+
+  const m = stripped.match(ETA_VALUE);
+  if (m) {
+    const unit = m[2].toLowerCase();
+    const suffix =
+      unit.startsWith('min') ? s.minutesShort :
+      unit.startsWith('h')   ? s.hoursShort   :
+                               s.daysShort;
+    return `~${m[1]}${suffix}`;
   }
-  return responseTime;
+
+  return stripped.length > ETA_MAX_LEN
+    ? `${stripped.slice(0, ETA_MAX_LEN - 1).trimEnd()}…`
+    : stripped;
 }
 
 export default function QuoteInboxPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const t = useTranslation();
+  const s = t.quoteInbox;
   const [request, setRequest] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  // Availability / conflict errors belong on the quote they came from, not
+  // in a page-wide banner — the customer needs to know *which* pro is busy.
+  const [quoteError, setQuoteError] = useState<{ quoteId: string; message: string } | null>(null);
   const [confirmAcceptId, setConfirmAcceptId] = useState<string | null>(null);
   const [targetProviderName, setTargetProviderName] = useState<string | null>(null);
 
@@ -67,7 +103,7 @@ export default function QuoteInboxPage() {
 
   const handleQuote = async (quoteId: string, status: 'ACCEPTED' | 'DECLINED') => {
     setActioning(quoteId);
-    setActionError(null);
+    setQuoteError(null);
     try {
       const res = await fetch('/api/quotes', {
         method: 'PATCH',
@@ -76,9 +112,16 @@ export default function QuoteInboxPage() {
       });
       const data = await res.json().catch(() => ({} as any));
       if (!res.ok) {
-        // Surface the server's reason (availability conflict, request already
-        // booked, quote expired…) — this used to be silently discarded.
-        setActionError(data.error ?? t.quoteInbox.updateFailed);
+        // Prefer the machine-readable code so the reason is localized; the
+        // server's `error` string is English and only a last resort.
+        const byCode: Record<string, string> = {
+          blackout_date:   s.errBlackout,
+          day_unavailable: s.errDayUnavailable,
+          outside_hours:   s.errOutsideHours,
+          time_conflict:   s.errTimeConflict,
+        };
+        const message = byCode[data.errorCode] ?? data.error ?? s.updateFailed;
+        setQuoteError({ quoteId, message });
         load();
         return;
       }
@@ -88,7 +131,7 @@ export default function QuoteInboxPage() {
         load();
       }
     } catch {
-      setActionError(t.common.networkError);
+      setQuoteError({ quoteId, message: t.common.networkError });
     } finally {
       setActioning(null);
     }
@@ -96,22 +139,34 @@ export default function QuoteInboxPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas">
-        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
-      </div>
+      <CustomerLayout maxWidth="max-w-2xl">
+        <div className="space-y-5">
+          <Skeleton rounded="chip" className="h-8 w-44" />
+          <Skeleton rounded="panel" className="h-36 w-full" />
+          <Skeleton rounded="panel" className="h-52 w-full" />
+          <Skeleton rounded="panel" className="h-52 w-full" />
+        </div>
+      </CustomerLayout>
     );
   }
 
   if (!request) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-canvas text-center p-4">
-        <p className="text-xl font-bold mb-2">{t.quoteInbox.notFound}</p>
-        <Link href="/dashboard" className="text-brand font-bold hover:underline">{t.common.backToDashboard}</Link>
-      </div>
+      <CustomerLayout maxWidth="max-w-2xl">
+        <EmptyState
+          icon={SearchX}
+          size="lg"
+          title={s.notFound}
+          action={
+            <Link href="/dashboard" className={buttonVariants({ variant: 'secondary', size: 'md' })}>
+              {t.common.backToDashboard}
+            </Link>
+          }
+        />
+      </CustomerLayout>
     );
   }
 
-  const status = localizedStatus(t, 'request', request.status);
   const isExpired = (q: any) => q.expiresAt && new Date(q.expiresAt).getTime() < Date.now();
   const pendingQuotes = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && !isExpired(q));
   const expiredCount = (request.quotes ?? []).filter((q: any) => q.status === 'PENDING' && isExpired(q)).length;
@@ -120,294 +175,339 @@ export default function QuoteInboxPage() {
   const prices = pendingQuotes.map((q: any) => q.price).filter(Boolean);
   const minPrice = prices.length ? Math.min(...prices) : null;
   const maxPrice = prices.length ? Math.max(...prices) : null;
+  const hasPriceSpread = minPrice !== null && maxPrice !== null && maxPrice > minPrice;
+
+  const ranked = pendingQuotes
+    .slice()
+    .sort((a: any, b: any) => (b.provider?.ratingAvg ?? 0) - (a.provider?.ratingAvg ?? 0));
+
+  /* ONE ranking claim per card. "Best match" is only earned by a quote that is
+   * unambiguously the highest rated *and* isn't the most expensive one — the
+   * old version put "Best match" and "Highest" on the same card. */
+  const topRating = ranked[0]?.provider?.ratingAvg ?? 0;
+  const runnerUpRating = ranked[1]?.provider?.ratingAvg ?? 0;
+  const bestMatchId =
+    ranked.length > 1 && topRating > 0 && topRating > runnerUpRating &&
+    !(hasPriceSpread && ranked[0].price === maxPrice)
+      ? ranked[0].id
+      : null;
+
+  const confirmQuote = pendingQuotes.find((x: any) => x.id === confirmAcceptId);
+  const othersCount = pendingQuotes.length - 1;
 
   return (
     <CustomerLayout maxWidth="max-w-2xl">
-      {/* Inline sub-header */}
-      <div className="flex items-center gap-2.5 mb-5">
-        <button onClick={() => router.back()} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-bold text-base sm:text-lg leading-tight">{t.quoteInbox.title}</h1>
-          <p className="text-xs text-ink-dim">{request.category?.name}</p>
-        </div>
-        <span className={`px-2.5 py-1 rounded-full text-xs font-bold shrink-0 ${status.cls}`}>{status.label}</span>
-        <button onClick={load} className="p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-surface-alt rounded-full transition-colors shrink-0">
-          <RefreshCcw className="w-4 h-4 text-ink-dim" />
-        </button>
-      </div>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => router.back()}
+        className="-ml-2 mb-3"
+      >
+        <ArrowLeft className="w-4 h-4" /> {t.common.back}
+      </Button>
 
       <div className="space-y-5">
-        {/* Action error (accept/decline failed) */}
-        {actionError && (
-          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
-            <div className="flex items-start gap-2.5">
-              <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-caution leading-relaxed">{actionError}</p>
-            </div>
-            <button onClick={() => setActionError(null)} className="shrink-0 text-caution hover:opacity-70">
-              <XCircle className="w-4 h-4" />
-            </button>
-          </div>
-        )}
+        <PageHeader
+          title={s.title}
+          description={request.category?.name}
+          className="mb-0"
+          action={
+            <>
+              <DomainStatusBadge kind="request" status={request.status} dict={t} />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={load}
+                aria-label={s.checkForUpdates}
+                title={s.checkForUpdates}
+              >
+                <RefreshCcw className="w-4 h-4" />
+              </Button>
+            </>
+          }
+        />
 
         {/* Request summary */}
-        <div className="bg-card rounded-card border border-border-dim p-4 sm:p-6 shadow-card">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="px-2.5 py-1 bg-surface-alt text-ink-sub text-2xs font-bold uppercase tracking-widest rounded-full">
-                  {request.category?.name}
-                </span>
-                {request.isUrgent && (
-                  <span className="px-2.5 py-1 bg-caution-surface text-caution text-2xs font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> {t.hero.urgent}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-ink-sub leading-relaxed">{request.description}</p>
-            </div>
+        <Card radius="panel" padding="none" className="p-4 sm:p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <StatusBadge variant="neutral" label={request.category?.name ?? ''} />
+            {request.isUrgent && (
+              <StatusBadge variant="warning" label={t.hero.urgent} />
+            )}
           </div>
+          <p className="text-sm text-ink-sub leading-relaxed">{request.description}</p>
+
           {Array.isArray(request.photoUrls) && request.photoUrls.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mt-3">
               {request.photoUrls.map((u: string) => (
                 <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-input overflow-hidden border border-border-dim">
-                  <img src={u} alt="Request photo" className="w-full h-full object-cover" />
+                  <img src={u} alt="" className="w-full h-full object-cover" />
                 </a>
               ))}
             </div>
           )}
-          <div className="flex flex-wrap gap-3 text-xs text-ink-dim font-medium pt-3 border-t border-border-dim">
-            <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{request.address}</span>
-            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{new Date(request.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-            {request.budget && <span className="flex items-center gap-1">{t.quoteInbox.budgetLabel} €{request.budget}</span>}
+
+          <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-ink-dim font-medium pt-3 mt-3 border-t border-border-dim">
+            <span className="flex items-center gap-1 min-w-0"><MapPin className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{request.address}</span></span>
+            <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 shrink-0" />{new Date(request.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            {request.budget && <span>{s.budgetLabel} €{request.budget}</span>}
           </div>
-        </div>
+        </Card>
 
         {/* Price range summary */}
         {pendingQuotes.length > 1 && minPrice !== null && (
-          <div className="bg-card rounded-card border border-border-dim p-3.5 flex items-center gap-3">
+          <Card radius="panel" padding="none" className="p-3.5 flex items-center gap-3">
             <TrendingDown className="w-5 h-5 text-trust shrink-0" />
-            <div>
+            <div className="min-w-0">
               <p className="text-sm font-bold text-ink">
-                {t.quoteInbox.priceRangeLabel} <span className="text-trust">€{minPrice.toFixed(0)}</span> – <span className="text-ink-sub">€{maxPrice?.toFixed(0)}</span>
+                {s.priceRangeLabel} <span className="text-trust">€{minPrice.toFixed(0)}</span> – <span className="text-ink-sub">€{maxPrice?.toFixed(0)}</span>
               </p>
-              <p className="text-xs text-ink-dim mt-0.5">{t.quoteInbox.priceRangeHint}</p>
+              <p className="text-xs text-ink-dim mt-0.5">{s.priceRangeHint}</p>
             </div>
-          </div>
+          </Card>
         )}
 
-        {/* Accepted quote banner */}
+        {/* Accepted quote */}
         {acceptedQuote && (
-          <div className="bg-brand text-white rounded-card p-5 sm:p-6">
-            <div className="flex items-center gap-2 mb-2.5">
-              <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
-              <span className="font-bold text-sm sm:text-base">{t.quoteInbox.acceptedTitle}</span>
+          <Card radius="panel" padding="none" className="p-5 sm:p-6 shadow-elevated">
+            <div className="flex items-center gap-2.5 mb-3">
+              <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
+              <p className="font-bold text-base text-ink">{s.acceptedTitle}</p>
             </div>
-            <p className="text-sm text-white/80 mb-1.5">
-              {acceptedQuote.provider?.user?.name} · €{acceptedQuote.price?.toFixed(2)}
-            </p>
-            <p className="text-xs text-white/60 mb-4 leading-relaxed">{t.quoteInbox.acceptedHint}</p>
-            <div className="flex flex-col sm:flex-row gap-2.5">
+            <div className="flex items-center gap-2 mb-1.5">
+              <DomainStatusBadge kind="request" status="ACCEPTED" dict={t} />
+              <span className="text-sm text-ink-sub truncate">
+                {acceptedQuote.provider?.user?.name} · <span className="font-bold text-ink">€{acceptedQuote.price?.toFixed(2)}</span>
+              </span>
+            </div>
+            <p className="text-xs text-ink-dim mb-5 leading-relaxed">{s.acceptedHint}</p>
+            <div className="flex flex-wrap items-center gap-2.5">
               <Link
                 href={acceptedQuote.booking?.id ? `/bookings/${acceptedQuote.booking.id}` : '/bookings'}
-                className="flex-1 flex items-center justify-center gap-2 bg-card text-ink px-5 py-3 rounded-card text-sm font-bold hover:bg-surface-alt transition-colors"
+                className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'flex-1')}
               >
-                {t.quoteInbox.viewBooking} <ChevronRight className="w-4 h-4" />
+                {s.viewBooking} <ChevronRight className="w-4 h-4" />
               </Link>
-              <Link
-                href="/dashboard"
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white/15 text-white px-5 py-3 sm:py-2.5 rounded-card text-sm font-medium hover:bg-white/25 transition-colors"
-              >
+              <Link href="/dashboard" className={buttonVariants({ variant: 'secondary', size: 'lg' })}>
                 {t.nav.dashboard}
               </Link>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Waiting state */}
         {!acceptedQuote && pendingQuotes.length === 0 && (
-          <div className="bg-card rounded-card border border-dashed border-border-dim p-7 sm:p-10 text-center">
-            <div className="w-14 h-14 bg-surface-alt rounded-card flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="w-7 h-7 text-ink-dim" />
-            </div>
-            {request.targetProviderId ? (
-              <>
-                <p className="font-bold text-base mb-1.5">
-                  {t.quoteInbox.waitingForPrefix} {targetProviderName ?? t.wizard.chosenProFallback} {t.quoteInbox.waitingForSuffix}
-                </p>
-                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">
-                  {t.quoteInbox.directWaitingDesc}
-                </p>
-                <p className="text-xs text-ink-dim mt-3 max-w-xs mx-auto">
-                  {t.quoteInbox.notHearingBack}{' '}
-                  <Link
-                    href={`/requests/new?category=${request.category?.slug ?? ''}`}
-                    className="font-semibold text-brand hover:underline"
-                  >
-                    {t.quoteInbox.postOpenRequest}
-                  </Link>{' '}
-                  {t.quoteInbox.toReachAll} {request.category?.name?.toLowerCase() ?? ''} {t.quoteInbox.prosSuffix}
-                </p>
-              </>
-            ) : (
-              <>
-                <p className="font-bold text-base mb-1.5">{t.quoteInbox.waitingTitle}</p>
-                <p className="text-sm text-ink-sub leading-relaxed max-w-xs mx-auto">{t.quoteInbox.waitingDesc}</p>
-              </>
-            )}
-            {expiredCount > 0 && (
-              <p className="text-xs text-ink-dim mt-3">
-                {expiredCount} {expiredCount > 1 ? t.quoteInbox.expiredPlural : t.quoteInbox.expiredSingular}
-              </p>
-            )}
-            <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-input px-4 py-2.5 transition-colors">
-              <RefreshCcw className="w-3.5 h-3.5" /> {t.quoteInbox.checkForUpdates}
-            </button>
-          </div>
+          <Card radius="panel" padding="none" bordered={false} className="border border-dashed border-border-dim shadow-none">
+            <EmptyState
+              icon={MessageSquare}
+              size="lg"
+              title={
+                request.targetProviderId
+                  ? `${s.waitingForPrefix} ${targetProviderName ?? t.wizard.chosenProFallback} ${s.waitingForSuffix}`
+                  : s.waitingTitle
+              }
+              description={request.targetProviderId ? s.directWaitingDesc : s.waitingDesc}
+              action={
+                <div className="flex flex-col items-center gap-3">
+                  {request.targetProviderId && (
+                    <p className="text-xs text-ink-dim max-w-xs leading-relaxed">
+                      {s.notHearingBack}{' '}
+                      <Link
+                        href={`/requests/new?category=${request.category?.slug ?? ''}`}
+                        className="font-semibold text-brand hover:underline"
+                      >
+                        {s.postOpenRequest}
+                      </Link>{' '}
+                      {s.toReachAll} {request.category?.name?.toLowerCase() ?? ''} {s.prosSuffix}
+                    </p>
+                  )}
+                  {expiredCount > 0 && (
+                    <p className="text-xs text-ink-dim">
+                      {expiredCount} {expiredCount > 1 ? s.expiredPlural : s.expiredSingular}
+                    </p>
+                  )}
+                  <Button variant="secondary" size="md" onClick={load}>
+                    <RefreshCcw className="w-3.5 h-3.5" /> {s.checkForUpdates}
+                  </Button>
+                </div>
+              }
+            />
+          </Card>
         )}
 
         {/* Quotes list */}
         {!acceptedQuote && pendingQuotes.length > 0 && (
-          <div>
-            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{pendingQuotes.length} {pendingQuotes.length > 1 ? t.quoteInbox.quotesReceived : t.quoteInbox.quoteReceived}</p>
+          <section>
+            <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">
+              {pendingQuotes.length} {pendingQuotes.length > 1 ? s.quotesReceived : s.quoteReceived}
+            </p>
             <div className="space-y-4">
-              {pendingQuotes
-                .slice()
-                .sort((a: any, b: any) => (b.provider?.ratingAvg ?? 0) - (a.provider?.ratingAvg ?? 0))
-                .map((quote: any, i: number) => {
-                  const p = quote.provider;
-                  const eta = etaFromResponse(p?.responseTime, t.quoteInbox.today);
-                  return (
-                    <div key={quote.id} className={`bg-card rounded-card border p-4 sm:p-6 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
-                      {i === 0 && (
-                        <div className="flex items-center gap-1.5 mb-3">
-                          <Star className="w-3.5 h-3.5 text-brand fill-current" />
-                          <span className="text-2xs font-bold text-brand uppercase tracking-widest">{t.quoteInbox.bestMatch}</span>
-                        </div>
-                      )}
-                      <div className="flex items-start gap-4 mb-4">
-                        <img
-                          src={p?.user?.image || avatarUrl(p?.user?.name, 150)}
-                          alt={p?.user?.name}
-                          className="w-12 h-12 rounded-card object-cover shrink-0"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                            <span className="font-bold">{p?.user?.name}</span>
-                            {p?.isVerified && (
-                              <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wide">
-                                <ShieldCheck className="w-3 h-3" /> {t.common.verified}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-ink-dim">
-                            <span className="flex items-center gap-1">
-                              <Star className="w-3 h-3 text-brand fill-current" />
-                              <span className="font-bold text-ink">{p?.ratingAvg?.toFixed(1)}</span>
-                            </span>
-                            <span>{p?.completedJobs} {t.meetPros.jobs}</span>
-                            <span className="flex items-center gap-1 text-trust font-bold">
-                              <Timer className="w-3 h-3" /> {t.quoteInbox.etaLabel} {eta}
-                            </span>
-                          </div>
-                          <p className="text-xs text-ink-dim mt-1 truncate">{p?.categories?.map((c: any) => c.name).join(', ')}</p>
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-xl font-bold">€{quote.price?.toFixed(2)}</p>
-                          {quote.estimatedHours && (
-                            <p className="text-xs text-ink-dim mt-0.5">~{quote.estimatedHours}h</p>
-                          )}
-                          {expiresLabel(quote.expiresAt, t.quoteInbox) && (
-                            <p className="text-2xs text-caution mt-0.5">{expiresLabel(quote.expiresAt, t.quoteInbox)}</p>
-                          )}
-                          {minPrice !== null && maxPrice !== null && maxPrice > minPrice && (
-                            <p className="text-2xs text-ink-dim mt-0.5">
-                              {quote.price === minPrice ? (
-                                <span className="text-trust font-bold">{t.quoteInbox.lowest}</span>
-                              ) : quote.price === maxPrice ? (
-                                <span className="text-ink-sub">{t.quoteInbox.highest}</span>
-                              ) : (
-                                <span className="text-ink-dim">{t.quoteInbox.midRange}</span>
-                              )}
-                            </p>
-                          )}
-                        </div>
+              {ranked.map((quote: any) => {
+                const p = quote.provider;
+                const name = p?.user?.name ?? '';
+                const eta = etaFromResponse(p?.responseTime, s);
+                const isBestMatch = quote.id === bestMatchId;
+                const expiry = expiresLabel(quote.expiresAt, s);
+                const rank = !hasPriceSpread
+                  ? null
+                  : quote.price === minPrice ? s.lowest
+                  : quote.price === maxPrice ? s.highest
+                  : s.midRange;
+                const categories = (p?.categories ?? []).map((c: any) => c.name).filter(Boolean);
+                const busy = actioning === quote.id;
+
+                /* One truncating meta line — the old three-cell flex row had no
+                 * wrap and no min-w-0, so the ETA sentence ran under the price
+                 * column and got clipped. */
+                const meta = [
+                  p?.ratingAvg != null ? `★ ${p.ratingAvg.toFixed(1)}` : null,
+                  p?.completedJobs != null ? `${p.completedJobs} ${t.meetPros.jobs}` : null,
+                  eta,
+                ].filter(Boolean).join(' · ');
+
+                return (
+                  <Card
+                    key={quote.id}
+                    radius="panel"
+                    padding="none"
+                    className={cn('p-4 sm:p-5', isBestMatch && 'border-brand/40')}
+                  >
+                    {isBestMatch && (
+                      <div className="mb-3">
+                        <StatusBadge variant="brand" label={s.bestMatch} />
                       </div>
-                      {quote.notes && (
-                        <div className="p-3 bg-surface-alt rounded-input border border-border-dim mb-4">
-                          <p className="text-sm text-ink-sub italic">&quot;{quote.notes}&quot;</p>
+                    )}
+
+                    {/* Identity */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Avatar src={p?.user?.image} name={name} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className="font-bold text-sm text-ink truncate">{name}</span>
+                          {p?.isVerified && (
+                            <ShieldCheck
+                              className="w-4 h-4 text-trust shrink-0"
+                              aria-label={t.common.verified}
+                            />
+                          )}
                         </div>
-                      )}
-                      <div className="space-y-2 sm:space-y-0 sm:flex sm:gap-2">
-                        <button
-                          onClick={() => setConfirmAcceptId(quote.id)}
-                          disabled={actioning === quote.id}
-                          className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-card font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
+                        <p
+                          className="text-xs text-ink-sub truncate mt-0.5"
+                          title={`${meta} · ${s.etaLabel} ${eta}`}
                         >
-                          {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.quoteInbox.acceptQuote}</>}
-                        </button>
-                        <div className="flex gap-2">
-                          <Link
-                            href={`/providers/${p?.id}`}
-                            className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 border border-border-dim rounded-card font-bold text-sm text-ink hover:bg-surface-alt transition-colors"
-                          >
-                            {t.common.profile}
-                          </Link>
-                          {/* Chat entry removed: messaging unlocks only after
-                              the booking deposit is paid. */}
-                          <button
-                            onClick={() => handleQuote(quote.id, 'DECLINED')}
-                            disabled={!!actioning}
-                            className="p-3 border border-border-dim rounded-card text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
-                          >
-                            <XCircle className="w-5 h-5" />
-                          </button>
-                        </div>
+                          {meta}
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
+
+                    {/* Price strip — the hero figure, with its meta grouped
+                        beside it instead of a ragged right gutter. */}
+                    <div className="mt-3.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 bg-surface-alt border border-border-dim rounded-card px-3.5 py-3">
+                      <span className="text-2xl font-bold text-ink leading-none">
+                        €{quote.price?.toFixed(2)}
+                      </span>
+                      {quote.estimatedHours && (
+                        <span className="text-xs text-ink-sub">~{quote.estimatedHours}{s.hoursShort}</span>
+                      )}
+                      {expiry && (
+                        <span className={cn('text-xs', expiresSoon(quote.expiresAt) ? 'text-caution font-semibold' : 'text-ink-dim')}>
+                          {expiry}
+                        </span>
+                      )}
+                      {rank && (
+                        <StatusBadge variant="neutral" label={rank} className="ml-auto" />
+                      )}
+                    </div>
+
+                    {categories.length > 0 && (
+                      <p className="text-xs text-ink-dim truncate mt-2.5">{categories.join(', ')}</p>
+                    )}
+
+                    {quote.notes && (
+                      <p className="mt-3 pl-3 border-l-2 border-border-dim text-sm text-ink-sub italic leading-relaxed">
+                        {quote.notes}
+                      </p>
+                    )}
+
+                    {quoteError?.quoteId === quote.id && (
+                      <Alert
+                        variant="caution"
+                        className="mt-3"
+                        onDismiss={() => setQuoteError(null)}
+                      >
+                        {quoteError.message}
+                      </Alert>
+                    )}
+
+                    {/* One action row at every width. */}
+                    <div className="mt-4 flex items-center gap-2">
+                      <Button
+                        size="lg"
+                        className="flex-1"
+                        loading={busy}
+                        disabled={!!actioning}
+                        onClick={() => setConfirmAcceptId(quote.id)}
+                      >
+                        {!busy && <CheckCircle2 className="w-4 h-4" />} {s.acceptQuote}
+                      </Button>
+                      <Link
+                        href={`/providers/${p?.id}`}
+                        className={buttonVariants({ variant: 'secondary', size: 'lg' })}
+                      >
+                        {t.common.profile}
+                      </Link>
+                      <Button
+                        variant="ghost"
+                        size="lg"
+                        aria-label={s.dismissQuote}
+                        title={s.dismissQuote}
+                        disabled={!!actioning}
+                        onClick={() => handleQuote(quote.id, 'DECLINED')}
+                      >
+                        <X className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
-          </div>
+          </section>
         )}
       </div>
 
-      {/* Accept confirmation — accepting is one-shot and auto-declines the
-          other quotes, so make that explicit before committing. */}
-      {confirmAcceptId && (() => {
-        const q = pendingQuotes.find((x: any) => x.id === confirmAcceptId);
-        const othersCount = pendingQuotes.length - 1;
-        return (
-          <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-            <div className="bg-card rounded-panel p-6 w-full max-w-sm">
-              <h2 className="font-bold text-lg mb-2">{t.quoteInbox.confirmTitle}</h2>
-              <p className="text-sm text-ink-sub mb-1.5">
-                {q?.provider?.user?.name} · <span className="font-bold text-ink">€{q?.price?.toFixed(2)}</span>
-              </p>
-              <p className="text-sm text-ink-sub mb-6">
-                {t.quoteInbox.confirmDeposit}
-                {othersCount > 0 && ` ${t.quoteInbox.othersPrefix} ${othersCount} ${othersCount > 1 ? t.quoteInbox.othersDeclinedPlural : t.quoteInbox.otherDeclinedSingular}`}
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConfirmAcceptId(null)}
-                  className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
-                >
-                  {t.common.back}
-                </button>
-                <button
-                  onClick={() => { const id = confirmAcceptId; setConfirmAcceptId(null); handleQuote(id, 'ACCEPTED'); }}
-                  className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark flex items-center justify-center gap-2"
-                >
-                  <CheckCircle2 className="w-4 h-4" /> {t.quoteInbox.accept}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {/* Accepting is one-shot and auto-declines the other quotes, so make
+          that explicit before committing. */}
+      <Modal
+        open={!!confirmAcceptId}
+        onClose={() => setConfirmAcceptId(null)}
+        size="sm"
+        title={s.confirmTitle}
+        footer={
+          <ModalFooter>
+            <Button variant="secondary" size="lg" onClick={() => setConfirmAcceptId(null)}>
+              {t.common.back}
+            </Button>
+            <Button
+              size="lg"
+              onClick={() => {
+                const target = confirmAcceptId;
+                setConfirmAcceptId(null);
+                if (target) handleQuote(target, 'ACCEPTED');
+              }}
+            >
+              <CheckCircle2 className="w-4 h-4" /> {s.accept}
+            </Button>
+          </ModalFooter>
+        }
+      >
+        <p className="text-sm text-ink-sub mb-1.5">
+          {confirmQuote?.provider?.user?.name} · <span className="font-bold text-ink">€{confirmQuote?.price?.toFixed(2)}</span>
+        </p>
+        <p className="text-sm text-ink-sub leading-relaxed">
+          {s.confirmDeposit}
+          {othersCount > 0 && ` ${s.othersPrefix} ${othersCount} ${othersCount > 1 ? s.othersDeclinedPlural : s.otherDeclinedSingular}`}
+        </p>
+      </Modal>
     </CustomerLayout>
   );
 }

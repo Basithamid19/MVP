@@ -411,9 +411,8 @@ export default function ProviderJobDetailPage() {
           )}
           {/* Photos and the checklist are localStorage-only — say so plainly
               instead of whispering "this device only" inside a count line. */}
-          {/* I18N-TODO: jobDetail.deviceOnlyNotice */}
           <Alert variant="info" className="mt-3">
-            Photos and checklist progress are saved on this device only — they are not uploaded to the booking or shared with the customer.
+            {t.jobDetail.deviceOnlyNotice}
           </Alert>
         </Card>
 

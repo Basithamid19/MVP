@@ -111,6 +111,11 @@ export const lt: Dictionary = {
     support: 'Pagalba',
     contact: 'Susisiekti',
     copyright: 'Aladdin. Visos teisės saugomos.',
+    company: 'Įmonė',
+    about: 'Apie mus',
+    terms: 'Paslaugų teikimo sąlygos',
+    privacy: 'Privatumo politika',
+    postARequest: 'Paskelbti užklausą',
   },
 
   bookings: {
@@ -399,12 +404,14 @@ export const lt: Dictionary = {
     today: 'Šiandien',
     expired: 'Nebegalioja',
     expiresIn: 'Galioja dar',
+    minutesShort: ' min.',
     hoursShort: ' val.',
     daysShort: ' d.',
     lowest: 'Pigiausias',
     highest: 'Brangiausias',
     midRange: 'Vidutinis',
     acceptQuote: 'Priimti pasiūlymą',
+    dismissQuote: 'Atmesti šį pasiūlymą',
     confirmTitle: 'Priimti šį pasiūlymą?',
     confirmDeposit: 'Bus sukurtas užsakymas, o jį patvirtinsite sumokėję 20% užstatą.',
     othersPrefix: 'Dar',
@@ -412,6 +419,10 @@ export const lt: Dictionary = {
     othersDeclinedPlural: 'kiti pasiūlymai bus atmesti.',
     accept: 'Priimti',
     updateFailed: 'Nepavyko atnaujinti pasiūlymo. Bandykite dar kartą.',
+    errBlackout: 'Jūsų pasirinktą dieną šis meistras nedirba. Pasirinkite kitą dieną arba paprašykite pasiūlymo kito meistro.',
+    errDayUnavailable: 'Šis meistras tos savaitės dienos nedirba. Pasirinkite kitą dieną arba paprašykite pasiūlymo kito meistro.',
+    errOutsideHours: 'Jūsų pasirinktas laikas nepatenka į šio meistro darbo valandas. Pasirinkite kitą laiką.',
+    errTimeConflict: 'Tuo metu šis meistras jau turi kitą darbą. Pasirinkite kitą laiką arba priimkite kitą pasiūlymą.',
   },
 
   requestsList: {
@@ -434,6 +445,7 @@ export const lt: Dictionary = {
     browsePros: 'Naršyti meistrus',
     ongoing: 'Vykdomi',
     completed: 'Užbaigti',
+    past: 'Ankstesni',
     noActiveTitle: 'Aktyvių užsakymų nėra',
     noActiveDesc: 'Jūsų vykdomi ir užbaigti užsakymai bus rodomi čia.',
   },
@@ -657,6 +669,7 @@ export const lt: Dictionary = {
     notifications: 'Pranešimai',
     markAllRead: 'Žymėti visus skaitytais',
     markAllAsRead: 'Pažymėti visus kaip skaitytus',
+    moreNotifications: 'daugiau pranešimų',
     allCaughtUp: 'Naujų pranešimų nėra',
   },
 
@@ -792,6 +805,7 @@ export const lt: Dictionary = {
   },
 
   jobDetail: {
+    deviceOnlyNotice: 'Nuotraukos ir darbų sąrašo eiga saugomi tik šiame įrenginyje — jie nėra įkeliami į užsakymą ir nesidalinami su klientu.',
     backToJobs: 'Grįžti į darbus',
     idLabel: 'ID:',
     notFound: 'Užsakymas nerastas.',

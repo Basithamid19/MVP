@@ -111,6 +111,11 @@ export const en: Dictionary = {
     support: 'Support',
     contact: 'Contact',
     copyright: 'Aladdin. All rights reserved.',
+    company: 'Company',
+    about: 'About Us',
+    terms: 'Terms of Service',
+    privacy: 'Privacy Policy',
+    postARequest: 'Post a Request',
   },
 
   bookings: {
@@ -399,12 +404,14 @@ export const en: Dictionary = {
     today: 'Today',
     expired: 'Expired',
     expiresIn: 'Expires in',
+    minutesShort: ' min',
     hoursShort: 'h',
     daysShort: 'd',
     lowest: 'Lowest',
     highest: 'Highest',
     midRange: 'Mid range',
     acceptQuote: 'Accept Quote',
+    dismissQuote: 'Dismiss this quote',
     confirmTitle: 'Accept this quote?',
     confirmDeposit: "A booking will be created and you'll pay a 20% deposit to confirm it.",
     othersPrefix: 'Your',
@@ -412,6 +419,10 @@ export const en: Dictionary = {
     othersDeclinedPlural: 'other quotes will be declined.',
     accept: 'Accept',
     updateFailed: 'Could not update the quote. Please try again.',
+    errBlackout: "This pro is away on your requested date. Pick another day, or ask another pro for a quote.",
+    errDayUnavailable: "This pro doesn't work on that day of the week. Pick another day, or ask another pro for a quote.",
+    errOutsideHours: "Your requested time is outside this pro's working hours. Pick another time slot.",
+    errTimeConflict: 'This pro already has a job around that time. Pick another slot, or accept a different quote.',
   },
 
   requestsList: {
@@ -434,6 +445,7 @@ export const en: Dictionary = {
     browsePros: 'Browse Pros',
     ongoing: 'Ongoing',
     completed: 'Completed',
+    past: 'Past',
     noActiveTitle: 'No active bookings',
     noActiveDesc: 'Your ongoing and completed bookings will appear here.',
   },
@@ -657,6 +669,7 @@ export const en: Dictionary = {
     notifications: 'Notifications',
     markAllRead: 'Mark all read',
     markAllAsRead: 'Mark all as read',
+    moreNotifications: 'more notifications',
     allCaughtUp: "You're all caught up",
   },
 
@@ -792,6 +805,7 @@ export const en: Dictionary = {
   },
 
   jobDetail: {
+    deviceOnlyNotice: 'Photos and checklist progress are saved on this device only — they are not uploaded to the booking or shared with the customer.',
     backToJobs: 'Back to jobs',
     idLabel: 'ID:',
     notFound: 'Booking not found.',

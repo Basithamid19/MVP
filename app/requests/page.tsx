@@ -5,10 +5,13 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
-import { PageHeader } from '@/components/ui';
-import { Loader2, Clock, FileText, Plus, Users, AlertCircle } from 'lucide-react';
-import { localizedStatus } from '@/lib/status-labels';
+import {
+  DomainStatusBadge, EmptyState, PageHeader, SkeletonCard, buttonVariants,
+} from '@/components/ui';
+import { Clock, FileText, Plus, AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+
+const ACTIVE = ['NEW', 'CHATTING', 'QUOTED'];
 
 export default function RequestsPage() {
   const { status } = useSession();
@@ -27,43 +30,52 @@ export default function RequestsPage() {
     }
   }, [status, router]);
 
+  const header = (
+    <PageHeader
+      title={t.requestsList.title}
+      className="mb-0"
+      action={
+        <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'md' })}>
+          <Plus className="w-4 h-4" /> {t.requestsList.newRequest}
+        </Link>
+      }
+    />
+  );
+
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas">
-        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
-      </div>
+      <CustomerLayout maxWidth="max-w-2xl">
+        <div className="space-y-5">
+          {header}
+          <div className="space-y-2">
+            {[0, 1, 2].map(i => <SkeletonCard key={i} />)}
+          </div>
+        </div>
+      </CustomerLayout>
     );
   }
 
-  const active = requests.filter(r => ['NEW', 'CHATTING', 'QUOTED'].includes(r.status));
-  const past = requests.filter(r => !['NEW', 'CHATTING', 'QUOTED'].includes(r.status));
+  const active = requests.filter(r => ACTIVE.includes(r.status));
+  const past = requests.filter(r => !ACTIVE.includes(r.status));
 
   return (
     <CustomerLayout maxWidth="max-w-2xl">
       <div className="space-y-5">
-        <PageHeader
-          title={t.requestsList.title}
-          className="mb-0 items-center"
-          action={
-            <Link
-              href="/requests/new"
-              className="inline-flex items-center gap-1.5 bg-brand text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-brand-dark transition-all shrink-0"
-            >
-              <Plus className="w-4 h-4" /> {t.requestsList.newRequest}
-            </Link>
-          }
-        />
+        {header}
 
         {requests.length === 0 ? (
-          <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
-            <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-7 h-7 text-ink-dim" />
-            </div>
-            <p className="font-bold mb-1">{t.requestsList.emptyTitle}</p>
-            <p className="text-sm text-ink-dim mb-6">{t.requestsList.emptyDesc}</p>
-            <Link href="/requests/new" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brand-dark transition-all">
-              <Plus className="w-4 h-4" /> {t.requestsList.postARequest}
-            </Link>
+          <div className="bg-card rounded-panel border border-dashed border-border-dim">
+            <EmptyState
+              icon={FileText}
+              size="lg"
+              title={t.requestsList.emptyTitle}
+              description={t.requestsList.emptyDesc}
+              action={
+                <Link href="/requests/new" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+                  <Plus className="w-4 h-4" /> {t.requestsList.postARequest}
+                </Link>
+              }
+            />
           </div>
         ) : (
           <>
@@ -92,33 +104,34 @@ export default function RequestsPage() {
 
 function RequestCard({ r }: { r: any }) {
   const t = useTranslation();
-  const status = localizedStatus(t, 'request', r.status);
   const quoteCount = Array.isArray(r.quotes) ? r.quotes.filter((q: any) => q.status === 'PENDING').length : 0;
+
   return (
     <Link
       href={`/requests/${r.id}`}
       className="block bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
     >
       <div className="flex items-start justify-between gap-3 mb-1.5">
-        <p className="font-bold text-sm text-ink">{r.category?.name ?? t.requestsList.serviceFallback}</p>
-        <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase shrink-0 ${status.cls}`}>
-          {status.label}
-        </span>
+        <p className="font-bold text-sm text-ink min-w-0 truncate">{r.category?.name ?? t.requestsList.serviceFallback}</p>
+        <DomainStatusBadge kind="request" status={r.status} dict={t} />
       </div>
-      <p className="text-xs text-ink-sub line-clamp-2 leading-relaxed mb-2">{r.description}</p>
-      <div className="flex flex-wrap items-center gap-3 text-xs text-ink-dim">
-        <span className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
-          {new Date(r.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-        </span>
+
+      <p className="text-xs text-ink-sub line-clamp-2 leading-relaxed mb-2.5">{r.description}</p>
+
+      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-dim">
+        {/* Waiting quotes are the reason to tap this row — give them a chip. */}
         {quoteCount > 0 && (
-          <span className="flex items-center gap-1 font-semibold text-trust">
-            <Users className="w-3 h-3" /> {quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}
+          <span className="inline-flex items-center gap-1 bg-brand-muted text-brand font-bold px-2.5 py-1 rounded-chip">
+            {quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}
           </span>
         )}
+        <span className="flex items-center gap-1">
+          <Clock className="w-3 h-3 shrink-0" />
+          {new Date(r.dateWindow).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </span>
         {r.isUrgent && (
           <span className="flex items-center gap-1 font-semibold text-caution">
-            <AlertCircle className="w-3 h-3" /> {t.hero.urgent}
+            <AlertCircle className="w-3 h-3 shrink-0" /> {t.hero.urgent}
           </span>
         )}
       </div>

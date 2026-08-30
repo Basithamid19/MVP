@@ -5,14 +5,18 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
-import { PageHeader } from '@/components/ui';
-import { Loader2, Clock, Star, FileText, Search } from 'lucide-react';
-import { avatarUrl } from '@/lib/avatar';
-import { localizedStatus } from '@/lib/status-labels';
+import {
+  Avatar, DomainStatusBadge, EmptyState, PageHeader, SkeletonCard, buttonVariants,
+} from '@/components/ui';
+import { Clock, Star, FileText, Search } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 
+/* Anything that isn't live work belongs in history — CANCELED bookings used to
+ * be filtered out of both sections and became unreachable from this page. */
+const ONGOING = ['SCHEDULED', 'IN_PROGRESS'];
+
 export default function BookingsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const t = useTranslation();
   const [bookings, setBookings] = useState<any[]>([]);
@@ -30,14 +34,19 @@ export default function BookingsPage() {
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas">
-        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
-      </div>
+      <CustomerLayout maxWidth="max-w-2xl">
+        <div className="space-y-5">
+          <PageHeader title={t.bookingsList.title} className="mb-0" />
+          <div className="space-y-2">
+            {[0, 1, 2].map(i => <SkeletonCard key={i} />)}
+          </div>
+        </div>
+      </CustomerLayout>
     );
   }
 
-  const ongoing = bookings.filter(b => b.status === 'SCHEDULED' || b.status === 'IN_PROGRESS');
-  const completed = bookings.filter(b => b.status === 'COMPLETED');
+  const ongoing = bookings.filter(b => ONGOING.includes(b.status));
+  const past = bookings.filter(b => !ONGOING.includes(b.status));
 
   return (
     <CustomerLayout maxWidth="max-w-2xl">
@@ -45,15 +54,18 @@ export default function BookingsPage() {
         <PageHeader title={t.bookingsList.title} className="mb-0" />
 
         {bookings.length === 0 ? (
-          <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
-            <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4">
-              <FileText className="w-7 h-7 text-ink-dim" />
-            </div>
-            <p className="font-bold mb-1">{t.bookingsList.emptyTitle}</p>
-            <p className="text-sm text-ink-dim mb-6">{t.bookingsList.emptyDesc}</p>
-            <Link href="/browse" className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-full text-sm font-bold hover:bg-brand-dark transition-all">
-              <Search className="w-4 h-4" /> {t.bookingsList.browsePros}
-            </Link>
+          <div className="bg-card rounded-panel border border-dashed border-border-dim">
+            <EmptyState
+              icon={FileText}
+              size="lg"
+              title={t.bookingsList.emptyTitle}
+              description={t.bookingsList.emptyDesc}
+              action={
+                <Link href="/browse" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+                  <Search className="w-4 h-4" /> {t.bookingsList.browsePros}
+                </Link>
+              }
+            />
           </div>
         ) : (
           <>
@@ -61,25 +73,18 @@ export default function BookingsPage() {
               <section>
                 <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">{t.bookingsList.ongoing}</p>
                 <div className="space-y-2">
-                  {ongoing.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
+                  {ongoing.map(b => <BookingCard key={b.id} b={b} />)}
                 </div>
               </section>
             )}
 
-            {completed.length > 0 && (
+            {past.length > 0 && (
               <section>
-                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">{t.bookingsList.completed}</p>
+                <p className="text-xs font-bold text-ink-dim uppercase tracking-widest px-1 mb-3">{t.bookingsList.past}</p>
                 <div className="space-y-2">
-                  {completed.map(b => <React.Fragment key={b.id}><BookingCard b={b} /></React.Fragment>)}
+                  {past.map(b => <BookingCard key={b.id} b={b} />)}
                 </div>
               </section>
-            )}
-
-            {ongoing.length === 0 && completed.length === 0 && (
-              <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
-                <p className="font-bold mb-1">{t.bookingsList.noActiveTitle}</p>
-                <p className="text-sm text-ink-dim">{t.bookingsList.noActiveDesc}</p>
-              </div>
             )}
           </>
         )}
@@ -90,30 +95,36 @@ export default function BookingsPage() {
 
 function BookingCard({ b }: { b: any }) {
   const t = useTranslation();
+  const providerName = b.provider?.user?.name ?? '';
+  const service = b.quote?.request?.category?.name ?? t.requestsList.serviceFallback;
+  const rating = typeof b.review?.rating === 'number' ? b.review.rating : null;
+
   return (
     <Link
       href={`/bookings/${b.id}`}
       className="flex items-start gap-3 bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
     >
-      <img
-        src={b.provider?.user?.image || avatarUrl(b.provider?.user?.name, 80)}
-        alt={b.provider?.user?.name}
-        className="w-11 h-11 rounded-input object-cover shrink-0"
-      />
+      <Avatar src={b.provider?.user?.image} name={providerName} size="md" shape="square" />
+
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-sm truncate">{b.provider?.user?.name}</p>
-        <p className="text-xs text-ink-dim">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
-        <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
-          <Clock className="w-3 h-3" />
+        {/* The booked service is what the customer is scanning for; the pro's
+            name is supporting detail. */}
+        <p className="font-bold text-sm text-ink truncate">{service}</p>
+        <p className="text-xs text-ink-sub truncate mt-0.5">{providerName}</p>
+        <p className="text-xs text-ink-dim flex items-center gap-1 mt-1">
+          <Clock className="w-3 h-3 shrink-0" />
           {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
         </p>
       </div>
-      <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-        <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase ${localizedStatus(t, 'booking', b.status).cls}`}>
-          {localizedStatus(t, 'booking', b.status).label}
-        </span>
-        <span className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</span>
-        {b.review && <Star className="w-3 h-3 text-brand fill-current" />}
+
+      <div className="shrink-0 flex flex-col items-end gap-1.5">
+        <span className="font-bold text-sm text-ink leading-tight">€{b.totalAmount?.toFixed(2)}</span>
+        <DomainStatusBadge kind="booking" status={b.status} dict={t} />
+        {rating !== null && (
+          <span className="flex items-center gap-1 text-2xs font-semibold text-ink-sub">
+            <Star className="w-3 h-3 text-brand fill-current" /> {rating.toFixed(1)}
+          </span>
+        )}
       </div>
     </Link>
   );
