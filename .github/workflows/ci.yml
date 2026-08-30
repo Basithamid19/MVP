@@ -1,0 +1,33 @@
+# next.config.ts suppresses TS and ESLint errors during `next build`, so a
+# green deploy is not a correctness signal. This workflow is the place those
+# errors actually surface.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  typecheck-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The Prisma client is generated code; tsc can't resolve @prisma/client
+      # model types without it.
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint
+        run: npm run lint
