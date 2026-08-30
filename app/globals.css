@@ -18,6 +18,24 @@
   /* ── Neutral surfaces (warm off-white hierarchy) ──────────────────────────── */
   --color-canvas:       #f7f6f3;   /* page background — warm, not cold gray       */
   --color-surface-alt:  #faf9f7;   /* raised nested surfaces, input fills         */
+  --color-card:         #ffffff;   /* card/panel surface — use bg-card, not bg-white */
+
+  /* ── Category tints ───────────────────────────────────────────────────────── */
+  /*   Six muted, warm pastel surfaces (matched lightness/saturation) with a     */
+  /*   paired deep ink for text on top. Used on homepage service cards,          */
+  /*   category headers, and provider-profile cover strips.                      */
+  --color-cat-cleaning:        #ddefe6;   /* soft jade-mint (closest to brand)   */
+  --color-cat-cleaning-ink:    #1e5b48;
+  --color-cat-plumbing:        #dde9f0;   /* soft harbor blue                    */
+  --color-cat-plumbing-ink:    #1e4b6b;
+  --color-cat-electrical:      #f5ecd7;   /* soft amber                          */
+  --color-cat-electrical-ink:  #7a5410;
+  --color-cat-repairs:         #f3e4da;   /* soft clay                           */
+  --color-cat-repairs-ink:     #7c4023;
+  --color-cat-logistics:       #e8e5f1;   /* soft violet-gray                    */
+  --color-cat-logistics-ink:   #453a70;
+  --color-cat-assembly:        #e9eddb;   /* soft moss                           */
+  --color-cat-assembly-ink:    #4e5b21;
 
   /* ── Text hierarchy ───────────────────────────────────────────────────────── */
   --color-ink:      #1a1f2e;   /* primary text — charcoal with navy undertone    */
@@ -52,6 +70,18 @@
   /*   --font-manrope is set by next/font on <html>; falls back to system stack  */
   --font-sans: var(--font-manrope, "Manrope"), system-ui, -apple-system, sans-serif;
 
+  /* Micro-label sizes — replace all arbitrary text-[10px]/text-[11px] uses.     */
+  /* Nothing below 10px: 8–9px is under legible minimums.                        */
+  --text-2xs: 0.6875rem;              /* 11px — dense meta, badge text           */
+  --text-2xs--line-height: 1rem;
+  --text-3xs: 0.625rem;               /* 10px — smallest allowed: counters, tags */
+  --text-3xs--line-height: 0.875rem;
+
+  /* ── Motion ───────────────────────────────────────────────────────────────── */
+  /*   One easing for the whole app. Durations: 150 (hover), 250 (entrance),     */
+  /*   400 (large panels) — duration-<n> utilities are numeric in Tailwind v4.   */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+
   /* ── Radius scale ─────────────────────────────────────────────────────────── */
   /*   Use these semantic names in new components and updated pages.             */
   --radius-chip:  0.375rem;   /*  6px — compact badges, status dots              */
@@ -64,6 +94,7 @@
   --shadow-card:     0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-elevated: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
   --shadow-float:    0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-nav:      0 -4px 24px rgba(0,0,0,0.08);   /* upward — fixed bottom nav */
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -119,27 +150,27 @@
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   Utility Layer — project-specific helpers
+   Utilities — project-specific helpers (v4 @utility form so they compose
+   with variants like sm: and hover:)
    ───────────────────────────────────────────────────────────────────────────── */
-@layer utilities {
-  /* Hide scrollbar visually but keep scroll functionality */
-  .scrollbar-none {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  .scrollbar-none::-webkit-scrollbar {
+
+/* Hide scrollbar visually but keep scroll functionality */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
     display: none;
   }
+}
 
-  /* Premium input reset for consistent cross-browser appearance */
-  .input-reset {
-    appearance: none;
-    -webkit-appearance: none;
-  }
+/* Safe area padding for mobile bottom nav */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
 
-  /* Safe area padding for mobile bottom nav */
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom, 20px);
-  }
+/* THE bottom clearance for content above the fixed MobileNav.
+   Replaces the pb-16/20/24/28/32 drift — use pb-nav lg:pb-10 on page roots. */
+@utility pb-nav {
+  padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
 }
 

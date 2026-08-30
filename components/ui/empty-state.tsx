@@ -85,7 +85,7 @@ export function EmptyState({
       {/* Icon container */}
       <div
         className={cn(
-          'bg-surface-alt rounded-2xl flex items-center justify-center',
+          'bg-surface-alt rounded-card flex items-center justify-center',
           s.iconWrap
         )}
       >

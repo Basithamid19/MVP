@@ -1,22 +1,26 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { localizedStatus } from '@/lib/status-labels';
+import type { Dictionary } from '@/lib/i18n/types';
 
 /* ─── StatusBadge ───────────────────────────────────────────────────────────
- * Unified semantic badge/chip replacing all scattered inline badge styles.
+ * THE badge primitive. Two entry points:
+ *
+ *   1. Visual — pick a variant yourself:
+ *        <StatusBadge variant="success" label="Verified" />
+ *
+ *   2. Domain — pass a status enum + the i18n dictionary and get the
+ *      canonical translated label + variant for that pipeline:
+ *        <DomainStatusBadge kind="booking" status={b.status} dict={t} />
  *
  * Variant → token mapping:
- *   success  → green   (trust, verified, completed, active)
- *   warning  → amber   (caution, pending, urgent)
- *   info     → blue    (informational, fast-reply, scheduled)
- *   danger   → red     (dispute, rejected, canceled)
- *   neutral  → warm gray (basic, default, unverified)
- *   brand    → green   (premium, pro-tier, featured)
- *   purple   → purple  (top-rated, special tier)
- *
- * Usage:
- *   <StatusBadge variant="success" label="Verified" />
- *   <StatusBadge variant="warning" label="Pending" dot />
- *   <StatusBadge variant="info"    label="Scheduled" />
+ *   success    → trust green   (verified, completed, paid)
+ *   warning    → caution amber (pending, in progress, urgent)
+ *   info       → info blue     (scheduled, deposit held, new)
+ *   danger     → danger red    (dispute, declined, canceled)
+ *   neutral    → warm gray     (basic, expired, refunded)
+ *   brand      → jade tint     (in discussion, pro-tier, featured)
+ *   brandSolid → solid jade    (booked/accepted — the one "win" state)
  * ────────────────────────────────────────────────────────────────────────── */
 
 export type BadgeVariant =
@@ -26,7 +30,7 @@ export type BadgeVariant =
   | 'danger'
   | 'neutral'
   | 'brand'
-  | 'purple';
+  | 'brandSolid';
 
 const BADGE: Record<BadgeVariant, { pill: string; dot: string }> = {
   success: {
@@ -53,9 +57,9 @@ const BADGE: Record<BadgeVariant, { pill: string; dot: string }> = {
     pill: 'bg-brand-muted text-brand border border-brand/20',
     dot:  'bg-brand',
   },
-  purple: {
-    pill: 'bg-purple-50 text-purple-700 border border-purple-200',
-    dot:  'bg-purple-500',
+  brandSolid: {
+    pill: 'bg-brand text-white border border-brand',
+    dot:  'bg-white',
   },
 };
 
@@ -81,7 +85,7 @@ export function StatusBadge({
       className={cn(
         'inline-flex items-center gap-1.5 font-semibold rounded-chip',
         size === 'sm'
-          ? 'px-2.5 py-0.5 text-[11px] uppercase tracking-wide'
+          ? 'px-2.5 py-0.5 text-2xs uppercase tracking-wide'
           : 'px-3 py-1 text-xs uppercase tracking-wide',
         pill,
         className
@@ -93,31 +97,74 @@ export function StatusBadge({
   );
 }
 
-/* ─── Convenience helpers ───────────────────────────────────────────────────
- * Map common domain strings to badge variants, used by booking/request pages.
+/* ─── Domain variant maps ───────────────────────────────────────────────────
+ * One source of truth per pipeline, matched to lib/status-labels.ts colors.
  * ────────────────────────────────────────────────────────────────────────── */
 
-export function bookingStatusVariant(status: string): BadgeVariant {
-  const map: Record<string, BadgeVariant> = {
-    SCHEDULED:   'info',
-    IN_PROGRESS: 'warning',
-    COMPLETED:   'success',
-    CANCELED:    'danger',
-  };
+const REQUEST_VARIANT: Record<string, BadgeVariant> = {
+  NEW:       'info',
+  CHATTING:  'brand',
+  QUOTED:    'success',
+  ACCEPTED:  'brandSolid',
+  DECLINED:  'danger',
+  EXPIRED:   'neutral',
+};
+
+const BOOKING_VARIANT: Record<string, BadgeVariant> = {
+  SCHEDULED:   'info',
+  IN_PROGRESS: 'warning',
+  COMPLETED:   'success',
+  CANCELED:    'danger',
+};
+
+const PAYMENT_VARIANT: Record<string, BadgeVariant> = {
+  PENDING:        'warning',
+  DEPOSIT_HELD:   'info',
+  PROCESSING:     'info',
+  PAID:           'success',
+  REFUNDED:       'neutral',
+  PARTIAL_REFUND: 'neutral',
+};
+
+export function statusVariant(
+  kind: 'request' | 'booking' | 'payment',
+  status: string,
+): BadgeVariant {
+  const map =
+    kind === 'request' ? REQUEST_VARIANT :
+    kind === 'booking' ? BOOKING_VARIANT :
+    PAYMENT_VARIANT;
   return map[status] ?? 'neutral';
 }
 
-export function requestStatusVariant(status: string): BadgeVariant {
-  const map: Record<string, BadgeVariant> = {
-    NEW:       'info',
-    QUOTED:    'success',
-    CHATTING:  'brand',
-    ACCEPTED:  'success',
-    DECLINED:  'danger',
-    EXPIRED:   'neutral',
-    COMPLETED: 'neutral',
-  };
-  return map[status] ?? 'neutral';
+export interface DomainStatusBadgeProps {
+  kind:       'request' | 'booking' | 'payment';
+  status:     string;
+  dict:       Dictionary;
+  dot?:       boolean;
+  size?:      'sm' | 'md';
+  className?: string;
+}
+
+/** Translated label + canonical variant for a domain status enum. */
+export function DomainStatusBadge({
+  kind,
+  status,
+  dict,
+  dot,
+  size,
+  className,
+}: DomainStatusBadgeProps) {
+  const { label } = localizedStatus(dict, kind, status);
+  return (
+    <StatusBadge
+      variant={statusVariant(kind, status)}
+      label={label}
+      dot={dot}
+      size={size}
+      className={className}
+    />
+  );
 }
 
 export function verificationTierVariant(tier: string): BadgeVariant {

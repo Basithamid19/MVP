@@ -54,7 +54,7 @@ export const buttonVariants = cva(
         /* ── Danger ─────────────────────────────────────────────── */
         danger: [
           'bg-danger-surface text-danger border border-danger-edge',
-          'hover:bg-red-100',
+          'hover:bg-danger-edge/60',
         ].join(' '),
 
         /* ── Muted — for less important secondary actions ─────── */
@@ -66,12 +66,12 @@ export const buttonVariants = cva(
         /* ── Trust — semantic positive action (separate from brand) */
         trust: [
           'bg-trust-surface text-trust border border-trust-edge',
-          'hover:bg-green-100',
+          'hover:bg-trust-edge/60',
         ].join(' '),
       },
 
       size: {
-        xs: 'px-2.5 py-1   text-[11px] gap-1   rounded-chip',
+        xs: 'px-2.5 py-1   text-2xs    gap-1   rounded-chip',
         sm: 'px-3   py-1.5 text-xs     gap-1.5  rounded-input',
         md: 'px-4   py-2.5 text-sm     gap-2    rounded-input',
         lg: 'px-5   py-3   text-sm     gap-2    rounded-card  font-bold',
@@ -87,13 +87,38 @@ export const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {}
+    VariantProps<typeof buttonVariants> {
+  /** Shows a spinner and disables the button — keeps width stable. */
+  loading?: boolean;
+}
 
-export function Button({ className, variant, size, ...props }: ButtonProps) {
+export function Button({
+  className,
+  variant,
+  size,
+  loading = false,
+  disabled,
+  children,
+  ...props
+}: ButtonProps) {
   return (
     <button
       className={cn(buttonVariants({ variant, size }), className)}
+      disabled={disabled || loading}
       {...props}
-    />
+    >
+      {loading && (
+        <svg
+          className="animate-spin w-4 h-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+        </svg>
+      )}
+      {children}
+    </button>
   );
 }

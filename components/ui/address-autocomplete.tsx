@@ -104,10 +104,12 @@ export function AddressAutocomplete({
     if (debounceRef.current) clearTimeout(debounceRef.current);
   }, []);
 
-  const dropdown = open && suggestions.length > 0 && (
+  // One dropdown list shared by both variants (the inline branch previously
+  // carried a verbatim copy of this markup).
+  const suggestionList = open && suggestions.length > 0 && (
     <ul
       role="listbox"
-      className="absolute z-50 w-full mt-1.5 bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden"
+      className="w-full bg-card border border-border-dim rounded-panel shadow-float overflow-hidden"
     >
       {suggestions.map((s, i) => (
         <li
@@ -122,7 +124,7 @@ export function AddressAutocomplete({
         >
           <MapPin
             className={`w-4 h-4 mt-0.5 shrink-0 ${i === activeIdx ? 'text-brand' : 'text-ink-dim'}`}
-            strokeWidth={1.8}
+            strokeWidth={1.5}
           />
           <div className="min-w-0">
             <p className={`text-sm font-semibold truncate ${i === activeIdx ? 'text-brand' : 'text-ink'}`}>
@@ -156,37 +158,8 @@ export function AddressAutocomplete({
           <Loader2 className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim animate-spin pointer-events-none" />
         )}
         {/* Dropdown spans left from the MapPin — offset to cover the pin icon too */}
-        <div className="absolute top-full left-0 right-0" style={{ marginTop: '0.75rem' }}>
-          {open && suggestions.length > 0 && (
-            <ul
-              role="listbox"
-              className="w-full bg-white border border-border-dim rounded-2xl shadow-float overflow-hidden"
-            >
-              {suggestions.map((s, i) => (
-                <li
-                  key={s.full}
-                  role="option"
-                  aria-selected={i === activeIdx}
-                  onMouseDown={() => select(s)}
-                  onMouseEnter={() => setActiveIdx(i)}
-                  className={`flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors ${
-                    i === activeIdx ? 'bg-brand-muted' : 'hover:bg-canvas'
-                  } ${i > 0 ? 'border-t border-border-dim' : ''}`}
-                >
-                  <MapPin
-                    className={`w-4 h-4 mt-0.5 shrink-0 ${i === activeIdx ? 'text-brand' : 'text-ink-dim'}`}
-                    strokeWidth={1.8}
-                  />
-                  <div className="min-w-0">
-                    <p className={`text-sm font-semibold truncate ${i === activeIdx ? 'text-brand' : 'text-ink'}`}>
-                      {s.primary}
-                    </p>
-                    <p className="text-xs text-ink-dim truncate mt-0.5">{s.secondary}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="absolute top-full left-0 right-0 mt-3 z-50">
+          {suggestionList}
         </div>
       </div>
     );
@@ -208,13 +181,15 @@ export function AddressAutocomplete({
           autoComplete="off"
           aria-autocomplete="list"
           aria-expanded={open}
-          className="w-full pl-12 pr-10 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base transition-shadow"
+          className="w-full pl-12 pr-10 py-4 bg-card border border-border rounded-panel focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-base transition-shadow"
         />
         {loading && (
           <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-dim animate-spin" />
         )}
       </div>
-      {dropdown}
+      <div className="absolute top-full left-0 right-0 mt-1.5 z-50">
+        {suggestionList}
+      </div>
     </div>
   );
 }

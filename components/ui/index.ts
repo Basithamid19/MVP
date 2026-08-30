@@ -17,9 +17,9 @@ export type { CardProps }                      from './card';
 export { StatCard }                            from './stat-card';
 export type { StatCardProps }                  from './stat-card';
 
-export { StatusBadge, bookingStatusVariant, requestStatusVariant, verificationTierVariant }
+export { StatusBadge, DomainStatusBadge, statusVariant, verificationTierVariant }
                                                from './status-badge';
-export type { BadgeVariant, StatusBadgeProps } from './status-badge';
+export type { BadgeVariant, StatusBadgeProps, DomainStatusBadgeProps } from './status-badge';
 
 export { EmptyState }                          from './empty-state';
 export type { EmptyStateProps }                from './empty-state';
