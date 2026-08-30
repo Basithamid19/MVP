@@ -211,7 +211,25 @@ export const lt: Dictionary = {
     resetMissingToken: 'Ši nuoroda neteisinga arba nebegalioja. Užsisakykite naują.',
     goToLogin: 'Eiti į prisijungimą',
 
+    showPassword: 'Rodyti slaptažodį',
+    hidePassword: 'Slėpti slaptažodį',
+
     genericError: 'Kažkas nepavyko. Bandykite dar kartą.',
+  },
+
+  authShowcase: {
+    loginTitle: 'Geriausi meistrai Vilniuje.',
+    loginSubtitle: 'Prisijunkite ir sekite užsakymus, susirašinėkite su meistru — viskas vienoje vietoje.',
+    registerCustomerTitle: 'Jūsų namai — tvarkingai prižiūrimi.',
+    registerCustomerSubtitle: 'Paskelbkite darbą per kelias minutes ir palyginkite patvirtintų specialistų pasiūlymus.',
+    registerProviderTitle: 'Plėskite savo verslą Vilniuje.',
+    registerProviderSubtitle: 'Prisijunkite prie patvirtintų specialistų tinklo ir kasdien gaukite kokybiškų užsakymų.',
+    verifyTitle: 'Vienas žingsnis — dėl visų saugumo.',
+    verifySubtitle: 'Patvirtintos paskyros užtikrina pasitikėjimą tiek klientams, tiek specialistams.',
+    forgotTitle: 'Sugrįšite per minutę.',
+    forgotSubtitle: 'Atsiųsime saugią nuorodą el. paštu — susikursite naują slaptažodį ir tęsite darbus.',
+    resetTitle: 'Naujas slaptažodis — ir viskas paruošta.',
+    resetSubtitle: 'Pasirinkite stiprų slaptažodį. Jūsų užsakymai, žinutės ir mokėjimai lieka apsaugoti.',
   },
 
   heroCard: {
@@ -245,16 +263,12 @@ export const lt: Dictionary = {
   trustBanner: {
     guaranteeTitle: '30 dienų garantija',
     guaranteeDesc: 'Nemokamas pakartotinas apsilankymas arba pinigų grąžinimas per 30 dienų.',
-    guaranteeDescLong: 'Jei per 30 dienų nuo darbo atlikimo esate nepatenkinti — organizuosime nemokamą pakartotinį apsilankymą arba grąžinsime pinigus. Jokių ginčų, jokių komplikacijų.',
     pricingTitle: 'Aiški kaina iš anksto',
     pricingDesc: 'Visa kaina žinoma prieš pradedant darbą. Jokių paslėptų mokesčių.',
-    pricingDescLong: 'Kiekvienas pasiūlymas fiksuojamas prieš pradedant darbus. Matote visą kainą — darbo sąnaudos, medžiagos, viskas — prieš patvirtinant. Jokių papildomų mokesčių.',
     verifiedTitle: 'Patvirtinti specialistai',
     verifiedDesc: 'Patikrinti tapatybė, apdrausti ir įvertinti atitikties komandos.',
-    verifiedDescLong: 'Visi Aladdin specialistai yra patikrinti tapatybės, apdrausti ir peržiūrėti mūsų atitikties komandos, prieš galėdami priimti bet kokį užsakymą.',
     damageTitle: 'Žalos draudimas įskaičiuotas',
     damageDesc: 'Iki 100 € tinkamoms atsitiktinės žalos pretenzijoms.',
-    damageDescLong: 'Atsitiktinė žala darbo metu? Mes pasirūpiname. Tinkamos pretenzijos peržiūrimos ir apdorojamos per 5 darbo dienas.',
     builtForTrustTitle: 'Sukurta pasitikėjimui, sukurta Vilniui.',
     builtForTrustSubtitle: 'Kiekvienas užsakymas paremtas tikromis garantijomis, patvirtintais specialistais ir skaidriomis kainomis.',
     findAPro: 'Rasti meistrą',

@@ -4,9 +4,12 @@ import { AladdinIcon } from '@/components/icons';
 import React, { Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight, MailCheck } from 'lucide-react';
+import { Loader2, ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthShowcase from '@/components/AuthShowcase';
+import { Button, Input, buttonVariants } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -16,6 +19,8 @@ function ResetPasswordContent() {
 
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +89,7 @@ function ResetPasswordContent() {
               </div>
               <Link
                 href="/login"
-                className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2"
+                className={cn(buttonVariants({ variant: 'primary', size: 'xl' }), 'w-full')}
               >
                 {t.authFlow.goToLogin}
                 <ArrowRight className="w-4 h-4" />
@@ -98,39 +103,49 @@ function ResetPasswordContent() {
                 </div>
               )}
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.newPassword}</label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                  placeholder="••••••••"
-                />
-                <p className="text-xs text-ink-dim mt-2">{t.authFlow.passwordHint}</p>
-              </div>
+              <Input
+                label={t.authFlow.newPassword}
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                hint={t.authFlow.passwordHint}
+                trailing={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? t.authFlow.hidePassword : t.authFlow.showPassword}
+                    className="text-ink-dim hover:text-ink transition-colors duration-150 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
+              />
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.confirmNewPassword}</label>
-                <input
-                  type="password"
-                  required
-                  value={confirm}
-                  onChange={(e) => setConfirm(e.target.value)}
-                  className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                  placeholder="••••••••"
-                />
-              </div>
+              <Input
+                label={t.authFlow.confirmNewPassword}
+                type={showConfirm ? 'text' : 'password'}
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                placeholder="••••••••"
+                trailing={
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((v) => !v)}
+                    aria-label={showConfirm ? t.authFlow.hidePassword : t.authFlow.showPassword}
+                    className="text-ink-dim hover:text-ink transition-colors duration-150 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                  >
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
+              />
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.authFlow.resetButton}
-                {!loading && <ArrowRight className="w-4 h-4" />}
-              </button>
+              <Button type="submit" size="xl" className="w-full" loading={loading}>
+                {t.authFlow.resetButton}
+                <ArrowRight className="w-4 h-4" />
+              </Button>
             </form>
           )}
 
@@ -142,18 +157,7 @@ function ResetPasswordContent() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 relative items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
-        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <AladdinIcon className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">{t.authFlow.resetTitle}.</h2>
-            <p className="text-ink-sub leading-relaxed text-lg">{t.authFlow.resetSubtitle}.</p>
-          </div>
-        </div>
-      </div>
+      <AuthShowcase title={t.authShowcase.resetTitle} subtitle={t.authShowcase.resetSubtitle} />
     </div>
   );
 }

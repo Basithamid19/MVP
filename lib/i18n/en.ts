@@ -211,7 +211,25 @@ export const en: Dictionary = {
     resetMissingToken: 'This link is invalid or has expired. Request a new one.',
     goToLogin: 'Go to sign in',
 
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+
     genericError: 'Something went wrong. Please try again.',
+  },
+
+  authShowcase: {
+    loginTitle: 'The best pros in Vilnius.',
+    loginSubtitle: 'Sign in to track your bookings, message your pro, and keep every job in one place.',
+    registerCustomerTitle: 'Your home, handled properly.',
+    registerCustomerSubtitle: 'Post a job in minutes and compare quotes from verified professionals near you.',
+    registerProviderTitle: 'Grow your business in Vilnius.',
+    registerProviderSubtitle: 'Join our network of verified professionals and get high-quality leads every day.',
+    verifyTitle: 'One quick step to keep everyone safe.',
+    verifySubtitle: 'Verified accounts keep the marketplace trustworthy — for customers and professionals alike.',
+    forgotTitle: 'Back in, in a minute.',
+    forgotSubtitle: 'We will email you a secure link so you can pick a new password and carry on.',
+    resetTitle: 'A fresh password, and you are set.',
+    resetSubtitle: 'Choose something strong. Your bookings, messages, and payments stay protected.',
   },
 
   heroCard: {
@@ -245,16 +263,12 @@ export const en: Dictionary = {
   trustBanner: {
     guaranteeTitle: '30-Day Guarantee',
     guaranteeDesc: 'Free return visit or full refund within 30 days.',
-    guaranteeDescLong: "If you're unhappy with any job within 30 days of completion, we'll arrange a free return visit or issue a full refund — no arguments, no hassle.",
     pricingTitle: 'Upfront Pricing',
     pricingDesc: 'Full cost locked in before work begins. No hidden fees.',
-    pricingDescLong: 'Every quote is locked in before work begins. You see the full cost — labour, materials, everything — before you confirm. Zero hidden fees.',
     verifiedTitle: 'Verified Professionals',
     verifiedDesc: 'ID-verified, insured, and compliance-reviewed.',
-    verifiedDescLong: 'All Aladdin providers are ID-verified, insured, and reviewed by our compliance team before they can accept a single booking.',
     damageTitle: 'Damage Cover Included',
     damageDesc: 'Up to €100 on eligible accidental damage claims.',
-    damageDescLong: "Accidental damage during a job? We've got you covered. Eligible claims are reviewed and processed within 5 business days.",
     builtForTrustTitle: 'Built for trust, built for Vilnius.',
     builtForTrustSubtitle: 'Every booking is backed by real guarantees, verified professionals, and transparent pricing.',
     findAPro: 'Find a Pro',

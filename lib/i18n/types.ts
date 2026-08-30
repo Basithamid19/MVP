@@ -230,7 +230,27 @@ export interface Dictionary {
     resetMissingToken: string;
     goToLogin: string;
 
+    // Password visibility toggle (aria-labels)
+    showPassword: string;
+    hidePassword: string;
+
     genericError: string;
+  };
+
+  // Right-hand showcase panel on the auth screens (components/AuthShowcase)
+  authShowcase: {
+    loginTitle: string;
+    loginSubtitle: string;
+    registerCustomerTitle: string;
+    registerCustomerSubtitle: string;
+    registerProviderTitle: string;
+    registerProviderSubtitle: string;
+    verifyTitle: string;
+    verifySubtitle: string;
+    forgotTitle: string;
+    forgotSubtitle: string;
+    resetTitle: string;
+    resetSubtitle: string;
   };
 
   // Hero "Your project / Your Way" card
@@ -268,16 +288,12 @@ export interface Dictionary {
   trustBanner: {
     guaranteeTitle: string;
     guaranteeDesc: string;
-    guaranteeDescLong: string;
     pricingTitle: string;
     pricingDesc: string;
-    pricingDescLong: string;
     verifiedTitle: string;
     verifiedDesc: string;
-    verifiedDescLong: string;
     damageTitle: string;
     damageDesc: string;
-    damageDescLong: string;
     builtForTrustTitle: string;
     builtForTrustSubtitle: string;
     findAPro: string;

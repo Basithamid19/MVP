@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { Loader2, ArrowRight, MailCheck, MessageSquare } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthShowcase from '@/components/AuthShowcase';
+import { Button, Input } from '@/components/ui';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -123,29 +125,29 @@ function VerifyContent() {
 
             {channel === 'sms' ? (
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div>
-                  <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.codeLabel}</label>
-                  <input
-                    type="text"
-                    required
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    maxLength={6}
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                    className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim tracking-[0.4em] font-bold"
-                    placeholder={t.authFlow.codePlaceholder}
-                  />
-                </div>
+                <Input
+                  label={t.authFlow.codeLabel}
+                  type="text"
+                  required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                  className="tracking-[0.4em] font-bold text-base"
+                  placeholder={t.authFlow.codePlaceholder}
+                />
 
-                <button
+                <Button
                   type="submit"
-                  disabled={loading || code.length !== 6}
-                  className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  size="xl"
+                  className="w-full"
+                  loading={loading}
+                  disabled={code.length !== 6}
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.authFlow.verifyButton}
-                  {!loading && <ArrowRight className="w-4 h-4" />}
-                </button>
+                  {t.authFlow.verifyButton}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
               </form>
             ) : (
               <div className="p-4 bg-surface-alt border border-border-dim rounded-input flex items-start gap-3">
@@ -154,15 +156,16 @@ function VerifyContent() {
               </div>
             )}
 
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="xl"
+              className="w-full"
               onClick={handleResend}
-              disabled={resending || cooldown > 0}
-              className="w-full bg-white text-ink p-4 rounded-input font-bold border border-border hover:bg-surface-alt transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              loading={resending}
+              disabled={cooldown > 0}
             >
-              {resending ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
-              ) : cooldown > 0 ? (
+              {cooldown > 0 ? (
                 `${t.authFlow.resendCooldownPrefix} ${cooldown}s`
               ) : (
                 <>
@@ -170,7 +173,7 @@ function VerifyContent() {
                   {t.authFlow.resendButton}
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           <div className="mt-10 pt-10 border-t border-border-dim text-center">
@@ -181,22 +184,9 @@ function VerifyContent() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 relative items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
-        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <AladdinIcon className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">
-              {channel === 'sms' ? t.authFlow.verifySmsTitle : t.authFlow.verifyEmailTitle}.
-            </h2>
-            <p className="text-ink-sub leading-relaxed text-lg">
-              {channel === 'sms' ? t.authFlow.verifySmsBody : t.authFlow.spamNote}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Distinct reassurance copy — the panel must not parrot the left column,
+          which already carries the channel-specific instructions. */}
+      <AuthShowcase title={t.authShowcase.verifyTitle} subtitle={t.authShowcase.verifySubtitle} />
     </div>
   );
 }

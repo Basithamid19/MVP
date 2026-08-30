@@ -4,9 +4,11 @@ import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight, User, Briefcase, Mail, MessageSquare } from 'lucide-react';
+import { ArrowRight, User, Briefcase, Mail, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthShowcase from '@/components/AuthShowcase';
+import { Button, Input } from '@/components/ui';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -18,6 +20,7 @@ export default function RegisterPage() {
     email: '',
     password: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [channel, setChannel] = useState<'email' | 'sms'>('email');
   // Only offer SMS when this deployment actually has an SMS provider wired up.
@@ -107,20 +110,28 @@ export default function RegisterPage() {
           <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.auth.registerTitle}.</h1>
           <p className="text-ink-sub mb-10">{t.auth.registerSubtitle}.</p>
 
+          {/* High-emphasis selection tier — solid brand fill for the single
+              most consequential choice on the page. */}
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button
+              type="button"
               onClick={() => setRole('CUSTOMER')}
-              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
-                role === 'CUSTOMER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all duration-150 ${
+                role === 'CUSTOMER'
+                  ? 'bg-brand text-white shadow-elevated border-brand'
+                  : 'bg-card border-border text-ink-sub hover:border-border-dim'
               }`}
             >
               <User className="w-6 h-6" />
               <span className="text-xs font-bold uppercase tracking-widest">{t.auth.customerRole}</span>
             </button>
             <button
+              type="button"
               onClick={() => setRole('PROVIDER')}
-              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all ${
-                role === 'PROVIDER' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+              className={`p-4 rounded-input border flex flex-col items-center gap-2 transition-all duration-150 ${
+                role === 'PROVIDER'
+                  ? 'bg-brand text-white shadow-elevated border-brand'
+                  : 'bg-card border-border text-ink-sub hover:border-border-dim'
               }`}
             >
               <Briefcase className="w-6 h-6" />
@@ -135,52 +146,57 @@ export default function RegisterPage() {
               </div>
             )}
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.name}</label>
-              <input 
-                type="text" 
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                placeholder="Jonas Jonaitis"
-              />
-            </div>
+            <Input
+              label={t.auth.name}
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="Jonas Jonaitis"
+            />
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.email}</label>
-              <input 
-                type="email" 
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                placeholder="name@example.com"
-              />
-            </div>
+            <Input
+              label={t.auth.email}
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="name@example.com"
+            />
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.password}</label>
-              <input 
-                type="password" 
-                required
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                placeholder="••••••••"
-              />
-              <p className="text-xs text-ink-dim mt-2">{t.authFlow.passwordHint}</p>
-            </div>
+            <Input
+              label={t.auth.password}
+              type={showPassword ? 'text' : 'password'}
+              required
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="••••••••"
+              hint={t.authFlow.passwordHint}
+              trailing={
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? t.authFlow.hidePassword : t.authFlow.showPassword}
+                  className="text-ink-dim hover:text-ink transition-colors duration-150 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              }
+            />
 
             {smsAvailable && (
               <div>
                 <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.verifyByLabel}</label>
+                {/* Default selection tier — a reversible preference, not the
+                    headline choice, so tinted rather than solid. */}
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() => setChannel('email')}
-                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all ${
-                      channel === 'email' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all duration-150 ${
+                      channel === 'email'
+                        ? 'border-brand bg-brand-muted text-brand'
+                        : 'bg-card border-border text-ink-sub hover:border-border-dim'
                     }`}
                   >
                     <Mail className="w-4 h-4" />
@@ -189,8 +205,10 @@ export default function RegisterPage() {
                   <button
                     type="button"
                     onClick={() => setChannel('sms')}
-                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all ${
-                      channel === 'sms' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all duration-150 ${
+                      channel === 'sms'
+                        ? 'border-brand bg-brand-muted text-brand'
+                        : 'bg-card border-border text-ink-sub hover:border-border-dim'
                     }`}
                   >
                     <MessageSquare className="w-4 h-4" />
@@ -201,27 +219,20 @@ export default function RegisterPage() {
             )}
 
             {smsAvailable && channel === 'sms' && (
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.phone}</label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                  placeholder={t.authFlow.phonePlaceholder}
-                />
-              </div>
+              <Input
+                label={t.authFlow.phone}
+                type="tel"
+                required
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t.authFlow.phonePlaceholder}
+              />
             )}
 
-            <button
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.auth.registerButton}
-              {!loading && <ArrowRight className="w-4 h-4" />}
-            </button>
+            <Button type="submit" size="xl" className="w-full" loading={loading}>
+              {t.auth.registerButton}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border-dim text-center">
@@ -232,24 +243,11 @@ export default function RegisterPage() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 relative items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
-        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <AladdinIcon className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">
-              {role === 'PROVIDER' ? 'Grow your business in Vilnius.' : 'The best pros in Vilnius.'}
-            </h2>
-            <p className="text-ink-sub leading-relaxed text-lg">
-              {role === 'PROVIDER' 
-                ? 'Join our network of verified professionals and get access to high-quality leads every day.'
-                : 'Join thousands of residents who trust Aladdin for their home maintenance needs.'}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Showcase copy follows the role picker — the pitch differs per side. */}
+      <AuthShowcase
+        title={role === 'PROVIDER' ? t.authShowcase.registerProviderTitle : t.authShowcase.registerCustomerTitle}
+        subtitle={role === 'PROVIDER' ? t.authShowcase.registerProviderSubtitle : t.authShowcase.registerCustomerSubtitle}
+      />
     </div>
   );
 }

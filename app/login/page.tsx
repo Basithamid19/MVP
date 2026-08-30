@@ -5,13 +5,16 @@ import React, { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight, MailCheck } from 'lucide-react';
+import { Loader2, ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthShowcase from '@/components/AuthShowcase';
+import { Button, Input } from '@/components/ui';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   // Set when authorize() throws UnverifiedError — swaps the generic credential
@@ -155,43 +158,45 @@ export default function LoginPage() {
               </div>
             )}
 
-            <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.email}</label>
-              <input 
-                type="email" 
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                placeholder="name@example.com"
-              />
-            </div>
+            <Input
+              label={t.auth.email}
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@example.com"
+            />
 
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim">{t.auth.password}</label>
+              <Input
+                label={t.auth.password}
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                trailing={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? t.authFlow.hidePassword : t.authFlow.showPassword}
+                    className="text-ink-dim hover:text-ink transition-colors duration-150 rounded-chip focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
+              />
+              <div className="mt-2 text-right">
                 <Link href="/forgot-password" className="text-xs font-bold text-brand hover:underline">
                   {t.authFlow.forgotPassword}
                 </Link>
               </div>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                placeholder="••••••••"
-              />
             </div>
 
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.auth.loginButton}
-              {!loading && <ArrowRight className="w-4 h-4" />}
-            </button>
+            <Button type="submit" size="xl" className="w-full" loading={loading}>
+              {t.auth.loginButton}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
           </form>
 
           <div className="mt-10 pt-10 border-t border-border-dim text-center">
@@ -203,18 +208,7 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side - Visual */}
-      <div className="hidden lg:flex flex-1 relative items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
-        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <AladdinIcon className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">The best pros in Vilnius.</h2>
-            <p className="text-ink-sub leading-relaxed text-lg">Join thousands of residents who trust Aladdin for their home maintenance needs.</p>
-          </div>
-        </div>
-      </div>
+      <AuthShowcase title={t.authShowcase.loginTitle} subtitle={t.authShowcase.loginSubtitle} />
     </div>
   );
 }

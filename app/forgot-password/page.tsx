@@ -3,9 +3,11 @@
 import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Loader2, ArrowRight, MailCheck } from 'lucide-react';
+import { ArrowRight, MailCheck } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthShowcase from '@/components/AuthShowcase';
+import { Button, Input } from '@/components/ui';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -78,26 +80,19 @@ export default function ForgotPasswordPage() {
                 </div>
               )}
 
-              <div>
-                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.email}</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
-                  placeholder="name@example.com"
-                />
-              </div>
+              <Input
+                label={t.auth.email}
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+              />
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : t.authFlow.forgotButton}
-                {!loading && <ArrowRight className="w-4 h-4" />}
-              </button>
+              <Button type="submit" size="xl" className="w-full" loading={loading}>
+                {t.authFlow.forgotButton}
+                <ArrowRight className="w-4 h-4" />
+              </Button>
             </form>
           )}
 
@@ -109,18 +104,7 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
 
-      <div className="hidden lg:flex flex-1 relative items-center justify-center">
-        <div className="absolute inset-0 bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] [background-size:40px_40px] opacity-50"></div>
-        <div className="relative w-[600px] h-[600px] shrink-0 bg-white rounded-full shadow-float flex items-center justify-center p-20 border border-border-dim">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-brand rounded-panel flex items-center justify-center mx-auto mb-8 shadow-elevated">
-              <AladdinIcon className="w-12 h-12 text-white" />
-            </div>
-            <h2 className="text-3xl font-bold tracking-tight text-ink mb-4">{t.authFlow.forgotTitle}.</h2>
-            <p className="text-ink-sub leading-relaxed text-lg">{t.authFlow.forgotSubtitle}.</p>
-          </div>
-        </div>
-      </div>
+      <AuthShowcase title={t.authShowcase.forgotTitle} subtitle={t.authShowcase.forgotSubtitle} />
     </div>
   );
 }
