@@ -4,15 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Loader2, Calendar, Clock, ChevronRight, CheckCircle2,
-  MapPin, DollarSign, Briefcase,
-} from 'lucide-react';
+import { Loader2, Calendar, ChevronRight, MapPin, Briefcase } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
-import { localizedStatus } from '@/lib/status-labels';
 import { useTranslation } from '@/lib/i18n';
-import { PageHeader } from '@/components/ui';
+import { PageHeader, EmptyState, DomainStatusBadge, buttonVariants } from '@/components/ui';
+import { SegmentedFilter } from '@/components/SegmentedFilter';
 
 export default function ProviderJobsPage() {
   const { data: session, status } = useSession();
@@ -51,86 +48,78 @@ export default function ProviderJobsPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
-        <Link href="/provider/leads" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+      {/* Mobile-only section tabs — the rail is hidden below md, so every work
+          surface (leads, jobs, quotes) has to be reachable from here. */}
+      <nav className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
+        <Link href="/provider/leads" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center text-ink-sub hover:text-ink transition-colors">
           {t.providerNav.leads}
         </Link>
-        <div className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
+        <span aria-current="page" className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center bg-card text-brand shadow-card">
           {t.providerNav.jobs}
-        </div>
-      </div>
+        </span>
+        <Link href="/provider/quotes" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center text-ink-sub hover:text-ink transition-colors">
+          {t.providerNav.myQuotes}
+        </Link>
+      </nav>
 
       <PageHeader
         title={t.jobsPage.title}
         className="flex-col items-start sm:flex-row sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-8"
         action={
-        <div className="flex gap-1.5">
-          {([
-            { key: 'active' as const, label: t.jobsPage.filterActive, count: activeCt },
-            { key: 'completed' as const, label: t.jobsPage.filterCompleted, count: completedCt },
-            { key: 'all' as const, label: t.jobsPage.filterAll, count: bookings.length },
-          ]).map(f => (
-            <button key={f.key} onClick={() => setFilter(f.key)}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
-                filter === f.key
-                  ? 'bg-brand text-white shadow-card'
-                  : 'bg-card text-ink-sub border border-border-dim hover:text-ink'
-              }`}>
-              {f.label} ({f.count})
-            </button>
-          ))}
-        </div>
+          <SegmentedFilter
+            value={filter}
+            onChange={id => setFilter(id as typeof filter)}
+            options={[
+              { id: 'active', label: t.jobsPage.filterActive, count: activeCt },
+              { id: 'completed', label: t.jobsPage.filterCompleted, count: completedCt },
+              { id: 'all', label: t.jobsPage.filterAll, count: bookings.length },
+            ]}
+          />
         }
       />
 
       {filtered.length === 0 ? (
-        <div className="bg-card rounded-card sm:rounded-panel border border-dashed border-border-dim p-6 sm:p-10 text-center">
-          <div className="w-10 h-10 sm:w-14 sm:h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
-            <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
-          </div>
-          <p className="font-semibold text-base mb-1 text-ink">{emptyState.title}</p>
-          <p className="text-sm text-ink-sub mb-4">{emptyState.desc}</p>
-          {emptyState.showCta && (
-            <Link href="/provider/leads" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand hover:text-brand-dark transition-colors">
-              {t.providerDashboard.browseLeads} <ChevronRight className="w-4 h-4" />
-            </Link>
-          )}
+        <div className="bg-card rounded-card sm:rounded-panel border border-dashed border-border-dim">
+          <EmptyState
+            icon={Briefcase}
+            title={emptyState.title}
+            description={emptyState.desc}
+            action={emptyState.showCta ? (
+              <Link href="/provider/leads" className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+                {t.providerDashboard.browseLeads} <ChevronRight className="w-4 h-4" />
+              </Link>
+            ) : undefined}
+          />
         </div>
       ) : (
         <div className="space-y-2.5 sm:space-y-3">
           {filtered.map(b => (
             <Link key={b.id} href={`/provider/jobs/${b.id}`}
-              className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-card hover:shadow-elevated">
-              <div className="flex items-center gap-3 sm:gap-4">
-                <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0 ${
-                  b.status === 'IN_PROGRESS' ? 'bg-caution' :
-                  b.status === 'COMPLETED' ? 'bg-trust' :
-                  b.status === 'CANCELED' ? 'bg-danger' : 'bg-info'
-                }`} />
+              className="block bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-card hover:shadow-elevated">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-base sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase shrink-0 ${localizedStatus(t, 'booking', b.status).cls}`}>
-                      {localizedStatus(t, 'booking', b.status).label}
-                    </span>
+                    <p className="font-semibold text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
+                    <DomainStatusBadge kind="booking" status={b.status} dict={t} />
                   </div>
-                  <p className="hidden sm:flex text-sm text-ink-sub items-center gap-1.5 mb-1">
-                    <MapPin className="w-4 h-4 shrink-0" />
-                    {b.quote?.request?.address ?? '—'}
+                  {/* Location matters most on the phone the pro is standing
+                      with — it used to be desktop-only. */}
+                  <p className="text-xs sm:text-sm text-ink-sub flex items-center gap-1.5 min-w-0">
+                    <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
+                    <span className="truncate">{b.quote?.request?.address ?? '—'}</span>
                   </p>
-                  <p className="text-xs sm:text-sm text-ink-sub flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <p className="text-xs sm:text-sm text-ink-sub flex items-center gap-1.5 mt-0.5">
+                    <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
                     {formatVilnius(b.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
-              </div>
-              <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-6 sm:ml-0">
-                <div className="text-left sm:text-right shrink-0">
-                  <p className="font-semibold text-base sm:text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
-                  <p className="text-2xs sm:text-xs text-ink-dim">{t.jobsPage.yourShare}</p>
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <div className="text-right">
+                    <p className="font-semibold text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
+                    <p className="text-2xs sm:text-xs text-ink-dim">{t.jobsPage.yourShare}</p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-ink-dim" />
                 </div>
-                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-ink-dim shrink-0" />
               </div>
             </Link>
           ))}

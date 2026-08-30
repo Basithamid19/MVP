@@ -4,15 +4,19 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  ArrowLeft, MapPin, Phone, MessageSquare, CheckCircle2,
+  ArrowLeft, MapPin, Phone, MessageSquare, CheckCircle2, Check,
   Camera, Loader2, Navigation, Clock, X,
   ImagePlus, AlertTriangle, ChevronRight,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
-import { Avatar, Button, DomainStatusBadge, StatusBadge, useToast } from '@/components/ui';
+import {
+  Alert, Avatar, Button, buttonVariants, Card,
+  DomainStatusBadge, StatusBadge, useToast,
+} from '@/components/ui';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 // Transition map only — labels/colors come from the shared status module so
 // every surface reads the same vocabulary. Button labels are resolved from the
@@ -157,180 +161,96 @@ export default function ProviderJobDetailPage() {
   const address = booking.quote?.request?.address;
   const mapsUrl = address ? `https://maps.google.com/?q=${encodeURIComponent(address)}` : '#';
   const completedTasks = checklist.filter(Boolean).length;
+  const allDone = completedTasks === CHECKLIST_KEYS.length;
   const earnings = providerNet(booking.totalAmount).toFixed(2);
 
   return (
     <div className={`max-w-2xl mx-auto ${hasActionBar ? 'pb-24 md:pb-28' : ''}`}>
 
-      {/* ── Mobile: Unified header ── */}
-      <div className="sm:hidden">
-        {/* Back row */}
-        <div className="flex items-center gap-2 mb-3">
-          <Link href="/provider/jobs" className="p-1.5 -ml-1.5 hover:bg-surface-alt rounded-input transition-colors">
-            <ArrowLeft className="w-5 h-5 text-ink-sub" />
-          </Link>
-          <span className="text-xs text-ink-dim">{t.jobDetail.backToJobs}</span>
-        </div>
+      {/* ── Back ── */}
+      <Link
+        href="/provider/jobs"
+        className="inline-flex items-center gap-2 -ml-1.5 mb-3 px-1.5 py-1 rounded-input text-xs font-medium text-ink-dim hover:text-ink hover:bg-surface-alt transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t.jobDetail.backToJobs}
+      </Link>
 
-        {/* Title + status + earnings hero */}
-        <div className="bg-card rounded-card border border-border-dim shadow-card p-4 mb-3">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
-              <p className="text-3xs text-ink-dim mt-0.5 font-medium">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
-            </div>
-            <div className="flex flex-col items-end gap-1 shrink-0">
-              <DomainStatusBadge kind="booking" status={booking.status} dict={t} />
-              {!isCanceled && !isCompleted && (
-                <StatusBadge
-                  variant={chatUnlocked ? 'success' : 'warning'}
-                  label={chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Key details strip */}
-          <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-dim">
-            <div>
-              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.earnings}</p>
-              <p className="text-base font-bold text-trust">€{earnings}</p>
-            </div>
-            <div>
-              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.scheduled}</p>
-              <p className="text-xs font-semibold text-ink">
-                {formatVilnius(booking.scheduledAt, { day: 'numeric', month: 'short' })}
-              </p>
-              <p className="text-3xs text-ink-dim">
-                {formatVilnius(booking.scheduledAt, { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-            {booking.quote?.estimatedHours && (
-              <div>
-                <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.duration}</p>
-                <p className="text-xs font-semibold text-ink">~{booking.quote.estimatedHours}h</p>
-              </div>
-            )}
-          </div>
+      {/* ── Header — one tree, booking status leads, deposit state follows ── */}
+      <div className="flex items-start justify-between gap-3 mb-4 sm:mb-6">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg sm:text-2xl font-bold text-ink tracking-tight truncate">
+            {booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}
+          </h1>
+          <p className="text-2xs sm:text-xs text-ink-dim mt-0.5">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
         </div>
-      </div>
-
-      {/* ── Desktop: Original header ── */}
-      <div className="hidden sm:flex items-center gap-3 mb-6">
-        <Link href="/provider/jobs" className="p-2 hover:bg-surface-alt rounded-full transition-colors">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <div className="flex-1">
-          <h1 className="font-bold">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
-          <p className="text-xs text-ink-dim">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <DomainStatusBadge kind="booking" status={booking.status} dict={t} />
+          {!isCanceled && !isCompleted && (
+            <StatusBadge
+              variant={chatUnlocked ? 'success' : 'warning'}
+              label={chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
+            />
+          )}
         </div>
-        {!isCanceled && !isCompleted && (
-          <StatusBadge
-            size="md"
-            variant={chatUnlocked ? 'success' : 'warning'}
-            label={chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
-          />
-        )}
-        <DomainStatusBadge kind="booking" status={booking.status} dict={t} size="md" />
       </div>
 
       <div className="space-y-3 sm:space-y-5">
 
-        {/* Stripe Connect setup banner */}
+        {/* Stripe Connect setup — quiet notice, not a slab */}
         {!booking.provider?.stripeOnboarded && !isCanceled && (
-          <div className="bg-caution-surface border border-caution-edge rounded-card p-4 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-bold text-caution text-sm">{t.jobDetail.stripeTitle}</p>
-              <p className="text-xs text-caution mt-0.5 mb-3 leading-relaxed">
-                {t.earningsPage.payoutSetupDesc}
-              </p>
-              <button
+          <Alert
+            variant="caution"
+            icon={AlertTriangle}
+            title={t.jobDetail.stripeTitle}
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
                 onClick={async () => {
                   const res = await fetch('/api/provider/stripe-connect', { method: 'POST' });
                   const data = await res.json();
                   if (data.url) window.location.href = data.url;
                 }}
-                className="text-xs font-bold bg-caution text-white px-4 py-2 rounded-input hover:opacity-90 transition-opacity"
               >
                 {t.earningsPage.setUpPayouts}
-              </button>
-            </div>
-          </div>
+              </Button>
+            }
+          >
+            {t.earningsPage.payoutSetupDesc}
+          </Alert>
         )}
 
-        {/* ── Mobile: Customer compact card ── */}
-        <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
-          <div className="flex items-center gap-3 p-3.5">
+        {/* ── Customer ── */}
+        <Card padding="none" className="p-4 sm:p-5">
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3 sm:mb-4">{t.jobDetail.customer}</p>
+          <div className="flex items-center gap-3 mb-4">
             <Avatar
               src={customer?.user?.image}
               name={customer?.user?.name ?? ''}
               size="md"
               shape="square"
-              className="rounded-input"
             />
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-ink">{customer?.user?.name}</p>
+              <p className="font-bold text-ink truncate">{customer?.user?.name}</p>
               {address && (
-                <p className="text-2xs text-ink-dim flex items-center gap-1 mt-0.5 truncate">
-                  <MapPin className="w-3 h-3 shrink-0" /> {address}
+                <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5 min-w-0">
+                  <MapPin className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{address}</span>
                 </p>
               )}
             </div>
           </div>
-          {/* Action row — Message only appears once the deposit is paid */}
-          <div className={`border-t border-border-dim grid divide-x divide-border-dim ${chatUnlocked ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {/* One responsive action row — absent affordances simply don't render */}
+          <div className="flex flex-wrap gap-2">
             {chatUnlocked && (
-              <button onClick={() => setShowChat(true)}
-                className="flex items-center justify-center gap-1.5 py-2.5 bg-brand text-white text-xs font-semibold">
-                <MessageSquare className="w-3.5 h-3.5" /> {t.bookingDetail.message}
-              </button>
+              <Button className="flex-1 min-w-[8rem]" onClick={() => setShowChat(true)}>
+                <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
+              </Button>
             )}
-            <button
-              onClick={() => {
-                const phone = customer?.phone;
-                if (phone) window.location.href = `tel:${phone}`;
-                else toast.info(t.bookingDetail.callMasking);
-              }}
-              className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" /> {t.bookingDetail.call}
-            </button>
-            {address ? (
-              <a href={mapsUrl} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors">
-                <Navigation className="w-3.5 h-3.5" /> {t.jobDetail.navigate}
-              </a>
-            ) : (
-              <div className="flex items-center justify-center py-2.5 text-xs text-ink-dim">—</div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Desktop: Customer card (original) ── */}
-        <div className="hidden sm:block bg-card rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
-          <div className="flex items-center gap-3 mb-4">
-            <Avatar
-              src={customer?.user?.image}
-              name={customer?.user?.name ?? ''}
-              size="lg"
-              shape="square"
-              className="w-12 h-12"
-            />
-            <div className="flex-1">
-              <p className="font-bold">{customer?.user?.name}</p>
-              {address && (
-                <p className="text-xs text-ink-dim flex items-center gap-1 mt-0.5">
-                  <MapPin className="w-3 h-3" /> {address}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2">
             <Button
               variant="secondary"
-              className="flex-1"
+              className="flex-1 min-w-[8rem]"
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
@@ -339,105 +259,107 @@ export default function ProviderJobDetailPage() {
             >
               <Phone className="w-4 h-4" /> {t.bookingDetail.call}
             </Button>
-            {chatUnlocked && (
-              <Button className="flex-1" onClick={() => setShowChat(true)}>
-                <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
-              </Button>
-            )}
             {address && (
-              <a href={mapsUrl} target="_blank" rel="noreferrer"
-                className="flex items-center justify-center gap-2 px-4 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors">
+              <a
+                href={mapsUrl}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(buttonVariants({ variant: 'secondary' }), 'flex-1 min-w-[8rem]')}
+              >
                 <Navigation className="w-4 h-4" /> {t.jobDetail.navigate}
               </a>
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* ── Desktop: Job details (original) ── */}
-        <div className="hidden sm:block bg-card rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.jobDetails}</p>
+        {/* ── Job details ── */}
+        <Card padding="none" className="p-4 sm:p-5">
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3 sm:mb-4">{t.jobDetail.jobDetails}</p>
           <div className="space-y-3 text-sm">
-            <div className="flex justify-between">
-              <span className="text-ink-dim flex items-center gap-2"><Clock className="w-4 h-4" /> {t.jobDetail.scheduled}</span>
-              <span className="font-semibold">
+            <div className="flex items-baseline justify-between gap-4">
+              <span className="text-ink-dim flex items-center gap-2 shrink-0">
+                <Clock className="w-4 h-4" /> {t.jobDetail.scheduled}
+              </span>
+              <span className="font-semibold text-ink text-right">
                 {formatVilnius(booking.scheduledAt, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
               </span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex items-baseline justify-between gap-4">
               <span className="text-ink-dim">{t.jobDetail.yourEarnings}</span>
-              <span className="font-bold text-trust">€{earnings}</span>
+              <span className="font-bold text-trust text-right">€{earnings}</span>
             </div>
             {booking.quote?.estimatedHours && (
-              <div className="flex justify-between">
+              <div className="flex items-baseline justify-between gap-4">
                 <span className="text-ink-dim">{t.jobDetail.estimatedHours}</span>
-                <span className="font-semibold">~{booking.quote.estimatedHours}h</span>
+                <span className="font-semibold text-ink text-right">~{booking.quote.estimatedHours}h</span>
               </div>
             )}
           </div>
           {booking.quote?.notes && (
             <div className="mt-4 p-3 bg-surface-alt rounded-input border border-border-dim">
-              <p className="text-xs text-ink-dim font-bold uppercase tracking-widest mb-1">{t.jobDetail.jobNotes}</p>
-              <p className="text-sm text-ink-sub whitespace-pre-wrap">{booking.quote.notes}</p>
+              <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-1">{t.jobDetail.jobNotes}</p>
+              <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
             </div>
           )}
-        </div>
-
-        {/* ── Mobile: Job notes (if present) ── */}
-        {booking.quote?.notes && (
-          <div className="sm:hidden bg-card rounded-card border border-border-dim p-3.5 shadow-card">
-            <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1.5">{t.jobDetail.jobNotes}</p>
-            <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
-          </div>
-        )}
+        </Card>
 
         {/* ── Checklist ── */}
-        <div className="bg-card rounded-card sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-card sm:shadow-card">
-          <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-            <p className="text-xs sm:text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-              completedTasks === CHECKLIST_KEYS.length
-                ? 'bg-trust-surface text-trust'
-                : 'bg-surface-alt text-ink-dim'
-            }`}>
-              {completedTasks}/{CHECKLIST_KEYS.length}
-            </span>
+        <Card padding="none" className="p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
+            <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
+            <StatusBadge
+              variant={allDone ? 'success' : 'neutral'}
+              label={`${completedTasks}/${CHECKLIST_KEYS.length}`}
+            />
           </div>
-          <div className="w-full bg-surface-alt rounded-full h-1 sm:h-1.5 mb-3 sm:mb-4">
-            <div className={`h-full rounded-full transition-all ${
-              completedTasks === CHECKLIST_KEYS.length ? 'bg-trust' : 'bg-brand'
-            }`} style={{ width: `${(completedTasks / CHECKLIST_KEYS.length) * 100}%` }} />
+          <div className="w-full h-1.5 rounded-full bg-surface-alt mb-4 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-brand transition-all"
+              style={{ width: `${(completedTasks / CHECKLIST_KEYS.length) * 100}%` }}
+            />
           </div>
-          <div className="space-y-0.5 sm:space-y-2">
+          <div className="space-y-1">
             {CHECKLIST_KEYS.map((taskKey, i) => (
               <button
                 key={i}
+                type="button"
+                aria-pressed={checklist[i]}
                 onClick={() => setChecklist(prev => prev.map((v, j) => j === i ? !v : v))}
-                className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-input sm:rounded-input text-left transition-all ${
-                  checklist[i]
-                    ? 'bg-trust-surface/50'
-                    : 'hover:bg-surface-alt active:bg-surface-alt'
-                }`}
+                className={cn(
+                  'w-full flex items-center gap-3 px-2.5 py-2.5 rounded-input text-left transition-colors',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+                  checklist[i] ? 'bg-brand-muted/40' : 'hover:bg-surface-alt active:bg-surface-alt',
+                )}
               >
-                {checklist[i]
-                  ? <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
-                  : <div className="w-5 h-5 rounded-full border-2 border-border shrink-0" />
-                }
-                <span className={`text-sm sm:text-sm leading-snug ${
-                  checklist[i] ? 'line-through text-ink-dim' : 'font-medium text-ink'
-                }`}>{t.jobDetail[taskKey]}</span>
+                <span
+                  className={cn(
+                    'w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors',
+                    checklist[i] ? 'bg-brand border-brand text-white' : 'border-border',
+                  )}
+                >
+                  {checklist[i] && <Check className="w-3 h-3" strokeWidth={3} />}
+                </span>
+                <span className={cn(
+                  'text-sm leading-snug',
+                  checklist[i] ? 'line-through text-ink-dim' : 'font-medium text-ink',
+                )}>
+                  {t.jobDetail[taskKey]}
+                </span>
               </button>
             ))}
           </div>
-        </div>
+        </Card>
 
         {/* ── Photos / Documentation ── */}
-        <div className="bg-card rounded-card sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-card sm:shadow-card">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <Card padding="none" className="p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
-              <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
-              <p className="text-xs sm:text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.documentation}</p>
+              <Camera className="w-4 h-4 text-ink-dim" />
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.documentation}</p>
             </div>
-            <span className="text-3xs font-medium text-ink-dim">{photos.length} {photos.length !== 1 ? t.jobDetail.photosPlural : t.jobDetail.photoSingular} · {t.jobDetail.thisDeviceOnly}</span>
+            <span className="text-2xs font-medium text-ink-dim">
+              {photos.length} {photos.length !== 1 ? t.jobDetail.photosPlural : t.jobDetail.photoSingular}
+            </span>
           </div>
           <input
             ref={fileRef}
@@ -468,7 +390,7 @@ export default function ProviderJobDetailPage() {
             /* Photo grid */
             <div className="flex flex-wrap gap-2 sm:gap-3">
               {photos.map((p, i) => (
-                <div key={i} className="relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input sm:rounded-input overflow-hidden border border-border">
+                <div key={i} className="relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input overflow-hidden border border-border">
                   <img src={p.preview} alt={p.label} className="w-full h-full object-cover" />
                   <button
                     onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
@@ -481,24 +403,30 @@ export default function ProviderJobDetailPage() {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploadingPhoto}
-                className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
+                className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
               >
                 {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-3xs font-bold">{t.jobDetail.add}</span></>}
               </button>
             </div>
           )}
-        </div>
+          {/* Photos and the checklist are localStorage-only — say so plainly
+              instead of whispering "this device only" inside a count line. */}
+          {/* I18N-TODO: jobDetail.deviceOnlyNotice */}
+          <Alert variant="info" className="mt-3">
+            Photos and checklist progress are saved on this device only — they are not uploaded to the booking or shared with the customer.
+          </Alert>
+        </Card>
 
         {/* ── Issue / Support ── */}
         {!isCanceled && (
           <Link href="/provider/disputes"
-            className="flex items-center gap-3 p-3 sm:p-4 bg-card sm:bg-surface-alt rounded-input sm:rounded-card border border-border-dim sm:border-border-dim text-sm group hover:border-caution-edge transition-all">
-            <div className="w-8 h-8 bg-surface-alt sm:bg-card rounded-lg flex items-center justify-center shrink-0 group-hover:bg-caution-surface transition-colors">
+            className="flex items-center gap-3 p-3 sm:p-4 bg-card rounded-card border border-border-dim group hover:border-caution-edge transition-colors">
+            <div className="w-8 h-8 bg-surface-alt rounded-input flex items-center justify-center shrink-0 group-hover:bg-caution-surface transition-colors">
               <AlertTriangle className="w-4 h-4 text-ink-dim group-hover:text-caution transition-colors" />
             </div>
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-ink">{t.bookingDetail.reportIssue}</p>
-              <p className="text-3xs text-ink-dim">{t.jobDetail.reportIssueDesc}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-ink">{t.bookingDetail.reportIssue}</p>
+              <p className="text-2xs text-ink-dim">{t.jobDetail.reportIssueDesc}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
           </Link>
@@ -506,30 +434,27 @@ export default function ProviderJobDetailPage() {
       </div>
 
       {/* Bottom action bar — status can only advance once the deposit is paid
-          (server enforces the same rule with a 409). Until then, show an
-          explicit "awaiting deposit" state so the provider knows not to start. */}
+          (server enforces the same rule with a 409). Until then the advance
+          button stays visibly disabled with the reason spelled out above it. */}
       {hasActionBar && (
         <div className="fixed bottom-0 left-0 right-0 z-40">
           <div className="bg-card/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
             <div className="max-w-2xl mx-auto">
-              {chatUnlocked ? (
-                <Button
-                  onClick={() => updateStatus(flow.next)}
-                  loading={actioning}
-                  size="lg"
-                  className="w-full py-3.5 sm:py-4 shadow-elevated"
-                >
-                  {!actioning && <CheckCircle2 className="w-5 h-5" />}
-                  {nextLabel}
-                </Button>
-              ) : (
-                <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-card sm:rounded-card">
-                  <Clock className="w-4 h-4 text-caution shrink-0" />
-                  <p className="text-sm font-semibold text-caution">
-                    {t.jobDetail.awaitingDeposit}
-                  </p>
-                </div>
+              {!chatUnlocked && (
+                <p className="text-xs text-ink-dim text-center mb-2">{t.jobDetail.awaitingDeposit}</p>
               )}
+              <Button
+                onClick={() => updateStatus(flow.next)}
+                loading={actioning}
+                disabled={!chatUnlocked}
+                size="lg"
+                className="w-full py-3.5 sm:py-4 shadow-elevated"
+              >
+                {chatUnlocked
+                  ? (!actioning && <CheckCircle2 className="w-5 h-5" />)
+                  : <Clock className="w-5 h-5" />}
+                {nextLabel}
+              </Button>
             </div>
           </div>
         </div>
