@@ -1233,4 +1233,49 @@ export interface Dictionary {
     successDescHours: string;
     successDescSuffix: string;
   };
+
+  // Customer account hub (app/account/AccountClient.tsx)
+  accountPage: {
+    navProfile: string;
+    navActivity: string;
+    navServices: string;
+    navSupport: string;
+    navAccount: string;
+    sectionsNav: string;
+    roleCustomer: string;
+    roleProvider: string;
+    roleAdmin: string;
+    changePhoto: string;
+    uploadFailed: string;
+    statBookings: string;
+    statSpent: string;
+    statReviews: string;
+    invoices: string;
+    invoiceSingular: string;
+    invoicesPlural: string;
+    invoicesEmpty: string;
+    invoiceServiceFallback: string;
+    invoiceDownload: string;
+    statusPaid: string;
+    statusRefunded: string;
+    statusProcessing: string;
+    statusPending: string;
+    credits: string;
+    creditsAvailable: string;
+    creditBalance: string;
+    creditsHint: string;
+    copy: string;
+    copied: string;
+    newRequest: string;
+    newRequestSub: string;
+    findPros: string;
+    findProsSub: string;
+    chatWithUs: string;
+    chatWithUsSub: string;
+    helpCentre: string;
+    helpCentreSub: string;
+    disputeBooking: string;
+    disputeBookingSub: string;
+    emailUs: string;
+  };
 }

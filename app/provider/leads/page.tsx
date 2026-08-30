@@ -227,7 +227,7 @@ export default function ProviderLeadsPage() {
                           <span className="text-2xs sm:text-xs font-medium text-ink-sub ml-0.5 sm:ml-1">{quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}</span>
                         )}
                       </div>
-                      <p className="text-base sm:text-base font-semibold text-ink line-clamp-2">{lead.description}</p>
+                      <p className="text-base font-semibold text-ink line-clamp-2">{lead.description}</p>
                       <div className="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-3 flex-wrap">
                         <span className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-ink-sub">
                           <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {lead.address}

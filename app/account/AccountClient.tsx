@@ -5,21 +5,27 @@ import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Loader2, Gift, Share2, FileText, LogOut,
-  ChevronRight, User, Receipt, Download, Star,
+  Loader2, Gift, LogOut,
+  ChevronRight, User, Receipt, Download,
   Mail, MessageCircle, HelpCircle, LifeBuoy,
-  MapPin, Heart, Clock, ShieldCheck, Camera,
-  Plus,
+  Search, ShieldCheck, Camera, Plus,
 } from 'lucide-react';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Section, SettingsRow, HeroCard } from '@/components/settings';
-import { PageHeader } from '@/components/ui';
+import { Button, StatusBadge, statusVariant, useToast } from '@/components/ui';
+import { useTranslation } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
+
+/* Anchor ids for the desktop rail — also the scroll-spy observation set. */
+const SECTION_IDS = ['profile', 'activity', 'services', 'support', 'account'] as const;
 
 export default function AccountPage({
   initialBookings = [],
 }: { initialBookings?: any[] } = {}) {
   const { data: session, status, update: updateSession } = useSession();
   const router = useRouter();
+  const t = useTranslation();
+  const { toast } = useToast();
   const hasInitial = initialBookings.length > 0;
   const [bookings, setBookings] = useState<any[]>(initialBookings);
   const [loading, setLoading] = useState(!hasInitial);
@@ -27,6 +33,7 @@ export default function AccountPage({
   const [showCredits, setShowCredits] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [localAvatar, setLocalAvatar] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>(SECTION_IDS[0]);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -39,9 +46,36 @@ export default function AccountPage({
     }
   }, [status, router, hasInitial]);
 
+  /* Scroll-spy for the desktop anchor rail. The top inset clears the 64px
+   * sticky header (+ the sections' scroll-mt-24); the bottom inset keeps the
+   * "current" section pinned to whatever owns the upper part of the viewport
+   * instead of flickering between every section that happens to be visible. */
+  useEffect(() => {
+    if (loading || typeof IntersectionObserver === 'undefined') return;
+    const els = SECTION_IDS
+      .map(id => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+    if (!els.length) return;
+
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(e => {
+          if (e.isIntersecting) visible.add(e.target.id);
+          else visible.delete(e.target.id);
+        });
+        const first = SECTION_IDS.find(id => visible.has(id));
+        if (first) setActiveSection(first);
+      },
+      { rootMargin: '-96px 0px -55% 0px', threshold: 0 },
+    );
+    els.forEach(el => observer.observe(el));
+    return () => observer.disconnect();
+  }, [loading, status]);
+
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <CustomerLayout maxWidth="max-w-6xl">
+      <CustomerLayout maxWidth="max-w-4xl">
         <div className="min-h-[60vh] flex items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-brand" />
         </div>
@@ -75,7 +109,18 @@ export default function AccountPage({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ image: dataUrl }),
-        }).then(() => updateSession()).finally(() => setAvatarUploading(false));
+        })
+          .then(res => {
+            // Server rejected the upload — drop the optimistic preview so the
+            // user isn't left looking at a photo that was never saved.
+            if (!res.ok) throw new Error(String(res.status));
+            return updateSession();
+          })
+          .catch(() => {
+            setLocalAvatar(null);
+            toast.error(t.accountPage.uploadFailed);
+          })
+          .finally(() => setAvatarUploading(false));
       };
       img.src = src;
     };
@@ -89,150 +134,174 @@ export default function AccountPage({
     ? `${window.location.origin}?ref=${(user as any)?.id?.slice(0, 8)}`
     : '';
 
+  const role = (user as any)?.role;
+  const roleLabel =
+    role === 'PROVIDER' ? t.accountPage.roleProvider
+    : role === 'ADMIN'  ? t.accountPage.roleAdmin
+    : t.accountPage.roleCustomer;
+
+  const navItems = [
+    { id: 'profile',  label: t.accountPage.navProfile  },
+    { id: 'activity', label: t.accountPage.navActivity },
+    { id: 'services', label: t.accountPage.navServices },
+    { id: 'support',  label: t.accountPage.navSupport  },
+    { id: 'account',  label: t.accountPage.navAccount  },
+  ];
+
+  /* Same tri-state the invoice list has always shown, expressed once. */
+  const invoicePaymentStatus = (b: any): string =>
+    b.payment?.status === 'PAID' ? 'PAID'
+    : b.payment?.status === 'REFUNDED' ? 'REFUNDED'
+    : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'PROCESSING'
+    : 'PENDING';
+
+  const invoiceStatusLabel = (s: string): string =>
+    s === 'PAID' ? t.accountPage.statusPaid
+    : s === 'REFUNDED' ? t.accountPage.statusRefunded
+    : s === 'PROCESSING' ? t.accountPage.statusProcessing
+    : t.accountPage.statusPending;
+
   return (
-    <CustomerLayout maxWidth="max-w-6xl">
+    <CustomerLayout maxWidth="max-w-4xl">
 
-      <PageHeader title="Account" className="mb-5" />
-
-      {/* ── Desktop shell: section nav + content pane ── */}
+      {/* ── Desktop shell: section rail + content pane ── */}
       <div className="lg:flex lg:gap-10">
 
-        {/* Section nav — desktop only */}
+        {/* Section rail — desktop only, scroll-spied */}
         <aside className="hidden lg:block w-48 shrink-0">
-          <nav className="sticky top-24 space-y-0.5">
-            {[
-              { id: 'profile',  label: 'Profile'  },
-              { id: 'activity', label: 'Activity' },
-              { id: 'personal', label: 'Personal' },
-              { id: 'support',  label: 'Support'  },
-              { id: 'account',  label: 'Account'  },
-            ].map(s => (
-              <a
-                key={s.id}
-                href={`#${s.id}`}
-                className="block px-3 py-2 rounded-input text-sm font-medium text-ink-sub hover:bg-card hover:text-ink transition-all"
-              >
-                {s.label}
-              </a>
-            ))}
+          <nav aria-label={t.accountPage.sectionsNav} className="sticky top-24 space-y-1">
+            {navItems.map(s => {
+              const active = activeSection === s.id;
+              return (
+                <a
+                  key={s.id}
+                  href={`#${s.id}`}
+                  aria-current={active ? 'location' : undefined}
+                  className={cn(
+                    'block px-3 py-2 rounded-input text-sm font-medium border transition-all',
+                    active
+                      ? 'bg-card shadow-card border-border-dim text-brand'
+                      : 'border-transparent text-ink-sub hover:bg-card/60 hover:text-ink'
+                  )}
+                >
+                  {s.label}
+                </a>
+              );
+            })}
           </nav>
         </aside>
 
         {/* Content pane */}
-        <div className="flex-1 min-w-0 lg:max-w-2xl">
+        <div className="flex-1 min-w-0">
 
-      {/* ── Profile hero ── */}
-      <div id="profile" className="scroll-mt-24">
-        <HeroCard>
-          <div className="relative z-10 sm:flex sm:items-center sm:gap-8">
-            <div className="flex items-center gap-3.5 min-w-0 sm:flex-1">
-              <label className="relative w-14 h-14 shrink-0 cursor-pointer">
-                <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-                <div className="w-14 h-14 rounded-input bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
-                  {localAvatar || user?.image
-                    ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
-                    : <User className="w-7 h-7 text-white/80" />
-                  }
-                </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full flex items-center justify-center shadow-card">
-                  {avatarUploading
-                    ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
-                    : <Camera className="w-3 h-3 text-brand" />
-                  }
-                </div>
-              </label>
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-white truncate leading-tight">{user?.name}</h2>
-                <p className="text-xs text-white/50 truncate mt-0.5">{user?.email}</p>
-                <span className="inline-flex items-center gap-1 mt-1.5 bg-white/12 px-2 py-0.5 rounded-full">
-                  <ShieldCheck className="w-3 h-3 text-white/70" />
-                  <span className="text-3xs font-semibold text-white/70 capitalize">
-                    {(user as any)?.role?.toLowerCase() ?? 'customer'}
+          {/* ── Identity hero — this is the page title ── */}
+          <div id="profile" className="scroll-mt-24">
+            <HeroCard className="p-6 sm:p-8">
+              <div className="relative z-10 flex items-center gap-4">
+                <label className="relative w-16 h-16 shrink-0 cursor-pointer" title={t.accountPage.changePhoto}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="sr-only"
+                    aria-label={t.accountPage.changePhoto}
+                    onChange={handleAvatarChange}
+                  />
+                  <div className="w-16 h-16 rounded-input bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
+                    {localAvatar || user?.image
+                      ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
+                      : <User className="w-8 h-8 text-white/80" />
+                    }
+                  </div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full flex items-center justify-center shadow-card">
+                    {avatarUploading
+                      ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
+                      : <Camera className="w-3 h-3 text-brand" />
+                    }
+                  </div>
+                </label>
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white truncate leading-tight">{user?.name}</h1>
+                  <p className="text-xs text-white/50 truncate mt-0.5">{user?.email}</p>
+                  <span className="inline-flex items-center gap-1 mt-2 bg-white/12 px-2 py-0.5 rounded-full">
+                    <ShieldCheck className="w-3 h-3 text-white/70" />
+                    <span className="text-3xs font-semibold text-white/70">{roleLabel}</span>
                   </span>
-                </span>
-              </div>
-            </div>
-
-            {/* Stats — stacked under identity on mobile, inline on desktop */}
-            <div className="grid grid-cols-3 mt-3.5 pt-3 border-t border-white/10 sm:mt-0 sm:pt-0 sm:border-t-0 sm:flex sm:shrink-0">
-              {[
-                { value: bookings.length, label: 'Bookings' },
-                { value: `€${totalSpent.toFixed(0)}`, label: 'Spent' },
-                { value: reviewsGiven, label: 'Reviews' },
-              ].map((stat, i) => (
-                <div key={stat.label} className={`text-center sm:px-6 ${i > 0 ? 'border-l border-white/10' : ''}`}>
-                  <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
-                  <p className="text-3xs font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              {/* Stats — one tree at every width */}
+              <div className="relative z-10 grid grid-cols-3 divide-x divide-white/15 mt-5 pt-4 border-t border-white/10">
+                {[
+                  { value: bookings.length,              label: t.accountPage.statBookings },
+                  { value: `€${totalSpent.toFixed(0)}`,  label: t.accountPage.statSpent    },
+                  { value: reviewsGiven,                 label: t.accountPage.statReviews  },
+                ].map(stat => (
+                  <div key={stat.label} className="text-center">
+                    <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
+                    <p className="text-3xs font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+            </HeroCard>
           </div>
-        </HeroCard>
-      </div>
 
-      {/* ── Sections ── */}
-      <div className="pt-6 flex flex-col gap-6">
+          {/* ── Sections ── */}
+          <div className="pt-6 pb-4 flex flex-col gap-6">
 
-        {/* Activity */}
-        <Section title="Activity" id="activity">
-          {/* Invoices — expandable */}
-          <div>
-            <button
-              onClick={() => setShowInvoices(v => !v)}
-              className="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-alt/50 transition-colors"
-            >
-              <div className="w-8 h-8 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
-                <Receipt className="w-4 h-4 text-brand" strokeWidth={1.8} />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-semibold text-ink">Invoices</p>
-                <p className="text-2xs text-ink-dim mt-0.5">{completedBookings.length} invoice{completedBookings.length !== 1 ? 's' : ''} · €{totalSpent.toFixed(2)}</p>
-              </div>
-              <ChevronRight className={`w-3.5 h-3.5 text-ink-dim/40 shrink-0 transition-transform duration-200 ${showInvoices ? 'rotate-90' : ''}`} />
-            </button>
+            {/* Activity */}
+            <Section title={t.accountPage.navActivity} id="activity">
 
-            {showInvoices && (
-              <div className="border-t border-border-dim bg-surface-alt/50">
-                {completedBookings.length === 0 ? (
-                  <p className="px-5 py-4 text-xs text-ink-dim text-center">No invoices yet.</p>
-                ) : (
-                  <div className="p-3 space-y-2">
-                    {completedBookings.map(b => {
-                      const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
-                      const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                      return (
-                        <div key={b.id} className="bg-card rounded-input p-3.5 shadow-card border border-border-dim">
-                          {/* Top: service + amount */}
-                          <div className="flex items-start justify-between gap-2 mb-2.5">
-                            <div className="min-w-0">
-                              <p className="font-semibold text-sm text-ink truncate">{b.quote?.request?.category?.name ?? 'Service'}</p>
-                              <p className="text-3xs text-ink-dim mt-0.5">{date} · <span className="font-mono">{invoiceNo}</span></p>
+              {/* Invoices — expands to a flat list inside this same card */}
+              <div>
+                <SettingsRow
+                  icon={Receipt}
+                  label={t.accountPage.invoices}
+                  sub={`${completedBookings.length} ${completedBookings.length !== 1 ? t.accountPage.invoicesPlural : t.accountPage.invoiceSingular} · €${totalSpent.toFixed(2)}`}
+                  onClick={() => setShowInvoices(v => !v)}
+                  trailing={
+                    <ChevronRight
+                      className={cn(
+                        'w-3.5 h-3.5 text-ink-dim/40 shrink-0 transition-transform duration-200',
+                        showInvoices && 'rotate-90'
+                      )}
+                    />
+                  }
+                />
+
+                {showInvoices && (
+                  <div className="border-t border-border-dim divide-y divide-border-dim bg-surface-alt/40">
+                    {completedBookings.length === 0 ? (
+                      <p className="px-4 py-4 text-xs text-ink-dim text-center">{t.accountPage.invoicesEmpty}</p>
+                    ) : (
+                      completedBookings.map(b => {
+                        const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
+                        const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                        const payStatus = invoicePaymentStatus(b);
+                        return (
+                          <div key={b.id} className="flex items-center gap-3 px-4 py-3">
+                            <div className="min-w-0 flex-1">
+                              <Link
+                                href={`/bookings/${b.id}`}
+                                className="block text-sm font-semibold text-ink truncate hover:text-brand transition-colors"
+                              >
+                                {b.quote?.request?.category?.name ?? t.accountPage.invoiceServiceFallback}
+                              </Link>
+                              <p className="text-3xs text-ink-dim mt-0.5">
+                                <span className="font-mono">{invoiceNo}</span> · {date}
+                              </p>
                             </div>
                             <div className="text-right shrink-0">
-                              <p className="text-lg font-bold text-ink leading-tight">€{b.totalAmount?.toFixed(2)}</p>
-                              <span className={`text-3xs font-bold uppercase px-1.5 py-0.5 rounded-full ${
-                                b.payment?.status === 'PAID' ? 'bg-trust-surface text-trust'
-                                : b.payment?.status === 'REFUNDED' ? 'bg-surface-alt text-ink-sub'
-                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'bg-info-surface text-info'
-                                : 'bg-surface-alt text-ink-sub'
-                              }`}>{
-                                b.payment?.status === 'PAID' ? 'Paid'
-                                : b.payment?.status === 'REFUNDED' ? 'Refunded'
-                                : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'Processing'
-                                : 'Pending'
-                              }</span>
+                              <p className="text-sm font-bold text-ink leading-tight">€{b.totalAmount?.toFixed(2)}</p>
+                              <StatusBadge
+                                className="mt-1"
+                                variant={statusVariant('payment', payStatus)}
+                                label={invoiceStatusLabel(payStatus)}
+                              />
                             </div>
-                          </div>
-                          {/* Details — clean and simple */}
-                          <div className="bg-surface-alt rounded-lg p-2.5 text-2xs space-y-1 mb-2.5">
-                            <div className="flex justify-between text-ink-sub"><span>Provider</span><span className="font-medium text-ink truncate ml-2">{b.provider?.user?.name}</span></div>
-                            <div className="flex justify-between text-ink-sub"><span>Service</span><span>€{b.totalAmount?.toFixed(2)}</span></div>
-                            <div className="flex justify-between font-medium text-ink pt-1 border-t border-border-dim"><span>Total paid</span><span>€{b.totalAmount?.toFixed(2)}</span></div>
-                          </div>
-                          {/* Actions */}
-                          <div className="flex gap-2">
-                            <Link href={`/bookings/${b.id}`} className="flex-1 text-center py-2 border border-border-dim rounded-lg text-2xs font-semibold text-ink hover:bg-surface-alt transition-colors">View booking</Link>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              aria-label={t.accountPage.invoiceDownload}
                               onClick={() => {
                                 const rows = [['Invoice', invoiceNo], ['Date', date], ['Service', b.quote?.request?.category?.name ?? 'Service'], ['Pro', b.provider?.user?.name ?? ''], ['Total', `€${b.totalAmount?.toFixed(2)}`]];
                                 const csv = rows.map(r => r.join(',')).join('\n');
@@ -240,100 +309,90 @@ export default function AccountPage({
                                 const url = URL.createObjectURL(blob);
                                 const a = document.createElement('a'); a.href = url; a.download = `${invoiceNo}.csv`; a.click(); URL.revokeObjectURL(url);
                               }}
-                              className="flex items-center gap-1 px-3 py-2 bg-brand text-white rounded-lg text-2xs font-semibold"
                             >
-                              <Download className="w-3 h-3" /> CSV
-                            </button>
+                              <Download className="w-3.5 h-3.5" />
+                              CSV
+                            </Button>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
 
-          {/* Credits — expandable */}
-          <div>
-            <button
-              onClick={() => setShowCredits(v => !v)}
-              className="w-full flex items-center gap-3 px-4 py-3 active:bg-surface-alt/50 transition-colors"
-            >
-              <div className="w-8 h-8 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
-                <Gift className="w-4 h-4 text-brand" strokeWidth={1.8} />
-              </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-sm font-semibold text-ink">Credits & Referrals</p>
-                <p className="text-2xs text-ink-dim mt-0.5">€0.00 available</p>
-              </div>
-              <ChevronRight className={`w-3.5 h-3.5 text-ink-dim/40 shrink-0 transition-transform duration-200 ${showCredits ? 'rotate-90' : ''}`} />
-            </button>
+              {/* Credits — expands to a quiet balance row */}
+              <div>
+                <SettingsRow
+                  icon={Gift}
+                  label={t.accountPage.credits}
+                  sub={`€0.00 ${t.accountPage.creditsAvailable}`}
+                  onClick={() => setShowCredits(v => !v)}
+                  trailing={
+                    <ChevronRight
+                      className={cn(
+                        'w-3.5 h-3.5 text-ink-dim/40 shrink-0 transition-transform duration-200',
+                        showCredits && 'rotate-90'
+                      )}
+                    />
+                  }
+                />
 
-            {showCredits && (
-              <div className="border-t border-border-dim bg-surface-alt/50 p-3 space-y-2.5">
-                <div className="bg-brand rounded-input p-3.5 text-white">
-                  <p className="text-3xs font-bold text-white/50 uppercase tracking-widest mb-1">Credit Balance</p>
-                  <p className="text-2xl font-bold leading-tight">€0.00</p>
-                  <p className="text-2xs text-white/60 mt-1">Earn €10 for every friend who completes their first booking.</p>
-                </div>
-                {referralLink && (
-                  <div className="flex items-center gap-2 p-2.5 bg-card rounded-lg border border-border-dim">
-                    <span className="text-2xs text-ink-sub flex-1 truncate font-mono">{referralLink}</span>
-                    <button onClick={() => navigator.clipboard?.writeText(referralLink)} className="shrink-0 px-2.5 py-1 bg-brand text-white rounded-md text-2xs font-bold">Copy</button>
+                {showCredits && (
+                  <div className="border-t border-border-dim bg-surface-alt/40 px-4 py-4 space-y-3">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-xs font-semibold text-ink-sub">{t.accountPage.creditBalance}</p>
+                      <p className="text-lg font-bold text-brand leading-none">€0.00</p>
+                    </div>
+                    <p className="text-2xs text-ink-dim leading-relaxed">{t.accountPage.creditsHint}</p>
+                    {referralLink && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xs text-ink-sub flex-1 truncate font-mono">{referralLink}</span>
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => {
+                            navigator.clipboard?.writeText(referralLink);
+                            toast.success(t.accountPage.copied);
+                          }}
+                        >
+                          {t.accountPage.copy}
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-card border border-border-dim rounded-input text-xs font-semibold text-ink active:bg-surface-alt transition-colors">
-                  <Share2 className="w-3.5 h-3.5" /> Share with friends
-                </button>
               </div>
-            )}
+            </Section>
+
+            {/* Services */}
+            <Section title={t.accountPage.navServices} id="services">
+              <SettingsRow icon={Plus}    label={t.accountPage.newRequest} sub={t.accountPage.newRequestSub} href="/requests/new" />
+              <SettingsRow icon={Search}  label={t.accountPage.findPros}   sub={t.accountPage.findProsSub}   href="/browse" />
+            </Section>
+
+            {/* Support */}
+            <Section title={t.accountPage.navSupport} id="support">
+              <SettingsRow icon={MessageCircle} label={t.accountPage.chatWithUs}     sub={t.accountPage.chatWithUsSub}     href="mailto:aladdin@gmail.com" />
+              <SettingsRow icon={HelpCircle}    label={t.accountPage.helpCentre}     sub={t.accountPage.helpCentreSub}     href="/support" />
+              <SettingsRow icon={LifeBuoy}      label={t.accountPage.disputeBooking} sub={t.accountPage.disputeBookingSub} href="/bookings" />
+              <SettingsRow icon={Mail}          label={t.accountPage.emailUs}        sub="aladdin@gmail.com"               href="mailto:aladdin@gmail.com" muted />
+            </Section>
+
+            {/* Account */}
+            <Section title={t.accountPage.navAccount} id="account">
+              <SettingsRow
+                icon={LogOut}
+                label={t.nav.logOut}
+                muted
+                onClick={() => signOut({ callbackUrl: '/' })}
+                trailing={<span aria-hidden="true" className="w-3.5 shrink-0" />}
+              />
+            </Section>
+
           </div>
-        </Section>
-
-        {/* Personal */}
-        <Section title="Personal" id="personal">
-          <SettingsRow icon={MapPin} label="Saved Addresses" sub="Manage your home & work" href="/account" />
-          <SettingsRow icon={Heart}  label="Favourite Pros"  sub="Bookmarked professionals" href="/browse" />
-        </Section>
-
-        {/* Support */}
-        <Section title="Support" id="support">
-          <SettingsRow icon={MessageCircle} label="Chat with us"     sub="Avg. reply under 1 hour"    href="mailto:aladdin@gmail.com" />
-          <SettingsRow icon={HelpCircle}    label="Help Centre"      sub="FAQs and how-to guides"     href="/account" />
-          <SettingsRow icon={LifeBuoy}      label="Dispute a booking" sub="Report an issue with a job" href="/bookings" />
-          <SettingsRow icon={Mail}          label="Email us"          sub="aladdin@gmail.com"          href="mailto:aladdin@gmail.com" muted />
-        </Section>
-
-        {/* Quick action — visually demoted */}
-        <div>
-          <Link href="/requests/new"
-            className="flex items-center gap-3 px-4 py-3 bg-card rounded-card border border-dashed border-border-dim hover:border-brand/30 transition-all">
-            <div className="w-8 h-8 bg-surface-alt rounded-lg flex items-center justify-center shrink-0">
-              <Plus className="w-4 h-4 text-ink-dim" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-ink-sub">New Service Request</p>
-            </div>
-            <ChevronRight className="w-3.5 h-3.5 text-ink-dim/40 shrink-0" />
-          </Link>
         </div>
-
-        {/* Log out */}
-        <div id="account" className="scroll-mt-24 pb-4">
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Account</p>
-          <button
-            onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-card border border-border-dim text-left hover:border-caution-edge transition-all"
-          >
-            <LogOut className="w-4 h-4 text-ink-dim" />
-            <span className="text-sm font-medium text-ink-sub">Log out</span>
-          </button>
-        </div>
-
-      </div>{/* sections */}
-        </div>{/* content pane */}
-      </div>{/* shell */}
+      </div>
 
     </CustomerLayout>
   );

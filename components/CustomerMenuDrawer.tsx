@@ -77,7 +77,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
         {/* Logo + close */}
         <div className="flex items-center justify-between p-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-card">
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0 shadow-card">
               <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
