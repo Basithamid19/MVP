@@ -395,7 +395,7 @@ export function ChatComposer({
         type="submit"
         disabled={sending || !draft.trim()}
         aria-label={t.messagesPage.typeMessage}
-        className="w-11 h-11 shrink-0 flex items-center justify-center rounded-input bg-brand text-white hover:bg-brand-dark transition-colors disabled:opacity-40"
+        className="w-11 h-11 shrink-0 flex items-center justify-center rounded-input bg-brand text-white hover:bg-brand-dark transition-colors disabled:opacity-50"
       >
         {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
       </button>

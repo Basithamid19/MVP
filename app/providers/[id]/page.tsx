@@ -16,37 +16,13 @@ import {
   Calendar,
   Zap,
   CalendarOff,
-  Sparkles,
-  Droplets,
-  Hammer,
-  Truck,
-  Package,
-  Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import { Avatar, EmptyState, buttonVariants } from '@/components/ui';
+import { categoryTheme } from '@/components/ProviderCard';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
-
-/* Category tint + mark used by the cover strip. Keyed on the real category
-   slugs seeded in prisma/seed.ts, with the token slug names aliased in so a
-   renamed/imported category still lands on its tint. Anything unknown falls
-   back to the brand tint. */
-const CATEGORY_THEME: Record<string, { bg: string; ink: string; Icon: React.ElementType }> = {
-  cleaning:             { bg: 'bg-cat-cleaning',   ink: 'text-cat-cleaning-ink',   Icon: Sparkles },
-  plumber:              { bg: 'bg-cat-plumbing',   ink: 'text-cat-plumbing-ink',   Icon: Droplets },
-  plumbing:             { bg: 'bg-cat-plumbing',   ink: 'text-cat-plumbing-ink',   Icon: Droplets },
-  electrician:          { bg: 'bg-cat-electrical', ink: 'text-cat-electrical-ink', Icon: Zap },
-  electrical:           { bg: 'bg-cat-electrical', ink: 'text-cat-electrical-ink', Icon: Zap },
-  handyman:             { bg: 'bg-cat-repairs',    ink: 'text-cat-repairs-ink',    Icon: Hammer },
-  repairs:              { bg: 'bg-cat-repairs',    ink: 'text-cat-repairs-ink',    Icon: Hammer },
-  'moving-help':        { bg: 'bg-cat-logistics',  ink: 'text-cat-logistics-ink',  Icon: Truck },
-  logistics:            { bg: 'bg-cat-logistics',  ink: 'text-cat-logistics-ink',  Icon: Truck },
-  'furniture-assembly': { bg: 'bg-cat-assembly',   ink: 'text-cat-assembly-ink',   Icon: Package },
-  assembly:             { bg: 'bg-cat-assembly',   ink: 'text-cat-assembly-ink',   Icon: Package },
-};
-const FALLBACK_THEME = { bg: 'bg-brand-muted', ink: 'text-brand-dark', Icon: Wrench };
 
 /* Quiet section shell — every content card below the hero shares this. The
    hero is the only elevated surface on the page. */
@@ -120,7 +96,7 @@ export default function ProviderProfilePage() {
   const maxCount = Math.max(...ratingDistribution.map(r => r.count), 1);
 
   const primaryCategory = provider.categories?.[0] ?? null;
-  const theme = (primaryCategory?.slug && CATEGORY_THEME[primaryCategory.slug]) || FALLBACK_THEME;
+  const theme = categoryTheme(primaryCategory?.slug);
   const CoverMark = theme.Icon;
 
   // Price anchor for the rail — cheapest real offering price, if any.

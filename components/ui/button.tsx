@@ -29,14 +29,14 @@ export const buttonVariants = cva(
         primary: [
           'bg-brand text-white',
           'hover:bg-brand-dark active:scale-[0.98]',
-          'shadow-sm',
+          'shadow-card',
         ].join(' '),
 
         /* ── Secondary — warm neutral surface ──────────────────── */
         secondary: [
           'bg-surface-alt text-ink border border-border',
           'hover:bg-canvas hover:border-border-dim',
-          'shadow-sm',
+          'shadow-card',
         ].join(' '),
 
         /* ── Ghost — no background ──────────────────────────────── */

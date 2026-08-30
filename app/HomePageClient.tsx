@@ -326,8 +326,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
     { icon: BadgeCheck,   value: '100%',     label: t.trustBanner.verifiedTitle },
     { icon: Star,         value: topRating,  label: t.hero.topRated },
     { icon: Shield,       value: '€100',     label: t.trustBanner.damageTitle },
-    // I18N-TODO: trustStats.dayGuarantee
-    { icon: CheckCircle2, value: '30',       label: 'Day guarantee' },
+    { icon: CheckCircle2, value: '30',       label: t.trustBanner.dayGuarantee },
   ];
 
   return (

@@ -43,7 +43,7 @@ function StatCardInner({
     <>
       {/* Notification badge */}
       {badge != null && badge > 0 && (
-        <span className="absolute top-3 right-3 min-w-[20px] h-5 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+        <span className="absolute top-3 right-3 min-w-[20px] h-5 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center px-1">
           {badge > 9 ? '9+' : badge}
         </span>
       )}
@@ -72,14 +72,14 @@ function StatCardInner({
 
       {/* Sub-label / context */}
       {sub && (
-        <p className="text-[11px] text-ink-dim mt-1 font-medium">{sub}</p>
+        <p className="text-2xs text-ink-dim mt-1 font-medium">{sub}</p>
       )}
 
       {/* Trend indicator */}
       {trend && (
         <p
           className={cn(
-            'text-[11px] font-semibold mt-2',
+            'text-2xs font-semibold mt-2',
             trend.positive ? 'text-trust' : 'text-caution'
           )}
         >
@@ -96,7 +96,7 @@ export function StatCard({
   ...rest
 }: StatCardProps) {
   const base = cn(
-    'relative bg-white border border-border-dim rounded-card p-5 shadow-card',
+    'relative bg-card border border-border-dim rounded-card p-5 shadow-card',
     href && [
       'transition-all duration-150',
       'hover:border-border hover:shadow-elevated hover:-translate-y-0.5',

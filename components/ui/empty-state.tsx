@@ -30,7 +30,7 @@ const SIZES: Record<Size, {
     iconWrap: 'w-9 h-9 mb-3',
     iconSize: 'w-4 h-4',
     title:    'text-xs font-semibold',
-    desc:     'text-[11px]',
+    desc:     'text-2xs',
   },
   sm: {
     wrapper:  'py-8',

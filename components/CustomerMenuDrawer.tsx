@@ -77,7 +77,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
         {/* Logo + close */}
         <div className="flex items-center justify-between p-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shrink-0 shadow-card">
               <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
@@ -100,9 +100,9 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-input font-medium text-sm transition-all ${
                   active
-                    ? 'bg-white shadow-sm border border-border-dim text-brand'
+                    ? 'bg-card shadow-card border border-border-dim text-brand'
                     : 'text-ink-sub hover:text-ink hover:bg-white/60 border border-transparent'
                 }`}
               >
@@ -118,7 +118,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
           {session ? (
             <button
               onClick={() => signOut({ callbackUrl: '/' })}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-input text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
             >
               <LogOut className="w-4 h-4 shrink-0" />
               <span>{t.nav.logOut}</span>
@@ -127,7 +127,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
             <Link
               href="/login"
               onClick={() => setOpen(false)}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand hover:bg-brand-muted transition-all"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-input text-sm font-medium text-brand hover:bg-brand-muted transition-all"
             >
               <LogIn className="w-4 h-4 shrink-0" />
               <span>{t.nav.logIn}</span>
@@ -144,7 +144,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
       <button
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className={`hidden md:inline-flex w-10 h-10 items-center justify-center rounded-xl text-ink-sub hover:text-ink hover:bg-white/60 border border-transparent hover:border-border-dim transition-all shrink-0 ${className}`}
+        className={`hidden md:inline-flex w-10 h-10 items-center justify-center rounded-input text-ink-sub hover:text-ink hover:bg-white/60 border border-transparent hover:border-border-dim transition-all shrink-0 ${className}`}
       >
         <Menu className="w-5 h-5" />
       </button>

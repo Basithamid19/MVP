@@ -173,7 +173,7 @@ export default function ProviderProfileSettingsPage() {
             saved ? 'bg-trust text-white shadow-card'
             : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-card'
             : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
-          } disabled:opacity-60`}
+          } disabled:opacity-50`}
         >
           {saving
             ? <Loader2 className="w-4 h-4 animate-spin" />
@@ -350,7 +350,7 @@ export default function ProviderProfileSettingsPage() {
             saved ? 'bg-trust text-white'
             : dirty ? 'bg-brand text-white hover:bg-brand-dark'
             : 'bg-surface-alt text-ink-dim border border-border-dim'
-          } disabled:opacity-60`}
+          } disabled:opacity-50`}
         >
           {saving
             ? <Loader2 className="w-4 h-4 animate-spin" />

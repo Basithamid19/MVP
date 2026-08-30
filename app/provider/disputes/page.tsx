@@ -230,7 +230,7 @@ export default function DisputesPage() {
             <button
               onClick={handleSubmit}
               disabled={!subject.trim() || !description.trim() || submitting}
-              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><LifeBuoy className="w-4 h-4" /> Submit Support Ticket</>}
             </button>

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { SUBCATEGORIES } from '@/lib/subcategories';
-import { AddressAutocomplete, Input, Textarea } from '@/components/ui';
+import { AddressAutocomplete, Input, Textarea, useToast } from '@/components/ui';
 import { WizardStepper } from '@/components/WizardStepper';
 import { useTranslation } from '@/lib/i18n';
 
@@ -36,7 +36,7 @@ function ReviewRow({
       </div>
       <button
         onClick={onEdit}
-        className="text-xs font-bold text-brand hover:text-brand-dark transition-colors shrink-0 mt-0.5 px-2 py-0.5 rounded-md hover:bg-brand-muted"
+        className="text-xs font-bold text-brand hover:text-brand-dark transition-colors shrink-0 mt-0.5 px-2 py-0.5 rounded-chip hover:bg-brand-muted"
       >
         {t.common.edit}
       </button>
@@ -50,6 +50,7 @@ function NewRequestContent() {
   const pathname = usePathname();
   const { status: authStatus } = useSession();
   const t = useTranslation();
+  const { toast } = useToast();
 
   const STEPS = [
     { key: 'service',  label: t.wizard.stepService },
@@ -144,11 +145,11 @@ function NewRequestContent() {
           // Drop the tile instead of leaving a spinner overlay that never
           // resolves (p.url stays unset forever on a failed upload).
           setPhotos(prev => prev.filter(p => p.preview !== preview));
-          alert(t.wizard.uploadFailed);
+          toast.error(t.wizard.uploadFailed);
         }
       } catch {
         setPhotos(prev => prev.filter(p => p.preview !== preview));
-        alert(t.wizard.uploadFailedNetwork);
+        toast.error(t.wizard.uploadFailedNetwork);
       }
     }
     setUploadingPhoto(false);
@@ -434,7 +435,7 @@ function NewRequestContent() {
                 </div>
                 {/* Toggle pill */}
                 <div className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ml-3 ${form.isUrgent ? 'bg-caution' : 'bg-border'}`}>
-                  <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.isUrgent ? 'left-5' : 'left-0.5'}`} />
+                  <div className={`absolute top-0.5 w-5 h-5 bg-card rounded-full shadow transition-transform ${form.isUrgent ? 'left-5' : 'left-0.5'}`} />
                 </div>
               </button>
             </div>
@@ -544,7 +545,7 @@ function NewRequestContent() {
                 </span>
                 <button
                   onClick={() => setStep(1)}
-                  className="text-xs font-bold text-brand hover:text-brand-dark px-2 py-0.5 rounded-md hover:bg-brand-muted transition-all"
+                  className="text-xs font-bold text-brand hover:text-brand-dark px-2 py-0.5 rounded-chip hover:bg-brand-muted transition-all"
                 >
                   {t.wizard.change}
                 </button>
@@ -610,16 +611,13 @@ function NewRequestContent() {
             </div>
           )}
 
-          {/* Step indicator */}
-          <p className="text-center text-2xs font-semibold text-ink-dim mb-2.5 tracking-wide">
-            {t.wizard.stepLabel} {step} {t.wizard.stepOf} {STEPS.length}
-          </p>
-
+          {/* Step count lives in the WizardStepper's mobile progress line now —
+              repeating it above the CTA was redundant. */}
           {step < 5 ? (
             <button
               onClick={next}
               disabled={!canProceed()}
-              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {t.wizard.continueBtn} <ArrowRight className="w-4 h-4" />
             </button>
@@ -627,7 +625,7 @@ function NewRequestContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> {t.wizard.postRequest}</>}
             </button>

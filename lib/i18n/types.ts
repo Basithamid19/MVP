@@ -294,6 +294,7 @@ export interface Dictionary {
     verifiedDesc: string;
     damageTitle: string;
     damageDesc: string;
+    dayGuarantee: string;
     builtForTrustTitle: string;
     builtForTrustSubtitle: string;
     findAPro: string;
@@ -310,6 +311,26 @@ export interface Dictionary {
     searchPlaceholder: string;
     noProvidersFound: string;
     completedJobs: string;
+    filters: string;
+    categoriesLabel: string;
+    sortByLabel: string;
+    professionalFound: string;
+    professionalsFound: string;
+    tryDifferent: string;
+    clearFilters: string;
+    clearAll: string;
+    showResults: string;
+  };
+
+  // Category landing page (app/category/[slug])
+  categoryPage: {
+    notFoundTitle: string;
+    notFoundDesc: string;
+    proAvailable: string;      // "{n} pro available in Vilnius" — singular
+    prosAvailable: string;     // "{n} pros available in Vilnius" — plural
+    prosInPrefix: string;      // "Pros in {category}"
+    emptyProsDesc: string;
+    postJob: string;
   };
 
   // New-request wizard (app/requests/new)
@@ -468,7 +489,6 @@ export interface Dictionary {
     depositReceived: string;
     finalizing: string;
     paymentCanceled: string;
-    dismiss: string;
     depositRequiredTitle: string;
     depositPayPrefix: string;
     depositBold: string;
@@ -532,7 +552,6 @@ export interface Dictionary {
     emptyTitle: string;
     emptyDescCustomer: string;
     emptyDescProvider: string;
-    noMessagesYet: string;
     noMessagesShort: string;
     youPrefix: string;
     typeMessage: string;
@@ -581,16 +600,10 @@ export interface Dictionary {
     statResponse: string;
     statLanguages: string;
     statJobsDone: string;
-    statResponds: string;
-    statSpeaks: string;
     statJobs: string;
-    qualityIndicators: string;
-    jobsCompleted: string;
     responseTime: string;
     rating: string;
     idVerified: string;
-    yes: string;
-    no: string;
     services: string;
     priceFixed: string;
     priceFrom: string;
@@ -864,8 +877,6 @@ export interface Dictionary {
     platformFeeShort: string;
     stillProcessing: string;
     pendingLabel: string;
-    jobSingular: string;
-    jobsPlural: string;
     noPendingEarnings: string;
     totalEarned: string;
     activeJobsSuffix: string;
@@ -904,8 +915,6 @@ export interface Dictionary {
     payoutSetupDesc: string;
     setUpPayouts: string;
     setupFailed: string;
-    taxExportMobile: string;
-    taxExportDesc: string;
   };
 
   // Provider settings hub (app/provider/settings — hub only)
@@ -946,7 +955,6 @@ export interface Dictionary {
     stepBusiness: string;
     stepCredentials: string;
     stepSelfie: string;
-    stepDone: string;
     identityTitle: string;
     identitySubtitle: string;
     fullLegalName: string;

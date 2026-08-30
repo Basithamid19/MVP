@@ -101,7 +101,7 @@ export default function ProviderJobsPage() {
         <div className="space-y-2.5 sm:space-y-3">
           {filtered.map(b => (
             <Link key={b.id} href={`/provider/jobs/${b.id}`}
-              className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-card hover:shadow-md">
+              className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-card hover:shadow-elevated">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0 ${
                   b.status === 'IN_PROGRESS' ? 'bg-caution' :

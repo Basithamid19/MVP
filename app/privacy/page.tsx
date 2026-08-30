@@ -124,13 +124,13 @@ privacy@aladdin.lt`,
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
 
       {/* Nav */}
       <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
               <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
@@ -156,7 +156,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* Content */}
-      <section className="py-12 sm:py-16 bg-white">
+      <section className="py-12 sm:py-16 bg-card">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="space-y-10">
             {SECTIONS.map(({ id, title, content }) => (

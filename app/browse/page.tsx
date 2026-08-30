@@ -170,8 +170,7 @@ function BrowseContent() {
             }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            {/* I18N-TODO: 'Filters' has no dictionary key yet */}
-            Filters
+            {t.browse.filters}
             {activeFilters > 0 && (
               <span className="ml-0.5 w-4 h-4 rounded-full bg-brand text-white text-3xs font-bold flex items-center justify-center">
                 {activeFilters}
@@ -204,9 +203,8 @@ function BrowseContent() {
         {/* Filter sidebar — desktop only. Same groups as the mobile sheet. */}
         <aside className="hidden lg:block w-56 shrink-0">
           <div className="sticky top-24 space-y-7">
-            {/* I18N-TODO: 'Categories' / 'Sort by' group labels have no dictionary keys yet */}
-            <FilterGroup label="Categories" options={CATEGORIES}   value={category} onSelect={setCategory} />
-            <FilterGroup label="Sort by"    options={SORT_OPTIONS.map(o => ({ label: o.label, value: o.id }))} value={sortBy} onSelect={setSortBy} />
+            <FilterGroup label={t.browse.categoriesLabel} options={CATEGORIES}   value={category} onSelect={setCategory} />
+            <FilterGroup label={t.browse.sortByLabel}    options={SORT_OPTIONS.map(o => ({ label: o.label, value: o.id }))} value={sortBy} onSelect={setSortBy} />
           </div>
         </aside>
 
@@ -218,8 +216,7 @@ function BrowseContent() {
               {loading ? `${t.common.loading}` : (
                 <>
                   <span className="font-semibold text-ink">{sorted.length}</span>
-                  {/* I18N-TODO: 'professionals found' / 'professional found' have no dictionary keys yet */}
-                  {' '}{sorted.length !== 1 ? 'professionals' : 'professional'} found
+                  {' '}{sorted.length !== 1 ? t.browse.professionalsFound : t.browse.professionalFound}
                 </>
               )}
             </p>
@@ -247,16 +244,14 @@ function BrowseContent() {
               icon={SearchIcon}
               size="lg"
               title={t.browse.noProvidersFound}
-              /* I18N-TODO: empty-results description has no dictionary key yet */
-              description="Try a different category or search term."
+              description={t.browse.tryDifferent}
               action={
                 <Button
                   variant="primary"
                   size="lg"
                   onClick={() => { setCategory(''); setSearch(''); setSortBy('top_rated'); }}
                 >
-                  {/* I18N-TODO: 'Clear filters' has no dictionary key yet */}
-                  Clear filters
+                  {t.browse.clearFilters}
                 </Button>
               }
             />
@@ -268,14 +263,12 @@ function BrowseContent() {
       <Modal
         open={showFilters}
         onClose={() => setShowFilters(false)}
-        /* I18N-TODO: 'Filters' title has no dictionary key yet */
-        title="Filters"
+        title={t.browse.filters}
         size="sm"
       >
         <div className="space-y-6 -mx-2">
-          {/* I18N-TODO: 'Categories' / 'Sort by' group labels have no dictionary keys yet */}
-          <FilterGroup label="Categories" options={CATEGORIES}   value={category} onSelect={setCategory} />
-          <FilterGroup label="Sort by"    options={SORT_OPTIONS.map(o => ({ label: o.label, value: o.id }))} value={sortBy} onSelect={setSortBy} />
+          <FilterGroup label={t.browse.categoriesLabel} options={CATEGORIES}   value={category} onSelect={setCategory} />
+          <FilterGroup label={t.browse.sortByLabel}    options={SORT_OPTIONS.map(o => ({ label: o.label, value: o.id }))} value={sortBy} onSelect={setSortBy} />
         </div>
 
         <div className="flex gap-3 pt-5 mt-5 border-t border-border-dim">
@@ -285,8 +278,7 @@ function BrowseContent() {
             className="flex-1"
             onClick={() => { setCategory(''); setSortBy('top_rated'); }}
           >
-            {/* I18N-TODO: 'Clear all' has no dictionary key yet */}
-            Clear all
+            {t.browse.clearAll}
           </Button>
           <Button
             variant="primary"
@@ -294,8 +286,7 @@ function BrowseContent() {
             className="flex-1"
             onClick={() => setShowFilters(false)}
           >
-            {/* I18N-TODO: 'Show results' has no dictionary key yet */}
-            Show results
+            {t.browse.showResults}
           </Button>
         </div>
       </Modal>

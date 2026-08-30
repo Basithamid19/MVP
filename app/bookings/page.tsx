@@ -93,7 +93,7 @@ function BookingCard({ b }: { b: any }) {
   return (
     <Link
       href={`/bookings/${b.id}`}
-      className="flex items-start gap-3 bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
+      className="flex items-start gap-3 bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
     >
       <img
         src={b.provider?.user?.image || avatarUrl(b.provider?.user?.name, 80)}

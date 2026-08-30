@@ -50,13 +50,13 @@ const STEPS = [
 
 export default function ForProsPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-card">
 
       {/* Nav */}
       <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
               <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
@@ -93,7 +93,7 @@ export default function ForProsPage() {
               { icon: BadgeCheck,   label: 'Trust-building badge' },
               { icon: Zap,          label: 'Fast weekly payouts' },
             ].map(({ icon: PillIcon, label }) => (
-              <div key={label} className="inline-flex items-center gap-2 border border-border-dim bg-white rounded-full px-4 py-2 shadow-sm">
+              <div key={label} className="inline-flex items-center gap-2 border border-border-dim bg-card rounded-full px-4 py-2 shadow-card">
                 <PillIcon className="w-3.5 h-3.5 text-brand shrink-0" strokeWidth={2} />
                 <span className="text-sm font-medium text-ink">{label}</span>
               </div>
@@ -111,7 +111,7 @@ export default function ForProsPage() {
       </section>
 
       {/* Stats */}
-      <section className="py-10 sm:py-14 bg-white border-y border-border-dim">
+      <section className="py-10 sm:py-14 bg-card border-y border-border-dim">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-3 gap-4 sm:gap-8 text-center">
             {[
@@ -129,7 +129,7 @@ export default function ForProsPage() {
       </section>
 
       {/* Benefits grid */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-card">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 sm:mb-16">
             <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-3">Why Aladdin</p>
@@ -139,8 +139,8 @@ export default function ForProsPage() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {BENEFITS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="bg-canvas rounded-2xl border border-border-dim p-5 sm:p-6">
-                <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center mb-4">
+              <div key={title} className="bg-canvas rounded-card border border-border-dim p-5 sm:p-6">
+                <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center mb-4">
                   <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
                 </div>
                 <p className="font-bold text-sm text-ink mb-1.5">{title}</p>
@@ -162,8 +162,8 @@ export default function ForProsPage() {
           </div>
           <div className="space-y-4">
             {STEPS.map(({ step, title, desc }) => (
-              <div key={step} className="flex items-start gap-4 bg-white rounded-2xl border border-border-dim p-5">
-                <div className="w-9 h-9 bg-brand rounded-xl flex items-center justify-center shrink-0 text-white font-bold text-sm">
+              <div key={step} className="flex items-start gap-4 bg-card rounded-card border border-border-dim p-5">
+                <div className="w-9 h-9 bg-brand rounded-input flex items-center justify-center shrink-0 text-white font-bold text-sm">
                   {step}
                 </div>
                 <div>
@@ -177,9 +177,9 @@ export default function ForProsPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-card">
         <div className="max-w-xl mx-auto px-4 sm:px-6">
-          <div className="bg-canvas rounded-2xl border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
+          <div className="bg-canvas rounded-card border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
               Ready to grow your business?
             </h2>

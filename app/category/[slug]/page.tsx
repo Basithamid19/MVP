@@ -51,9 +51,8 @@ export default function CategoryPage() {
         <EmptyState
           icon={Compass}
           size="lg"
-          /* I18N-TODO: unknown-category title/description have no dictionary keys yet */
-          title="Category not found"
-          description="That service category does not exist. Browse everything on offer instead."
+          title={t.categoryPage.notFoundTitle}
+          description={t.categoryPage.notFoundDesc}
           action={
             <Link href="/browse" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
               {t.providerProfile.backToBrowse}
@@ -100,10 +99,9 @@ export default function CategoryPage() {
               {category.label}
             </h1>
             <p className={cn('text-xs font-semibold opacity-75', theme.ink)}>
-              {/* I18N-TODO: provider-count line has no dictionary key yet */}
               {loading
                 ? t.common.loading
-                : `${providers.length} ${providers.length === 1 ? 'pro' : 'pros'} available in Vilnius`}
+                : `${providers.length} ${providers.length === 1 ? t.categoryPage.proAvailable : t.categoryPage.prosAvailable}`}
             </p>
           </div>
         </div>
@@ -144,8 +142,7 @@ export default function CategoryPage() {
       <section className="mt-8">
         <div className="flex items-center justify-between gap-3 mb-3">
           <h2 className="text-xs font-bold uppercase tracking-widest text-ink-dim">
-            {/* I18N-TODO: section heading has no dictionary key yet */}
-            Pros in {category.label}
+            {t.categoryPage.prosInPrefix} {category.label}
           </h2>
           {!loading && providers.length > PREVIEW_COUNT && (
             <Link
@@ -174,12 +171,10 @@ export default function CategoryPage() {
             icon={Users}
             size="sm"
             title={t.browse.noProvidersFound}
-            /* I18N-TODO: empty-pros description has no dictionary key yet */
-            description="Post your job anyway — pros in nearby categories can still quote."
+            description={t.categoryPage.emptyProsDesc}
             action={
               <Button variant="secondary" size="md" onClick={() => router.push(`/requests/new?category=${slug}`)}>
-                {/* I18N-TODO: 'Post a job' has no dictionary key yet */}
-                Post a job
+                {t.categoryPage.postJob}
               </Button>
             }
             className="bg-card rounded-card border border-border-dim"

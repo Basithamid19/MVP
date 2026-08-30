@@ -13,7 +13,7 @@ import { PLATFORM_FEE_RATE } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import {
-  Card, EmptyState, PageHeader, Skeleton, SkeletonStat, StatCard, buttonVariants,
+  Card, EmptyState, PageHeader, Skeleton, SkeletonStat, StatCard, buttonVariants, useToast,
 } from '@/components/ui';
 
 // The real platform fee charged by the payment code (Stripe application_fee).
@@ -24,6 +24,7 @@ export default function EarningsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const t = useTranslation();
+  const { toast } = useToast();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'overview' | 'history' | 'payouts'>('overview');
@@ -50,7 +51,7 @@ export default function EarningsPage() {
       const res = await fetch('/api/provider/stripe-connect', { method: 'POST' });
       const data = await res.json().catch(() => ({} as any));
       if (data.url) { window.location.href = data.url; return; }
-      alert(data.error ?? t.earningsPage.setupFailed);
+      toast.error(data.error ?? t.earningsPage.setupFailed);
     } finally {
       setConnectingStripe(false);
     }

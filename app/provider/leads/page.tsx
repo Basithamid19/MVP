@@ -197,7 +197,7 @@ export default function ProviderLeadsPage() {
             const isNew = ageMs < 3600000; // < 1 hour
 
             return (
-              <div key={lead.id} className={`bg-card rounded-card border transition-all shadow-card hover:shadow-md ${
+              <div key={lead.id} className={`bg-card rounded-card border transition-all shadow-card hover:shadow-elevated ${
                 lead.isUrgent ? 'border-caution/30' : isNew ? 'border-info/30' : 'border-border-dim hover:border-brand/30'
               }`}>
                 <div
@@ -288,7 +288,7 @@ export default function ProviderLeadsPage() {
                     <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                       <Link
                         href={`/provider/quote/${lead.id}`}
-                        className="flex-1 bg-brand text-white py-3 sm:py-3.5 rounded-full text-sm font-medium text-center hover:bg-brand-dark transition-all shadow-card hover:shadow-md"
+                        className="flex-1 bg-brand text-white py-3 sm:py-3.5 rounded-full text-sm font-medium text-center hover:bg-brand-dark transition-all shadow-card hover:shadow-elevated"
                       >
                         {t.leadsPage.sendQuote}
                       </Link>

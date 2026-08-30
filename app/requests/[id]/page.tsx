@@ -141,7 +141,7 @@ export default function QuoteInboxPage() {
       <div className="space-y-5">
         {/* Action error (accept/decline failed) */}
         {actionError && (
-          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl">
+          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
             <div className="flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
               <p className="text-sm font-medium text-caution leading-relaxed">{actionError}</p>
@@ -153,7 +153,7 @@ export default function QuoteInboxPage() {
         )}
 
         {/* Request summary */}
-        <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-6 shadow-sm">
+        <div className="bg-card rounded-card border border-border-dim p-4 sm:p-6 shadow-card">
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -172,7 +172,7 @@ export default function QuoteInboxPage() {
           {Array.isArray(request.photoUrls) && request.photoUrls.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
               {request.photoUrls.map((u: string) => (
-                <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-xl overflow-hidden border border-border-dim">
+                <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-input overflow-hidden border border-border-dim">
                   <img src={u} alt="Request photo" className="w-full h-full object-cover" />
                 </a>
               ))}
@@ -187,7 +187,7 @@ export default function QuoteInboxPage() {
 
         {/* Price range summary */}
         {pendingQuotes.length > 1 && minPrice !== null && (
-          <div className="bg-white rounded-2xl border border-border-dim p-3.5 flex items-center gap-3">
+          <div className="bg-card rounded-card border border-border-dim p-3.5 flex items-center gap-3">
             <TrendingDown className="w-5 h-5 text-trust shrink-0" />
             <div>
               <p className="text-sm font-bold text-ink">
@@ -200,7 +200,7 @@ export default function QuoteInboxPage() {
 
         {/* Accepted quote banner */}
         {acceptedQuote && (
-          <div className="bg-brand text-white rounded-2xl p-5 sm:p-6">
+          <div className="bg-brand text-white rounded-card p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-2.5">
               <CheckCircle2 className="w-5 h-5 text-white shrink-0" />
               <span className="font-bold text-sm sm:text-base">{t.quoteInbox.acceptedTitle}</span>
@@ -212,13 +212,13 @@ export default function QuoteInboxPage() {
             <div className="flex flex-col sm:flex-row gap-2.5">
               <Link
                 href={acceptedQuote.booking?.id ? `/bookings/${acceptedQuote.booking.id}` : '/bookings'}
-                className="flex-1 flex items-center justify-center gap-2 bg-white text-ink px-5 py-3 rounded-2xl text-sm font-bold hover:bg-surface-alt transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-card text-ink px-5 py-3 rounded-card text-sm font-bold hover:bg-surface-alt transition-colors"
               >
                 {t.quoteInbox.viewBooking} <ChevronRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/dashboard"
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white/15 text-white px-5 py-3 sm:py-2.5 rounded-2xl text-sm font-medium hover:bg-white/25 transition-colors"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-white/15 text-white px-5 py-3 sm:py-2.5 rounded-card text-sm font-medium hover:bg-white/25 transition-colors"
               >
                 {t.nav.dashboard}
               </Link>
@@ -228,8 +228,8 @@ export default function QuoteInboxPage() {
 
         {/* Waiting state */}
         {!acceptedQuote && pendingQuotes.length === 0 && (
-          <div className="bg-white rounded-2xl border border-dashed border-border-dim p-7 sm:p-10 text-center">
-            <div className="w-14 h-14 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-card rounded-card border border-dashed border-border-dim p-7 sm:p-10 text-center">
+            <div className="w-14 h-14 bg-surface-alt rounded-card flex items-center justify-center mx-auto mb-4">
               <MessageSquare className="w-7 h-7 text-ink-dim" />
             </div>
             {request.targetProviderId ? (
@@ -262,7 +262,7 @@ export default function QuoteInboxPage() {
                 {expiredCount} {expiredCount > 1 ? t.quoteInbox.expiredPlural : t.quoteInbox.expiredSingular}
               </p>
             )}
-            <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-xl px-4 py-2.5 transition-colors">
+            <button onClick={load} className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-ink-sub hover:text-ink border border-border-dim rounded-input px-4 py-2.5 transition-colors">
               <RefreshCcw className="w-3.5 h-3.5" /> {t.quoteInbox.checkForUpdates}
             </button>
           </div>
@@ -280,7 +280,7 @@ export default function QuoteInboxPage() {
                   const p = quote.provider;
                   const eta = etaFromResponse(p?.responseTime, t.quoteInbox.today);
                   return (
-                    <div key={quote.id} className={`bg-white rounded-2xl border p-4 sm:p-6 shadow-sm ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
+                    <div key={quote.id} className={`bg-card rounded-card border p-4 sm:p-6 shadow-card ${i === 0 ? 'border-brand' : 'border-border-dim'}`}>
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star className="w-3.5 h-3.5 text-brand fill-current" />
@@ -336,7 +336,7 @@ export default function QuoteInboxPage() {
                         </div>
                       </div>
                       {quote.notes && (
-                        <div className="p-3 bg-surface-alt rounded-xl border border-border-dim mb-4">
+                        <div className="p-3 bg-surface-alt rounded-input border border-border-dim mb-4">
                           <p className="text-sm text-ink-sub italic">&quot;{quote.notes}&quot;</p>
                         </div>
                       )}
@@ -344,14 +344,14 @@ export default function QuoteInboxPage() {
                         <button
                           onClick={() => setConfirmAcceptId(quote.id)}
                           disabled={actioning === quote.id}
-                          className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-2xl font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
+                          className="w-full flex items-center justify-center gap-2 bg-brand text-white py-3 rounded-card font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50"
                         >
                           {actioning === quote.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.quoteInbox.acceptQuote}</>}
                         </button>
                         <div className="flex gap-2">
                           <Link
                             href={`/providers/${p?.id}`}
-                            className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 border border-border-dim rounded-2xl font-bold text-sm text-ink hover:bg-surface-alt transition-colors"
+                            className="flex-1 sm:flex-initial flex items-center justify-center px-4 py-3 border border-border-dim rounded-card font-bold text-sm text-ink hover:bg-surface-alt transition-colors"
                           >
                             {t.common.profile}
                           </Link>
@@ -360,7 +360,7 @@ export default function QuoteInboxPage() {
                           <button
                             onClick={() => handleQuote(quote.id, 'DECLINED')}
                             disabled={!!actioning}
-                            className="p-3 border border-border-dim rounded-2xl text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
+                            className="p-3 border border-border-dim rounded-card text-ink-dim hover:border-danger-edge hover:text-danger transition-colors disabled:opacity-50"
                           >
                             <XCircle className="w-5 h-5" />
                           </button>
@@ -381,7 +381,7 @@ export default function QuoteInboxPage() {
         const othersCount = pendingQuotes.length - 1;
         return (
           <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-            <div className="bg-white rounded-panel p-6 w-full max-w-sm">
+            <div className="bg-card rounded-panel p-6 w-full max-w-sm">
               <h2 className="font-bold text-lg mb-2">{t.quoteInbox.confirmTitle}</h2>
               <p className="text-sm text-ink-sub mb-1.5">
                 {q?.provider?.user?.name} · <span className="font-bold text-ink">€{q?.price?.toFixed(2)}</span>

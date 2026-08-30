@@ -97,7 +97,7 @@ function RequestCard({ r }: { r: any }) {
   return (
     <Link
       href={`/requests/${r.id}`}
-      className="block bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
+      className="block bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-elevated transition-all"
     >
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <p className="font-bold text-sm text-ink">{r.category?.name ?? t.requestsList.serviceFallback}</p>

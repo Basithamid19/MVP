@@ -104,7 +104,7 @@ function QuoteCard({ q }: { q: any }) {
   const state = quoteState(q, t);
   const expiry = expiryLine(q, t);
   const inner = (
-    <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all">
+    <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-elevated transition-all">
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-3xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 py-0.5 rounded-full">

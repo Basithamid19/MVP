@@ -19,7 +19,7 @@ export default function LanguageSwitcher({ className = '' }: { className?: strin
           onClick={() => setLocale(code)}
           className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
             locale === code
-              ? 'bg-white text-ink shadow-sm'
+              ? 'bg-card text-ink shadow-card'
               : 'text-ink-dim hover:text-ink'
           }`}
         >
