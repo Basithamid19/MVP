@@ -4,14 +4,15 @@ import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import {
-  ArrowLeft, ArrowRight, Calendar,
+  ArrowLeft, ArrowRight, Calendar, Check,
   AlertCircle, Loader2, CheckCircle2, Send,
   X, ImagePlus, Zap,
   Wrench, Hammer, Truck, Package
 } from 'lucide-react';
 import { BroomIcon, ElectricianIcon } from '@/components/icons';
 import { SUBCATEGORIES } from '@/lib/subcategories';
-import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
+import { AddressAutocomplete, Input, Textarea } from '@/components/ui';
+import { WizardStepper } from '@/components/WizardStepper';
 import { useTranslation } from '@/lib/i18n';
 
 const ICON_MAP: Record<string, React.ElementType> = {
@@ -51,11 +52,11 @@ function NewRequestContent() {
   const t = useTranslation();
 
   const STEPS = [
-    t.wizard.stepService,
-    t.wizard.stepType,
-    t.wizard.stepDetails,
-    t.wizard.stepSchedule,
-    t.wizard.stepReview,
+    { key: 'service',  label: t.wizard.stepService },
+    { key: 'type',     label: t.wizard.stepType },
+    { key: 'details',  label: t.wizard.stepDetails },
+    { key: 'schedule', label: t.wizard.stepSchedule },
+    { key: 'review',   label: t.wizard.stepReview },
   ];
 
   const TIME_PREFS = [
@@ -231,7 +232,7 @@ function NewRequestContent() {
     <div className="min-h-screen bg-canvas">
 
       {/* ── Stepper header ── */}
-      <header className="bg-white/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
+      <header className="bg-card/90 backdrop-blur-md border-b border-border-dim sticky top-0 z-40">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center gap-3">
           <button
             onClick={back}
@@ -241,32 +242,8 @@ function NewRequestContent() {
             <ArrowLeft className="w-5 h-5" />
           </button>
 
-          {/* Step indicators */}
-          <div className="flex-1 flex items-center gap-1 min-w-0">
-            {STEPS.map((s, i) => {
-              const done    = i + 1 < step;
-              const current = i + 1 === step;
-              return (
-                <React.Fragment key={s}>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <div className={`flex items-center justify-center rounded-full font-bold transition-all ${
-                      current
-                        ? 'w-7 h-7 bg-brand text-white text-2xs ring-4 ring-brand/15'
-                        : done
-                        ? 'w-6 h-6 bg-brand text-white text-3xs'
-                        : 'w-6 h-6 bg-surface-alt text-ink-dim text-3xs'
-                    }`}>
-                      {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
-                    </div>
-                    <span className={`text-xs font-bold hidden sm:block transition-colors ${current ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
-                  </div>
-                  {i < STEPS.length - 1 && (
-                    <div className={`flex-1 h-px transition-colors ${done ? 'bg-brand' : 'bg-surface-alt'}`} />
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </div>
+          {/* Step indicators — shared with provider onboarding */}
+          <WizardStepper steps={STEPS} current={step} />
         </div>
       </header>
 
@@ -289,18 +266,18 @@ function NewRequestContent() {
                   <button
                     key={cat.id}
                     onClick={() => setForm(f => ({ ...f, categoryId: cat.id, categoryName: cat.name, categorySlug: cat.slug }))}
-                    className={`p-5 rounded-2xl border-2 text-center transition-all flex flex-col items-center justify-center active:scale-[0.97] ${
+                    className={`p-5 rounded-card border-2 text-center transition-all flex flex-col items-center justify-center active:scale-[0.97] ${
                       selected
-                        ? 'border-brand bg-brand shadow-elevated ring-4 ring-brand/15'
-                        : 'border-transparent bg-white shadow-sm hover:shadow-elevated hover:border-brand-muted'
+                        ? 'bg-brand text-white border-brand shadow-elevated'
+                        : 'bg-card border-border text-ink-sub hover:border-border-dim'
                     }`}
                   >
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${
-                      selected ? 'bg-white/20 text-white' : 'bg-surface-alt text-ink-sub'
+                      selected ? 'bg-white/20 text-white' : 'bg-brand-muted text-brand'
                     }`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <p className={`font-bold text-sm leading-tight ${selected ? 'text-white' : 'text-ink'}`}>{cat.name}</p>
+                    <p className="font-bold text-sm leading-tight">{cat.name}</p>
                   </button>
                 );
               })}
@@ -331,18 +308,19 @@ function NewRequestContent() {
                           description: item.label,
                         }));
                       }}
-                      className={`p-3.5 rounded-2xl border-2 text-left transition-all flex flex-col gap-2.5 active:scale-[0.97] ${
+                      className={`relative p-3.5 rounded-card border-2 text-left transition-all flex flex-col gap-2.5 active:scale-[0.97] ${
                         selected
-                          ? 'border-brand bg-brand-muted shadow-sm'
-                          : 'border-border-dim bg-white hover:border-brand/40 hover:shadow-sm'
+                          ? 'border-brand bg-brand-muted text-brand'
+                          : 'bg-card border-border text-ink-sub hover:border-border-dim hover:bg-surface-alt'
                       }`}
                     >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
+                      {selected && <Check className="absolute top-2.5 right-2.5 w-3.5 h-3.5 text-brand" strokeWidth={3} />}
+                      <div className={`w-9 h-9 rounded-input flex items-center justify-center transition-colors ${
                         selected ? 'bg-brand text-white' : 'bg-surface-alt text-ink-sub'
                       }`}>
                         <Icon className="w-4 h-4" strokeWidth={1.5} />
                       </div>
-                      <p className={`font-semibold text-sm leading-snug ${selected ? 'text-brand' : 'text-ink'}`}>{item.label}</p>
+                      <p className="font-semibold text-sm leading-snug pr-4">{item.label}</p>
                     </button>
                   );
                 })}
@@ -350,7 +328,7 @@ function NewRequestContent() {
               {/* "Something else" — intentionally secondary, still polished */}
               <button
                 onClick={() => setStep(3)}
-                className="w-full py-3.5 rounded-2xl border border-border-dim bg-white text-ink-sub text-sm font-medium hover:bg-surface-alt hover:text-ink transition-all flex items-center justify-center gap-2"
+                className="w-full py-3.5 rounded-card border border-border-dim bg-card text-ink-sub text-sm font-medium hover:bg-surface-alt hover:text-ink transition-all flex items-center justify-center gap-2"
               >
                 {t.wizard.somethingElse}
                 <ArrowRight className="w-4 h-4 text-ink-dim" />
@@ -371,12 +349,13 @@ function NewRequestContent() {
                 <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   {t.wizard.descLabel}
                 </label>
-                <textarea
+                <Textarea
                   value={form.description}
                   onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                   rows={4}
                   placeholder={t.wizard.descPlaceholder}
-                  className="w-full p-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none resize-none text-base leading-relaxed"
+                  /* text-base keeps iOS from zooming on focus — do not drop to text-sm */
+                  className="p-4 resize-none text-base leading-relaxed"
                 />
                 <div className="flex justify-between items-center mt-1.5">
                   <p className="text-xs text-ink-dim">{form.description.length} {t.wizard.charHint}</p>
@@ -399,7 +378,7 @@ function NewRequestContent() {
                 />
                 <div className="flex flex-wrap gap-2.5">
                   {photos.map(p => (
-                    <div key={p.preview} className="relative w-[76px] h-[76px] rounded-xl overflow-hidden border border-border">
+                    <div key={p.preview} className="relative w-[76px] h-[76px] rounded-input overflow-hidden border border-border">
                       <img src={p.preview} alt="Upload" className="w-full h-full object-cover" />
                       {!p.url && (
                         <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
@@ -419,7 +398,7 @@ function NewRequestContent() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingPhoto}
-                    className="w-[76px] h-[76px] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand hover:bg-brand-muted/30 transition-all text-ink-dim hover:text-brand disabled:opacity-50"
+                    className="w-[76px] h-[76px] rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand hover:bg-brand-muted/30 transition-all text-ink-dim hover:text-brand disabled:opacity-50"
                   >
                     <ImagePlus className="w-5 h-5" />
                     <span className="text-3xs font-bold">{t.wizard.addPhoto}</span>
@@ -434,21 +413,21 @@ function NewRequestContent() {
               <button
                 type="button"
                 onClick={() => setForm(f => ({ ...f, isUrgent: !f.isUrgent }))}
-                className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left ${
+                className={`w-full flex items-center justify-between p-4 rounded-card border transition-all text-left ${
                   form.isUrgent
-                    ? 'bg-caution-surface border-caution/40'
-                    : 'bg-white border-border-dim hover:border-border'
+                    ? 'bg-caution-surface border-caution-edge'
+                    : 'bg-card border-border-dim hover:border-border'
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                  <div className={`w-9 h-9 rounded-input flex items-center justify-center shrink-0 ${
                     form.isUrgent ? 'bg-caution/15' : 'bg-surface-alt'
                   }`}>
                     <Zap className={`w-4 h-4 ${form.isUrgent ? 'text-caution' : 'text-ink-dim'}`} />
                   </div>
                   <div>
-                    <p className={`font-bold text-sm ${form.isUrgent ? 'text-orange-900' : 'text-ink'}`}>{t.wizard.markUrgent}</p>
-                    <p className={`text-xs mt-0.5 ${form.isUrgent ? 'text-caution' : 'text-ink-sub'}`}>
+                    <p className={`font-bold text-sm ${form.isUrgent ? 'text-caution' : 'text-ink'}`}>{t.wizard.markUrgent}</p>
+                    <p className={`text-xs mt-0.5 ${form.isUrgent ? 'text-caution/80' : 'text-ink-sub'}`}>
                       {form.isUrgent ? t.wizard.urgentOn : t.wizard.urgentOff}
                     </p>
                   </div>
@@ -480,35 +459,37 @@ function NewRequestContent() {
 
               <div>
                 <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.dateLabel}</label>
-                <div className="relative">
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
-                  <input
-                    type="date"
-                    value={form.dateWindow}
-                    min={new Date().toISOString().split('T')[0]}
-                    onChange={e => setForm(f => ({ ...f, dateWindow: e.target.value }))}
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
-                  />
-                </div>
+                <Input
+                  type="date"
+                  value={form.dateWindow}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => setForm(f => ({ ...f, dateWindow: e.target.value }))}
+                  leading={<Calendar className="w-5 h-5" />}
+                  className="py-4 text-base"
+                />
               </div>
 
               <div>
                 <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.timeLabel}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                  {TIME_PREFS.map(pref => (
-                    <button
-                      key={pref.id}
-                      onClick={() => setForm(f => ({ ...f, timePreference: pref.id }))}
-                      className={`py-3.5 px-2 rounded-xl border-2 text-center transition-all active:scale-[0.97] ${
-                        form.timePreference === pref.id
-                          ? 'border-brand bg-brand shadow-sm'
-                          : 'border-border-dim bg-white shadow-sm hover:border-brand/40'
-                      }`}
-                    >
-                      <p className={`font-bold text-xs ${form.timePreference === pref.id ? 'text-white' : 'text-ink'}`}>{pref.label}</p>
-                      <p className={`text-3xs mt-0.5 ${form.timePreference === pref.id ? 'text-white/75' : 'text-ink-dim'}`}>{pref.sub}</p>
-                    </button>
-                  ))}
+                  {TIME_PREFS.map(pref => {
+                    const selected = form.timePreference === pref.id;
+                    return (
+                      <button
+                        key={pref.id}
+                        onClick={() => setForm(f => ({ ...f, timePreference: pref.id }))}
+                        className={`relative py-3.5 px-2 rounded-card border-2 text-center transition-all active:scale-[0.97] ${
+                          selected
+                            ? 'border-brand bg-brand-muted text-brand'
+                            : 'bg-card border-border text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+                        }`}
+                      >
+                        {selected && <Check className="absolute top-1.5 right-1.5 w-3 h-3 text-brand" strokeWidth={3} />}
+                        <p className="font-bold text-xs">{pref.label}</p>
+                        <p className={`text-3xs mt-0.5 ${selected ? 'text-brand/70' : 'text-ink-dim'}`}>{pref.sub}</p>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -516,17 +497,15 @@ function NewRequestContent() {
                 <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   {t.wizard.budgetLabel} <span className="normal-case font-normal">{t.wizard.optional}</span>
                 </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-base pointer-events-none">€</span>
-                  <input
-                    type="number"
-                    value={form.budget}
-                    onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
-                    placeholder={t.wizard.budgetPlaceholder}
-                    className="w-full pl-10 pr-4 py-4 bg-white border border-border rounded-2xl focus:ring-2 focus:ring-brand outline-none text-base"
-                  />
-                </div>
-                <p className="text-xs text-ink-dim mt-1.5">{t.wizard.budgetHint}</p>
+                <Input
+                  type="number"
+                  value={form.budget}
+                  onChange={e => setForm(f => ({ ...f, budget: e.target.value }))}
+                  placeholder={t.wizard.budgetPlaceholder}
+                  leading={<span className="font-bold text-base">€</span>}
+                  hint={t.wizard.budgetHint}
+                  className="py-4 text-base"
+                />
               </div>
             </div>
           </div>
@@ -557,7 +536,7 @@ function NewRequestContent() {
             )}
 
             {/* Review card */}
-            <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden mb-4">
+            <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden mb-4">
               {/* Service pill header */}
               <div className="px-5 py-4 border-b border-border-dim bg-surface-alt/50 flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 bg-brand-muted text-brand text-xs font-bold px-3 py-1.5 rounded-full">
@@ -598,7 +577,7 @@ function NewRequestContent() {
                     <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2">{t.wizard.reviewPhotos}</p>
                     <div className="flex gap-2 flex-wrap">
                       {photos.map(p => (
-                        <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-xl object-cover border border-border-dim" />
+                        <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-input object-cover border border-border-dim" />
                       ))}
                     </div>
                   </div>
@@ -607,8 +586,8 @@ function NewRequestContent() {
             </div>
 
             {/* Trust callout */}
-            <div className="flex items-start gap-3 p-4 bg-brand-muted rounded-2xl border border-brand/15">
-              <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+            <div className="flex items-start gap-3 p-4 bg-brand-muted rounded-card border border-brand/15">
+              <div className="w-8 h-8 bg-card rounded-input flex items-center justify-center shrink-0 shadow-card">
                 <Zap className="w-4 h-4 text-brand" />
               </div>
               <p className="text-sm text-ink-sub leading-relaxed">
@@ -621,11 +600,11 @@ function NewRequestContent() {
       </main>
 
       {/* ── Sticky bottom CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
+      <div className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border-dim shadow-[0_-4px_24px_rgba(0,0,0,0.08)]">
         <div className="max-w-2xl mx-auto px-4 pt-3 pb-[max(env(safe-area-inset-bottom),1.25rem)]">
           {/* Submit error — a failed POST used to be completely invisible */}
           {submitError && step === 5 && (
-            <div className="flex items-start gap-2.5 px-4 py-3 mb-2.5 bg-caution-surface border border-caution-edge rounded-2xl">
+            <div className="flex items-start gap-2.5 px-4 py-3 mb-2.5 bg-caution-surface border border-caution-edge rounded-card">
               <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
               <p className="text-sm font-medium text-caution leading-relaxed">{submitError}</p>
             </div>
@@ -640,7 +619,7 @@ function NewRequestContent() {
             <button
               onClick={next}
               disabled={!canProceed()}
-              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {t.wizard.continueBtn} <ArrowRight className="w-4 h-4" />
             </button>
@@ -648,7 +627,7 @@ function NewRequestContent() {
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-3.5 min-h-[48px] rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Send className="w-4 h-4" /> {t.wizard.postRequest}</>}
             </button>
