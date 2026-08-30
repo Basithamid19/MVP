@@ -49,7 +49,7 @@ function Badge({ color, label }: { color: string; label: string }) {
     purple: 'bg-brand-muted text-brand-dark border border-brand/20',
   };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-chip text-[11px] font-semibold uppercase tracking-wide ${colors[color] || colors.gray}`}>
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-chip text-2xs font-semibold uppercase tracking-wide ${colors[color] || colors.gray}`}>
       {label}
     </span>
   );
@@ -228,7 +228,7 @@ function AnalyticsModule() {
       {/* ── Action Needed ── */}
       {actions.length > 0 && (
         <div className="mb-5">
-          <p className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2">Action needed</p>
+          <p className="text-2xs font-bold text-ink-dim uppercase tracking-widest mb-2">Action needed</p>
           <div className="space-y-1.5">
             {actions.map((a, i) => (
               <div key={i} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${a.bg}`}>
@@ -248,7 +248,7 @@ function AnalyticsModule() {
               <div className={`w-7 h-7 ${k.accent} rounded-lg flex items-center justify-center`}>
                 <k.icon className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[11px] font-semibold text-ink-dim uppercase tracking-wide">{k.label}</span>
+              <span className="text-2xs font-semibold text-ink-dim uppercase tracking-wide">{k.label}</span>
             </div>
             <div className="text-2xl font-bold tracking-tight tabular-nums">{k.value}</div>
           </div>
@@ -260,7 +260,7 @@ function AnalyticsModule() {
         {secondaryKpis.map((k) => (
           <div key={k.label} className="bg-white rounded-xl border border-border-dim px-3 py-3 text-center">
             <div className="text-lg font-bold tabular-nums text-ink">{k.value}</div>
-            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide mt-0.5">{k.label}</div>
+            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide mt-0.5">{k.label}</div>
           </div>
         ))}
       </div>
@@ -270,8 +270,8 @@ function AnalyticsModule() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-bold text-sm text-ink">Weekly Activity</h2>
           <div className="flex gap-4">
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-ink rounded-sm" /><span className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Requests</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-border rounded-sm" /><span className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Bookings</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-ink rounded-sm" /><span className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Requests</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-border rounded-sm" /><span className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Bookings</span></div>
           </div>
         </div>
         <div className="h-44 sm:h-56">
@@ -293,24 +293,24 @@ function AnalyticsModule() {
         <h2 className="font-bold text-sm text-ink mb-3">Marketplace Health</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Demand</p>
+            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Demand</p>
             <p className="text-sm font-bold text-ink mt-0.5">{s.totalRequests ?? 0} requests</p>
-            <p className="text-[11px] text-ink-dim">{s.totalBookings ?? 0} converted to bookings</p>
+            <p className="text-2xs text-ink-dim">{s.totalBookings ?? 0} converted to bookings</p>
           </div>
           <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Supply</p>
+            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Supply</p>
             <p className="text-sm font-bold text-ink mt-0.5">{s.totalProviders ?? 0} providers</p>
-            <p className="text-[11px] text-ink-dim">{supplyRatio} providers per request</p>
+            <p className="text-2xs text-ink-dim">{supplyRatio} providers per request</p>
           </div>
           <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Fulfilment</p>
+            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Fulfilment</p>
             <p className="text-sm font-bold text-ink mt-0.5">{completionRate}% completed</p>
-            <p className="text-[11px] text-ink-dim">{canceledCount} cancelled</p>
+            <p className="text-2xs text-ink-dim">{canceledCount} cancelled</p>
           </div>
           <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Trust</p>
+            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Trust</p>
             <p className="text-sm font-bold text-ink mt-0.5">{s.totalReviews ?? 0} reviews</p>
-            <p className="text-[11px] text-ink-dim">{pendingCount} pending verification{pendingCount !== 1 ? 's' : ''}</p>
+            <p className="text-2xs text-ink-dim">{pendingCount} pending verification{pendingCount !== 1 ? 's' : ''}</p>
           </div>
         </div>
       </div>
@@ -389,7 +389,7 @@ function ProvidersModule() {
                     <span className="font-bold text-sm truncate">{p.user.name}</span>
                     <Badge color={p.isVerified ? 'green' : 'gray'} label={p.isVerified ? 'Active' : 'Unverified'} />
                   </div>
-                  <p className="text-[11px] text-ink-dim truncate">{p.categories.map((c: any) => c.name).join(', ')}</p>
+                  <p className="text-2xs text-ink-dim truncate">{p.categories.map((c: any) => c.name).join(', ')}</p>
                 </div>
               </div>
 
@@ -560,15 +560,15 @@ function DisputesModule() {
         <div className="grid grid-cols-3 gap-3 mb-5">
           <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
             <div className="text-lg font-bold tabular-nums text-ink">{bookings.length}</div>
-            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Total Cases</div>
+            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Total Cases</div>
           </div>
           <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
             <div className="text-lg font-bold tabular-nums text-caution">{pendingCount}</div>
-            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Pending</div>
+            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Pending</div>
           </div>
           <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
             <div className="text-lg font-bold tabular-nums text-trust">{refundedCount}</div>
-            <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Refunded</div>
+            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Refunded</div>
           </div>
         </div>
       )}
@@ -606,7 +606,7 @@ function DisputesModule() {
                         <DollarSign className="w-3.5 h-3.5" /> Refund
                       </button>
                     ) : isRefunded ? (
-                      <span className="text-[11px] font-semibold text-trust">Resolved</span>
+                      <span className="text-2xs font-semibold text-trust">Resolved</span>
                     ) : null}
                   </div>
                 </div>
@@ -758,15 +758,15 @@ function CategoriesModule() {
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
           <div className="text-lg font-bold tabular-nums text-ink">{PLATFORM_FEE}%</div>
-          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Take Rate</div>
+          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Take Rate</div>
         </div>
         <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
           <div className="text-lg font-bold tabular-nums text-ink">{categories.length}</div>
-          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Categories</div>
+          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Categories</div>
         </div>
         <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
           <div className="text-lg font-bold text-ink">Quote</div>
-          <div className="text-[10px] font-semibold text-ink-dim uppercase tracking-wide">Mode</div>
+          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Mode</div>
         </div>
       </div>
 
@@ -786,15 +786,15 @@ function CategoriesModule() {
             <div className="grid grid-cols-3 gap-2 ml-11">
               <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
                 <span className="text-sm font-bold tabular-nums text-ink">{c._count.providers}</span>
-                <span className="text-[10px] text-ink-dim ml-1">providers</span>
+                <span className="text-3xs text-ink-dim ml-1">providers</span>
               </div>
               <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
                 <span className="text-sm font-bold tabular-nums text-ink">{c._count.requests}</span>
-                <span className="text-[10px] text-ink-dim ml-1">requests</span>
+                <span className="text-3xs text-ink-dim ml-1">requests</span>
               </div>
               <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
                 <span className="text-sm font-bold tabular-nums text-ink">{PLATFORM_FEE}%</span>
-                <span className="text-[10px] text-ink-dim ml-1">fee</span>
+                <span className="text-3xs text-ink-dim ml-1">fee</span>
               </div>
             </div>
           </div>
@@ -868,7 +868,7 @@ function CRMModule() {
                   <span className="font-bold text-sm truncate">{u.name}</span>
                   <Badge color={ROLE_COLORS[u.role] ?? 'gray'} label={u.role} />
                 </div>
-                <p className="text-[11px] text-ink-dim truncate">{u.email}</p>
+                <p className="text-2xs text-ink-dim truncate">{u.email}</p>
               </div>
             </div>
 
@@ -1013,7 +1013,7 @@ function IncidentModule() {
                     <span className="font-bold text-sm truncate">{t.subject}</span>
                     <Badge color={TICKET_COLORS[t.status] ?? 'gray'} label={t.status} />
                   </div>
-                  <span className="text-[11px] text-ink-dim tabular-nums shrink-0">{daysSince}d ago</span>
+                  <span className="text-2xs text-ink-dim tabular-nums shrink-0">{daysSince}d ago</span>
                 </div>
 
                 {/* Description */}
@@ -1021,7 +1021,7 @@ function IncidentModule() {
 
                 {/* Actions */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-ink-dim tabular-nums">
+                  <span className="text-2xs text-ink-dim tabular-nums">
                     {new Date(t.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                   <div className="flex gap-1.5">
@@ -1192,9 +1192,9 @@ function VerificationsModule() {
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-ink truncate">{c.provider?.user?.name ?? 'Unknown'}</p>
                     <p className="text-xs text-ink-dim truncate">{c.provider?.user?.email}</p>
-                    {categories && <p className="text-[10px] text-ink-dim mt-0.5">{categories}</p>}
+                    {categories && <p className="text-3xs text-ink-dim mt-0.5">{categories}</p>}
                   </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${STATUS_STYLE[c.overallStatus]}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wider shrink-0 ${STATUS_STYLE[c.overallStatus]}`}>
                     {c.overallStatus}
                   </span>
                 </div>
@@ -1212,7 +1212,7 @@ function VerificationsModule() {
                     const doc = c.documents.find((d: any) => d.docType === type);
                     const st = doc ? doc.status : 'MISSING';
                     return (
-                      <span key={type} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${STATUS_STYLE[st]}`}>
+                      <span key={type} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-3xs font-semibold ${STATUS_STYLE[st]}`}>
                         {st === 'APPROVED' && <CheckCircle2 className="w-2.5 h-2.5" />}
                         {st === 'REJECTED' && <XCircle className="w-2.5 h-2.5" />}
                         {st === 'PENDING' && <Clock className="w-2.5 h-2.5" />}
@@ -1254,7 +1254,7 @@ function VerificationsModule() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-bold text-sm text-ink truncate">{reviewCase.provider?.user?.name}</p>
-                    <p className="text-[11px] text-ink-dim truncate">{reviewCase.provider?.user?.email}</p>
+                    <p className="text-2xs text-ink-dim truncate">{reviewCase.provider?.user?.email}</p>
                   </div>
                 </div>
                 <button onClick={() => setReviewCase(null)} className="p-1.5 rounded-lg hover:bg-surface-alt transition-colors">
@@ -1267,7 +1267,7 @@ function VerificationsModule() {
                 {/* Overall status */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-ink-dim uppercase tracking-wider">Case Status</span>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${STATUS_STYLE[reviewCase.overallStatus]}`}>
+                  <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wider ${STATUS_STYLE[reviewCase.overallStatus]}`}>
                     {reviewCase.overallStatus}
                   </span>
                 </div>
@@ -1287,14 +1287,14 @@ function VerificationsModule() {
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-ink">{DOC_LABELS[type]}</p>
                             {doc ? (
-                              <p className="text-[10px] text-ink-dim">
+                              <p className="text-3xs text-ink-dim">
                                 Uploaded {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                               </p>
                             ) : (
-                              <p className="text-[10px] text-ink-dim">Not uploaded</p>
+                              <p className="text-3xs text-ink-dim">Not uploaded</p>
                             )}
                           </div>
-                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase ${STATUS_STYLE[doc ? doc.status : 'MISSING']}`}>
+                          <span className={`px-2 py-0.5 rounded-md text-3xs font-bold uppercase ${STATUS_STYLE[doc ? doc.status : 'MISSING']}`}>
                             {doc ? doc.status : 'Missing'}
                           </span>
                         </div>
@@ -1316,7 +1316,7 @@ function VerificationsModule() {
                             {doc.status === 'REJECTED' && doc.rejectionReason && (
                               <div className="flex items-start gap-2 p-2 bg-danger-surface rounded-lg mb-2">
                                 <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
-                                <p className="text-[11px] text-danger">{doc.rejectionReason}</p>
+                                <p className="text-2xs text-danger">{doc.rejectionReason}</p>
                               </div>
                             )}
 
@@ -1326,14 +1326,14 @@ function VerificationsModule() {
                                 <button
                                   disabled={actionLoading}
                                   onClick={() => handleVerify(doc.id, 'APPROVED', undefined, 'TIER1_ID_VERIFIED')}
-                                  className="flex-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-[11px] font-bold hover:bg-trust-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                  className="flex-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-2xs font-bold hover:bg-trust-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                                 >
                                   <CheckCircle2 className="w-3 h-3" /> Approve
                                 </button>
                                 <button
                                   disabled={actionLoading}
                                   onClick={() => { setRejectDocId(doc.id); setRejectReason(''); }}
-                                  className="flex-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-[11px] font-bold hover:bg-danger-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                  className="flex-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-2xs font-bold hover:bg-danger-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                                 >
                                   <XCircle className="w-3 h-3" /> Reject
                                 </button>
@@ -1359,13 +1359,13 @@ function VerificationsModule() {
                                       setRejectDocId(null);
                                       setRejectReason('');
                                     }}
-                                    className="flex-1 px-2.5 py-1.5 bg-danger text-white rounded-lg text-[11px] font-bold hover:bg-danger/90 transition-colors disabled:opacity-50"
+                                    className="flex-1 px-2.5 py-1.5 bg-danger text-white rounded-lg text-2xs font-bold hover:bg-danger/90 transition-colors disabled:opacity-50"
                                   >
                                     Confirm Reject
                                   </button>
                                   <button
                                     onClick={() => { setRejectDocId(null); setRejectReason(''); }}
-                                    className="px-3 py-1.5 bg-surface-alt text-ink-dim rounded-lg text-[11px] font-bold hover:bg-border-dim/30 transition-colors"
+                                    className="px-3 py-1.5 bg-surface-alt text-ink-dim rounded-lg text-2xs font-bold hover:bg-border-dim/30 transition-colors"
                                   >
                                     Cancel
                                   </button>
@@ -1379,7 +1379,7 @@ function VerificationsModule() {
                         {!doc && (
                           <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-dashed border-border-dim">
                             <Upload className="w-3.5 h-3.5 text-ink-dim" />
-                            <p className="text-[11px] text-ink-dim">Provider has not uploaded this document yet.</p>
+                            <p className="text-2xs text-ink-dim">Provider has not uploaded this document yet.</p>
                           </div>
                         )}
                       </div>
@@ -1501,7 +1501,7 @@ export default function AdminDashboard() {
             </div>
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </div>
-          <span className="text-[10px] font-bold text-ink-dim uppercase tracking-widest ml-11">Admin Panel</span>
+          <span className="text-3xs font-bold text-ink-dim uppercase tracking-widest ml-11">Admin Panel</span>
         </div>
 
         <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
@@ -1549,7 +1549,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <span className="font-semibold text-base tracking-tight text-ink block">Aladdin</span>
-              <span className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
+              <span className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
             </div>
           </div>
           <button

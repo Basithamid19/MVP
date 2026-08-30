@@ -279,7 +279,7 @@ export default function BookingPage() {
                     }`}>
                       {i < stepIdx ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
                     </div>
-                    <span className={`text-[11px] font-bold mt-1 ${i === stepIdx ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
+                    <span className={`text-2xs font-bold mt-1 ${i === stepIdx ? 'text-ink' : 'text-ink-dim'}`}>{s}</span>
                   </div>
                   {i < BOOKING_STEPS.length - 1 && (
                     <div className={`flex-1 h-0.5 mb-4 ${i < stepIdx ? 'bg-brand' : 'bg-surface-alt'}`} />
@@ -403,7 +403,7 @@ export default function BookingPage() {
               <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span className="font-bold text-lg">{provider?.user?.name}</span>
                 {provider?.isVerified && (
-                  <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[11px] font-bold uppercase">
+                  <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-2xs font-bold uppercase">
                     <ShieldCheck className="w-3 h-3" /> {t.common.verified}
                   </span>
                 )}
@@ -511,12 +511,12 @@ export default function BookingPage() {
                   )}
                 </div>
                 {payStatus === 'DEPOSIT_HELD' && (
-                  <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
+                  <p className="text-2xs text-ink-dim mt-2 leading-relaxed">
                     €{booking.payment?.depositAmount?.toFixed(2)} {t.bookingDetail.depositConfirmedSuffix}
                   </p>
                 )}
                 {(payStatus === 'PROCESSING' || (bkCompleted && !payStatus)) && (
-                  <p className="text-[11px] text-ink-dim mt-2 leading-relaxed">
+                  <p className="text-2xs text-ink-dim mt-2 leading-relaxed">
                     {t.bookingDetail.processingNote}
                   </p>
                 )}

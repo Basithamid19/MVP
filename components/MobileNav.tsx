@@ -64,7 +64,7 @@ export default function MobileNav() {
                   <span className="absolute inset-0 bg-brand-muted rounded-xl" />
                 )}
                 <Icon className={`relative w-5 h-5 ${isActive ? 'stroke-[2]' : 'stroke-[1.5]'}`} />
-                <span className={`relative text-[10px] font-semibold tracking-tight ${isActive ? 'text-brand' : 'text-ink-dim'}`}>
+                <span className={`relative text-3xs font-semibold tracking-tight ${isActive ? 'text-brand' : 'text-ink-dim'}`}>
                   {label}
                 </span>
               </Link>

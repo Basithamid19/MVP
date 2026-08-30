@@ -108,7 +108,7 @@ function BookingCard({ b }: { b: any }) {
         </p>
       </div>
       <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${localizedStatus(t, 'booking', b.status).cls}`}>
+        <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase ${localizedStatus(t, 'booking', b.status).cls}`}>
           {localizedStatus(t, 'booking', b.status).label}
         </span>
         <span className="font-bold text-sm">€{b.totalAmount?.toFixed(2)}</span>

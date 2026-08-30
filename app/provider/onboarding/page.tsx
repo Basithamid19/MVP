@@ -150,7 +150,7 @@ export default function OnboardingPage() {
           <div className="flex-1 flex items-center gap-1.5">
             {STEPS.filter(s => s.id < 5).map((s, i) => (
               <React.Fragment key={s.id}>
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold transition-all ${
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-2xs font-bold transition-all ${
                   s.id < step ? 'bg-brand text-white' :
                   s.id === step ? 'bg-brand text-white' :
                   'bg-surface-alt text-ink-dim'
@@ -173,7 +173,7 @@ export default function OnboardingPage() {
             <p className="text-ink-dim text-sm mb-8">{t.onboarding.identitySubtitle}</p>
             <div className="space-y-5">
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.fullLegalName}</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.fullLegalName}</label>
                 <input
                   type="text"
                   value={identity.fullName}
@@ -183,7 +183,7 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.phoneNumber}</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.phoneNumber}</label>
                 <input
                   type="tel"
                   value={identity.phone}
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.nationalIdLabel} <span className="normal-case font-normal">{t.onboarding.optionalEncrypted}</span></label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.nationalIdLabel} <span className="normal-case font-normal">{t.onboarding.optionalEncrypted}</span></label>
                 <input
                   type="text"
                   value={identity.idNumber}
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
             {businessType === 'company' && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.companyName}</label>
+                  <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.companyName}</label>
                   <input
                     type="text"
                     value={companyName}
@@ -242,7 +242,7 @@ export default function OnboardingPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.vatNumber} <span className="normal-case font-normal">{t.wizard.optional}</span></label>
+                  <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.onboarding.vatNumber} <span className="normal-case font-normal">{t.wizard.optional}</span></label>
                   <input
                     type="text"
                     value={vatNumber}
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-ink-sub truncate">{uploaded.file.name}</p>
-                          <p className="text-[10px] text-ink-dim">{uploaded.uploaded ? t.onboarding.uploadedCheck : t.onboarding.uploading}</p>
+                          <p className="text-3xs text-ink-dim">{uploaded.uploaded ? t.onboarding.uploadedCheck : t.onboarding.uploading}</p>
                         </div>
                         <button onClick={() => setDocs(prev => { const n = { ...prev }; delete n[doc.id]; return n; })} className="text-ink-dim hover:text-red-500 transition-colors">
                           <X className="w-4 h-4" />

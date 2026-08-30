@@ -112,7 +112,7 @@ export default function DisputesPage() {
       <div className="space-y-5">
         {/* Ticket type */}
         <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">What do you need help with?</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">What do you need help with?</p>
           <div className="space-y-2">
             {TICKET_TYPES.map(t => (
               <button
@@ -140,7 +140,7 @@ export default function DisputesPage() {
               <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Details</p>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Subject</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Subject</label>
                 <input
                   type="text"
                   value={subject}
@@ -150,7 +150,7 @@ export default function DisputesPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Booking reference <span className="normal-case font-normal">(optional)</span></label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Booking reference <span className="normal-case font-normal">(optional)</span></label>
                 <input
                   type="text"
                   value={bookingRef}
@@ -161,7 +161,7 @@ export default function DisputesPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Description *</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Description *</label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
@@ -218,7 +218,7 @@ export default function DisputesPage() {
                   disabled={uploadingEvidence}
                   className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
                 >
-                  {uploadingEvidence ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Upload className="w-4 h-4" /><span className="text-[10px] font-bold">Upload</span></>}
+                  {uploadingEvidence ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Upload className="w-4 h-4" /><span className="text-3xs font-bold">Upload</span></>}
                 </button>
               </div>
               <p className="text-xs text-ink-dim">Photos, screenshots, or PDF documents. Max 10MB per file.</p>

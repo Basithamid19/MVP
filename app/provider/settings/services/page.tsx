@@ -173,13 +173,13 @@ export default function ProviderServicesSettingsPage() {
 
         {/* Your services */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Your services</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Your services</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="font-semibold text-sm">Service offerings</p>
                 {offerings.length > 0 && (
-                  <p className="text-[10px] text-ink-dim mt-0.5">{offerings.length} service{offerings.length !== 1 ? 's' : ''} listed</p>
+                  <p className="text-3xs text-ink-dim mt-0.5">{offerings.length} service{offerings.length !== 1 ? 's' : ''} listed</p>
                 )}
               </div>
               <button
@@ -222,7 +222,7 @@ export default function ProviderServicesSettingsPage() {
                           setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; });
                         }}
                         placeholder="Service name (e.g. TV Installation, Pipe Repair)"
-                        className={`flex-1 px-3 py-2 bg-white border ${offeringErrors[i]?.includes('name') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium`}
+                        className={`flex-1 px-3 py-2 bg-white border ${offeringErrors[i]?.includes('name') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm font-medium`}
                       />
                       <button
                         onClick={() => {
@@ -242,7 +242,7 @@ export default function ProviderServicesSettingsPage() {
                       }}
                       placeholder="Describe what's included, typical duration, and any requirements (min. 20 characters)"
                       rows={2}
-                      className={`w-full px-3 py-2 bg-white border ${offeringErrors[i]?.includes('escription') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm resize-none`}
+                      className={`w-full px-3 py-2 bg-white border ${offeringErrors[i]?.includes('escription') ? 'border-danger' : 'border-border'} rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm resize-none`}
                     />
                     {offeringErrors[i] && (
                       <p className="text-xs text-danger font-medium">{offeringErrors[i]}</p>
@@ -255,7 +255,7 @@ export default function ProviderServicesSettingsPage() {
                           value={o.price}
                           onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, price: e.target.value } : x))}
                           placeholder="0"
-                          className="w-full pl-7 pr-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm font-medium"
+                          className="w-full pl-7 pr-3 py-2 bg-white border border-border rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm font-medium"
                         />
                       </div>
                       <select
@@ -283,7 +283,7 @@ export default function ProviderServicesSettingsPage() {
 
         {/* Booking settings */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Booking settings</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Booking settings</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
             <div className="p-4 sm:p-6 flex items-center gap-3">
               <div className="w-9 h-9 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
@@ -291,7 +291,7 @@ export default function ProviderServicesSettingsPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm">Instant book</p>
-                <p className="text-[11px] text-ink-dim mt-0.5 leading-relaxed">Shows an Instant Book badge on your public profile</p>
+                <p className="text-2xs text-ink-dim mt-0.5 leading-relaxed">Shows an Instant Book badge on your public profile</p>
               </div>
               <button onClick={() => setInstantBook(!instantBook)} className="shrink-0">
                 {instantBook

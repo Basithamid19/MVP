@@ -173,14 +173,14 @@ export default function ProviderJobDetailPage() {
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
-              <p className="text-[10px] text-ink-dim mt-0.5 font-medium">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
+              <p className="text-3xs text-ink-dim mt-0.5 font-medium">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${localizedStatus(t, 'booking', booking.status).cls}`}>
+              <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wide ${localizedStatus(t, 'booking', booking.status).cls}`}>
                 {localizedStatus(t, 'booking', booking.status).label}
               </span>
               {!isCanceled && !isCompleted && (
-                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wide ${
                   chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
                 }`}>
                   {chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
@@ -192,21 +192,21 @@ export default function ProviderJobDetailPage() {
           {/* Key details strip */}
           <div className="grid grid-cols-3 gap-2 pt-3 border-t border-border-dim">
             <div>
-              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.earnings}</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.earnings}</p>
               <p className="text-base font-bold text-trust">€{earnings}</p>
             </div>
             <div>
-              <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.scheduled}</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.scheduled}</p>
               <p className="text-xs font-semibold text-ink">
                 {formatVilnius(booking.scheduledAt, { day: 'numeric', month: 'short' })}
               </p>
-              <p className="text-[10px] text-ink-dim">
+              <p className="text-3xs text-ink-dim">
                 {formatVilnius(booking.scheduledAt, { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
             {booking.quote?.estimatedHours && (
               <div>
-                <p className="text-[9px] font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.duration}</p>
+                <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-0.5">{t.jobDetail.duration}</p>
                 <p className="text-xs font-semibold text-ink">~{booking.quote.estimatedHours}h</p>
               </div>
             )}
@@ -271,7 +271,7 @@ export default function ProviderJobDetailPage() {
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-ink">{customer?.user?.name}</p>
               {address && (
-                <p className="text-[11px] text-ink-dim flex items-center gap-1 mt-0.5 truncate">
+                <p className="text-2xs text-ink-dim flex items-center gap-1 mt-0.5 truncate">
                   <MapPin className="w-3 h-3 shrink-0" /> {address}
                 </p>
               )}
@@ -308,7 +308,7 @@ export default function ProviderJobDetailPage() {
 
         {/* ── Desktop: Customer card (original) ── */}
         <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
           <div className="flex items-center gap-3 mb-4">
             <img
               src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
@@ -352,7 +352,7 @@ export default function ProviderJobDetailPage() {
 
         {/* ── Desktop: Job details (original) ── */}
         <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.jobDetails}</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.jobDetails}</p>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
               <span className="text-ink-dim flex items-center gap-2"><Clock className="w-4 h-4" /> {t.jobDetail.scheduled}</span>
@@ -382,7 +382,7 @@ export default function ProviderJobDetailPage() {
         {/* ── Mobile: Job notes (if present) ── */}
         {booking.quote?.notes && (
           <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 shadow-sm">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1.5">{t.jobDetail.jobNotes}</p>
+            <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1.5">{t.jobDetail.jobNotes}</p>
             <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
           </div>
         )}
@@ -390,7 +390,7 @@ export default function ProviderJobDetailPage() {
         {/* ── Checklist ── */}
         <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
           <div className="flex items-center justify-between mb-2.5 sm:mb-4">
-            <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
+            <p className="text-xs sm:text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
               completedTasks === CHECKLIST_KEYS.length
                 ? 'bg-trust-surface text-trust'
@@ -419,7 +419,7 @@ export default function ProviderJobDetailPage() {
                   ? <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
                   : <div className="w-5 h-5 rounded-full border-2 border-border shrink-0" />
                 }
-                <span className={`text-[13px] sm:text-sm leading-snug ${
+                <span className={`text-sm sm:text-sm leading-snug ${
                   checklist[i] ? 'line-through text-ink-dim' : 'font-medium text-ink'
                 }`}>{t.jobDetail[taskKey]}</span>
               </button>
@@ -432,9 +432,9 @@ export default function ProviderJobDetailPage() {
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
-              <p className="text-xs sm:text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.documentation}</p>
+              <p className="text-xs sm:text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.documentation}</p>
             </div>
-            <span className="text-[10px] font-medium text-ink-dim">{photos.length} {photos.length !== 1 ? t.jobDetail.photosPlural : t.jobDetail.photoSingular} · {t.jobDetail.thisDeviceOnly}</span>
+            <span className="text-3xs font-medium text-ink-dim">{photos.length} {photos.length !== 1 ? t.jobDetail.photosPlural : t.jobDetail.photoSingular} · {t.jobDetail.thisDeviceOnly}</span>
           </div>
           <input
             ref={fileRef}
@@ -458,7 +458,7 @@ export default function ProviderJobDetailPage() {
               </div>
               <div className="text-left">
                 <p className="text-sm font-semibold text-ink">{t.jobDetail.addPhotos}</p>
-                <p className="text-[11px] text-ink-dim">{t.jobDetail.addPhotosDesc}</p>
+                <p className="text-2xs text-ink-dim">{t.jobDetail.addPhotosDesc}</p>
               </div>
             </button>
           ) : (
@@ -480,7 +480,7 @@ export default function ProviderJobDetailPage() {
                 disabled={uploadingPhoto}
                 className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
               >
-                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-[9px] font-bold">{t.jobDetail.add}</span></>}
+                {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-3xs font-bold">{t.jobDetail.add}</span></>}
               </button>
             </div>
           )}
@@ -495,7 +495,7 @@ export default function ProviderJobDetailPage() {
             </div>
             <div className="flex-1">
               <p className="text-xs font-semibold text-ink">{t.bookingDetail.reportIssue}</p>
-              <p className="text-[10px] text-ink-dim">{t.jobDetail.reportIssueDesc}</p>
+              <p className="text-3xs text-ink-dim">{t.jobDetail.reportIssueDesc}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-ink-dim shrink-0" />
           </Link>

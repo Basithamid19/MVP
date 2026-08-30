@@ -125,10 +125,10 @@ export default function EarningsPage() {
         {/* Total earned — enriched hero */}
         <div className="bg-brand text-white rounded-2xl p-4 shadow-md mb-2.5">
           <div className="flex items-center justify-between mb-1">
-            <p className="text-[10px] text-white/50 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
+            <p className="text-3xs text-white/50 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
             <div className="flex items-center gap-1 text-white/50">
               <Briefcase className="w-3 h-3" />
-              <span className="text-[10px] font-bold">{completed.length} {t.earningsPage.jobsSuffix}</span>
+              <span className="text-3xs font-bold">{completed.length} {t.earningsPage.jobsSuffix}</span>
             </div>
           </div>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
@@ -148,7 +148,7 @@ export default function EarningsPage() {
             </div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-semibold text-ink">€{pendingAmount.toFixed(2)}</span>
-              <span className="text-[10px] text-ink-dim">{pending.length} {pending.length !== 1 ? t.earningsPage.jobsPlural : t.earningsPage.jobSingular}</span>
+              <span className="text-3xs text-ink-dim">{pending.length} {pending.length !== 1 ? t.earningsPage.jobsPlural : t.earningsPage.jobSingular}</span>
             </div>
           </div>
         ) : (
@@ -165,17 +165,17 @@ export default function EarningsPage() {
       {/* ── Desktop: Original summary cards grid ── */}
       <div className="hidden sm:grid sm:grid-cols-3 gap-4 mb-8">
         <div className="bg-brand text-white rounded-2xl p-6 shadow-md">
-          <p className="text-[10px] text-white/60 font-bold uppercase tracking-widest mb-2">{t.earningsPage.totalEarned}</p>
+          <p className="text-3xs text-white/60 font-bold uppercase tracking-widest mb-2">{t.earningsPage.totalEarned}</p>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
           <p className="text-sm text-white/60 mt-2">{completed.length} {t.earningsPage.jobsSuffix}</p>
         </div>
         <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
-          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.pendingLabel}</p>
+          <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.pendingLabel}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{pendingAmount.toFixed(2)}</p>
           <p className="text-sm text-ink-sub mt-2">{pending.length} {t.earningsPage.activeJobsSuffix}</p>
         </div>
         <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
-          <p className="text-[10px] text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.settled}</p>
+          <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.settled}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{settledNet.toFixed(2)}</p>
           <p className="text-sm text-ink-sub mt-2">
             {processingNet > 0 ? `€${processingNet.toFixed(2)} ${t.earningsPage.processingSuffix}` : `${t.earningsPage.feeLabel} · €${(totalGross * PLATFORM_FEE).toFixed(2)} ${t.earningsPage.totalSuffix}`}
@@ -193,7 +193,7 @@ export default function EarningsPage() {
               <TrendingUp className="w-4 h-4 text-ink-dim" /> {t.earningsPage.monthlyEarnings}
             </p>
             {months.length > 1 && (
-              <p className="text-[10px] text-ink-dim font-medium">{t.earningsPage.lastPrefix} {months.length} {t.earningsPage.monthsSuffix}</p>
+              <p className="text-3xs text-ink-dim font-medium">{t.earningsPage.lastPrefix} {months.length} {t.earningsPage.monthsSuffix}</p>
             )}
           </div>
 
@@ -207,7 +207,7 @@ export default function EarningsPage() {
                 <p className="text-lg font-semibold text-ink">€{months[0][1].toFixed(2)}</p>
                 <p className="text-xs text-ink-dim">{months[0][0]}</p>
               </div>
-              <p className="text-[10px] text-ink-dim">{t.earningsPage.firstMonth}</p>
+              <p className="text-3xs text-ink-dim">{t.earningsPage.firstMonth}</p>
             </div>
           ) : (
             /* Multi-month bar chart */
@@ -217,7 +217,7 @@ export default function EarningsPage() {
                 const pct = (value / maxMonth) * 100;
                 return (
                   <div key={month} className="flex-1 flex flex-col items-center min-w-0">
-                    <span className="text-[8px] sm:text-[10px] font-bold text-ink-dim mb-1 truncate">
+                    <span className="text-3xs sm:text-3xs font-bold text-ink-dim mb-1 truncate">
                       €{value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toFixed(0)}
                     </span>
                     <div className="w-full flex-1 flex items-end">
@@ -226,7 +226,7 @@ export default function EarningsPage() {
                         style={{ height: `${Math.max(pct, 6)}%` }}
                       />
                     </div>
-                    <span className="text-[8px] sm:text-[10px] font-bold text-ink-dim uppercase mt-1.5 truncate">{month}</span>
+                    <span className="text-3xs sm:text-3xs font-bold text-ink-dim uppercase mt-1.5 truncate">{month}</span>
                   </div>
                 );
               })}
@@ -285,15 +285,15 @@ export default function EarningsPage() {
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-trust" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-[13px] sm:text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
-                    <p className="text-[11px] text-ink-dim mt-0.5">
+                    <p className="font-semibold text-sm sm:text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
+                    <p className="text-2xs text-ink-dim mt-0.5">
                       {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       {b.customer?.user?.name && <span> · {b.customer.user.name}</span>}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-semibold text-trust text-[13px] sm:text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
-                    <p className={`text-[10px] ${b.payment?.status === 'PAID' ? 'text-trust' : 'text-caution'}`}>
+                    <p className="font-semibold text-trust text-sm sm:text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
+                    <p className={`text-3xs ${b.payment?.status === 'PAID' ? 'text-trust' : 'text-caution'}`}>
                       {b.payment?.status === 'PAID' ? t.earningsPage.paidOut : t.earningsPage.processing}
                     </p>
                   </div>
@@ -317,10 +317,10 @@ export default function EarningsPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-sm sm:text-base text-ink">{t.earningsPage.payoutsActive}</p>
-                  <p className="text-[11px] sm:text-xs text-ink-dim">{t.earningsPage.connectedViaStripe}</p>
+                  <p className="text-2xs sm:text-xs text-ink-dim">{t.earningsPage.connectedViaStripe}</p>
                 </div>
               </div>
-              <div className="space-y-1.5 text-[13px] sm:text-sm">
+              <div className="space-y-1.5 text-sm sm:text-sm">
                 {[
                   [t.earningsPage.rowMethod, t.earningsPage.rowMethodValue],
                   [t.earningsPage.rowWhen, t.earningsPage.rowWhenValue],
@@ -370,7 +370,7 @@ export default function EarningsPage() {
               </div>
               <div className="flex-1 text-left">
                 <p className="text-sm font-semibold text-ink">{t.earningsPage.taxExportMobile}</p>
-                <p className="text-[11px] text-ink-dim">{t.earningsPage.taxExportDesc}</p>
+                <p className="text-2xs text-ink-dim">{t.earningsPage.taxExportDesc}</p>
               </div>
               <Download className="w-4 h-4 text-ink-dim shrink-0" />
             </button>

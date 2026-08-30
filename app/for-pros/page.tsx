@@ -75,7 +75,7 @@ export default function ForProsPage() {
       {/* Hero */}
       <section className="pt-16 sm:pt-24 pb-16 sm:pb-20 bg-canvas">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-5">
+          <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-5">
             For professionals
           </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-ink leading-[1.08] mb-5">
@@ -95,7 +95,7 @@ export default function ForProsPage() {
             ].map(({ icon: PillIcon, label }) => (
               <div key={label} className="inline-flex items-center gap-2 border border-border-dim bg-white rounded-full px-4 py-2 shadow-sm">
                 <PillIcon className="w-3.5 h-3.5 text-brand shrink-0" strokeWidth={2} />
-                <span className="text-[13px] font-medium text-ink">{label}</span>
+                <span className="text-sm font-medium text-ink">{label}</span>
               </div>
             ))}
           </div>
@@ -132,7 +132,7 @@ export default function ForProsPage() {
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 sm:mb-16">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-3">Why Aladdin</p>
+            <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-3">Why Aladdin</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink">
               Everything you need to grow
             </h2>
@@ -155,7 +155,7 @@ export default function ForProsPage() {
       <section id="how-it-works" className="py-16 sm:py-24 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-3">How it works</p>
+            <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-3">How it works</p>
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink">
               Start in 4 simple steps
             </h2>

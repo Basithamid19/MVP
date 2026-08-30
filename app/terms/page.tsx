@@ -120,7 +120,7 @@ export default function TermsPage() {
       {/* Header */}
       <section className="pt-16 sm:pt-20 pb-10 sm:pb-14 bg-canvas border-b border-border-dim">
         <div className="max-w-2xl mx-auto px-4 sm:px-6">
-          <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-4">Legal</p>
+          <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-4">Legal</p>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink mb-4">
             Terms of Service
           </h1>

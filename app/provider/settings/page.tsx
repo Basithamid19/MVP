@@ -34,8 +34,8 @@ function SettingsRow({
         <Icon className={`w-4 h-4 ${muted ? 'text-ink-dim' : 'text-brand'}`} strokeWidth={1.8} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-[13px] font-semibold ${muted ? 'text-ink-sub' : 'text-ink'}`}>{label}</p>
-        {sub && <p className="text-[11px] text-ink-dim mt-0.5 leading-snug">{sub}</p>}
+        <p className={`text-sm font-semibold ${muted ? 'text-ink-sub' : 'text-ink'}`}>{label}</p>
+        {sub && <p className="text-2xs text-ink-dim mt-0.5 leading-snug">{sub}</p>}
       </div>
       <ChevronRight className="w-3.5 h-3.5 text-ink-dim/40 shrink-0" />
     </div>
@@ -49,7 +49,7 @@ function SettingsRow({
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="px-4">
-      <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
+      <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
       <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
         {children}
       </div>
@@ -226,12 +226,12 @@ export default function ProviderSettingsPage() {
                 {verificationTier === 'TIER0_BASIC' ? (
                   <>
                     <Shield className="w-3 h-3 text-white/70" />
-                    <span className="text-[10px] font-semibold text-white/70">{t.providerSettingsHub.notVerified}</span>
+                    <span className="text-3xs font-semibold text-white/70">{t.providerSettingsHub.notVerified}</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-3 h-3 text-white/70" />
-                    <span className="text-[10px] font-semibold text-white/70">
+                    <span className="text-3xs font-semibold text-white/70">
                       {verificationTier === 'TIER1_ID_VERIFIED' ? t.verificationPage.tierIdVerified
                         : verificationTier === 'TIER2_TRADE_VERIFIED' ? t.verificationPage.tierTradeVerified
                         : t.verificationPage.tierEnhanced}
@@ -251,7 +251,7 @@ export default function ProviderSettingsPage() {
             ].map((stat, i) => (
               <div key={stat.label} className={`text-center ${i > 0 ? 'border-l border-white/10' : ''}`}>
                 <p className="text-base font-bold text-white leading-tight">{stat.value}</p>
-                <p className="text-[9px] font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
+                <p className="text-3xs font-semibold text-white/45 uppercase tracking-wider mt-0.5">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -279,8 +279,8 @@ export default function ProviderSettingsPage() {
                 <Receipt className="w-4 h-4 text-brand" strokeWidth={1.8} />
               </div>
               <div className="flex-1 min-w-0 text-left">
-                <p className="text-[13px] font-semibold text-ink">{t.providerSettingsHub.invoices}</p>
-                <p className="text-[11px] text-ink-dim mt-0.5">
+                <p className="text-sm font-semibold text-ink">{t.providerSettingsHub.invoices}</p>
+                <p className="text-2xs text-ink-dim mt-0.5">
                   {invoices.length} {invoices.length !== 1 ? t.providerSettingsHub.invoicesPlural : t.providerSettingsHub.invoiceSingular} · €{totalEarned.toFixed(2)}
                 </p>
               </div>
@@ -302,11 +302,11 @@ export default function ProviderSettingsPage() {
                           <div className="flex items-start justify-between gap-2 mb-2.5">
                             <div className="min-w-0">
                               <p className="font-semibold text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
-                              <p className="text-[10px] text-ink-dim mt-0.5">{date} · <span className="font-mono">{invoiceNo}</span></p>
+                              <p className="text-3xs text-ink-dim mt-0.5">{date} · <span className="font-mono">{invoiceNo}</span></p>
                             </div>
                             <div className="text-right shrink-0">
                               <p className="text-lg font-bold text-ink leading-tight">€{Number(b.totalAmount).toFixed(2)}</p>
-                              <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full ${
+                              <span className={`text-3xs font-bold uppercase px-1.5 py-0.5 rounded-full ${
                                 b.payment?.status === 'PAID' ? 'bg-trust-surface text-trust'
                                 : b.payment?.status === 'REFUNDED' ? 'bg-surface-alt text-ink-sub'
                                 : b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED' ? 'bg-info-surface text-info'
@@ -320,7 +320,7 @@ export default function ProviderSettingsPage() {
                             </div>
                           </div>
                           {/* Details */}
-                          <div className="bg-surface-alt rounded-lg p-2.5 text-[11px] space-y-1 mb-2.5">
+                          <div className="bg-surface-alt rounded-lg p-2.5 text-2xs space-y-1 mb-2.5">
                             <div className="flex justify-between text-ink-sub">
                               <span>{t.jobDetail.customer}</span>
                               <span className="font-medium text-ink truncate ml-2">{b.customer?.user?.name ?? t.providerProfile.customerFallback}</span>
@@ -338,7 +338,7 @@ export default function ProviderSettingsPage() {
                           <div className="flex gap-2">
                             <Link
                               href={`/provider/jobs/${b.id}`}
-                              className="flex-1 text-center py-2 border border-border-dim rounded-lg text-[11px] font-semibold text-ink hover:bg-surface-alt transition-colors"
+                              className="flex-1 text-center py-2 border border-border-dim rounded-lg text-2xs font-semibold text-ink hover:bg-surface-alt transition-colors"
                             >
                               {t.quoteInbox.viewBooking}
                             </Link>
@@ -358,7 +358,7 @@ export default function ProviderSettingsPage() {
                                 a.href = url; a.download = `${invoiceNo}.csv`; a.click();
                                 URL.revokeObjectURL(url);
                               }}
-                              className="flex items-center gap-1 px-3 py-2 bg-brand text-white rounded-lg text-[11px] font-semibold"
+                              className="flex items-center gap-1 px-3 py-2 bg-brand text-white rounded-lg text-2xs font-semibold"
                             >
                               <Download className="w-3 h-3" /> CSV
                             </button>
@@ -392,7 +392,7 @@ export default function ProviderSettingsPage() {
               <LogOut className="w-4 h-4 text-ink-dim" strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold text-danger">{t.nav.logOut}</p>
+              <p className="text-sm font-semibold text-danger">{t.nav.logOut}</p>
             </div>
           </button>
         </Section>

@@ -30,7 +30,7 @@ function ResponseTimer({ createdAt }: { createdAt: string }) {
     return () => clearInterval(timer);
   }, [createdAt, t]);
 
-  return <span className="text-[11px] sm:text-xs text-ink-dim">{elapsed}</span>;
+  return <span className="text-2xs sm:text-xs text-ink-dim">{elapsed}</span>;
 }
 
 export default function ProviderLeadsPage() {
@@ -207,27 +207,27 @@ export default function ProviderLeadsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-start gap-2.5 sm:gap-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 flex-wrap">
-                        <span className="text-[10px] font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                        <span className="text-3xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                           {lead.category?.name}
                         </span>
                         {lead.targetProviderId && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-brand-dark bg-brand-muted px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                          <span className="flex items-center gap-1 text-3xs font-bold uppercase tracking-widest text-brand-dark bg-brand-muted px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                             <Send className="w-3 h-3" /> {t.leadsPage.badgeDirect}
                           </span>
                         )}
                         {lead.isUrgent && (
-                          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-caution bg-caution-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
+                          <span className="flex items-center gap-1 text-3xs font-bold uppercase tracking-widest text-caution bg-caution-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">
                             <AlertCircle className="w-3 h-3" /> {t.leadsPage.badgeUrgent}
                           </span>
                         )}
                         {isNew && !lead.isUrgent && (
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-info bg-info-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">{t.leadsPage.badgeNew}</span>
+                          <span className="text-3xs font-bold uppercase tracking-widest text-info bg-info-surface px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full">{t.leadsPage.badgeNew}</span>
                         )}
                         {quoteCount > 0 && (
-                          <span className="text-[11px] sm:text-xs font-medium text-ink-sub ml-0.5 sm:ml-1">{quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}</span>
+                          <span className="text-2xs sm:text-xs font-medium text-ink-sub ml-0.5 sm:ml-1">{quoteCount} {quoteCount > 1 ? t.requestsList.quotesPlural : t.requestsList.quoteSingular}</span>
                         )}
                       </div>
-                      <p className="text-[15px] sm:text-base font-semibold text-ink line-clamp-2">{lead.description}</p>
+                      <p className="text-base sm:text-base font-semibold text-ink line-clamp-2">{lead.description}</p>
                       <div className="flex items-center gap-3 sm:gap-4 mt-2 sm:mt-3 flex-wrap">
                         <span className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-ink-sub">
                           <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> {lead.address}
@@ -246,7 +246,7 @@ export default function ProviderLeadsPage() {
                     </div>
                     <div className="hidden sm:flex sm:flex-col items-end justify-start gap-2 shrink-0">
                       {lead.isUrgent && (
-                        <span className="flex items-center gap-1 text-[10px] font-bold text-caution uppercase tracking-widest">
+                        <span className="flex items-center gap-1 text-3xs font-bold text-caution uppercase tracking-widest">
                           <Timer className="w-3 h-3" /> {t.leadsPage.respondFast}
                         </span>
                       )}
@@ -278,7 +278,7 @@ export default function ProviderLeadsPage() {
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.dateLabel}</p>
                         <p className="font-semibold text-sm sm:text-base text-ink">{new Date(lead.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                        <p className="text-[11px] sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? t.wizard.timeFlexible}</p>
+                        <p className="text-2xs sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? t.wizard.timeFlexible}</p>
                       </div>
                       <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.reviewBudget}</p>

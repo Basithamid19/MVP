@@ -178,7 +178,7 @@ function MessagesContent() {
           />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-sm text-ink truncate">{activeThread.otherParticipant.name}</p>
-            <p className="text-[10px] text-ink-dim">{activeThread.category}</p>
+            <p className="text-3xs text-ink-dim">{activeThread.category}</p>
           </div>
         </div>
 
@@ -206,7 +206,7 @@ function MessagesContent() {
                       <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
                     )}
                     <p>{m.content}</p>
-                    <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
+                    <p className={`text-3xs mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
                       {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -302,7 +302,7 @@ function MessagesContent() {
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold text-sm text-ink truncate">{th.otherParticipant.name}</p>
                   {th.lastMessage && (
-                    <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
+                    <span className="text-3xs text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
                   )}
                 </div>
                 <p className="text-xs text-ink-dim mt-0.5 truncate">
@@ -350,7 +350,7 @@ function MessagesContent() {
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-semibold text-sm text-ink truncate">{th.otherParticipant.name}</p>
                       {th.lastMessage && (
-                        <span className="text-[10px] text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
+                        <span className="text-3xs text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
                       )}
                     </div>
                     <p className="text-xs text-ink-dim mt-0.5 truncate">
@@ -377,7 +377,7 @@ function MessagesContent() {
                     />
                     <div>
                       <p className="font-semibold text-sm text-ink">{activeThread.otherParticipant.name}</p>
-                      <p className="text-[10px] text-ink-dim">{activeThread.category}</p>
+                      <p className="text-3xs text-ink-dim">{activeThread.category}</p>
                     </div>
                   </div>
 
@@ -405,7 +405,7 @@ function MessagesContent() {
                                 <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
                               )}
                               <p>{m.content}</p>
-                              <p className={`text-[10px] mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
+                              <p className={`text-3xs mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
                                 {new Date(m.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>

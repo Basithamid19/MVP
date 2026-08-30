@@ -154,7 +154,7 @@ function BrowseContent() {
         <aside className="hidden lg:block w-56 shrink-0">
           <div className="sticky top-24 space-y-7">
             <div>
-              <h3 className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Categories</h3>
+              <h3 className="text-2xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Categories</h3>
               <div className="space-y-0.5">
                 {CATEGORIES.map(cat => (
                   <button
@@ -170,7 +170,7 @@ function BrowseContent() {
               </div>
             </div>
             <div>
-              <h3 className="text-[11px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Sort by</h3>
+              <h3 className="text-2xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-3">Sort by</h3>
               <div className="space-y-0.5">
                 {SORT_OPTIONS.map(opt => (
                   <button
@@ -202,7 +202,7 @@ function BrowseContent() {
               )}
             </p>
             {!loading && sorted.length > 0 && (
-              <p className="text-[11px] text-ink-dim font-medium lg:hidden">
+              <p className="text-2xs text-ink-dim font-medium lg:hidden">
                 {SORT_OPTIONS.find(s => s.id === sortBy)?.label}
               </p>
             )}
@@ -259,7 +259,7 @@ function BrowseContent() {
 
                   <p className="text-xs text-ink-sub mb-1.5">{categoryName}</p>
 
-                  <div className="flex items-center gap-1 flex-wrap text-[11px]">
+                  <div className="flex items-center gap-1 flex-wrap text-2xs">
                     <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 shrink-0" />
                     <span className="font-bold text-ink">{p.ratingAvg?.toFixed(1) ?? '—'}</span>
                     <span className="text-ink-dim">· {p.completedJobs ?? 0} jobs</span>
@@ -272,7 +272,7 @@ function BrowseContent() {
                     )}
                   </div>
 
-                  <p className="text-[11px] text-ink-sub mt-1.5 line-clamp-1 leading-relaxed">
+                  <p className="text-2xs text-ink-sub mt-1.5 line-clamp-1 leading-relaxed">
                     {p.bio && p.bio.trim().length >= 20
                       ? p.bio
                       : `${p.categories?.map((c: any) => c.name).join(', ') || 'Professional'} in ${p.serviceArea || 'Vilnius'}`

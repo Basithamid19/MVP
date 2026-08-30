@@ -176,7 +176,7 @@ export default function ProviderAvailabilitySettingsPage() {
 
         {/* Working hours */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Working hours</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Working hours</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
             <p className="font-semibold text-sm mb-4 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-ink-dim" /> Weekly schedule
@@ -223,7 +223,7 @@ export default function ProviderAvailabilitySettingsPage() {
 
         {/* Break between jobs */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Break between jobs</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Break between jobs</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
             <p className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-ink-dim" /> Buffer time
@@ -248,7 +248,7 @@ export default function ProviderAvailabilitySettingsPage() {
 
         {/* Days off */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Days off</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Days off</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
             <p className="font-semibold text-sm mb-3 flex items-center gap-2">
               <CalendarOff className="w-4 h-4 text-ink-dim" /> Blackout dates
@@ -259,7 +259,7 @@ export default function ProviderAvailabilitySettingsPage() {
                 value={blackoutInput}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => setBlackoutInput(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
               />
               <button
                 onClick={() => {

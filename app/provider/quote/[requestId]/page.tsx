@@ -142,7 +142,7 @@ export default function QuoteBuilderPage() {
           <p className="font-bold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4" /> {t.quoteBuilder.pricing}</p>
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.basePrice} *</label>
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.basePrice} *</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-dim font-bold">€</span>
                 <input
@@ -155,7 +155,7 @@ export default function QuoteBuilderPage() {
               </div>
             </div>
             <div>
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <Clock className="w-3 h-3" /> {t.jobDetail.estimatedHours}
               </label>
               <input
@@ -169,7 +169,7 @@ export default function QuoteBuilderPage() {
           </div>
 
           {/* Line items */}
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">{t.quoteBuilder.optionalLineItems}</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2">{t.quoteBuilder.optionalLineItems}</p>
           <div className="space-y-2 mb-3">
             {lineItems.map((item, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function QuoteBuilderPage() {
         <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card space-y-4">
           <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> {t.quoteBuilder.notesTerms}</p>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.messageToCustomer}</label>
+            <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.messageToCustomer}</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
@@ -226,7 +226,7 @@ export default function QuoteBuilderPage() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.materialsNoteLabel}</label>
+            <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.materialsNoteLabel}</label>
             <input
               type="text"
               value={materialsNote}
@@ -236,7 +236,7 @@ export default function QuoteBuilderPage() {
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.exclusionsLabel}</label>
+            <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.exclusionsLabel}</label>
             <input
               type="text"
               value={exclusions}

@@ -230,7 +230,7 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-semibold">{event.label}</p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-3xs text-gray-400">
                         {new Date(event.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </div>
@@ -268,7 +268,7 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
                 {msg.content && msg.content !== '📷 Photo' && (
                   <div className="px-4 py-3 text-sm font-medium">
                     {msg.content}
-                    <div className={`text-[10px] mt-1 opacity-50`}>
+                    <div className={`text-3xs mt-1 opacity-50`}>
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
                 {msg.content === '📷 Photo' && !msg.imageUrl && (
                   <div className="px-4 py-3 text-sm font-medium">
                     📷 Photo
-                    <div className="text-[10px] mt-1 opacity-50">
+                    <div className="text-3xs mt-1 opacity-50">
                       {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </div>
                   </div>

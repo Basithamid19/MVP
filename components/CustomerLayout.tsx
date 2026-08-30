@@ -119,7 +119,7 @@ export default function CustomerLayout({
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
+                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -156,7 +156,7 @@ export default function CustomerLayout({
                         <div className="flex-1 min-w-0">
                           <p className={`text-sm ${!n.isRead ? 'font-semibold' : 'font-medium'} text-ink`}>{n.title}</p>
                           <p className="text-xs text-ink-sub truncate mt-0.5">{n.body}</p>
-                          <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.createdAt)}</p>
+                          <p className="text-3xs text-ink-dim mt-1.5 flex items-center gap-1"><Clock className="w-3 h-3" /> {timeAgo(n.createdAt)}</p>
                         </div>
                         {!n.isRead && (
                           <button

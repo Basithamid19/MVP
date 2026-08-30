@@ -153,7 +153,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
         <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
           {NAV_GROUPS.map(group => (
             <div key={group.label}>
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest hidden lg:block px-4 mb-2">
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest hidden lg:block px-4 mb-2">
                 {group.label}
               </p>
               <div className="space-y-1">
@@ -215,7 +215,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
+                <span className="absolute top-2 right-2 min-w-[16px] h-4 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-canvas">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
@@ -262,7 +262,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                           <div className="flex-1 min-w-0">
                             <p className={`text-sm ${!n.isRead ? 'font-bold' : 'font-medium'} text-ink mb-0.5`}>{n.title}</p>
                             <p className="text-xs text-ink-sub truncate">{n.body}</p>
-                            <p className="text-[10px] text-ink-dim mt-1.5 flex items-center gap-1">
+                            <p className="text-3xs text-ink-dim mt-1.5 flex items-center gap-1">
                               <Clock className="w-3 h-3" /> {timeAgo(n.createdAt, t)}
                             </p>
                           </div>

@@ -191,8 +191,8 @@ function TrustSlideshow({ overlay = false }: { overlay?: boolean }) {
               <Icon className="w-[17px] h-[17px] text-brand" />
             </div>
             <div className="min-w-0">
-              <p className="text-[15px] font-bold text-ink leading-tight">{item.title}</p>
-              <p className="text-[13px] text-ink-sub leading-snug mt-0.5">{item.desc}</p>
+              <p className="text-base font-bold text-ink leading-tight">{item.title}</p>
+              <p className="text-sm text-ink-sub leading-snug mt-0.5">{item.desc}</p>
             </div>
           </motion.div>
         </div>
@@ -405,7 +405,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               {/* Your project / Your Way card */}
               <div className="mt-3 bg-white rounded-2xl px-4 pt-4 pb-3">
                 <p className="text-2xl lg:text-3xl font-bold leading-tight mb-1">{t.heroCard.heading} <span className="text-brand">{t.heroCard.headingHighlight}</span></p>
-                <p className="text-[13px] text-ink-sub leading-snug mb-4">{t.heroCard.desc}</p>
+                <p className="text-sm text-ink-sub leading-snug mb-4">{t.heroCard.desc}</p>
 
                 {/* Row 1: Find a Pro */}
                 <Link
@@ -416,8 +416,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                     <Users className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-ink leading-tight">{t.heroCard.findAProTitle}</p>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.findAProDesc}</p>
+                    <p className="text-base font-semibold text-ink leading-tight">{t.heroCard.findAProTitle}</p>
+                    <p className="text-xs text-ink-sub mt-0.5 leading-snug">{t.heroCard.findAProDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
@@ -433,8 +433,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                     <ScrollText className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[15px] font-semibold text-ink leading-tight">{t.heroCard.postRequestTitle}</p>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.postRequestDesc}</p>
+                    <p className="text-base font-semibold text-ink leading-tight">{t.heroCard.postRequestTitle}</p>
+                    <p className="text-xs text-ink-sub mt-0.5 leading-snug">{t.heroCard.postRequestDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-ink-dim/30 shrink-0" />
                 </Link>
@@ -451,10 +451,10 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-[15px] font-bold text-ink leading-tight">{t.heroCard.urgentTitle}</p>
-                      <span className="text-[10px] font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">{t.heroCard.priorityBadge}</span>
+                      <p className="text-base font-bold text-ink leading-tight">{t.heroCard.urgentTitle}</p>
+                      <span className="text-3xs font-semibold text-brand bg-brand-muted px-1.5 py-0.5 rounded-full leading-none">{t.heroCard.priorityBadge}</span>
                     </div>
-                    <p className="text-[12px] text-ink-sub mt-0.5 leading-snug">{t.heroCard.urgentDesc}</p>
+                    <p className="text-xs text-ink-sub mt-0.5 leading-snug">{t.heroCard.urgentDesc}</p>
                   </div>
                   <ChevronRight className="w-[14px] h-[14px] text-brand/40 shrink-0" />
                 </Link>
@@ -502,7 +502,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                     <Star className="w-3.5 h-3.5 fill-current" />
                     <span className="text-ink font-bold text-xs">4.9</span>
                   </div>
-                  <p className="text-[10px] text-ink-dim uppercase tracking-wider font-semibold">{t.hero.topRated}</p>
+                  <p className="text-3xs text-ink-dim uppercase tracking-wider font-semibold">{t.hero.topRated}</p>
                 </div>
               </div>
             </motion.div>
@@ -552,7 +552,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                       </p>
                     </div>
                     <div className="shrink-0 flex flex-col items-end gap-2">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase tracking-wide ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-surface-alt text-ink-dim'}`}>
                         {b.status.replace('_', ' ')}
                       </span>
                       <ChevronRight className="w-3.5 h-3.5 text-ink-dim" />
@@ -587,12 +587,12 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               >
                 {/* Popular badge */}
                 {theme.popular && (
-                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-[9px] font-bold uppercase tracking-widest rounded-full">
+                  <span className="absolute top-3 right-3 px-2 py-0.5 bg-gray-900/10 text-gray-900 text-3xs font-bold uppercase tracking-widest rounded-full">
                     {t.services.popularBadge}
                   </span>
                 )}
                 {/* Tag */}
-                <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest mb-3">
+                <span className="text-3xs font-bold text-black/40 uppercase tracking-widest mb-3">
                   {card.tag}
                 </span>
                 {/* Title */}
@@ -605,7 +605,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 <div className="w-full flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     <CheckCircle2 className="w-3.5 h-3.5 text-black/50 shrink-0" />
-                    <span className="text-[11px] font-semibold text-black/60 leading-tight">{card.trust}</span>
+                    <span className="text-2xs font-semibold text-black/60 leading-tight">{card.trust}</span>
                   </div>
                   <div className="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center shrink-0 hover:bg-gray-700 transition-colors">
                     <ArrowRight className="w-4 h-4 text-white" />
@@ -636,14 +636,14 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                   {theme.popular && (
-                    <span className="absolute top-3 left-3 px-2 py-0.5 bg-white/90 text-ink text-[9px] font-bold uppercase tracking-widest rounded-full shadow-sm">
+                    <span className="absolute top-3 left-3 px-2 py-0.5 bg-white/90 text-ink text-3xs font-bold uppercase tracking-widest rounded-full shadow-sm">
                       {t.services.popularBadge}
                     </span>
                   )}
                 </div>
                 {/* Label */}
                 <div className="p-4">
-                  <p className="font-bold text-ink text-[15px] leading-tight">{card.title}</p>
+                  <p className="font-bold text-ink text-base leading-tight">{card.title}</p>
                   <p className="text-xs text-ink-sub mt-1">{theme.price}</p>
                 </div>
               </button>
@@ -658,7 +658,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
 
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
+            <p className="text-2xs font-bold text-brand uppercase tracking-widest mb-3">{t.howItWorks.label}</p>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
               {t.howItWorks.title}
             </h2>
@@ -686,11 +686,11 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                   <Icon className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className={`text-[17px] leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
+                  <h3 className={`text-lg leading-tight mb-1 ${urgent ? 'font-bold' : 'font-semibold'} text-ink`}>
                     {titles[idx]}
                   </h3>
-                  <p className="text-[13px] text-brand mb-2 leading-snug">{hooks[idx]}</p>
-                  <p className="text-[14px] text-ink-sub leading-relaxed">{descs[idx]}</p>
+                  <p className="text-sm text-brand mb-2 leading-snug">{hooks[idx]}</p>
+                  <p className="text-sm text-ink-sub leading-relaxed">{descs[idx]}</p>
                 </div>
               </motion.div>
               );
@@ -780,7 +780,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
       <section className="py-8 lg:py-24 bg-canvas overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5 lg:mb-12 flex items-end justify-between">
           <div>
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-2">{t.meetPros.label}</p>
+            <p className="text-2xs font-bold text-brand uppercase tracking-widest mb-2">{t.meetPros.label}</p>
             <h2 className="text-3xl font-bold tracking-tight text-ink">{t.meetPros.title}</h2>
           </div>
           <Link href="/browse" className="hidden sm:flex items-center gap-1 text-sm font-bold text-brand hover:text-brand-dark transition-colors">
@@ -823,7 +823,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
 
                     {/* Category pill */}
                     <div className="absolute top-4 left-4">
-                      <span className="text-[10px] font-bold text-white bg-ink/40 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
+                      <span className="text-3xs font-bold text-white bg-ink/40 backdrop-blur-md px-3 py-1.5 rounded-full uppercase tracking-widest">
                         {categoryName}
                       </span>
                     </div>
@@ -907,8 +907,8 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
 
           {/* Section label */}
           <div className="text-center mb-6">
-            <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-1">Real reviews</p>
-            <p className="text-[13px] text-ink-sub">What Aladdin customers say</p>
+            <p className="text-2xs font-bold text-brand uppercase tracking-widest mb-1">Real reviews</p>
+            <p className="text-sm text-ink-sub">What Aladdin customers say</p>
           </div>
 
           {/* White card — swipeable */}
@@ -934,14 +934,14 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
             </div>
 
             {/* Quote */}
-            <p className="text-[15px] font-semibold text-ink leading-relaxed mb-5 relative z-10">
+            <p className="text-base font-semibold text-ink leading-relaxed mb-5 relative z-10">
               &ldquo;{TESTIMONIALS[activeTestimonial].quote}&rdquo;
             </p>
 
             {/* Attribution */}
             <div className="relative z-10">
-              <p className="font-bold text-ink uppercase tracking-wide text-[13px]">{TESTIMONIALS[activeTestimonial].name}</p>
-              <p className="text-ink-dim text-[11px] uppercase tracking-widest mt-0.5">
+              <p className="font-bold text-ink uppercase tracking-wide text-sm">{TESTIMONIALS[activeTestimonial].name}</p>
+              <p className="text-ink-dim text-2xs uppercase tracking-widest mt-0.5">
                 {TESTIMONIALS[activeTestimonial].service} · {TESTIMONIALS[activeTestimonial].city}
               </p>
             </div>
@@ -965,7 +965,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
           <div className="flex justify-center mt-5">
             <Link
               href="/browse"
-              className="inline-flex items-center gap-1 text-[12px] font-medium text-ink-sub hover:text-ink transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-medium text-ink-sub hover:text-ink transition-colors"
             >
               See more reviews
               <ChevronRight className="w-3 h-3" />
@@ -977,7 +977,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
         <div className="hidden md:block py-24 bg-white">
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
-              <p className="text-[11px] font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
+              <p className="text-2xs font-bold text-brand uppercase tracking-widest mb-3">{t.testimonials.label}</p>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-ink mb-4">{t.testimonials.title}</h2>
               <p className="text-ink-sub text-lg max-w-2xl mx-auto">Real reviews from real homeowners in Vilnius.</p>
             </div>
@@ -996,7 +996,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                       <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <p className="text-[15px] leading-relaxed text-ink flex-1 mb-6">
+                  <p className="text-base leading-relaxed text-ink flex-1 mb-6">
                     &ldquo;{tmn.quote}&rdquo;
                   </p>
                   <div className="flex items-center gap-3">
@@ -1005,7 +1005,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                     </div>
                     <div>
                       <p className="text-sm font-bold text-ink leading-tight">{tmn.name}</p>
-                      <p className="text-[12px] text-ink-sub mt-0.5">{tmn.service} · {tmn.city}</p>
+                      <p className="text-xs text-ink-sub mt-0.5">{tmn.service} · {tmn.city}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -1027,41 +1027,41 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
             <div className="w-7 h-7 bg-brand rounded-lg flex items-center justify-center shrink-0">
               <AladdinIcon className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-[17px] tracking-tight text-brand">Aladdin</span>
+            <span className="font-bold text-lg tracking-tight text-brand">Aladdin</span>
           </div>
-          <p className="text-[11px] text-ink-dim mb-7">Trusted local professionals · Vilnius</p>
+          <p className="text-2xs text-ink-dim mb-7">Trusted local professionals · Vilnius</p>
 
           {/* 3 centered link groups */}
           <div className="space-y-6 mb-7">
 
             {/* Customers */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Customers</p>
+              <p className="text-3xs font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Customers</p>
               <div className="flex flex-col gap-2">
-                <Link href="/browse"                className="text-[14px] text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
-                <Link href="/requests/new"          className="text-[14px] text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
-                <Link href="/requests/new?urgent=1" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
+                <Link href="/browse"                className="text-sm text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
+                <Link href="/requests/new"          className="text-sm text-ink-sub hover:text-ink transition-colors">Post a Request</Link>
+                <Link href="/requests/new?urgent=1" className="text-sm text-ink-sub hover:text-ink transition-colors">Urgent Help</Link>
               </div>
             </div>
 
             {/* For Pros */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">For Pros</p>
+              <p className="text-3xs font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">For Pros</p>
               <div className="flex flex-col gap-2">
-                <Link href="/for-pros"              className="text-[14px] text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
-                <Link href="/provider/verification" className="text-[14px] text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
-                <Link href="/for-pros#how-it-works" className="text-[14px] text-ink-sub hover:text-ink transition-colors">How it works</Link>
+                <Link href="/for-pros"              className="text-sm text-ink-sub hover:text-ink transition-colors">Join as a Pro</Link>
+                <Link href="/provider/verification" className="text-sm text-ink-sub hover:text-ink transition-colors">Get Verified</Link>
+                <Link href="/for-pros#how-it-works" className="text-sm text-ink-sub hover:text-ink transition-colors">How it works</Link>
               </div>
             </div>
 
             {/* Company — utility links inline */}
             <div>
-              <p className="text-[10px] font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Company</p>
+              <p className="text-3xs font-semibold text-ink-dim uppercase tracking-[0.12em] mb-2.5">Company</p>
               <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-                <Link href="/about"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">About</Link>
-                <Link href="/support" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Support</Link>
-                <Link href="/terms"   className="text-[13px] text-ink-sub hover:text-ink transition-colors">Terms</Link>
-                <Link href="/privacy" className="text-[13px] text-ink-sub hover:text-ink transition-colors">Privacy</Link>
+                <Link href="/about"   className="text-sm text-ink-sub hover:text-ink transition-colors">About</Link>
+                <Link href="/support" className="text-sm text-ink-sub hover:text-ink transition-colors">Support</Link>
+                <Link href="/terms"   className="text-sm text-ink-sub hover:text-ink transition-colors">Terms</Link>
+                <Link href="/privacy" className="text-sm text-ink-sub hover:text-ink transition-colors">Privacy</Link>
               </div>
             </div>
 
@@ -1069,7 +1069,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
 
           {/* Bottom meta row */}
           <div className="border-t border-border-dim/40 pt-4 flex items-center justify-between">
-            <p className="text-[11px] text-ink-dim">© 2026 Aladdin · Vilnius</p>
+            <p className="text-2xs text-ink-dim">© 2026 Aladdin · Vilnius</p>
             <div className="flex items-center gap-3.5">
               <a href="#" aria-label="Instagram" className="text-ink-dim/70 hover:text-ink transition-colors">
                 <Instagram className="w-4 h-4" />
@@ -1097,7 +1097,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
           </div>
           <div className="grid grid-cols-4 gap-10 mb-14">
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Services</h4>
+              <h4 className="font-bold mb-5 text-2xs uppercase tracking-widest text-ink-dim">Services</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/browse?category=plumber"     className="text-ink-sub hover:text-ink transition-colors">Plumbing</Link></li>
                 <li><Link href="/browse?category=electrician" className="text-ink-sub hover:text-ink transition-colors">Electrical</Link></li>
@@ -1107,7 +1107,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">For Professionals</h4>
+              <h4 className="font-bold mb-5 text-2xs uppercase tracking-widest text-ink-dim">For Professionals</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/for-pros"            className="text-ink-sub hover:text-ink transition-colors">Join Aladdin</Link></li>
                 <li><Link href="/for-pros#how-it-works" className="text-ink-sub hover:text-ink transition-colors">How it works</Link></li>
@@ -1115,7 +1115,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Company</h4>
+              <h4 className="font-bold mb-5 text-2xs uppercase tracking-widest text-ink-dim">Company</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/about"   className="text-ink-sub hover:text-ink transition-colors">About Us</Link></li>
                 <li><Link href="/support" className="text-ink-sub hover:text-ink transition-colors">Support</Link></li>
@@ -1124,7 +1124,7 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               </ul>
             </div>
             <div>
-              <h4 className="font-bold mb-5 text-[11px] uppercase tracking-widest text-ink-dim">Get Started</h4>
+              <h4 className="font-bold mb-5 text-2xs uppercase tracking-widest text-ink-dim">Get Started</h4>
               <ul className="space-y-3 text-sm">
                 <li><Link href="/browse"       className="text-ink-sub hover:text-ink transition-colors">Find a Professional</Link></li>
                 <li><Link href="/requests/new" className="text-ink-sub hover:text-ink transition-colors">Post a Job</Link></li>

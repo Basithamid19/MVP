@@ -107,16 +107,16 @@ function QuoteCard({ q }: { q: any }) {
     <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 py-0.5 rounded-full">
+          <span className="text-3xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 py-0.5 rounded-full">
             {q.request?.category?.name ?? t.requestsList.serviceFallback}
           </span>
-          <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${state.cls}`}>
+          <span className={`text-3xs font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${state.cls}`}>
             {state.label}
           </span>
         </div>
         <div className="text-right shrink-0">
           <p className="font-bold text-base text-ink">€{q.price?.toFixed(2)}</p>
-          {expiry && <p className="text-[11px] text-caution mt-0.5">{expiry}</p>}
+          {expiry && <p className="text-2xs text-caution mt-0.5">{expiry}</p>}
         </div>
       </div>
       <p className="text-sm text-ink-sub line-clamp-2 leading-relaxed mb-2">{q.request?.description}</p>

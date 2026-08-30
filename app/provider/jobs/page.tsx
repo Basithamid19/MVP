@@ -106,8 +106,8 @@ export default function ProviderJobsPage() {
                 }`} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <p className="font-semibold text-[15px] sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${localizedStatus(t, 'booking', b.status).cls}`}>
+                    <p className="font-semibold text-base sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
+                    <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase shrink-0 ${localizedStatus(t, 'booking', b.status).cls}`}>
                       {localizedStatus(t, 'booking', b.status).label}
                     </span>
                   </div>
@@ -123,8 +123,8 @@ export default function ProviderJobsPage() {
               </div>
               <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 ml-6 sm:ml-0">
                 <div className="text-left sm:text-right shrink-0">
-                  <p className="font-semibold text-[15px] sm:text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
-                  <p className="text-[11px] sm:text-xs text-ink-dim">{t.jobsPage.yourShare}</p>
+                  <p className="font-semibold text-base sm:text-base text-ink">€{providerNet(b.totalAmount).toFixed(2)}</p>
+                  <p className="text-2xs sm:text-xs text-ink-dim">{t.jobsPage.yourShare}</p>
                 </div>
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-ink-dim shrink-0" />
               </div>

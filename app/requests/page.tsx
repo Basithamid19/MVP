@@ -97,7 +97,7 @@ function RequestCard({ r }: { r: any }) {
     >
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <p className="font-bold text-sm text-ink">{r.category?.name ?? t.requestsList.serviceFallback}</p>
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${status.cls}`}>
+        <span className={`px-2 py-0.5 rounded-full text-3xs font-bold uppercase shrink-0 ${status.cls}`}>
           {status.label}
         </span>
       </div>

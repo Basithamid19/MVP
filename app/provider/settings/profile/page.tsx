@@ -150,7 +150,7 @@ export default function ProviderProfileSettingsPage() {
 
       {/* Account indicator — shows which account is active */}
       {session?.user?.email && (
-        <p className="text-[11px] text-ink-dim text-center mb-3">
+        <p className="text-2xs text-ink-dim text-center mb-3">
           Logged in as <span className="font-semibold text-ink-sub">{session.user.email}</span>
         </p>
       )}
@@ -198,25 +198,25 @@ export default function ProviderProfileSettingsPage() {
 
         {/* Public profile */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Public profile</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Public profile</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
 
             {/* Bio */}
             <div className="p-4 sm:p-6">
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
               <textarea
                 value={bio}
                 onChange={e => setBio(e.target.value)}
                 rows={3}
                 placeholder="Tell customers about your experience, specialties, and what makes you different."
-                className={`w-full p-3.5 bg-surface-alt border ${bio.trim().length > 0 && bio.trim().length < 50 ? 'border-caution' : 'border-border-dim'} rounded-xl focus:ring-2 focus:ring-brand outline-none resize-none text-[16px] sm:text-sm leading-relaxed`}
+                className={`w-full p-3.5 bg-surface-alt border ${bio.trim().length > 0 && bio.trim().length < 50 ? 'border-caution' : 'border-border-dim'} rounded-xl focus:ring-2 focus:ring-brand outline-none resize-none text-base sm:text-sm leading-relaxed`}
               />
               <div className="flex items-center justify-between mt-1.5">
                 {bio.trim().length > 0 && bio.trim().length < 50
-                  ? <p className="text-[11px] text-caution font-medium">Minimum 50 characters for a strong profile</p>
+                  ? <p className="text-2xs text-caution font-medium">Minimum 50 characters for a strong profile</p>
                   : <span />
                 }
-                <p className={`text-[11px] ${bio.trim().length >= 50 ? 'text-ink-dim' : bio.trim().length > 0 ? 'text-caution' : 'text-ink-dim'}`}>
+                <p className={`text-2xs ${bio.trim().length >= 50 ? 'text-ink-dim' : bio.trim().length > 0 ? 'text-caution' : 'text-ink-dim'}`}>
                   {bio.trim().length}/50 min
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function ProviderProfileSettingsPage() {
 
             {/* Coverage area */}
             <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <MapPin className="w-3 h-3" /> Coverage area
               </label>
               <input
@@ -232,13 +232,13 @@ export default function ProviderProfileSettingsPage() {
                 value={serviceArea}
                 onChange={e => setServiceArea(e.target.value)}
                 placeholder="e.g. Vilnius Center, Antakalnis, Žirmūnai"
-                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
               />
             </div>
 
             {/* Languages */}
             <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <Languages className="w-3 h-3" /> Languages
               </label>
               <div className="flex flex-wrap gap-1.5 mb-2">
@@ -283,7 +283,7 @@ export default function ProviderProfileSettingsPage() {
                   }}
                   enterKeyHint="done"
                   placeholder="Add language"
-                  className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                  className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
                 />
                 <button
                   type="button"
@@ -298,13 +298,13 @@ export default function ProviderProfileSettingsPage() {
 
             {/* Response time */}
             <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
+              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
                 <Clock className="w-3 h-3" /> Typical response time
               </label>
               <select
                 value={responseTime}
                 onChange={e => setResponseTime(e.target.value)}
-                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-[16px] sm:text-sm"
+                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
               >
                 <option>Usually responds in 30 minutes</option>
                 <option>Usually responds in 1 hour</option>
@@ -319,9 +319,9 @@ export default function ProviderProfileSettingsPage() {
 
         {/* Work details — categories */}
         <div>
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Work details</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Work details</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
-            <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3">Service categories</p>
+            <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3">Service categories</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {categories.map(cat => {
                 const sel = selectedCategories.includes(cat.id);

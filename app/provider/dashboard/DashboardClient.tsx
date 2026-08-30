@@ -162,7 +162,7 @@ export default function DashboardClient({
             <div className="flex-1 min-w-0">
               <p className="text-lg font-semibold tracking-tight truncate">{t.providerDashboard.hello} {firstName}</p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-white/60">
+                <span className="flex items-center gap-1 text-3xs font-bold uppercase tracking-widest text-white/60">
                   <ShieldCheck className="w-3 h-3" /> {tierLabel}
                 </span>
                 {profile?.ratingAvg > 0 && (
@@ -188,7 +188,7 @@ export default function DashboardClient({
             <p className="text-xs text-caution flex-1">
               <span className="font-bold">{freshLeads.length} {freshLeads.length > 1 ? t.providerDashboard.freshLeadsPlural : t.providerDashboard.freshLeadSingular}</span> {t.providerDashboard.freshLeadMobileRest}
             </p>
-            <Link href="/provider/leads" className="text-[10px] font-bold text-caution uppercase tracking-wide shrink-0">{t.providerDashboard.go}</Link>
+            <Link href="/provider/leads" className="text-3xs font-bold text-caution uppercase tracking-wide shrink-0">{t.providerDashboard.go}</Link>
           </div>
         )}
 
@@ -212,11 +212,11 @@ export default function DashboardClient({
                 <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" className="text-brand" strokeWidth="3"
                   strokeDasharray={`${completePct * 0.8168} 81.68`} strokeLinecap="round" />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-brand">{completePct}%</span>
+              <span className="absolute inset-0 flex items-center justify-center text-3xs font-bold text-brand">{completePct}%</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-bold text-ink">{t.providerDashboard.profilePrefix} {completePct}% {t.providerDashboard.completeSuffix}</p>
-              {nextStep && <p className="text-[10px] text-ink-sub mt-0.5">{t.providerDashboard.nextPrefix} {nextStep.label}</p>}
+              {nextStep && <p className="text-3xs text-ink-sub mt-0.5">{t.providerDashboard.nextPrefix} {nextStep.label}</p>}
             </div>
             <ChevronRight className="w-3.5 h-3.5 text-ink-dim shrink-0 group-hover:translate-x-0.5 transition-transform" />
           </Link>
@@ -278,7 +278,7 @@ export default function DashboardClient({
                 <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-brand" strokeWidth="3"
                   strokeDasharray={`${completePct * 1.005} 100.5`} strokeLinecap="round" />
               </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-brand">{completePct}%</span>
+              <span className="absolute inset-0 flex items-center justify-center text-2xs font-bold text-brand">{completePct}%</span>
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold text-ink">{t.providerDashboard.profileBannerPrefix} {completePct}% {t.providerDashboard.completeSuffix}</p>
@@ -306,7 +306,7 @@ export default function DashboardClient({
                 {t.providerDashboard.hello} {firstName}
               </h1>
               <div className="flex items-center gap-3 mt-2">
-                <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-3xs font-bold uppercase tracking-widest ${
                   isVerified ? 'bg-brand-muted text-brand' : 'bg-surface-alt text-ink-dim'
                 }`}>
                   <ShieldCheck className="w-3.5 h-3.5" />
@@ -335,13 +335,13 @@ export default function DashboardClient({
         {stats.map(({ label, value, icon: Icon, href, badge }) => (
           <Link key={label} href={href} className="relative bg-white rounded-xl border border-border-dim p-2.5 text-center shadow-sm hover:shadow-md transition-all">
             {badge && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-caution text-white text-[8px] font-bold rounded-full flex items-center justify-center">{badge}</span>
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center">{badge}</span>
             )}
             <div className="w-7 h-7 bg-brand-muted rounded-lg flex items-center justify-center mx-auto mb-1.5">
               <Icon className="w-3.5 h-3.5 text-brand" />
             </div>
             <p className="text-lg font-bold tracking-tight text-ink leading-none">{value}</p>
-            <p className="text-[9px] font-medium text-ink-dim mt-1 uppercase tracking-wide">{label}</p>
+            <p className="text-3xs font-medium text-ink-dim mt-1 uppercase tracking-wide">{label}</p>
           </Link>
         ))}
       </div>
@@ -351,14 +351,14 @@ export default function DashboardClient({
         {stats.map(({ label, value, sub, icon: Icon, color, href, badge }) => (
           <Link key={label} href={href} className="bg-white rounded-2xl border border-border-dim p-6 hover:shadow-md hover:border-brand/30 transition-all shadow-sm relative group">
             {badge && (
-              <span className="absolute top-4 right-4 w-5 h-5 bg-caution text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">{badge}</span>
+              <span className="absolute top-4 right-4 w-5 h-5 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center shadow-sm">{badge}</span>
             )}
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${color}`}>
               <Icon className="w-5 h-5" />
             </div>
             <p className="text-3xl font-semibold tracking-tight text-ink">{value}</p>
             <p className="text-sm text-ink-sub font-medium mt-1">{label}</p>
-            <p className="text-[11px] text-ink-dim mt-1 font-medium">{sub}</p>
+            <p className="text-2xs text-ink-dim mt-1 font-medium">{sub}</p>
           </Link>
         ))}
       </div>
@@ -557,7 +557,7 @@ export default function DashboardClient({
             <div className="p-3.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-brand" />
-                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.providerNav.verification}</p>
+                <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.providerNav.verification}</p>
               </div>
               <p className="text-sm font-semibold text-ink mb-2">{tierLabel}</p>
               <div className="w-full bg-surface-alt rounded-full h-1">
@@ -567,13 +567,13 @@ export default function DashboardClient({
             <div className="p-3.5">
               <div className="flex items-center gap-1.5 mb-2">
                 <Star className="w-3.5 h-3.5 text-brand" />
-                <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{t.providerProfile.rating}</p>
+                <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.providerProfile.rating}</p>
               </div>
               <div className="flex items-baseline gap-1.5">
                 <p className="text-xl font-bold text-ink leading-none">{profile?.ratingAvg > 0 ? profile.ratingAvg.toFixed(1) : '—'}</p>
                 {profile?.ratingAvg > 0 && <Star className="w-3 h-3 text-brand fill-brand" />}
               </div>
-              <p className="text-[10px] text-ink-dim mt-1">{completedJobs.length} {t.providerDashboard.jobsDoneSuffix}</p>
+              <p className="text-3xs text-ink-dim mt-1">{completedJobs.length} {t.providerDashboard.jobsDoneSuffix}</p>
             </div>
           </div>
           {/* CTA row */}
@@ -604,17 +604,17 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
         <div className="flex-1 min-w-0">
           {/* Category + urgent badge */}
           <div className="flex items-center gap-2 flex-wrap mb-1.5 sm:mb-2">
-            <span className={`text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-widest rounded-full ${
+            <span className={`text-3xs font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 uppercase tracking-widest rounded-full ${
               urgent ? 'bg-caution text-white' : 'bg-surface-alt text-ink-sub'
             }`}>
               {lead.category?.name}
             </span>
             {lead.isUrgent && (
-              <span className="flex items-center gap-0.5 text-[10px] font-bold text-caution">
+              <span className="flex items-center gap-0.5 text-3xs font-bold text-caution">
                 <Zap className="w-3 h-3" /> {t.providerDashboard.urgent}
               </span>
             )}
-            <span className="text-[10px] text-ink-dim ml-auto sm:ml-0">{ageLabel}</span>
+            <span className="text-3xs text-ink-dim ml-auto sm:ml-0">{ageLabel}</span>
           </div>
 
           {/* Description */}

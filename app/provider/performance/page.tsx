@@ -125,7 +125,7 @@ export default function PerformancePage() {
           <div className="p-4">
             <div className="flex items-center gap-1.5 mb-2">
               <CheckCircle2 className={`w-4 h-4 ${completionRate >= 90 ? 'text-trust' : completionRate >= 70 ? 'text-caution' : 'text-danger'}`} />
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Completion</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Completion</p>
             </div>
             <p className="text-2xl font-semibold tracking-tight text-ink mb-2.5">{completionRate}%</p>
             <Gauge value={completionRate} max={100} color={completionRate >= 90 ? 'bg-trust' : 'bg-caution'} />
@@ -133,7 +133,7 @@ export default function PerformancePage() {
           <div className="p-4">
             <div className="flex items-center gap-1.5 mb-2">
               <Star className="w-4 h-4 text-brand" />
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Rating</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Rating</p>
             </div>
             <p className="text-2xl font-semibold tracking-tight text-ink mb-2.5">{ratingAvg > 0 ? ratingAvg.toFixed(1) : '—'}</p>
             <Gauge value={ratingAvg * 20} max={100} color="bg-brand" />
@@ -149,7 +149,7 @@ export default function PerformancePage() {
             <p className="text-sm font-semibold text-ink">Response speed</p>
             <p className="text-xs text-ink-sub">{responseTime}</p>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-trust bg-trust-surface px-2.5 py-1 rounded-full shrink-0">Fast</p>
+          <p className="text-3xs font-bold uppercase tracking-widest text-trust bg-trust-surface px-2.5 py-1 rounded-full shrink-0">Fast</p>
         </div>
 
         {/* Jobs + Repeat customers */}
@@ -158,14 +158,14 @@ export default function PerformancePage() {
             <Award className="w-4 h-4 text-ink-dim shrink-0" />
             <div>
               <p className="text-lg font-semibold text-ink leading-tight">{completed.length}</p>
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Jobs done</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Jobs done</p>
             </div>
           </div>
           <div className="px-4 py-3.5 flex items-center gap-2.5">
             <ThumbsUp className="w-4 h-4 text-ink-dim shrink-0" />
             <div>
               <p className="text-lg font-semibold text-ink leading-tight">{repeatCustomers}</p>
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Repeat</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Repeat</p>
             </div>
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function PerformancePage() {
           <div key={m.label} className="bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <m.icon className={`w-5 h-5 ${m.color}`} />
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">{m.label}</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{m.label}</p>
             </div>
             <p className="text-3xl font-semibold tracking-tight text-ink mb-4">{m.value}</p>
             <Gauge value={m.gauge} max={m.gaugeMax} color={m.gaugeColor} />
@@ -196,7 +196,7 @@ export default function PerformancePage() {
             <p className="text-sm text-ink-sub">{responseTime}</p>
           </div>
           <div className="text-right shrink-0">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-trust bg-trust-surface px-2.5 py-1 rounded-full">Fast</p>
+            <p className="text-3xs font-bold uppercase tracking-widest text-trust bg-trust-surface px-2.5 py-1 rounded-full">Fast</p>
           </div>
         </div>
       </div>
@@ -204,7 +204,7 @@ export default function PerformancePage() {
       {/* ── Mobile: Trust & Quality section (combined card) ── */}
       {(reviews.length > 0 || warnings.length > 0) && (
         <div className="sm:hidden">
-          <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-3">Trust & Quality</p>
+          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3">Trust & Quality</p>
           <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden mb-5">
             {/* Rating section */}
             {reviews.length > 0 && (
@@ -259,7 +259,7 @@ export default function PerformancePage() {
 
             {/* Account standing — inside same card */}
             <div className={`${reviews.length > 0 ? 'border-t border-border-dim' : ''} p-4 space-y-2.5`}>
-              <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1">Account standing</p>
+              <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1">Account standing</p>
               {warnings.map((w, i) => (
                 <div key={i} className={`flex items-start gap-2.5 p-3 rounded-xl ${
                   w.type === 'warning' ? 'bg-caution-surface border border-caution-edge' : 'bg-trust-surface border border-trust-edge'
@@ -315,7 +315,7 @@ export default function PerformancePage() {
 
       {/* ── Desktop: Account standing (separate section) ── */}
       <div className="hidden sm:block space-y-3">
-        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest">Account standing</p>
+        <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Account standing</p>
         {warnings.map((w, i) => (
           <div key={i} className={`flex items-start gap-3 p-4 rounded-2xl border ${
             w.type === 'warning' ? 'bg-caution-surface border-caution-edge' : 'bg-trust-surface border-trust-edge'

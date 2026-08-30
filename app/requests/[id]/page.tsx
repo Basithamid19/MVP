@@ -157,11 +157,11 @@ export default function QuoteInboxPage() {
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="px-2.5 py-1 bg-surface-alt text-ink-sub text-[11px] font-bold uppercase tracking-widest rounded-full">
+                <span className="px-2.5 py-1 bg-surface-alt text-ink-sub text-2xs font-bold uppercase tracking-widest rounded-full">
                   {request.category?.name}
                 </span>
                 {request.isUrgent && (
-                  <span className="px-2.5 py-1 bg-caution-surface text-caution text-[11px] font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
+                  <span className="px-2.5 py-1 bg-caution-surface text-caution text-2xs font-bold uppercase tracking-widest rounded-full flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" /> {t.hero.urgent}
                   </span>
                 )}
@@ -284,7 +284,7 @@ export default function QuoteInboxPage() {
                       {i === 0 && (
                         <div className="flex items-center gap-1.5 mb-3">
                           <Star className="w-3.5 h-3.5 text-brand fill-current" />
-                          <span className="text-[11px] font-bold text-brand uppercase tracking-widest">{t.quoteInbox.bestMatch}</span>
+                          <span className="text-2xs font-bold text-brand uppercase tracking-widest">{t.quoteInbox.bestMatch}</span>
                         </div>
                       )}
                       <div className="flex items-start gap-4 mb-4">
@@ -297,7 +297,7 @@ export default function QuoteInboxPage() {
                           <div className="flex items-center gap-2 flex-wrap mb-0.5">
                             <span className="font-bold">{p?.user?.name}</span>
                             {p?.isVerified && (
-                              <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide">
+                              <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wide">
                                 <ShieldCheck className="w-3 h-3" /> {t.common.verified}
                               </span>
                             )}
@@ -320,10 +320,10 @@ export default function QuoteInboxPage() {
                             <p className="text-xs text-ink-dim mt-0.5">~{quote.estimatedHours}h</p>
                           )}
                           {expiresLabel(quote.expiresAt, t.quoteInbox) && (
-                            <p className="text-[11px] text-caution mt-0.5">{expiresLabel(quote.expiresAt, t.quoteInbox)}</p>
+                            <p className="text-2xs text-caution mt-0.5">{expiresLabel(quote.expiresAt, t.quoteInbox)}</p>
                           )}
                           {minPrice !== null && maxPrice !== null && maxPrice > minPrice && (
-                            <p className="text-[11px] text-ink-dim mt-0.5">
+                            <p className="text-2xs text-ink-dim mt-0.5">
                               {quote.price === minPrice ? (
                                 <span className="text-trust font-bold">{t.quoteInbox.lowest}</span>
                               ) : quote.price === maxPrice ? (

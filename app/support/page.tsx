@@ -150,7 +150,7 @@ export default function SupportPage() {
       {/* Hero */}
       <section className="pt-16 sm:pt-24 pb-16 sm:pb-20 bg-canvas">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-          <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-5">Help centre</p>
+          <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-5">Help centre</p>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-ink leading-[1.08] mb-5">
             How can we help?
           </h1>
@@ -186,7 +186,7 @@ export default function SupportPage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-14">
           {FAQS.map(({ id, section, items }) => (
             <div key={id} id={id}>
-              <p className="text-[11px] font-bold text-brand uppercase tracking-[0.15em] mb-4">{section}</p>
+              <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-4">{section}</p>
               <div className="space-y-3">
                 {items.map(({ q, a }) => (
                   <div key={q} className="bg-canvas rounded-2xl border border-border-dim p-5 sm:p-6">

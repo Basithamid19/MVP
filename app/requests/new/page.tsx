@@ -30,7 +30,7 @@ function ReviewRow({
   return (
     <div className="flex items-start justify-between gap-4 py-3.5">
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1">{label}</p>
         <p className={`text-sm font-medium text-ink ${multiline ? 'whitespace-pre-wrap' : 'truncate'}`}>{value}</p>
       </div>
       <button
@@ -251,10 +251,10 @@ function NewRequestContent() {
                   <div className="flex items-center gap-1 shrink-0">
                     <div className={`flex items-center justify-center rounded-full font-bold transition-all ${
                       current
-                        ? 'w-7 h-7 bg-brand text-white text-[11px] ring-4 ring-brand/15'
+                        ? 'w-7 h-7 bg-brand text-white text-2xs ring-4 ring-brand/15'
                         : done
-                        ? 'w-6 h-6 bg-brand text-white text-[10px]'
-                        : 'w-6 h-6 bg-surface-alt text-ink-dim text-[10px]'
+                        ? 'w-6 h-6 bg-brand text-white text-3xs'
+                        : 'w-6 h-6 bg-surface-alt text-ink-dim text-3xs'
                     }`}>
                       {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : i + 1}
                     </div>
@@ -368,7 +368,7 @@ function NewRequestContent() {
 
               {/* Textarea */}
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   {t.wizard.descLabel}
                 </label>
                 <textarea
@@ -386,7 +386,7 @@ function NewRequestContent() {
 
               {/* Photo upload */}
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   {t.wizard.photosLabel} <span className="normal-case font-normal text-ink-dim">{t.wizard.optional}</span>
                 </label>
                 <input
@@ -422,7 +422,7 @@ function NewRequestContent() {
                     className="w-[76px] h-[76px] rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand hover:bg-brand-muted/30 transition-all text-ink-dim hover:text-brand disabled:opacity-50"
                   >
                     <ImagePlus className="w-5 h-5" />
-                    <span className="text-[10px] font-bold">{t.wizard.addPhoto}</span>
+                    <span className="text-3xs font-bold">{t.wizard.addPhoto}</span>
                   </button>
                 </div>
                 {photos.length > 0 && (
@@ -470,7 +470,7 @@ function NewRequestContent() {
             <div className="space-y-5">
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.addressLabel}</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.addressLabel}</label>
                 <AddressAutocomplete
                   value={form.address}
                   onChange={v => setForm(f => ({ ...f, address: v }))}
@@ -479,7 +479,7 @@ function NewRequestContent() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.dateLabel}</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.dateLabel}</label>
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-dim pointer-events-none" />
                   <input
@@ -493,7 +493,7 @@ function NewRequestContent() {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.timeLabel}</label>
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.wizard.timeLabel}</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   {TIME_PREFS.map(pref => (
                     <button
@@ -506,14 +506,14 @@ function NewRequestContent() {
                       }`}
                     >
                       <p className={`font-bold text-xs ${form.timePreference === pref.id ? 'text-white' : 'text-ink'}`}>{pref.label}</p>
-                      <p className={`text-[10px] mt-0.5 ${form.timePreference === pref.id ? 'text-white/75' : 'text-ink-dim'}`}>{pref.sub}</p>
+                      <p className={`text-3xs mt-0.5 ${form.timePreference === pref.id ? 'text-white/75' : 'text-ink-dim'}`}>{pref.sub}</p>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2 block">
+                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">
                   {t.wizard.budgetLabel} <span className="normal-case font-normal">{t.wizard.optional}</span>
                 </label>
                 <div className="relative">
@@ -595,7 +595,7 @@ function NewRequestContent() {
                 {form.budget && <ReviewRow label={t.wizard.reviewBudget} value={`€${form.budget}`} onEdit={() => setStep(4)} />}
                 {photos.length > 0 && (
                   <div className="py-3.5">
-                    <p className="text-[10px] font-bold text-ink-dim uppercase tracking-widest mb-2">{t.wizard.reviewPhotos}</p>
+                    <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2">{t.wizard.reviewPhotos}</p>
                     <div className="flex gap-2 flex-wrap">
                       {photos.map(p => (
                         <img key={p.preview} src={p.preview} alt="Attached" className="w-14 h-14 rounded-xl object-cover border border-border-dim" />
@@ -632,7 +632,7 @@ function NewRequestContent() {
           )}
 
           {/* Step indicator */}
-          <p className="text-center text-[11px] font-semibold text-ink-dim mb-2.5 tracking-wide">
+          <p className="text-center text-2xs font-semibold text-ink-dim mb-2.5 tracking-wide">
             {t.wizard.stepLabel} {step} {t.wizard.stepOf} {STEPS.length}
           </p>
 

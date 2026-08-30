@@ -94,7 +94,7 @@ export default function VerificationStatusPage() {
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className={`text-lg font-bold ${tierInfo.color}`}>{tierInfo.label}</h2>
               {isVerified && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-3xs font-bold uppercase tracking-wider rounded-full">
                   {t.common.verified}
                 </span>
               )}

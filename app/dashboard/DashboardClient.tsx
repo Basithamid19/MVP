@@ -94,7 +94,7 @@ function JobStepper({ step }: { step: number }) {
       </div>
       <div className="flex items-center justify-between px-0.5">
         {STEPPER_LABELS.map((label, i) => (
-          <span key={label} className={`text-[10px] font-bold uppercase tracking-wide ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
+          <span key={label} className={`text-3xs font-bold uppercase tracking-wide ${i <= step ? 'text-ink' : 'text-ink-dim'}`}>
             {label}
           </span>
         ))}
@@ -136,8 +136,8 @@ function OrdersList({ requests }: { requests: any[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-ink-dim truncate">{req.category?.name}</span>
-                  {req.isUrgent && <span className="flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-widest text-caution shrink-0"><Zap className="w-3 h-3" /> Urgent</span>}
+                  <span className="text-3xs font-bold uppercase tracking-widest text-ink-dim truncate">{req.category?.name}</span>
+                  {req.isUrgent && <span className="flex items-center gap-0.5 text-3xs font-bold uppercase tracking-widest text-caution shrink-0"><Zap className="w-3 h-3" /> Urgent</span>}
                 </div>
                 <p className="font-semibold text-sm text-ink leading-snug truncate">{req.description}</p>
               </div>
@@ -145,7 +145,7 @@ function OrdersList({ requests }: { requests: any[] }) {
                 {/* Compact status on mobile */}
                 <div className="flex items-center gap-1 sm:hidden">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${stage.dot}`} />
-                  <span className="text-[10px] font-semibold text-ink-sub whitespace-nowrap max-w-[64px] truncate">{requestStatus(req.status).label}</span>
+                  <span className="text-3xs font-semibold text-ink-sub whitespace-nowrap max-w-[64px] truncate">{requestStatus(req.status).label}</span>
                 </div>
                 {/* Full badge on sm+ */}
                 <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 bg-surface-alt rounded-full border border-border-dim">
@@ -187,12 +187,12 @@ function OrdersList({ requests }: { requests: any[] }) {
                               {topPro.ratingAvg.toFixed(1)}
                             </span>
                           )}
-                          {topPro.isVerified && <span className="text-[11px] font-medium text-trust">✓ Verified</span>}
+                          {topPro.isVerified && <span className="text-2xs font-medium text-trust">✓ Verified</span>}
                         </div>
                       </div>
                     </div>
                     <div className="sm:text-right pl-12 sm:pl-0">
-                      <p className="text-[11px] font-bold uppercase tracking-widest text-ink-dim mb-0.5">Est. Price</p>
+                      <p className="text-2xs font-bold uppercase tracking-widest text-ink-dim mb-0.5">Est. Price</p>
                       <p className="text-base font-semibold text-ink">€{topQuote.price}</p>
                     </div>
                   </div>
@@ -361,7 +361,7 @@ export default function DashboardPage({
           ].map(({ value, label, highlight }) => (
             <div key={label} className={`rounded-2xl p-3.5 text-center border ${highlight ? 'bg-brand-muted border-brand/25' : 'bg-white border-border-dim'}`}>
               <p className={`text-xl font-bold ${highlight ? 'text-brand' : 'text-ink'}`}>{value}</p>
-              <p className={`text-[10px] font-semibold uppercase tracking-wider mt-1 ${highlight ? 'text-brand/70' : 'text-ink-dim'}`}>{label}</p>
+              <p className={`text-3xs font-semibold uppercase tracking-wider mt-1 ${highlight ? 'text-brand/70' : 'text-ink-dim'}`}>{label}</p>
             </div>
           ))}
         </div>
