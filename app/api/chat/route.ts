@@ -101,6 +101,15 @@ export async function GET(request: Request) {
         }
         throw err;
       });
+
+      // Viewing the thread marks the counterpart's messages as read. Fire and
+      // forget: a pre-20260709 DB without readAt must not fail the poll, and
+      // the response doesn't depend on the write landing.
+      prisma.chatMessage.updateMany({
+        where: { threadId, senderId: { not: userId }, readAt: null },
+        data: { readAt: new Date() },
+      }).catch(() => { /* readAt column missing on this DB */ });
+
       return NextResponse.json(messages);
     }
 
@@ -221,6 +230,26 @@ export async function GET(request: Request) {
         createdAt: t.createdAt,
       });
     }
+
+    // Unread counts — one grouped query for all surfaced threads. A DB that
+    // hasn't run the 20260709 readAt migration throws here; degrade to zero
+    // counts (no badges) rather than failing the inbox.
+    const unreadByThread = new Map<string, number>();
+    if (result.length) {
+      const groups = await prisma.chatMessage.groupBy({
+        by: ['threadId'],
+        where: {
+          threadId: { in: result.map(r => r.id) },
+          senderId: { not: userId },
+          readAt: null,
+        },
+        _count: { _all: true },
+      }).catch(() => [] as any[]);
+      for (const g of groups as any[]) {
+        unreadByThread.set(g.threadId, g._count?._all ?? 0);
+      }
+    }
+    for (const r of result) r.unreadCount = unreadByThread.get(r.id) ?? 0;
 
     // Final display order: latest activity first.
     result.sort((a, b) => {

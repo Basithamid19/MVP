@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, ArrowLeft, MessageCircle, Lock } from 'lucide-react';
 import CustomerLayout from '@/components/CustomerLayout';
-import { Avatar, EmptyState, PageHeader } from '@/components/ui';
+import { Avatar, EmptyState, PageHeader, StatusBadge } from '@/components/ui';
 import { ChatComposer, MessageThread, type ChatMessage } from '@/components/shared/chat-view';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
@@ -25,6 +25,7 @@ interface Thread {
   lastMessage: { content: string; senderId: string; createdAt: string } | null;
   category: string;
   createdAt: string;
+  unreadCount?: number;
 }
 
 export default function MessagesPage() {
@@ -63,46 +64,58 @@ function ThreadList({
 }) {
   return (
     <div className={className}>
-      {threads.map(th => (
-        <Link
-          key={th.id}
-          href={`/messages?thread=${th.id}`}
-          className={`flex items-start gap-3.5 sm:gap-4 px-4 sm:px-5 py-5 transition-colors ${
-            th.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
-          }`}
-        >
-          <Avatar
-            src={th.otherParticipant.image}
-            name={th.otherParticipant.name ?? ''}
-            size="lg"
-            className="w-12 h-12 mt-0.5"
-          />
-          <div className="flex-1 min-w-0">
-            {/* Name + relative time on one baseline */}
-            <div className="flex items-baseline justify-between gap-3">
-              <p className="text-base font-bold text-ink truncate">{th.otherParticipant.name}</p>
-              {th.lastMessage && (
-                <span className="text-sm text-ink-dim shrink-0">
-                  {timeAgo(th.lastMessage.createdAt, t.messagesPage)}
+      {threads.map(th => {
+        // Unread only counts while the thread is closed — the open thread is
+        // being marked read by its own poll.
+        const unread = (th.unreadCount ?? 0) > 0 && th.id !== activeThreadId;
+        return (
+          <Link
+            key={th.id}
+            href={`/messages?thread=${th.id}`}
+            className={`flex items-start gap-3.5 sm:gap-4 px-4 sm:px-5 py-5 transition-colors ${
+              th.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
+            }`}
+          >
+            <Avatar
+              src={th.otherParticipant.image}
+              name={th.otherParticipant.name ?? ''}
+              size="lg"
+              className="w-12 h-12 mt-0.5"
+            />
+            <div className="flex-1 min-w-0">
+              {/* Name + NEW badge + relative time on one baseline */}
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="flex items-baseline gap-2 min-w-0">
+                  <p className="text-base font-bold text-ink truncate">{th.otherParticipant.name}</p>
+                  {unread && (
+                    <StatusBadge variant="brandSolid" label={t.messagesPage.newBadge} className="shrink-0 -translate-y-px" />
+                  )}
                 </span>
+                {th.lastMessage && (
+                  <span className={`text-sm shrink-0 ${unread ? 'text-ink font-semibold' : 'text-ink-dim'}`}>
+                    {timeAgo(th.lastMessage.createdAt, t.messagesPage)}
+                  </span>
+                )}
+              </div>
+
+              {/* Context line — what this conversation is about */}
+              <p className="text-sm text-ink-sub font-medium mt-0.5 truncate">{th.category}</p>
+
+              {/* Two-line message preview — bold while unread */}
+              {th.lastMessage ? (
+                <p className={`text-sm mt-1.5 leading-relaxed line-clamp-2 ${
+                  unread ? 'text-ink font-semibold' : 'text-ink-sub'
+                }`}>
+                  {th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}
+                  {th.lastMessage.content}
+                </p>
+              ) : (
+                <p className="text-sm text-ink-dim mt-1.5">{t.messagesPage.noMessagesShort}</p>
               )}
             </div>
-
-            {/* Context line — what this conversation is about */}
-            <p className="text-sm text-ink-sub font-medium mt-0.5 truncate">{th.category}</p>
-
-            {/* Two-line message preview */}
-            {th.lastMessage ? (
-              <p className="text-sm text-ink-sub mt-1.5 leading-relaxed line-clamp-2">
-                {th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}
-                {th.lastMessage.content}
-              </p>
-            ) : (
-              <p className="text-sm text-ink-dim mt-1.5">{t.messagesPage.noMessagesShort}</p>
-            )}
-          </div>
-        </Link>
-      ))}
+          </Link>
+        );
+      })}
     </div>
   );
 }

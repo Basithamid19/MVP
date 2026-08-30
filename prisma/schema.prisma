@@ -261,6 +261,7 @@ model ChatMessage {
   senderId      String
   content       String
   imageUrl      String?
+  readAt        DateTime?  // null = recipient hasn't opened the thread since this arrived
   createdAt     DateTime   @default(now())
 }
 

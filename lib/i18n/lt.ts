@@ -524,6 +524,7 @@ export const lt: Dictionary = {
     emptyDescProvider: 'Susirašinėjimas atsidaro, kai klientas patvirtina užsakymą (sumoka užstatą).',
     noMessagesShort: 'Žinučių dar nėra',
     youPrefix: 'Jūs: ',
+    newBadge: 'Nauja',
     typeMessage: 'Rašykite žinutę...',
     sendFailed: 'Nepavyko išsiųsti žinutės. Bandykite dar kartą.',
     sendFailedNetwork: 'Nepavyko išsiųsti žinutės. Patikrinkite interneto ryšį ir bandykite dar kartą.',

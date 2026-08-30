@@ -524,6 +524,7 @@ export const en: Dictionary = {
     emptyDescProvider: 'Messaging opens once a customer confirms a booking with you (deposit paid).',
     noMessagesShort: 'No messages yet',
     youPrefix: 'You: ',
+    newBadge: 'New',
     typeMessage: 'Type a message...',
     sendFailed: 'Message failed to send. Please try again.',
     sendFailedNetwork: 'Message failed to send. Please check your connection and try again.',

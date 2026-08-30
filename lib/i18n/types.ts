@@ -557,6 +557,7 @@ export interface Dictionary {
     emptyDescProvider: string;
     noMessagesShort: string;
     youPrefix: string;
+    newBadge: string;
     typeMessage: string;
     sendFailed: string;
     sendFailedNetwork: string;
