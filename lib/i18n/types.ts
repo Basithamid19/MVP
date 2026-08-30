@@ -288,13 +288,16 @@ export interface Dictionary {
   trustBanner: {
     guaranteeTitle: string;
     guaranteeDesc: string;
+    guaranteeDescLong: string;
     pricingTitle: string;
     pricingDesc: string;
+    pricingDescLong: string;
     verifiedTitle: string;
     verifiedDesc: string;
+    verifiedDescLong: string;
     damageTitle: string;
     damageDesc: string;
-    dayGuarantee: string;
+    damageDescLong: string;
     builtForTrustTitle: string;
     builtForTrustSubtitle: string;
     findAPro: string;

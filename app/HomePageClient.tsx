@@ -322,13 +322,6 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
     ? (ratedPros.reduce((sum, p) => sum + p.ratingAvg, 0) / ratedPros.length).toFixed(1)
     : '4.9';
 
-  const TRUST_STATS = [
-    { icon: BadgeCheck,   value: '100%',     label: t.trustBanner.verifiedTitle },
-    { icon: Star,         value: topRating,  label: t.hero.topRated },
-    { icon: Shield,       value: '€100',     label: t.trustBanner.damageTitle },
-    { icon: CheckCircle2, value: '30',       label: t.trustBanner.dayGuarantee },
-  ];
-
   return (
     <div className="min-h-screen bg-card pb-nav md:pb-0 overflow-x-hidden w-full">
 
@@ -743,45 +736,59 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
         <div className="absolute inset-0 bg-gradient-to-t from-ink/25 via-transparent to-transparent" />
       </div>
 
-      {/* ── 4. Built for Trust ──
-          A compact proof strip. The four guarantees themselves are told once,
-          in the hero slideshow — this section states the numbers behind them. */}
-      <section className="py-12 sm:py-20 bg-surface-alt overflow-hidden">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ── 4. Built for Trust — vertical timeline. Restored by request: the
+          long-form guarantees read better here than the compact stat strip,
+          even though the hero slideshow shares the same four items. */}
+      <section className="py-12 sm:py-24 bg-surface-alt overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          <div className="text-center mb-8 sm:mb-10">
+          {/* Header */}
+          <div className="text-center mb-8 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
               {t.trustBanner.builtForTrustTitle}
             </h2>
-            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto">
+            <p className="text-ink-sub text-sm sm:text-base max-w-xl mx-auto mb-6">
               {t.trustBanner.builtForTrustSubtitle}
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {TRUST_STATS.map(({ icon: Icon, value, label }, idx) => (
+          {/* Vertical timeline */}
+          <div className="max-w-lg mx-auto">
+            {[
+              { icon: CheckCircle2, title: t.trustBanner.guaranteeTitle, desc: t.trustBanner.guaranteeDescLong },
+              { icon: FileText,     title: t.trustBanner.pricingTitle,   desc: t.trustBanner.pricingDescLong   },
+              { icon: BadgeCheck,   title: t.trustBanner.verifiedTitle,  desc: t.trustBanner.verifiedDescLong  },
+              { icon: Shield,       title: t.trustBanner.damageTitle,    desc: t.trustBanner.damageDescLong    },
+            ].map(({ icon: Icon, title, desc }, idx, arr) => (
               <motion.div
-                key={label}
-                initial={{ opacity: 0, y: 16 }}
+                key={title}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.08 }}
+                transition={{ delay: idx * 0.12 }}
                 viewport={{ once: true }}
-                className="bg-card border border-border-dim rounded-card shadow-card p-4 sm:p-5 flex flex-col items-center text-center"
+                className="relative grid grid-cols-[auto_1fr] gap-x-4 sm:gap-x-6"
               >
-                <div className="w-9 h-9 rounded-input bg-brand-muted flex items-center justify-center mb-3">
-                  <Icon className="w-4 h-4 text-brand" />
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 bg-brand rounded-card flex items-center justify-center shrink-0">
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <div className="w-0.5 flex-1 bg-brand-muted my-2" />
+                  )}
                 </div>
-                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-ink leading-none">{value}</p>
-                <p className="text-2xs font-semibold uppercase tracking-widest text-ink-dim mt-2 leading-snug">{label}</p>
+                <div className={idx < arr.length - 1 ? 'pb-6' : ''}>
+                  <h3 className="text-base sm:text-lg font-bold text-ink mt-1 sm:mt-2 mb-1">{title}</h3>
+                  <p className="text-ink-sub text-sm leading-relaxed">{desc}</p>
+                </div>
               </motion.div>
             ))}
           </div>
 
-          {/* Section CTA — secondary */}
-          <div className="text-center mt-8 sm:mt-12">
+          {/* CTA */}
+          <div className="text-center mt-8 sm:mt-14">
             <Link
               href="/browse"
-              className={buttonVariants({ variant: 'outline', size: 'xl' })}
+              className={buttonVariants({ variant: 'primary', size: 'xl' })}
             >
               {t.trustBanner.findAPro} <ArrowRight className="w-4 h-4" />
             </Link>
