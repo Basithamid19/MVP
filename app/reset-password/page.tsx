@@ -8,7 +8,7 @@ import { Loader2, ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthShowcase from '@/components/AuthShowcase';
-import { Button, Input, buttonVariants } from '@/components/ui';
+import { Button, Input, buttonVariants , Alert } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -74,19 +74,14 @@ function ResetPasswordContent() {
             <LanguageSwitcher />
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.authFlow.resetTitle}.</h1>
-          <p className="text-ink-sub mb-10">{t.authFlow.resetSubtitle}.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.authFlow.resetTitle}</h1>
+          <p className="text-ink-sub mb-10">{t.authFlow.resetSubtitle}</p>
 
           {!token ? (
-            <div className="p-4 bg-caution-surface border border-caution-edge text-caution text-sm font-medium rounded-input">
-              {t.authFlow.resetMissingToken}
-            </div>
+            <Alert variant="caution">{t.authFlow.resetMissingToken}</Alert>
           ) : done ? (
             <div className="space-y-6">
-              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input flex items-start gap-3">
-                <MailCheck className="w-5 h-5 shrink-0" />
-                {t.authFlow.resetSuccess}
-              </div>
+              <Alert variant="trust" icon={MailCheck}>{t.authFlow.resetSuccess}</Alert>
               <Link
                 href="/login"
                 className={cn(buttonVariants({ variant: 'primary', size: 'xl' }), 'w-full')}
@@ -98,9 +93,7 @@ function ResetPasswordContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
-                  {error}
-                </div>
+                <Alert variant="danger">{error}</Alert>
               )}
 
               <Input

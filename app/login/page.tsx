@@ -5,11 +5,11 @@ import React, { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthShowcase from '@/components/AuthShowcase';
-import { Button, Input } from '@/components/ui';
+import { Alert, Button, Input } from '@/components/ui';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -117,46 +117,40 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {banner === 'verified' && (
-              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input flex items-start gap-3">
-                <MailCheck className="w-5 h-5 shrink-0" />
-                {t.authFlow.verifiedSuccess}
-              </div>
+              <Alert variant="trust" icon={MailCheck}>{t.authFlow.verifiedSuccess}</Alert>
             )}
             {banner === 'expired' && (
-              <div className="p-4 bg-caution-surface border border-caution-edge text-caution text-sm font-medium rounded-input">
-                {t.authFlow.verifiedFailed}
-              </div>
+              <Alert variant="caution">{t.authFlow.verifiedFailed}</Alert>
             )}
 
             {error && (
-              <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
-                {error}
-                {unverified && (
-                  <div className="mt-3 flex flex-wrap items-center gap-4">
-                    <button
+              <Alert
+                variant="danger"
+                action={unverified ? (
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button
                       type="button"
+                      variant="danger"
+                      size="sm"
                       onClick={handleResend}
-                      disabled={resending}
-                      className="font-bold underline disabled:opacity-50"
+                      loading={resending}
                     >
-                      {resending ? <Loader2 className="w-4 h-4 animate-spin" /> : t.authFlow.resendVerification}
-                    </button>
+                      {t.authFlow.resendVerification}
+                    </Button>
                     <Link
                       href={`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`}
-                      className="font-bold underline"
+                      className="text-sm font-bold text-danger underline"
                     >
                       {t.authFlow.verifyButton}
                     </Link>
                   </div>
-                )}
-              </div>
+                ) : undefined}
+              >
+                {error}
+              </Alert>
             )}
 
-            {notice && (
-              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input">
-                {notice}
-              </div>
-            )}
+            {notice && <Alert variant="trust">{notice}</Alert>}
 
             <Input
               label={t.auth.email}

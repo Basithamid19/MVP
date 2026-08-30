@@ -8,7 +8,7 @@ import { Loader2, ArrowRight, MailCheck, MessageSquare } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthShowcase from '@/components/AuthShowcase';
-import { Button, Input } from '@/components/ui';
+import { Button, Input , Alert } from '@/components/ui';
 
 const RESEND_COOLDOWN_SECONDS = 60;
 
@@ -98,7 +98,7 @@ function VerifyContent() {
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">
-            {channel === 'sms' ? t.authFlow.verifySmsTitle : t.authFlow.verifyEmailTitle}.
+            {channel === 'sms' ? t.authFlow.verifySmsTitle : t.authFlow.verifyEmailTitle}
           </h1>
           <p className="text-ink-sub mb-10">
             {channel === 'sms' ? (
@@ -113,14 +113,10 @@ function VerifyContent() {
 
           <div className="space-y-6">
             {error && (
-              <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
-                {error}
-              </div>
+              <Alert variant="danger">{error}</Alert>
             )}
             {notice && (
-              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input">
-                {notice}
-              </div>
+              <Alert variant="trust">{notice}</Alert>
             )}
 
             {channel === 'sms' ? (
@@ -156,9 +152,11 @@ function VerifyContent() {
               </div>
             )}
 
+            {/* On the email branch Resend is the ONLY action — it takes the
+                primary slot; on SMS the code submit above is the primary. */}
             <Button
               type="button"
-              variant="secondary"
+              variant={channel === 'sms' ? 'secondary' : 'primary'}
               size="xl"
               className="w-full"
               onClick={handleResend}

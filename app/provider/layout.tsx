@@ -67,12 +67,15 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           </Link>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-6 overflow-y-auto">
-          {NAV_GROUPS.map(group => (
+        <nav className="flex-1 px-2 lg:px-4 py-4 space-y-4 lg:space-y-6 overflow-y-auto">
+          {NAV_GROUPS.map((group, gi) => (
             <div key={group.label}>
+              {/* Icon-rail state (md–lg) shows a hairline divider instead of the
+                  label so the groups don't read as unexplained gaps. */}
               <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest hidden lg:block px-4 mb-2">
                 {group.label}
               </p>
+              {gi > 0 && <div className="lg:hidden border-t border-border-dim mx-3 mb-3" />}
               <div className="space-y-1">
                 {group.items.map(({ href, label, icon: Icon }) => {
                   const active = pathname === href || pathname?.startsWith(href + '/');
@@ -80,7 +83,8 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
                     <Link
                       key={href}
                       href={href}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-input font-medium text-sm transition-all ${
+                      title={label}
+                      className={`flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-3 rounded-input font-medium text-sm transition-all ${
                         active ? 'bg-card shadow-card border border-border-dim text-brand' : 'text-ink-sub hover:text-ink hover:bg-card/60 border border-transparent'
                       }`}
                     >
@@ -94,17 +98,19 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
           ))}
         </nav>
 
-        <div className="p-4 lg:p-6 space-y-1">
+        <div className="p-2 lg:p-6 space-y-1">
           <Link
             href="/provider/verification"
-            className="flex items-center gap-3 px-4 py-3 rounded-input text-sm font-medium text-info hover:bg-info-surface transition-all"
+            title={t.providerNav.verification}
+            className="flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-3 rounded-input text-sm font-medium text-ink-sub hover:text-ink hover:bg-card/60 transition-all"
           >
             <ShieldCheck className="w-4 h-4 shrink-0" />
             <span className="hidden lg:block">{t.providerNav.verification}</span>
           </Link>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-input text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
+            title={t.providerNav.logOut}
+            className="w-full flex items-center justify-center lg:justify-start gap-3 px-3 lg:px-4 py-3 rounded-input text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             <span className="hidden lg:block">{t.providerNav.logOut}</span>

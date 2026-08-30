@@ -7,7 +7,7 @@ import { ArrowRight, MailCheck } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthShowcase from '@/components/AuthShowcase';
-import { Button, Input } from '@/components/ui';
+import { Button, Input , Alert } from '@/components/ui';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -60,24 +60,17 @@ export default function ForgotPasswordPage() {
             <LanguageSwitcher />
           </div>
 
-          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.authFlow.forgotTitle}.</h1>
-          <p className="text-ink-sub mb-10">{t.authFlow.forgotSubtitle}.</p>
+          <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.authFlow.forgotTitle}</h1>
+          <p className="text-ink-sub mb-10">{t.authFlow.forgotSubtitle}</p>
 
           {emailAvailable === false ? (
-            <div className="p-4 bg-caution-surface border border-caution-edge text-caution text-sm font-medium rounded-input">
-              {t.authFlow.forgotUnavailable}
-            </div>
+            <Alert variant="caution">{t.authFlow.forgotUnavailable}</Alert>
           ) : sent ? (
-            <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input flex items-start gap-3">
-              <MailCheck className="w-5 h-5 shrink-0" />
-              {t.authFlow.forgotSent}
-            </div>
+            <Alert variant="trust" icon={MailCheck}>{t.authFlow.forgotSent}</Alert>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
-                  {error}
-                </div>
+                <Alert variant="danger">{error}</Alert>
               )}
 
               <Input
