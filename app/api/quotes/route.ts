@@ -357,7 +357,7 @@ export async function PATCH(request: Request) {
   if (status === 'ACCEPTED') {
     const avail = await checkAvailability(quote.providerId, scheduledAt);
     if (!avail.ok) {
-      return NextResponse.json({ error: avail.reason }, { status: 409 });
+      return NextResponse.json({ error: avail.reason, errorCode: avail.code }, { status: 409 });
     }
   }
 

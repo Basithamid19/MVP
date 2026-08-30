@@ -110,7 +110,7 @@ async function main() {
             completedJobs: 10 + Math.floor(Math.random() * 90),
             isVerified: true,
             verificationTier: 'TIER1_ID_VERIFIED',
-            responseTime: 'Usually responds in 30 mins',
+            responseTime: '~30 min',
             categories: {
               connect: { id: createdCategories[p.cat] },
             },

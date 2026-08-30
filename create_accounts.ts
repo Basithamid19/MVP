@@ -166,7 +166,7 @@ async function main() {
         completedJobs: p.jobs,
         isVerified: p.tier !== 'TIER0_BASIC',
         verificationTier: p.tier as any,
-        responseTime: 'Usually responds in 1 hour',
+        responseTime: '~1 h',
         ...(category ? { categories: { connect: [{ id: category.id }] } } : {}),
       },
     });

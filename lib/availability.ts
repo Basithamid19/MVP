@@ -6,7 +6,10 @@ import { vilniusParts } from '@/lib/time';
 // `scheduledAt` against them. Imports Prisma — server-only, never import from a
 // client component (use lib/time.ts there instead).
 
-export type AvailabilityResult = { ok: true } | { ok: false; reason: string };
+// `code` is the machine-readable key — clients map it to a localized string
+// and fall back to `reason` (English) for unknown codes.
+export type AvailabilityErrorCode = 'blackout_date' | 'day_unavailable' | 'outside_hours' | 'time_conflict';
+export type AvailabilityResult = { ok: true } | { ok: false; reason: string; code: AvailabilityErrorCode };
 
 function hhmmToMinutes(t: string): number {
   const [h, m] = String(t).split(':').map((n) => parseInt(n, 10));
@@ -36,7 +39,7 @@ export async function checkAvailability(
 
     // 1. Blackout date (stored as "YYYY-MM-DD").
     if (Array.isArray(provider.blackoutDates) && provider.blackoutDates.includes(isoDate)) {
-      return { ok: false, reason: 'The provider is unavailable on this date. Please pick another day or message the pro.' };
+      return { ok: false, code: 'blackout_date', reason: 'The provider is unavailable on this date. Please pick another day or message the pro.' };
     }
 
     // 2. Weekly working hours — only enforced when the provider has set a
@@ -45,13 +48,13 @@ export async function checkAvailability(
     if (slots.length > 0) {
       const daySlots = slots.filter((s) => s.dayOfWeek === dayOfWeek);
       if (daySlots.length === 0) {
-        return { ok: false, reason: 'The provider does not work on this day. Please pick another day or message the pro.' };
+        return { ok: false, code: 'day_unavailable', reason: 'The provider does not work on this day. Please pick another day or message the pro.' };
       }
       const withinHours = daySlots.some(
         (s) => minutes >= hhmmToMinutes(s.startTime) && minutes <= hhmmToMinutes(s.endTime),
       );
       if (!withinHours) {
-        return { ok: false, reason: "The requested time is outside the provider's working hours. Please pick another time." };
+        return { ok: false, code: 'outside_hours', reason: "The requested time is outside the provider's working hours. Please pick another time." };
       }
     }
 
@@ -70,7 +73,7 @@ export async function checkAvailability(
         select: { id: true },
       });
       if (conflict) {
-        return { ok: false, reason: 'The provider already has a job around this time. Please pick another slot.' };
+        return { ok: false, code: 'time_conflict', reason: 'The provider already has a job around this time. Please pick another slot.' };
       }
     }
 

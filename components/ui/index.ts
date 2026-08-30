@@ -44,3 +44,9 @@ export type { AvatarProps, AvatarStackProps, AvatarSize } from './avatar';
 
 export { DataTable }                           from './data-table';
 export type { DataTableProps, Column }         from './data-table';
+
+export { Alert }                               from './alert';
+export type { AlertProps, AlertVariant }       from './alert';
+
+export { Switch }                              from './switch';
+export type { SwitchProps }                    from './switch';
