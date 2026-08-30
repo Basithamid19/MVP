@@ -4,23 +4,37 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  Loader2, ArrowLeft, Save, CheckCircle2, X,
-  MapPin, Languages, Clock,
-} from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Tags, X } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import { Section } from '@/components/settings';
+import { Button, EmptyState, Input, PageHeader, Select, Textarea, useToast } from '@/components/ui';
+import { cn } from '@/lib/utils';
+
+// Response-time values are persisted verbatim on ProviderProfile.responseTime,
+// so the option *values* stay English while only the labels are localized.
+const RESPONSE_VALUES = [
+  'Usually responds in 30 minutes',
+  'Usually responds in 1 hour',
+  'Usually responds in 2 hours',
+  'Usually responds same day',
+  'Usually responds within 24 hours',
+] as const;
+
+const BIO_MIN = 50;
 
 export default function ProviderProfileSettingsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [categories, setCategories] = useState<any[]>([]);
   const initialRef = useRef<string>('');
   const [dirty, setDirty] = useState(false);
 
   const [bio, setBio] = useState('');
+  const [bioTouched, setBioTouched] = useState(false);
   const [serviceArea, setServiceArea] = useState('');
   const [languages, setLanguages] = useState<string[]>(['Lithuanian']);
   const [langInput, setLangInput] = useState('');
@@ -28,6 +42,14 @@ export default function ProviderProfileSettingsPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   const getSnapshot = () => JSON.stringify({ bio, serviceArea, languages, responseTime, selectedCategories });
+
+  const responseLabels: Record<string, string> = {
+    'Usually responds in 30 minutes':    t.providerProfileSettings.response30m,
+    'Usually responds in 1 hour':        t.providerProfileSettings.response1h,
+    'Usually responds in 2 hours':       t.providerProfileSettings.response2h,
+    'Usually responds same day':         t.providerProfileSettings.responseSameDay,
+    'Usually responds within 24 hours':  t.providerProfileSettings.response24h,
+  };
 
   // Single source of truth for the Languages chip-add flow. Called from
   // desktop keydown, mobile beforeinput, and the explicit Add button.
@@ -82,7 +104,7 @@ export default function ProviderProfileSettingsPage() {
         setLoading(false);
       }).catch((err) => {
         console.error('[profile page] load failed:', err);
-        setSaveError('Could not load profile data. Please refresh the page.');
+        toast.error(t.providerProfileSettings.loadFailed);
         initialRef.current = JSON.stringify({
           bio: '', serviceArea: '', languages: ['Lithuanian'],
           responseTime: 'Usually responds in 1 hour', selectedCategories: [],
@@ -100,7 +122,6 @@ export default function ProviderProfileSettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    setSaveError(null);
     try {
       const res = await fetch('/api/provider/profile', {
         method: 'PATCH',
@@ -110,7 +131,7 @@ export default function ProviderProfileSettingsPage() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
         console.error('[profile save] server error:', data);
-        setSaveError(data.error || 'Save failed. Please try again.');
+        toast.error(data.error || t.providerProfileSettings.saveFailed);
         return;
       }
       // Update form state from server response to confirm what was actually persisted.
@@ -118,7 +139,6 @@ export default function ProviderProfileSettingsPage() {
       if (data.bio !== undefined) setBio(data.bio ?? '');
       if (Array.isArray(data.languages)) setLanguages(data.languages);
       if (data.responseTime !== undefined) setResponseTime(data.responseTime ?? responseTime);
-      setSaved(true);
       // Rebuild snapshot from confirmed server values
       const confirmedSnapshot = JSON.stringify({
         bio: data.bio ?? bio,
@@ -129,9 +149,9 @@ export default function ProviderProfileSettingsPage() {
       });
       initialRef.current = confirmedSnapshot;
       setDirty(false);
-      setTimeout(() => setSaved(false), 3000);
+      toast.success(t.providerProfileSettings.savedToast);
     } catch {
-      setSaveError('Network error. Please check your connection and try again.');
+      toast.error(t.common.networkError);
     } finally {
       setSaving(false);
     }
@@ -145,222 +165,188 @@ export default function ProviderProfileSettingsPage() {
     );
   }
 
+  const bioLength = bio.trim().length;
+  const bioError = bioTouched && bioLength > 0 && bioLength < BIO_MIN
+    ? t.providerProfileSettings.bioMinError
+    : undefined;
+
   return (
     <div className="max-w-2xl mx-auto">
 
-      {/* Account indicator — shows which account is active */}
-      {session?.user?.email && (
-        <p className="text-2xs text-ink-dim text-center mb-3">
-          Logged in as <span className="font-semibold text-ink-sub">{session.user.email}</span>
-        </p>
-      )}
+      {/* ── Back ── */}
+      <Link
+        href="/provider/settings"
+        className="inline-flex items-center gap-2 -ml-1.5 mb-3 px-1.5 py-1 rounded-input text-xs font-medium text-ink-dim hover:text-ink hover:bg-surface-alt transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t.providerSettingsHub.backToSettings}
+      </Link>
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/provider/settings"
-            className="w-9 h-9 flex items-center justify-center rounded-input hover:bg-surface-alt transition-colors text-ink-sub"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h1 className="text-lg font-bold text-ink">Profile</h1>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full font-medium text-sm transition-all ${
-            saved ? 'bg-trust text-white shadow-card'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-card'
-            : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
+      <PageHeader
+        title={t.providerProfileSettings.title}
+        description={t.providerProfileSettings.description}
+        size="sm"
+        className="mb-5"
+        action={
+          <Button size="sm" loading={saving} disabled={!dirty} onClick={handleSave}>
+            {t.providerProfileSettings.save}
+          </Button>
+        }
+      />
 
-      {/* Save error */}
-      {saveError && (
-        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-input text-sm text-caution font-medium flex items-center justify-between gap-2">
-          <span>{saveError}</span>
-          <button onClick={() => setSaveError(null)} className="shrink-0 text-caution hover:opacity-70">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <div className="space-y-6">
 
-      <div className="space-y-4">
+        {/* ── Public profile ── */}
+        <Section title={t.providerProfileSettings.sectionPublic}>
 
-        {/* Public profile */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Public profile</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
+          <div className="p-4 sm:p-5">
+            <Textarea
+              label={t.providerProfileSettings.bioLabel}
+              value={bio}
+              onChange={e => setBio(e.target.value)}
+              onBlur={() => setBioTouched(true)}
+              rows={4}
+              placeholder={t.providerProfileSettings.bioPlaceholder}
+              error={bioError}
+              hint={`${bioLength}/${BIO_MIN}`}
+            />
+          </div>
 
-            {/* Bio */}
-            <div className="p-4 sm:p-6">
-              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Bio / Introduction</label>
-              <textarea
-                value={bio}
-                onChange={e => setBio(e.target.value)}
-                rows={3}
-                placeholder="Tell customers about your experience, specialties, and what makes you different."
-                className={`w-full p-3.5 bg-surface-alt border ${bio.trim().length > 0 && bio.trim().length < 50 ? 'border-caution' : 'border-border-dim'} rounded-input focus:ring-2 focus:ring-brand outline-none resize-none text-base sm:text-sm leading-relaxed`}
-              />
-              <div className="flex items-center justify-between mt-1.5">
-                {bio.trim().length > 0 && bio.trim().length < 50
-                  ? <p className="text-2xs text-caution font-medium">Minimum 50 characters for a strong profile</p>
-                  : <span />
-                }
-                <p className={`text-2xs ${bio.trim().length >= 50 ? 'text-ink-dim' : bio.trim().length > 0 ? 'text-caution' : 'text-ink-dim'}`}>
-                  {bio.trim().length}/50 min
-                </p>
-              </div>
-            </div>
+          <div className="p-4 sm:p-5">
+            <Input
+              label={t.providerProfileSettings.areaLabel}
+              value={serviceArea}
+              onChange={e => setServiceArea(e.target.value)}
+              placeholder={t.providerProfileSettings.areaPlaceholder}
+              hint={t.providerProfileSettings.areaHint}
+            />
+          </div>
 
-            {/* Coverage area */}
-            <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> Coverage area
-              </label>
-              <input
-                type="text"
-                value={serviceArea}
-                onChange={e => setServiceArea(e.target.value)}
-                placeholder="e.g. Vilnius Center, Antakalnis, Žirmūnai"
-                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
-              />
-            </div>
-
-            {/* Languages */}
-            <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
-                <Languages className="w-3 h-3" /> Languages
-              </label>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+          <div className="p-4 sm:p-5 space-y-2.5">
+            {languages.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
                 {languages.map(l => (
-                  <span key={l} className="flex items-center gap-1.5 px-2.5 py-1 bg-brand-muted text-brand rounded-full text-xs font-semibold">
+                  <span key={l} className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-brand-muted text-brand rounded-chip text-xs font-semibold">
                     {l}
-                    <button type="button" onClick={() => setLanguages(prev => prev.filter(x => x !== l))} className="hover:text-brand-dark">
+                    <button
+                      type="button"
+                      onClick={() => setLanguages(prev => prev.filter(x => x !== l))}
+                      aria-label={`${t.providerProfileSettings.languageRemove}: ${l}`}
+                      className="p-0.5 rounded-full hover:bg-brand/15 transition-colors"
+                    >
                       <X className="w-3 h-3" />
                     </button>
                   </span>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={langInput}
-                  onChange={e => setLangInput(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key !== 'Enter') return;
-                    // Android IME fires keydown with key 'Unidentified' /
-                    // keyCode 229 during composition; skip those — the real
-                    // Enter arrives via onBeforeInput below.
-                    if ((e.nativeEvent as unknown as { isComposing?: boolean }).isComposing) return;
+            )}
+            <div className="flex items-end gap-2">
+              <Input
+                wrapperClassName="flex-1 min-w-0"
+                label={t.providerProfileSettings.languagesLabel}
+                value={langInput}
+                onChange={e => setLangInput(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key !== 'Enter') return;
+                  // Android IME fires keydown with key 'Unidentified' /
+                  // keyCode 229 during composition; skip those — the real
+                  // Enter arrives via onBeforeInput below.
+                  if ((e.nativeEvent as unknown as { isComposing?: boolean }).isComposing) return;
+                  e.preventDefault();
+                  commitLanguage(langInput);
+                }}
+                onBeforeInput={e => {
+                  // Soft-keyboard Enter on most Android IMEs (Gboard, SwiftKey,
+                  // Samsung) and iOS predictive-text commit + Return dispatch
+                  // beforeinput with inputType 'insertLineBreak' even when
+                  // keydown is missing or ambiguous. This is the reliable
+                  // mobile signal for "user pressed Enter in a single-line
+                  // input". commitLanguage is idempotent (dedupe happens
+                  // inside setLanguages' functional updater) so if both this
+                  // and keydown fire in the same sequence, the second call
+                  // is a no-op.
+                  const inputType = (e.nativeEvent as InputEvent).inputType;
+                  if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
                     e.preventDefault();
                     commitLanguage(langInput);
-                  }}
-                  onBeforeInput={e => {
-                    // Soft-keyboard Enter on most Android IMEs (Gboard, SwiftKey,
-                    // Samsung) and iOS predictive-text commit + Return dispatch
-                    // beforeinput with inputType 'insertLineBreak' even when
-                    // keydown is missing or ambiguous. This is the reliable
-                    // mobile signal for "user pressed Enter in a single-line
-                    // input". commitLanguage is idempotent (dedupe happens
-                    // inside setLanguages' functional updater) so if both this
-                    // and keydown fire in the same sequence, the second call
-                    // is a no-op.
-                    const inputType = (e.nativeEvent as InputEvent).inputType;
-                    if (inputType === 'insertLineBreak' || inputType === 'insertParagraph') {
-                      e.preventDefault();
-                      commitLanguage(langInput);
-                    }
-                  }}
-                  enterKeyHint="done"
-                  placeholder="Add language"
-                  className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={() => commitLanguage(langInput)}
-                  disabled={!langInput.trim()}
-                  className="shrink-0 px-4 py-2.5 rounded-input font-medium text-sm transition-colors bg-brand text-white hover:bg-brand-dark disabled:bg-surface-alt disabled:text-ink-dim disabled:border disabled:border-border-dim disabled:cursor-not-allowed"
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-
-            {/* Response time */}
-            <div className="border-t border-border-dim p-4 sm:p-6">
-              <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block flex items-center gap-1">
-                <Clock className="w-3 h-3" /> Typical response time
-              </label>
-              <select
-                value={responseTime}
-                onChange={e => setResponseTime(e.target.value)}
-                className="w-full px-3.5 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
+                  }
+                }}
+                enterKeyHint="done"
+                placeholder={t.providerProfileSettings.languagesPlaceholder}
+              />
+              <Button
+                variant="secondary"
+                className="py-3"
+                onClick={() => commitLanguage(langInput)}
+                disabled={!langInput.trim()}
               >
-                <option>Usually responds in 30 minutes</option>
-                <option>Usually responds in 1 hour</option>
-                <option>Usually responds in 2 hours</option>
-                <option>Usually responds same day</option>
-                <option>Usually responds within 24 hours</option>
-              </select>
+                {t.providerProfileSettings.languagesAdd}
+              </Button>
             </div>
-
+            <p className="text-xs text-ink-dim leading-relaxed">{t.providerProfileSettings.languagesHint}</p>
           </div>
-        </div>
 
-        {/* Work details — categories */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Work details</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
-            <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3">Service categories</p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {categories.map(cat => {
-                const sel = selectedCategories.includes(cat.id);
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => setSelectedCategories(prev => sel ? prev.filter(x => x !== cat.id) : [...prev, cat.id])}
-                    className={`p-2.5 rounded-input border-2 text-left text-xs font-bold transition-all ${sel ? 'border-brand bg-brand text-white' : 'border-border bg-card hover:border-border'}`}
-                  >
-                    {cat.name}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="p-4 sm:p-5">
+            <Select
+              label={t.providerProfileSettings.responseLabel}
+              value={responseTime}
+              onChange={e => setResponseTime(e.target.value)}
+            >
+              {/* Keep an unknown persisted value selectable so saving never
+                  silently rewrites it to a different bucket. */}
+              {responseTime && !RESPONSE_VALUES.includes(responseTime as typeof RESPONSE_VALUES[number]) && (
+                <option value={responseTime}>{responseTime}</option>
+              )}
+              {RESPONSE_VALUES.map(v => (
+                <option key={v} value={v}>{responseLabels[v]}</option>
+              ))}
+            </Select>
           </div>
-        </div>
+
+        </Section>
+
+        {/* ── Work details ── */}
+        <Section title={t.providerProfileSettings.sectionWork}>
+          <div className="p-4 sm:p-5">
+            <p className="text-sm font-bold text-ink">{t.providerProfileSettings.categoriesTitle}</p>
+            <p className="text-xs text-ink-dim mt-0.5 leading-relaxed">{t.providerProfileSettings.categoriesHint}</p>
+
+            {categories.length === 0 ? (
+              <EmptyState
+                icon={Tags}
+                size="xs"
+                title={t.providerProfileSettings.categoriesEmptyTitle}
+                description={t.providerProfileSettings.categoriesEmptyDesc}
+                className="mt-2"
+              />
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-3">
+                {categories.map(cat => {
+                  const sel = selectedCategories.includes(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      aria-pressed={sel}
+                      onClick={() => setSelectedCategories(prev => sel ? prev.filter(x => x !== cat.id) : [...prev, cat.id])}
+                      className={cn(
+                        'flex items-center gap-1.5 p-2.5 rounded-input border text-left text-xs font-bold transition-colors',
+                        sel
+                          ? 'border-brand bg-brand-muted text-brand'
+                          : 'border-border bg-card text-ink-sub hover:bg-surface-alt',
+                      )}
+                    >
+                      {sel && <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />}
+                      <span className="min-w-0 truncate">{cat.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </Section>
 
       </div>
-
-      {/* Mobile save */}
-      <div className="sm:hidden mt-6">
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-card font-semibold text-sm transition-all ${
-            saved ? 'bg-trust text-white'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark'
-            : 'bg-surface-alt text-ink-dim border border-border-dim'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
-
     </div>
   );
 }

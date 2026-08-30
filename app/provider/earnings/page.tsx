@@ -6,14 +6,15 @@ import { useRouter } from 'next/navigation';
 import {
   DollarSign, Clock, CheckCircle2, Download,
   TrendingUp, ChevronRight, Landmark,
-  Briefcase,
+  Briefcase, Receipt,
 } from 'lucide-react';
 import Link from 'next/link';
 import { PLATFORM_FEE_RATE } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
 import {
-  Card, EmptyState, PageHeader, Skeleton, SkeletonStat, StatCard, buttonVariants, useToast,
+  Card, EmptyState, PageHeader, SectionHeader, Skeleton, SkeletonStat, StatCard,
+  StatusBadge, buttonVariants, statusVariant, useToast,
 } from '@/components/ui';
 
 // The real platform fee charged by the payment code (Stripe application_fee).
@@ -91,6 +92,34 @@ export default function EarningsPage() {
   });
   const months = Object.entries(byMonth).slice(-6);
   const maxMonth = Math.max(...months.map(([, v]) => v), 1);
+
+  const invoiceNumber = (b: any) => `AL-${b.id.slice(0, 8).toUpperCase()}`;
+  const invoiceDate = (b: any) =>
+    new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  // Payment state shown on an invoice: a completed job whose payment row hasn't
+  // settled yet is still "processing", everything else falls back to pending.
+  const invoicePaymentStatus = (b: any): keyof typeof t.statuses.payment =>
+    b.payment?.status === 'PAID' ? 'PAID'
+    : b.payment?.status === 'REFUNDED' ? 'REFUNDED'
+    : (b.payment?.status === 'PROCESSING' || b.status === 'COMPLETED') ? 'PROCESSING'
+    : 'PENDING';
+
+  const downloadInvoice = (b: any) => {
+    const rows = [
+      ['Invoice', invoiceNumber(b)],
+      ['Date', invoiceDate(b)],
+      ['Service', b.quote?.request?.category?.name ?? 'Service'],
+      ['Customer', b.customer?.user?.name ?? ''],
+      ['Total', `€${Number(b.totalAmount).toFixed(2)}`],
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${invoiceNumber(b)}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const exportTaxCSV = () => {
     const rows = [
@@ -363,6 +392,67 @@ export default function EarningsPage() {
               </div>
             </div>
           )}
+
+          {/* ── Invoices — one document row per booking ── */}
+          <Card padding="none" className="overflow-hidden">
+            <div className="px-4 pt-4 sm:px-5 sm:pt-5">
+              <SectionHeader title={t.earningsPage.invoicesTitle} className="mb-0" />
+            </div>
+
+            {bookings.length === 0 ? (
+              <div className="px-4 sm:px-5">
+                <EmptyState
+                  icon={Receipt}
+                  size="sm"
+                  title={t.earningsPage.invoicesEmptyTitle}
+                  description={t.earningsPage.invoicesEmptyDesc}
+                />
+              </div>
+            ) : (
+              <div className="mt-4 divide-y divide-border-dim border-t border-border-dim">
+                {bookings.map(b => {
+                  const payStatus = invoicePaymentStatus(b);
+                  return (
+                    <div key={b.id} className="p-4 sm:p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm text-ink truncate">
+                            {b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}
+                          </p>
+                          <p className="text-2xs text-ink-dim mt-0.5">
+                            {invoiceDate(b)} · <span className="font-mono">{invoiceNumber(b)}</span>
+                            {b.customer?.user?.name && <span> · {b.customer.user.name}</span>}
+                          </p>
+                        </div>
+                        <div className="shrink-0 flex flex-col items-end gap-1.5">
+                          <p className="text-base font-bold text-ink leading-none">€{Number(b.totalAmount).toFixed(2)}</p>
+                          <StatusBadge
+                            variant={statusVariant('payment', payStatus)}
+                            label={t.statuses.payment[payStatus]}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 mt-3">
+                        <Link
+                          href={`/provider/jobs/${b.id}`}
+                          className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+                        >
+                          {t.quoteInbox.viewBooking}
+                        </Link>
+                        <button
+                          onClick={() => downloadInvoice(b)}
+                          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                        >
+                          <Download className="w-3.5 h-3.5" /> {t.earningsPage.invoiceDownload}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
         </div>
       )}
     </div>

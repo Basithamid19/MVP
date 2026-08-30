@@ -4,34 +4,49 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  Loader2, ArrowLeft, Save, CheckCircle2, X,
-  Calendar, Clock, CalendarOff,
-} from 'lucide-react';
+import { ArrowLeft, Check, Loader2, X } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import { Section } from '@/components/settings';
+import { Button, Input, PageHeader, Select, Switch, useToast } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// Index === ProviderAvailability.dayOfWeek (0 = Sunday), which is what the
+// API stores. Display order starts on Monday, the local convention.
+const DAY_COUNT = 7;
+const DISPLAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const ALL_TIMES = [
   '06:00','06:30','07:00','07:30','08:00','08:30','09:00','09:30','10:00','10:30',
   '11:00','11:30','12:00','12:30','13:00','13:30','14:00','14:30','15:00','15:30',
   '16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00',
 ];
+const BUFFER_OPTIONS = [0, 15, 30, 45, 60];
 
 export default function ProviderAvailabilitySettingsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const initialRef = useRef<string>('');
   const [dirty, setDirty] = useState(false);
 
   const [slots, setSlots] = useState<{ dayOfWeek: number; startTime: string; endTime: string; enabled: boolean }[]>(
-    DAYS.map((_, i) => ({ dayOfWeek: i, startTime: '09:00', endTime: '17:00', enabled: i >= 1 && i <= 5 }))
+    Array.from({ length: DAY_COUNT }, (_, i) => ({ dayOfWeek: i, startTime: '09:00', endTime: '17:00', enabled: i >= 1 && i <= 5 }))
   );
   const [blackoutDates, setBlackoutDates] = useState<string[]>([]);
   const [blackoutInput, setBlackoutInput] = useState('');
   const [bufferMins, setBufferMins] = useState(30);
+
+  const dayNames = [
+    t.providerAvailability.daySunday,
+    t.providerAvailability.dayMonday,
+    t.providerAvailability.dayTuesday,
+    t.providerAvailability.dayWednesday,
+    t.providerAvailability.dayThursday,
+    t.providerAvailability.dayFriday,
+    t.providerAvailability.daySaturday,
+  ];
 
   const getSnapshot = () => JSON.stringify({ slots, blackoutDates, bufferMins });
 
@@ -40,7 +55,7 @@ export default function ProviderAvailabilitySettingsPage() {
     if (status === 'authenticated') {
       fetch('/api/provider/profile').then(r => r.json()).then(profile => {
         const p = profile ?? {};
-        const loadedSlots = DAYS.map((_, i) => {
+        const loadedSlots = Array.from({ length: DAY_COUNT }, (_, i) => {
           const existing = (p.availability ?? []).find((s: any) => s.dayOfWeek === i);
           return existing
             ? { dayOfWeek: i, startTime: existing.startTime, endTime: existing.endTime, enabled: true }
@@ -65,9 +80,32 @@ export default function ProviderAvailabilitySettingsPage() {
     }
   }, [slots, blackoutDates, bufferMins, loading]);
 
+  const toggleDay = (i: number) =>
+    setSlots(prev => prev.map((s, j) => (j === i ? { ...s, enabled: !s.enabled } : s)));
+
+  // Moving the start past the end would produce an impossible window, so the
+  // end is pulled up to the next slot.
+  const setStart = (i: number, value: string) =>
+    setSlots(prev => prev.map((s, j) => {
+      if (j !== i) return s;
+      const endTime = s.endTime > value
+        ? s.endTime
+        : ALL_TIMES[Math.min(ALL_TIMES.indexOf(value) + 1, ALL_TIMES.length - 1)];
+      return { ...s, startTime: value, endTime };
+    }));
+
+  const setEnd = (i: number, value: string) =>
+    setSlots(prev => prev.map((s, j) => (j === i ? { ...s, endTime: value } : s)));
+
+  const addBlackoutDate = () => {
+    if (!blackoutInput) { toast.error(t.providerAvailability.blackoutNeedsDate); return; }
+    if (blackoutDates.includes(blackoutInput)) { toast.error(t.providerAvailability.blackoutDuplicate); return; }
+    setBlackoutDates(p => [...p, blackoutInput].sort());
+    setBlackoutInput('');
+  };
+
   const handleSave = async () => {
     setSaving(true);
-    setSaveError(null);
     try {
       const res = await fetch('/api/provider/profile', {
         method: 'PATCH',
@@ -82,7 +120,7 @@ export default function ProviderAvailabilitySettingsPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setSaveError(err.error || 'Save failed. Please try again.');
+        toast.error(err.error || t.providerAvailability.saveFailed);
         return;
       }
       // Ground truth is the server's response — re-hydrate form + snapshot
@@ -91,7 +129,7 @@ export default function ProviderAvailabilitySettingsPage() {
       // form clean.
       const persisted = await res.json().catch(() => null);
       if (persisted && typeof persisted === 'object') {
-        const persistedSlots = DAYS.map((_, i) => {
+        const persistedSlots = Array.from({ length: DAY_COUNT }, (_, i) => {
           const existing = Array.isArray(persisted.availability)
             ? persisted.availability.find((s: any) => s.dayOfWeek === i)
             : null;
@@ -113,10 +151,9 @@ export default function ProviderAvailabilitySettingsPage() {
         initialRef.current = getSnapshot();
       }
       setDirty(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      toast.success(t.providerAvailability.savedToast);
     } catch {
-      setSaveError('Network error. Please check your connection and try again.');
+      toast.error(t.common.networkError);
     } finally {
       setSaving(false);
     }
@@ -133,188 +170,171 @@ export default function ProviderAvailabilitySettingsPage() {
   return (
     <div className="max-w-2xl mx-auto">
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/provider/settings"
-            className="w-9 h-9 flex items-center justify-center rounded-input hover:bg-surface-alt transition-colors text-ink-sub"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h1 className="text-lg font-bold text-ink">Availability</h1>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full font-medium text-sm transition-all ${
-            saved ? 'bg-trust text-white shadow-card'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-card'
-            : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
+      {/* ── Back ── */}
+      <Link
+        href="/provider/settings"
+        className="inline-flex items-center gap-2 -ml-1.5 mb-3 px-1.5 py-1 rounded-input text-xs font-medium text-ink-dim hover:text-ink hover:bg-surface-alt transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t.providerSettingsHub.backToSettings}
+      </Link>
 
-      {/* Save error */}
-      {saveError && (
-        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-input text-sm text-caution font-medium flex items-center justify-between gap-2">
-          <span>{saveError}</span>
-          <button onClick={() => setSaveError(null)} className="shrink-0 text-caution hover:opacity-70">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <PageHeader
+        title={t.providerAvailability.title}
+        description={t.providerAvailability.description}
+        size="sm"
+        className="mb-5"
+        action={
+          <Button size="sm" loading={saving} disabled={!dirty} onClick={handleSave}>
+            {t.providerAvailability.save}
+          </Button>
+        }
+      />
 
-      <div className="space-y-4">
+      <div className="space-y-6">
 
-        {/* Working hours */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Working hours</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
-            <p className="font-semibold text-sm mb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-ink-dim" /> Weekly schedule
-            </p>
-            <div className="space-y-1.5">
-              {slots.map((slot, i) => (
-                <div
-                  key={i}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-input transition-all ${slot.enabled ? 'bg-surface-alt' : 'bg-transparent'}`}
-                >
-                  <button
-                    onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
-                    className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
+        {/* ── Working hours ── */}
+        <Section title={t.providerAvailability.sectionHours}>
+          <div className="p-4 sm:p-5">
+            <p className="text-xs text-ink-dim leading-relaxed mb-3">{t.providerAvailability.hoursHint}</p>
+            <div className="space-y-1">
+              {DISPLAY_ORDER.map(i => {
+                const slot = slots[i];
+                const dayName = dayNames[i];
+                // An end time is only valid after the start; a persisted value
+                // outside the option list is kept so the select never silently
+                // shows a time the pro never chose.
+                const startOptions = ALL_TIMES.slice(0, -1);
+                if (!startOptions.includes(slot.startTime)) startOptions.unshift(slot.startTime);
+                const endOptions = ALL_TIMES.filter(time => time > slot.startTime);
+                if (!endOptions.includes(slot.endTime)) endOptions.unshift(slot.endTime);
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'rounded-input px-3 py-2.5 transition-colors',
+                      slot.enabled ? 'bg-surface-alt' : 'opacity-50',
+                    )}
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 bg-card rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
-                  </button>
-                  <span className={`w-9 text-xs font-bold shrink-0 ${slot.enabled ? 'text-ink' : 'text-ink-dim'}`}>{DAYS[i]}</span>
-                  {slot.enabled ? (
-                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                      <select
-                        value={slot.startTime}
-                        onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
-                        className="flex-1 min-w-0 px-2 py-1.5 bg-card border border-border rounded-lg text-xs outline-none"
-                      >
-                        {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
-                      <span className="text-ink-dim text-xs">–</span>
-                      <select
-                        value={slot.endTime}
-                        onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
-                        className="flex-1 min-w-0 px-2 py-1.5 bg-card border border-border rounded-lg text-xs outline-none"
-                      >
-                        {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                    <div className="flex items-center gap-3">
+                      <Switch
+                        size="sm"
+                        checked={slot.enabled}
+                        onChange={() => toggleDay(i)}
+                        label={dayName}
+                      />
+                      <span className="text-sm font-semibold text-ink">{dayName}</span>
                     </div>
-                  ) : (
-                    <span className="text-xs text-ink-dim">Off</span>
-                  )}
-                </div>
-              ))}
+                    {/* Height is reserved either way so toggling a day never
+                        shifts the rows below it. */}
+                    <div className="min-h-[38px] mt-2">
+                      {slot.enabled && (
+                        <div className="flex items-center gap-2">
+                          <Select
+                            wrapperClassName="flex-1 min-w-0"
+                            aria-label={`${t.providerAvailability.startLabel} — ${dayName}`}
+                            value={slot.startTime}
+                            onChange={e => setStart(i, e.target.value)}
+                            className="bg-card py-2 pl-3 pr-8 text-xs"
+                          >
+                            {startOptions.map(time => <option key={time} value={time}>{time}</option>)}
+                          </Select>
+                          <span className="text-xs text-ink-dim shrink-0">–</span>
+                          <Select
+                            wrapperClassName="flex-1 min-w-0"
+                            aria-label={`${t.providerAvailability.endLabel} — ${dayName}`}
+                            value={slot.endTime}
+                            onChange={e => setEnd(i, e.target.value)}
+                            className="bg-card py-2 pl-3 pr-8 text-xs"
+                          >
+                            {endOptions.map(time => <option key={time} value={time}>{time}</option>)}
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        </div>
+        </Section>
 
-        {/* Break between jobs */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Break between jobs</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
-            <p className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <Clock className="w-4 h-4 text-ink-dim" /> Buffer time
-            </p>
+        {/* ── Break between jobs ── */}
+        <Section title={t.providerAvailability.sectionBuffer}>
+          <div className="p-4 sm:p-5">
+            <p className="text-xs text-ink-dim leading-relaxed mb-3">{t.providerAvailability.bufferHint}</p>
             <div className="flex gap-1.5 flex-wrap">
-              {[0, 15, 30, 45, 60].map(mins => (
-                <button
-                  key={mins}
-                  onClick={() => setBufferMins(mins)}
-                  className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
-                    bufferMins === mins
-                      ? 'bg-brand text-white shadow-card'
-                      : 'bg-surface-alt text-ink-sub border border-border-dim hover:border-border'
-                  }`}
-                >
-                  {mins === 0 ? 'None' : `${mins}m`}
-                </button>
-              ))}
+              {BUFFER_OPTIONS.map(mins => {
+                const sel = bufferMins === mins;
+                return (
+                  <button
+                    key={mins}
+                    type="button"
+                    aria-pressed={sel}
+                    onClick={() => setBufferMins(mins)}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 px-3.5 py-2 rounded-chip border text-sm font-bold transition-colors',
+                      sel
+                        ? 'border-brand bg-brand-muted text-brand'
+                        : 'border-border bg-card text-ink-sub hover:bg-surface-alt',
+                    )}
+                  >
+                    {sel && <Check className="w-3.5 h-3.5 shrink-0" strokeWidth={2.5} />}
+                    {mins === 0 ? t.providerAvailability.bufferNone : `${mins}m`}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
+        </Section>
 
-        {/* Days off */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Days off</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
-            <p className="font-semibold text-sm mb-3 flex items-center gap-2">
-              <CalendarOff className="w-4 h-4 text-ink-dim" /> Blackout dates
-            </p>
-            <div className="flex gap-2 mb-3">
-              <input
+        {/* ── Days off ── */}
+        <Section title={t.providerAvailability.sectionDaysOff}>
+          <div className="p-4 sm:p-5">
+            <p className="text-xs text-ink-dim leading-relaxed mb-3">{t.providerAvailability.blackoutHint}</p>
+            <div className="flex items-end gap-2">
+              <Input
+                wrapperClassName="flex-1 min-w-0"
+                label={t.providerAvailability.blackoutDateLabel}
                 type="date"
                 value={blackoutInput}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => setBlackoutInput(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
               />
-              <button
-                onClick={() => {
-                  if (blackoutInput && !blackoutDates.includes(blackoutInput)) {
-                    setBlackoutDates(p => [...p, blackoutInput].sort());
-                    setBlackoutInput('');
-                  }
-                }}
-                className="px-4 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
-              >
-                Add
-              </button>
+              <Button variant="secondary" className="py-3" onClick={addBlackoutDate}>
+                {t.providerAvailability.blackoutAdd}
+              </Button>
             </div>
+
             {blackoutDates.length === 0 ? (
-              <p className="text-xs text-ink-dim">No blackout dates. Add dates when you're unavailable.</p>
+              <p className="text-xs text-ink-dim mt-3">{t.providerAvailability.blackoutEmpty}</p>
             ) : (
-              <div className="flex flex-wrap gap-1.5">
-                {blackoutDates.map(d => (
-                  <span
-                    key={d}
-                    className="flex items-center gap-1.5 px-2.5 py-1 bg-caution-surface border border-caution-edge text-caution rounded-full text-xs font-medium"
-                  >
-                    {new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                    <button onClick={() => setBlackoutDates(p => p.filter(x => x !== d))}>
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+              <div className="flex flex-wrap gap-1.5 mt-3">
+                {blackoutDates.map(d => {
+                  const label = new Date(d + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+                  return (
+                    <span
+                      key={d}
+                      className="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 bg-surface-alt border border-border-dim text-ink-sub rounded-chip text-xs font-medium"
+                    >
+                      {label}
+                      <button
+                        type="button"
+                        onClick={() => setBlackoutDates(p => p.filter(x => x !== d))}
+                        aria-label={`${t.providerAvailability.blackoutRemove}: ${label}`}
+                        className="p-0.5 rounded-full text-ink-dim hover:text-danger transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  );
+                })}
               </div>
             )}
           </div>
-        </div>
+        </Section>
 
       </div>
-
-      {/* Mobile save */}
-      <div className="sm:hidden mt-6">
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-card font-semibold text-sm transition-all ${
-            saved ? 'bg-trust text-white'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark'
-            : 'bg-surface-alt text-ink-dim border border-border-dim'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
-
     </div>
   );
 }

@@ -934,6 +934,10 @@ export interface Dictionary {
     payoutSetupDesc: string;
     setUpPayouts: string;
     setupFailed: string;
+    invoicesTitle: string;
+    invoicesEmptyTitle: string;
+    invoicesEmptyDesc: string;
+    invoiceDownload: string;
   };
 
   // Provider settings hub (app/provider/settings — hub only)
@@ -957,15 +961,110 @@ export interface Dictionary {
     invoices: string;
     invoiceSingular: string;
     invoicesPlural: string;
-    noInvoices: string;
-    invoicePending: string;
-    totalEarnedRow: string;
     rowReportIssueSub: string;
     helpCentre: string;
     helpCentreSub: string;
     emailUs: string;
     rowVerificationSub: string;
     rowEarningsSub: string;
+    backToSettings: string;
+  };
+
+  // Provider profile settings (app/provider/settings/profile)
+  providerProfileSettings: {
+    title: string;
+    description: string;
+    save: string;
+    savedToast: string;
+    saveFailed: string;
+    loadFailed: string;
+    sectionPublic: string;
+    bioLabel: string;
+    bioPlaceholder: string;
+    bioMinError: string;
+    areaLabel: string;
+    areaPlaceholder: string;
+    areaHint: string;
+    languagesLabel: string;
+    languagesPlaceholder: string;
+    languagesAdd: string;
+    languagesHint: string;
+    languageRemove: string;
+    responseLabel: string;
+    response30m: string;
+    response1h: string;
+    response2h: string;
+    responseSameDay: string;
+    response24h: string;
+    sectionWork: string;
+    categoriesTitle: string;
+    categoriesHint: string;
+    categoriesEmptyTitle: string;
+    categoriesEmptyDesc: string;
+  };
+
+  // Provider services settings (app/provider/settings/services)
+  providerServices: {
+    title: string;
+    description: string;
+    save: string;
+    savedToast: string;
+    saveFailed: string;
+    sectionServices: string;
+    offeringsTitle: string;
+    countOne: string;
+    countMany: string;
+    add: string;
+    emptyTitle: string;
+    emptyDesc: string;
+    emptyAction: string;
+    nameLabel: string;
+    namePlaceholder: string;
+    descriptionLabel: string;
+    descriptionPlaceholder: string;
+    priceLabel: string;
+    priceTypeLabel: string;
+    priceHourly: string;
+    priceFixed: string;
+    priceFrom: string;
+    remove: string;
+    errNameShort: string;
+    errDescShort: string;
+    errPrice: string;
+    fixErrors: string;
+    instantBookTitle: string;
+    instantBookDesc: string;
+  };
+
+  // Provider availability settings (app/provider/settings/availability)
+  providerAvailability: {
+    title: string;
+    description: string;
+    save: string;
+    savedToast: string;
+    saveFailed: string;
+    sectionHours: string;
+    hoursHint: string;
+    dayMonday: string;
+    dayTuesday: string;
+    dayWednesday: string;
+    dayThursday: string;
+    dayFriday: string;
+    daySaturday: string;
+    daySunday: string;
+    startLabel: string;
+    endLabel: string;
+    sectionBuffer: string;
+    bufferHint: string;
+    bufferNone: string;
+    sectionDaysOff: string;
+    blackoutHint: string;
+    blackoutDateLabel: string;
+    blackoutAdd: string;
+    blackoutEmpty: string;
+    blackoutRemove: string;
+    blackoutNeedsDate: string;
+    blackoutDuplicate: string;
   };
 
   // Provider onboarding wizard (app/provider/onboarding)

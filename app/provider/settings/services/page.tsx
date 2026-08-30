@@ -4,26 +4,58 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft, Briefcase, Loader2, Plus, Trash2, Zap } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
+import { Section } from '@/components/settings';
 import {
-  Loader2, ArrowLeft, Save, CheckCircle2, X, Plus,
-  Briefcase, Zap, ToggleLeft, ToggleRight,
-} from 'lucide-react';
+  Button, EmptyState, Input, PageHeader, Select, Switch, Textarea, useToast,
+} from '@/components/ui';
+
+type Offering = { name: string; price: string; priceType: string; description: string };
+/** Per-field validation messages for one offering row. */
+type OfferingError = { name?: string; description?: string; price?: string };
+
+const EMPTY_OFFERING: Offering = { name: '', price: '', priceType: 'HOURLY', description: '' };
 
 export default function ProviderServicesSettingsPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
+  const t = useTranslation();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const initialRef = useRef<string>('');
   const [dirty, setDirty] = useState(false);
 
-  const [offerings, setOfferings] = useState<{ name: string; price: string; priceType: string; description: string }[]>([]);
-  const [offeringErrors, setOfferingErrors] = useState<Record<number, string>>({});
+  const [offerings, setOfferings] = useState<Offering[]>([]);
+  const [offeringErrors, setOfferingErrors] = useState<Record<number, OfferingError>>({});
   const [instantBook, setInstantBook] = useState(false);
 
   const getSnapshot = () => JSON.stringify({ offerings, instantBook });
+
+  const addOffering = () => setOfferings(p => [...p, { ...EMPTY_OFFERING }]);
+
+  /** Patch one field of row `i` and drop that field's error. */
+  const patchOffering = (i: number, patch: Partial<Offering>, clear?: keyof OfferingError) => {
+    setOfferings(prev => prev.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+    if (clear) {
+      setOfferingErrors(prev => {
+        const row = prev[i];
+        if (!row?.[clear]) return prev;
+        const next = { ...prev, [i]: { ...row, [clear]: undefined } };
+        if (!next[i].name && !next[i].description && !next[i].price) delete next[i];
+        return next;
+      });
+    }
+  };
+
+  // Removing a row shifts every later index, so keyed-by-index errors can no
+  // longer be trusted — clear them all. (The old page cleared only errors[i]
+  // on desktop and nothing at all on mobile.)
+  const removeOffering = (i: number) => {
+    setOfferings(p => p.filter((_, j) => j !== i));
+    setOfferingErrors({});
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -51,26 +83,25 @@ export default function ProviderServicesSettingsPage() {
   }, [offerings, instantBook, loading]);
 
   const handleSave = async () => {
-    const errors: Record<number, string> = {};
+    const errors: Record<number, OfferingError> = {};
     offerings.forEach((o, i) => {
       const name = o.name.trim();
       const desc = o.description.trim();
-      if (name.length > 0 && name.length < 3) {
-        errors[i] = 'Service name must be at least 3 characters.';
-      } else if (desc.length > 0 && desc.length < 20) {
-        errors[i] = 'Description must be at least 20 characters if provided.';
-      } else if (name.length > 0 && (isNaN(parseFloat(o.price)) || parseFloat(o.price) < 0)) {
-        errors[i] = 'Price must be a valid positive number.';
+      const row: OfferingError = {};
+      if (name.length > 0 && name.length < 3) row.name = t.providerServices.errNameShort;
+      if (desc.length > 0 && desc.length < 20) row.description = t.providerServices.errDescShort;
+      if (name.length > 0 && (isNaN(parseFloat(o.price)) || parseFloat(o.price) < 0)) {
+        row.price = t.providerServices.errPrice;
       }
+      if (row.name || row.description || row.price) errors[i] = row;
     });
     setOfferingErrors(errors);
     if (Object.keys(errors).length > 0) {
-      setSaveError('Fix service errors before saving.');
+      toast.error(t.providerServices.fixErrors);
       return;
     }
 
     setSaving(true);
-    setSaveError(null);
     try {
       const res = await fetch('/api/provider/profile', {
         method: 'PATCH',
@@ -82,7 +113,7 @@ export default function ProviderServicesSettingsPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setSaveError(err.error || 'Save failed. Please try again.');
+        toast.error(err.error || t.providerServices.saveFailed);
         return;
       }
       // Ground truth is the server's response, not our local form state. If
@@ -110,10 +141,9 @@ export default function ProviderServicesSettingsPage() {
         initialRef.current = getSnapshot();
       }
       setDirty(false);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      toast.success(t.providerServices.savedToast);
     } catch {
-      setSaveError('Network error. Please check your connection and try again.');
+      toast.error(t.common.networkError);
     } finally {
       setSaving(false);
     }
@@ -127,204 +157,155 @@ export default function ProviderServicesSettingsPage() {
     );
   }
 
+  const addButton = (
+    <Button variant="secondary" size="sm" onClick={addOffering}>
+      <Plus className="w-3.5 h-3.5" /> {t.providerServices.add}
+    </Button>
+  );
+
   return (
     <div className="max-w-2xl mx-auto">
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/provider/settings"
-            className="w-9 h-9 flex items-center justify-center rounded-input hover:bg-surface-alt transition-colors text-ink-sub"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <h1 className="text-lg font-bold text-ink">Services</h1>
-        </div>
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full font-medium text-sm transition-all ${
-            saved ? 'bg-trust text-white shadow-card'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-card'
-            : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
+      {/* ── Back ── */}
+      <Link
+        href="/provider/settings"
+        className="inline-flex items-center gap-2 -ml-1.5 mb-3 px-1.5 py-1 rounded-input text-xs font-medium text-ink-dim hover:text-ink hover:bg-surface-alt transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t.providerSettingsHub.backToSettings}
+      </Link>
 
-      {/* Save error */}
-      {saveError && (
-        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-input text-sm text-caution font-medium flex items-center justify-between gap-2">
-          <span>{saveError}</span>
-          <button onClick={() => setSaveError(null)} className="shrink-0 text-caution hover:opacity-70">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <PageHeader
+        title={t.providerServices.title}
+        description={t.providerServices.description}
+        size="sm"
+        className="mb-5"
+        action={
+          <Button size="sm" loading={saving} disabled={!dirty} onClick={handleSave}>
+            {t.providerServices.save}
+          </Button>
+        }
+      />
 
-      <div className="space-y-4">
+      <Section title={t.providerServices.sectionServices}>
 
-        {/* Your services */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Your services</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="font-semibold text-sm">Service offerings</p>
-                {offerings.length > 0 && (
-                  <p className="text-3xs text-ink-dim mt-0.5">{offerings.length} service{offerings.length !== 1 ? 's' : ''} listed</p>
-                )}
-              </div>
-              <button
-                onClick={() => setOfferings(p => [...p, { name: '', price: '', priceType: 'HOURLY', description: '' }])}
-                className="flex items-center gap-1.5 text-xs font-bold text-brand border border-brand/30 bg-brand-muted px-3 py-1.5 rounded-full hover:bg-brand hover:text-white transition-all"
-              >
-                <Plus className="w-3 h-3" /> Add
-              </button>
-            </div>
-
-            {offerings.length === 0 ? (
-              <div className="text-center py-6">
-                <div className="w-12 h-12 bg-surface-alt rounded-card flex items-center justify-center mx-auto mb-3">
-                  <Briefcase className="w-5 h-5 text-ink-dim" />
-                </div>
-                <p className="font-semibold text-sm text-ink mb-1">No services added yet</p>
-                <p className="text-xs text-ink-dim max-w-[240px] mx-auto leading-relaxed">
-                  Add your service offerings so customers know what you provide and your pricing.
+        {/* ── Offerings ── */}
+        <div className="p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 mb-4">
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-ink">{t.providerServices.offeringsTitle}</p>
+              {offerings.length > 0 && (
+                <p className="text-xs text-ink-dim mt-0.5">
+                  {offerings.length}{' '}
+                  {offerings.length === 1 ? t.providerServices.countOne : t.providerServices.countMany}
                 </p>
-                <button
-                  onClick={() => setOfferings(p => [...p, { name: '', price: '', priceType: 'HOURLY', description: '' }])}
-                  className="mt-3.5 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-brand px-4 py-2 rounded-full hover:bg-brand-dark transition-all"
-                >
-                  <Plus className="w-3 h-3" /> Add your first service
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {offerings.map((o, i) => (
-                  <div
-                    key={i}
-                    className={`p-3.5 bg-surface-alt rounded-input border ${offeringErrors[i] ? 'border-danger' : 'border-border-dim'} space-y-2.5`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <input
-                        type="text"
-                        value={o.name}
-                        onChange={e => {
-                          setOfferings(prev => prev.map((x, j) => j === i ? { ...x, name: e.target.value } : x));
-                          setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; });
-                        }}
-                        placeholder="Service name (e.g. TV Installation, Pipe Repair)"
-                        className={`flex-1 px-3 py-2 bg-card border ${offeringErrors[i]?.includes('name') ? 'border-danger' : 'border-border'} rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm font-medium`}
-                      />
-                      <button
-                        onClick={() => {
-                          setOfferings(p => p.filter((_, j) => j !== i));
-                          setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; });
-                        }}
-                        className="hidden sm:block text-ink-dim hover:text-danger transition-colors mt-1"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <textarea
-                      value={o.description}
-                      onChange={e => {
-                        setOfferings(prev => prev.map((x, j) => j === i ? { ...x, description: e.target.value } : x));
-                        setOfferingErrors(prev => { const n = { ...prev }; delete n[i]; return n; });
-                      }}
-                      placeholder="Describe what's included, typical duration, and any requirements (min. 20 characters)"
-                      rows={2}
-                      className={`w-full px-3 py-2 bg-card border ${offeringErrors[i]?.includes('escription') ? 'border-danger' : 'border-border'} rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm resize-none`}
-                    />
-                    {offeringErrors[i] && (
-                      <p className="text-xs text-danger font-medium">{offeringErrors[i]}</p>
-                    )}
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-dim font-bold text-sm">€</span>
-                        <input
-                          type="number"
-                          value={o.price}
-                          onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, price: e.target.value } : x))}
-                          placeholder="0"
-                          className="w-full pl-7 pr-3 py-2 bg-card border border-border rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm font-medium"
-                        />
-                      </div>
-                      <select
-                        value={o.priceType}
-                        onChange={e => setOfferings(prev => prev.map((x, j) => j === i ? { ...x, priceType: e.target.value } : x))}
-                        className="px-3 py-2 bg-card border border-border rounded-input focus:ring-2 focus:ring-brand outline-none text-sm font-medium"
-                      >
-                        <option value="HOURLY">/ hour</option>
-                        <option value="FIXED">fixed</option>
-                        <option value="FROM">from</option>
-                      </select>
-                    </div>
-                    <button
-                      onClick={() => setOfferings(p => p.filter((_, j) => j !== i))}
-                      className="sm:hidden flex items-center gap-2 text-danger text-xs font-medium"
-                    >
-                      <X className="w-3.5 h-3.5" /> Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Booking settings */}
-        <div>
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Booking settings</p>
-          <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
-            <div className="p-4 sm:p-6 flex items-center gap-3">
-              <div className="w-9 h-9 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4 text-brand" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm">Instant book</p>
-                <p className="text-2xs text-ink-dim mt-0.5 leading-relaxed">Shows an Instant Book badge on your public profile</p>
-              </div>
-              <button onClick={() => setInstantBook(!instantBook)} className="shrink-0">
-                {instantBook
-                  ? <ToggleRight className="w-10 h-10 text-brand" />
-                  : <ToggleLeft className="w-10 h-10 text-ink-dim" />
-                }
-              </button>
+              )}
             </div>
+            {offerings.length > 0 && addButton}
           </div>
+
+          {offerings.length === 0 ? (
+            <EmptyState
+              icon={Briefcase}
+              size="sm"
+              title={t.providerServices.emptyTitle}
+              description={t.providerServices.emptyDesc}
+              action={
+                <Button variant="secondary" size="sm" onClick={addOffering}>
+                  <Plus className="w-3.5 h-3.5" /> {t.providerServices.emptyAction}
+                </Button>
+              }
+            />
+          ) : (
+            <div className="space-y-3">
+              {offerings.map((o, i) => {
+                const err = offeringErrors[i];
+                return (
+                  <div key={i} className="p-3.5 bg-surface-alt rounded-input border border-border-dim space-y-3">
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-3xs font-bold uppercase tracking-widest text-ink-dim">
+                        #{i + 1}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={o.name ? `${t.providerServices.remove}: ${o.name}` : t.providerServices.remove}
+                        className="-mr-1.5 text-ink-dim hover:text-danger"
+                        onClick={() => removeOffering(i)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+
+                    <Input
+                      label={t.providerServices.nameLabel}
+                      value={o.name}
+                      onChange={e => patchOffering(i, { name: e.target.value }, 'name')}
+                      placeholder={t.providerServices.namePlaceholder}
+                      error={err?.name}
+                      className="bg-card"
+                    />
+
+                    <Textarea
+                      label={t.providerServices.descriptionLabel}
+                      value={o.description}
+                      onChange={e => patchOffering(i, { description: e.target.value }, 'description')}
+                      placeholder={t.providerServices.descriptionPlaceholder}
+                      rows={3}
+                      error={err?.description}
+                      className="bg-card"
+                    />
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        label={t.providerServices.priceLabel}
+                        type="number"
+                        inputMode="decimal"
+                        min={0}
+                        value={o.price}
+                        onChange={e => patchOffering(i, { price: e.target.value }, 'price')}
+                        placeholder="0"
+                        leading={<span className="text-sm font-bold">€</span>}
+                        error={err?.price}
+                        className="bg-card"
+                      />
+                      <Select
+                        label={t.providerServices.priceTypeLabel}
+                        value={o.priceType}
+                        onChange={e => patchOffering(i, { priceType: e.target.value })}
+                        className="bg-card"
+                      >
+                        <option value="HOURLY">{t.providerServices.priceHourly}</option>
+                        <option value="FIXED">{t.providerServices.priceFixed}</option>
+                        <option value="FROM">{t.providerServices.priceFrom}</option>
+                      </Select>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-      </div>
+        {/* ── Instant book — one switch, one row (no section of its own) ── */}
+        <div className="flex items-center gap-3 p-4 sm:p-5">
+          <div className="w-8 h-8 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+            <Zap className="w-4 h-4 text-brand" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-ink">{t.providerServices.instantBookTitle}</p>
+            <p className="text-2xs text-ink-dim mt-0.5 leading-snug">{t.providerServices.instantBookDesc}</p>
+          </div>
+          <Switch
+            checked={instantBook}
+            onChange={setInstantBook}
+            label={t.providerServices.instantBookTitle}
+          />
+        </div>
 
-      {/* Mobile save */}
-      <div className="sm:hidden mt-6">
-        <button
-          onClick={handleSave}
-          disabled={saving || !dirty}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-card font-semibold text-sm transition-all ${
-            saved ? 'bg-trust text-white'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark'
-            : 'bg-surface-alt text-ink-dim border border-border-dim'
-          } disabled:opacity-50`}
-        >
-          {saving
-            ? <Loader2 className="w-4 h-4 animate-spin" />
-            : saved
-              ? <><CheckCircle2 className="w-4 h-4" /> Saved</>
-              : <><Save className="w-4 h-4" /><span className="hidden sm:inline"> Save Changes</span><span className="sm:hidden"> Save</span></>
-          }
-        </button>
-      </div>
-
+      </Section>
     </div>
   );
 }
