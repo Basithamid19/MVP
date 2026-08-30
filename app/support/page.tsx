@@ -1,53 +1,33 @@
 'use client';
 
-import Link from 'next/link';
-import { CalendarCheck, CreditCard, UserCircle, Wrench, MessageCircle, ShieldCheck, ChevronRight } from 'lucide-react';
-import { AladdinIcon } from '@/components/icons';
+import {
+  CalendarCheck, CreditCard, UserCircle, Wrench, MessageCircle, ShieldCheck,
+  ChevronRight, ChevronDown,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { buttonVariants } from '@/components/ui';
+import SiteNav from '@/components/SiteNav';
+import SiteFooter from '@/components/SiteFooter';
 
-const TOPICS = [
+/* Topic cards and FAQ sections were two parallel lists that had to be kept in
+ * sync by hand (and the cards pointed at ids that had no scroll offset under a
+ * sticky nav). One list now drives both: each topic IS the section. */
+
+interface Topic {
+  id:    string;
+  icon:  LucideIcon;
+  title: string;
+  desc:  string;
+  faqs:  { q: string; a: string }[];
+}
+
+const TOPICS: Topic[] = [
   {
+    id: 'bookings',
     icon: CalendarCheck,
     title: 'Bookings & scheduling',
     desc: 'How to book, reschedule, or cancel a service.',
-    href: '#bookings',
-  },
-  {
-    icon: CreditCard,
-    title: 'Payments & refunds',
-    desc: 'Billing questions, refund policy, and the 30-day guarantee.',
-    href: '#payments',
-  },
-  {
-    icon: UserCircle,
-    title: 'My account',
-    desc: 'Managing your profile, email, and notification settings.',
-    href: '#account',
-  },
-  {
-    icon: Wrench,
-    title: 'For professionals',
-    desc: 'Verification, leads, payouts, and your Pro dashboard.',
-    href: '#pros',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Trust & safety',
-    desc: 'How we verify pros and what to do if something goes wrong.',
-    href: '#safety',
-  },
-  {
-    icon: MessageCircle,
-    title: 'Contact us',
-    desc: 'Reach our support team directly by email.',
-    href: '#contact',
-  },
-];
-
-const FAQS = [
-  {
-    id: 'bookings',
-    section: 'Bookings & scheduling',
-    items: [
+    faqs: [
       {
         q: 'How do I book a professional?',
         a: 'Browse verified professionals, view their profiles and reviews, then click "Book" to send a booking request. The pro will confirm within a few hours. You can also post a request and let pros come to you.',
@@ -64,8 +44,10 @@ const FAQS = [
   },
   {
     id: 'payments',
-    section: 'Payments & refunds',
-    items: [
+    icon: CreditCard,
+    title: 'Payments & refunds',
+    desc: 'Billing questions, refund policy, and the 30-day guarantee.',
+    faqs: [
       {
         q: 'When am I charged?',
         a: 'Payment is captured after the job is marked complete by the professional. You\'ll receive a receipt by email. We accept all major credit and debit cards.',
@@ -82,8 +64,10 @@ const FAQS = [
   },
   {
     id: 'account',
-    section: 'My account',
-    items: [
+    icon: UserCircle,
+    title: 'My account',
+    desc: 'Managing your profile, email, and notification settings.',
+    faqs: [
       {
         q: 'How do I change my email or password?',
         a: 'Go to Account Settings from your dashboard. You can update your email, password, and notification preferences there.',
@@ -96,8 +80,10 @@ const FAQS = [
   },
   {
     id: 'pros',
-    section: 'For professionals',
-    items: [
+    icon: Wrench,
+    title: 'For professionals',
+    desc: 'Verification, leads, payouts, and your Pro dashboard.',
+    faqs: [
       {
         q: 'How do I join as a professional?',
         a: 'Visit our For Professionals page and create an account. You\'ll need to complete identity verification and set up your profile before you can receive leads.',
@@ -114,8 +100,10 @@ const FAQS = [
   },
   {
     id: 'safety',
-    section: 'Trust & safety',
-    items: [
+    icon: ShieldCheck,
+    title: 'Trust & safety',
+    desc: 'How we verify pros and what to do if something goes wrong.',
+    faqs: [
       {
         q: 'How are professionals verified?',
         a: 'Every pro on Aladdin completes an ID verification and background check before being listed. Verified pros display a badge on their profile. We also review and action all reports from customers.',
@@ -128,24 +116,24 @@ const FAQS = [
   },
 ];
 
+/* The contact card has no FAQ body — it targets the contact section below. */
+const CONTACT_CARD = {
+  id: 'contact',
+  icon: MessageCircle,
+  title: 'Contact us',
+  desc: 'Reach our support team directly by email.',
+};
+
+const CARDS = [
+  ...TOPICS.map(({ id, icon, title, desc }) => ({ id, icon, title, desc })),
+  CONTACT_CARD,
+];
+
 export default function SupportPage() {
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className="min-h-screen bg-card">
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-30 bg-canvas/80 backdrop-blur-xl border-b border-border-dim/50">
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
-          </Link>
-          <Link href="/" className="text-sm font-semibold text-ink-sub hover:text-ink transition-colors">
-            ← Back to home
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* Hero */}
       <section className="pt-16 sm:pt-24 pb-16 sm:pb-20 bg-canvas">
@@ -160,50 +148,68 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Topic cards */}
+      {/* Topic index — one row per topic on mobile, a card grid from sm up */}
       <section className="py-10 sm:py-14 bg-card border-y border-border-dim">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {TOPICS.map(({ icon: Icon, title, desc, href }) => (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {CARDS.map(({ id, icon: Icon, title, desc }) => (
               <a
-                key={title}
-                href={href}
-                className="bg-canvas rounded-card border border-border-dim p-5 hover:border-border hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-150 group"
+                key={id}
+                href={`#${id}`}
+                className="group flex items-center gap-4 sm:block bg-canvas rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-elevated transition-all duration-150"
               >
-                <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center shrink-0 sm:mb-3">
                   <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
                 </div>
-                <p className="font-bold text-sm text-ink mb-1 group-hover:text-brand transition-colors">{title}</p>
-                <p className="text-xs text-ink-sub leading-relaxed">{desc}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-sm text-ink mb-1 group-hover:text-brand transition-colors">{title}</p>
+                  <p className="text-xs text-ink-sub leading-relaxed">{desc}</p>
+                </div>
+                <ChevronRight className="w-4 h-4 text-ink-dim shrink-0 sm:hidden" strokeWidth={2} />
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ sections */}
-      <section className="py-16 sm:py-24 bg-card">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-14">
-          {FAQS.map(({ id, section, items }) => (
-            <div key={id} id={id}>
-              <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-4">{section}</p>
-              <div className="space-y-3">
-                {items.map(({ q, a }) => (
-                  <div key={q} className="bg-canvas rounded-card border border-border-dim p-5 sm:p-6">
-                    <p className="font-bold text-sm text-ink mb-2">{q}</p>
-                    <p className="text-sm text-ink-sub leading-relaxed">{a}</p>
-                  </div>
+      {/* FAQ sections — each topic card lands on one of these */}
+      <section className="py-16 sm:py-24 bg-canvas">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-12 sm:space-y-14">
+          {TOPICS.map(({ id, icon: Icon, title, faqs }) => (
+            <section key={id} id={id} className="scroll-mt-24">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
+                  <Icon className="w-4 h-4 text-brand" strokeWidth={1.75} />
+                </div>
+                <h2 className="font-bold text-lg tracking-tight text-ink">{title}</h2>
+              </div>
+
+              <div className="space-y-2">
+                {faqs.map(({ q, a }) => (
+                  <details
+                    key={q}
+                    className="group bg-card rounded-card border border-border-dim px-5 py-4 sm:px-6"
+                  >
+                    <summary className="flex items-start justify-between gap-3 text-sm font-bold text-ink cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                      <span className="min-w-0">{q}</span>
+                      <ChevronDown
+                        className="w-4 h-4 text-ink-dim shrink-0 mt-0.5 transition-transform duration-150 group-open:rotate-180"
+                        strokeWidth={2}
+                      />
+                    </summary>
+                    <p className="text-sm text-ink-sub leading-relaxed pt-2">{a}</p>
+                  </details>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       </section>
 
       {/* Contact */}
-      <section id="contact" className="py-16 sm:py-24 bg-canvas">
+      <section id="contact" className="scroll-mt-24 py-16 sm:py-24 bg-card">
         <div className="max-w-xl mx-auto px-4 sm:px-6">
-          <div className="bg-card rounded-card border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
+          <div className="bg-canvas rounded-card border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
             <div className="w-12 h-12 bg-brand-muted rounded-card flex items-center justify-center mx-auto mb-5">
               <MessageCircle className="w-6 h-6 text-brand" strokeWidth={1.5} />
             </div>
@@ -213,7 +219,7 @@ export default function SupportPage() {
             </p>
             <a
               href="mailto:support@aladdin.lt"
-              className="inline-flex items-center gap-2 bg-brand text-white font-semibold text-sm px-6 py-3 rounded-input hover:bg-brand-dark transition-colors"
+              className={buttonVariants({ variant: 'primary', size: 'lg' })}
             >
               <MessageCircle className="w-4 h-4" />
               Email support@aladdin.lt
@@ -222,18 +228,7 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-canvas border-t border-border-dim py-8">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-ink-dim">&copy; 2026 Aladdin Marketplace. All rights reserved.</p>
-          <div className="flex items-center gap-4 text-xs">
-            <Link href="/" className="text-ink-sub hover:text-ink transition-colors">Home</Link>
-            <Link href="/browse" className="text-ink-sub hover:text-ink transition-colors">Find a Pro</Link>
-            <Link href="/terms" className="text-ink-sub hover:text-ink transition-colors">Terms</Link>
-            <Link href="/privacy" className="text-ink-sub hover:text-ink transition-colors">Privacy</Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
     </div>
   );
