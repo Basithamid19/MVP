@@ -130,13 +130,13 @@ const FAQS = [
 
 export default function SupportPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-canvas">
 
       {/* Nav */}
-      <nav className="border-b border-border-dim sticky top-0 bg-white/90 backdrop-blur-md z-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <nav className="sticky top-0 z-30 bg-canvas/80 backdrop-blur-xl border-b border-border-dim/50">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 sm:h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-brand rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
               <AladdinIcon className="w-5 h-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
@@ -161,16 +161,16 @@ export default function SupportPage() {
       </section>
 
       {/* Topic cards */}
-      <section className="py-10 sm:py-14 bg-white border-y border-border-dim">
+      <section className="py-10 sm:py-14 bg-card border-y border-border-dim">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {TOPICS.map(({ icon: Icon, title, desc, href }) => (
               <a
                 key={title}
                 href={href}
-                className="bg-canvas rounded-2xl border border-border-dim p-5 hover:border-border hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-150 group"
+                className="bg-canvas rounded-card border border-border-dim p-5 hover:border-border hover:shadow-elevated hover:-translate-y-0.5 transition-all duration-150 group"
               >
-                <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center mb-3">
+                <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center mb-3">
                   <Icon className="w-5 h-5 text-brand" strokeWidth={1.5} />
                 </div>
                 <p className="font-bold text-sm text-ink mb-1 group-hover:text-brand transition-colors">{title}</p>
@@ -182,14 +182,14 @@ export default function SupportPage() {
       </section>
 
       {/* FAQ sections */}
-      <section className="py-16 sm:py-24 bg-white">
+      <section className="py-16 sm:py-24 bg-card">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 space-y-14">
           {FAQS.map(({ id, section, items }) => (
             <div key={id} id={id}>
               <p className="text-2xs font-bold text-brand uppercase tracking-[0.15em] mb-4">{section}</p>
               <div className="space-y-3">
                 {items.map(({ q, a }) => (
-                  <div key={q} className="bg-canvas rounded-2xl border border-border-dim p-5 sm:p-6">
+                  <div key={q} className="bg-canvas rounded-card border border-border-dim p-5 sm:p-6">
                     <p className="font-bold text-sm text-ink mb-2">{q}</p>
                     <p className="text-sm text-ink-sub leading-relaxed">{a}</p>
                   </div>
@@ -203,8 +203,8 @@ export default function SupportPage() {
       {/* Contact */}
       <section id="contact" className="py-16 sm:py-24 bg-canvas">
         <div className="max-w-xl mx-auto px-4 sm:px-6">
-          <div className="bg-white rounded-2xl border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
-            <div className="w-12 h-12 bg-brand-muted rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <div className="bg-card rounded-card border border-border-dim shadow-elevated px-6 py-10 sm:px-10 sm:py-12 text-center">
+            <div className="w-12 h-12 bg-brand-muted rounded-card flex items-center justify-center mx-auto mb-5">
               <MessageCircle className="w-6 h-6 text-brand" strokeWidth={1.5} />
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-ink mb-2">Still need help?</h2>
@@ -213,7 +213,7 @@ export default function SupportPage() {
             </p>
             <a
               href="mailto:support@aladdin.lt"
-              className="inline-flex items-center gap-2 bg-brand text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-brand-dark transition-colors"
+              className="inline-flex items-center gap-2 bg-brand text-white font-semibold text-sm px-6 py-3 rounded-input hover:bg-brand-dark transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               Email support@aladdin.lt

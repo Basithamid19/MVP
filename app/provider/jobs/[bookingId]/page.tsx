@@ -145,6 +145,9 @@ export default function ProviderJobDetailPage() {
     flow.next === 'COMPLETED' ? t.bookingDetail.markComplete : '';
   const isCanceled = booking.status === 'CANCELED';
   const isCompleted = booking.status === 'COMPLETED';
+  // The action bar is `fixed` — the page needs its own clearance on top of the
+  // shell's MobileNav padding, or the bar sits on the last card.
+  const hasActionBar = !isCanceled && !isCompleted && !!flow.next;
   // Messaging only unlocks once the booking is confirmed (deposit paid).
   // Mirrors the server-side gate in lib/chat-access.ts.
   const chatUnlocked =
@@ -156,20 +159,20 @@ export default function ProviderJobDetailPage() {
   const earnings = providerNet(booking.totalAmount).toFixed(2);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto pb-28">
+    <div className={`max-w-2xl mx-auto ${hasActionBar ? 'pb-24 md:pb-28' : ''}`}>
 
       {/* ── Mobile: Unified header ── */}
       <div className="sm:hidden">
         {/* Back row */}
         <div className="flex items-center gap-2 mb-3">
-          <Link href="/provider/jobs" className="p-1.5 -ml-1.5 hover:bg-surface-alt rounded-xl transition-colors">
+          <Link href="/provider/jobs" className="p-1.5 -ml-1.5 hover:bg-surface-alt rounded-input transition-colors">
             <ArrowLeft className="w-5 h-5 text-ink-sub" />
           </Link>
           <span className="text-xs text-ink-dim">{t.jobDetail.backToJobs}</span>
         </div>
 
         {/* Title + status + earnings hero */}
-        <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 mb-3">
+        <div className="bg-card rounded-card border border-border-dim shadow-card p-4 mb-3">
           <div className="flex items-start justify-between gap-3 mb-3">
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-semibold text-ink tracking-tight">{booking.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</h1>
@@ -239,7 +242,7 @@ export default function ProviderJobDetailPage() {
 
         {/* Stripe Connect setup banner */}
         {!booking.provider?.stripeOnboarded && !isCanceled && (
-          <div className="bg-caution-surface border border-caution-edge rounded-2xl p-4 flex items-start gap-3">
+          <div className="bg-caution-surface border border-caution-edge rounded-card p-4 flex items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="font-bold text-caution text-sm">{t.jobDetail.stripeTitle}</p>
@@ -252,7 +255,7 @@ export default function ProviderJobDetailPage() {
                   const data = await res.json();
                   if (data.url) window.location.href = data.url;
                 }}
-                className="text-xs font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity"
+                className="text-xs font-bold bg-caution text-white px-4 py-2 rounded-input hover:opacity-90 transition-opacity"
               >
                 {t.earningsPage.setUpPayouts}
               </button>
@@ -261,12 +264,12 @@ export default function ProviderJobDetailPage() {
         )}
 
         {/* ── Mobile: Customer compact card ── */}
-        <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
+        <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
           <div className="flex items-center gap-3 p-3.5">
             <img
               src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
               alt={customer?.user?.name}
-              className="w-10 h-10 rounded-xl object-cover shrink-0"
+              className="w-10 h-10 rounded-input object-cover shrink-0"
             />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-ink">{customer?.user?.name}</p>
@@ -307,7 +310,7 @@ export default function ProviderJobDetailPage() {
         </div>
 
         {/* ── Desktop: Customer card (original) ── */}
-        <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="hidden sm:block bg-card rounded-panel border border-border-dim p-5 shadow-card">
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
           <div className="flex items-center gap-3 mb-4">
             <img
@@ -351,7 +354,7 @@ export default function ProviderJobDetailPage() {
         </div>
 
         {/* ── Desktop: Job details (original) ── */}
-        <div className="hidden sm:block bg-white rounded-panel border border-border-dim p-5 shadow-card">
+        <div className="hidden sm:block bg-card rounded-panel border border-border-dim p-5 shadow-card">
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.jobDetails}</p>
           <div className="space-y-3 text-sm">
             <div className="flex justify-between">
@@ -381,14 +384,14 @@ export default function ProviderJobDetailPage() {
 
         {/* ── Mobile: Job notes (if present) ── */}
         {booking.quote?.notes && (
-          <div className="sm:hidden bg-white rounded-2xl border border-border-dim p-3.5 shadow-sm">
+          <div className="sm:hidden bg-card rounded-card border border-border-dim p-3.5 shadow-card">
             <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1.5">{t.jobDetail.jobNotes}</p>
             <p className="text-sm text-ink-sub whitespace-pre-wrap leading-relaxed">{booking.quote.notes}</p>
           </div>
         )}
 
         {/* ── Checklist ── */}
-        <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
+        <div className="bg-card rounded-card sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-card sm:shadow-card">
           <div className="flex items-center justify-between mb-2.5 sm:mb-4">
             <p className="text-xs sm:text-3xs font-bold text-ink-dim uppercase tracking-widest">{t.jobDetail.checklistTitle}</p>
             <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
@@ -409,7 +412,7 @@ export default function ProviderJobDetailPage() {
               <button
                 key={i}
                 onClick={() => setChecklist(prev => prev.map((v, j) => j === i ? !v : v))}
-                className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-xl sm:rounded-input text-left transition-all ${
+                className={`w-full flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2.5 sm:py-3 rounded-input sm:rounded-input text-left transition-all ${
                   checklist[i]
                     ? 'bg-trust-surface/50'
                     : 'hover:bg-surface-alt active:bg-surface-alt'
@@ -428,7 +431,7 @@ export default function ProviderJobDetailPage() {
         </div>
 
         {/* ── Photos / Documentation ── */}
-        <div className="bg-white rounded-2xl sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-sm sm:shadow-card">
+        <div className="bg-card rounded-card sm:rounded-panel border border-border-dim p-3.5 sm:p-5 shadow-card sm:shadow-card">
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <div className="flex items-center gap-2">
               <Camera className="w-4 h-4 text-ink-dim sm:hidden" />
@@ -448,9 +451,9 @@ export default function ProviderJobDetailPage() {
             <button
               onClick={() => fileRef.current?.click()}
               disabled={uploadingPhoto}
-              className="w-full flex items-center gap-3 p-3 rounded-xl border border-dashed border-border hover:border-brand hover:bg-brand-muted/30 transition-all group"
+              className="w-full flex items-center gap-3 p-3 rounded-input border border-dashed border-border hover:border-brand hover:bg-brand-muted/30 transition-all group"
             >
-              <div className="w-10 h-10 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
+              <div className="w-10 h-10 bg-surface-alt rounded-input flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
                 {uploadingPhoto
                   ? <Loader2 className="w-4 h-4 animate-spin text-ink-dim" />
                   : <ImagePlus className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
@@ -465,7 +468,7 @@ export default function ProviderJobDetailPage() {
             /* Photo grid */
             <div className="flex flex-wrap gap-2 sm:gap-3">
               {photos.map((p, i) => (
-                <div key={i} className="relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input overflow-hidden border border-border">
+                <div key={i} className="relative w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input sm:rounded-input overflow-hidden border border-border">
                   <img src={p.preview} alt={p.label} className="w-full h-full object-cover" />
                   <button
                     onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
@@ -478,7 +481,7 @@ export default function ProviderJobDetailPage() {
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploadingPhoto}
-                className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-xl sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
+                className="w-[72px] h-[72px] sm:w-20 sm:h-20 rounded-input sm:rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-0.5 hover:border-brand transition-colors text-ink-dim hover:text-brand"
               >
                 {uploadingPhoto ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ImagePlus className="w-4 h-4" /><span className="text-3xs font-bold">{t.jobDetail.add}</span></>}
               </button>
@@ -489,8 +492,8 @@ export default function ProviderJobDetailPage() {
         {/* ── Issue / Support ── */}
         {!isCanceled && (
           <Link href="/provider/disputes"
-            className="flex items-center gap-3 p-3 sm:p-4 bg-white sm:bg-surface-alt rounded-xl sm:rounded-card border border-border-dim sm:border-border-dim text-sm group hover:border-caution-edge transition-all">
-            <div className="w-8 h-8 bg-surface-alt sm:bg-white rounded-lg flex items-center justify-center shrink-0 group-hover:bg-caution-surface transition-colors">
+            className="flex items-center gap-3 p-3 sm:p-4 bg-card sm:bg-surface-alt rounded-input sm:rounded-card border border-border-dim sm:border-border-dim text-sm group hover:border-caution-edge transition-all">
+            <div className="w-8 h-8 bg-surface-alt sm:bg-card rounded-lg flex items-center justify-center shrink-0 group-hover:bg-caution-surface transition-colors">
               <AlertTriangle className="w-4 h-4 text-ink-dim group-hover:text-caution transition-colors" />
             </div>
             <div className="flex-1">
@@ -505,20 +508,20 @@ export default function ProviderJobDetailPage() {
       {/* Bottom action bar — status can only advance once the deposit is paid
           (server enforces the same rule with a 409). Until then, show an
           explicit "awaiting deposit" state so the provider knows not to start. */}
-      {!isCanceled && !isCompleted && flow.next && (
+      {hasActionBar && (
         <div className="fixed bottom-0 left-0 right-0 z-40">
-          <div className="bg-white/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
+          <div className="bg-card/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
             <div className="max-w-2xl mx-auto">
               {chatUnlocked ? (
                 <button
                   onClick={() => updateStatus(flow.next)}
                   disabled={actioning}
-                  className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-2xl sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
+                  className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-card sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
                 >
                   {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {nextLabel}</>}
                 </button>
               ) : (
-                <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-2xl sm:rounded-card">
+                <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-card sm:rounded-card">
                   <Clock className="w-4 h-4 text-caution shrink-0" />
                   <p className="text-sm font-semibold text-caution">
                     {t.jobDetail.awaitingDeposit}

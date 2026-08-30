@@ -7,9 +7,8 @@ import {
   Star, ShieldCheck, Search as SearchIcon,
   Loader2, Clock, ChevronRight, SlidersHorizontal, CheckCircle2, ArrowLeft,
 } from 'lucide-react';
-import MobileNav from '@/components/MobileNav';
-import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
-import { useSession } from 'next-auth/react';
+import CustomerLayout from '@/components/CustomerLayout';
+import { EmptyState } from '@/components/ui';
 import { avatarUrl } from '@/lib/avatar';
 
 const CATEGORIES = [
@@ -41,7 +40,6 @@ function parseResponseMinutes(rt: string | null): number {
 function BrowseContent() {
   const searchParams   = useSearchParams();
   const router         = useRouter();
-  const { data: session } = useSession();
   const initialCategory = searchParams.get('category') || '';
 
   const [providers,     setProviders]     = useState<any[]>([]);
@@ -85,19 +83,16 @@ function BrowseContent() {
   });
 
   return (
-    <div className="min-h-screen bg-canvas overflow-x-hidden w-full flex flex-col pb-28">
+    <CustomerLayout maxWidth="max-w-7xl">
 
-      {/* ── Sticky header ── */}
-      <header className="bg-white/95 backdrop-blur-md border-b border-border-dim sticky top-0 z-20 w-full shadow-sm">
-        <div className="flex items-center gap-2.5 px-4 lg:px-6 pt-3 pb-2 max-w-7xl mx-auto w-full">
-
-          {/* Menu (desktop) */}
-          <CustomerMenuDrawer />
+      {/* ── Search / sort toolbar (the shell owns the header, bell and nav) ── */}
+      <div className="mb-3">
+        <div className="flex items-center gap-2.5">
 
           {/* Back button */}
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 flex items-center justify-center rounded-2xl bg-surface-alt border border-border-dim text-ink-sub hover:text-ink hover:border-brand/30 transition-all shrink-0"
+            className="w-10 h-10 flex items-center justify-center rounded-card bg-surface-alt border border-border-dim text-ink-sub hover:text-ink hover:border-brand/30 transition-all shrink-0"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -111,14 +106,14 @@ function BrowseContent() {
               placeholder="Search professionals..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full h-10 pl-10 pr-3 bg-surface-alt border border-border-dim rounded-2xl text-base sm:text-sm text-ink placeholder:text-ink-dim focus:outline-none focus:ring-2 focus:ring-brand/30 focus:bg-white focus:border-brand/20 transition-all"
+              className="w-full h-10 pl-10 pr-3 bg-surface-alt border border-border-dim rounded-card text-base sm:text-sm text-ink placeholder:text-ink-dim focus:outline-none focus:ring-2 focus:ring-brand/30 focus:bg-card focus:border-brand/20 transition-all"
             />
           </div>
 
           {/* Sort button — mobile only (desktop uses the filter sidebar) */}
           <button
             onClick={() => setShowSortSheet(true)}
-            className={`lg:hidden flex items-center gap-1.5 px-3.5 h-10 rounded-2xl border text-xs font-bold transition-all shrink-0 ${
+            className={`lg:hidden flex items-center gap-1.5 px-3.5 h-10 rounded-card border text-xs font-bold transition-all shrink-0 ${
               sortBy !== 'top_rated'
                 ? 'bg-brand-muted text-brand border-brand/30'
                 : 'bg-surface-alt border-border-dim text-ink-sub hover:border-brand/30 hover:text-ink'
@@ -130,25 +125,25 @@ function BrowseContent() {
         </div>
 
         {/* Category chips — mobile only (desktop uses the filter sidebar) */}
-        <div className="lg:hidden flex gap-1.5 overflow-x-auto scrollbar-none px-4 pb-2.5 max-w-7xl mx-auto w-full">
+        <div className="lg:hidden flex gap-1.5 overflow-x-auto scrollbar-none pt-2.5">
           {CATEGORIES.map(cat => (
             <button
               key={cat.value}
               onClick={() => setCategory(cat.value)}
               className={`shrink-0 px-4 py-2 rounded-full text-xs font-semibold border transition-all ${
                 category === cat.value
-                  ? 'bg-brand text-white border-brand shadow-sm'
-                  : 'bg-white border-border-dim text-ink-sub hover:border-brand/40 hover:text-ink'
+                  ? 'bg-brand text-white border-brand shadow-card'
+                  : 'bg-card border-border-dim text-ink-sub hover:border-brand/40 hover:text-ink'
               }`}
             >
               {cat.label}
             </button>
           ))}
         </div>
-      </header>
+      </div>
 
       {/* ── Body: filter sidebar (desktop) + results ── */}
-      <div className="max-w-7xl mx-auto w-full px-4 lg:px-6 lg:flex lg:gap-8 lg:pt-6">
+      <div className="lg:flex lg:gap-8">
 
         {/* Filter sidebar — desktop only */}
         <aside className="hidden lg:block w-56 shrink-0">
@@ -160,8 +155,8 @@ function BrowseContent() {
                   <button
                     key={cat.value}
                     onClick={() => setCategory(cat.value)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                      category === cat.value ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-white hover:text-ink'
+                    className={`w-full text-left px-3 py-2 rounded-input text-sm font-medium transition-all ${
+                      category === cat.value ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-card hover:text-ink'
                     }`}
                   >
                     {cat.label}
@@ -176,8 +171,8 @@ function BrowseContent() {
                   <button
                     key={opt.id}
                     onClick={() => setSortBy(opt.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all ${
-                      sortBy === opt.id ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-white hover:text-ink'
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-input text-sm font-medium transition-all ${
+                      sortBy === opt.id ? 'bg-brand-muted text-brand' : 'text-ink-sub hover:bg-card hover:text-ink'
                     }`}
                   >
                     {opt.label}
@@ -211,8 +206,8 @@ function BrowseContent() {
           {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-border-dim p-4 animate-pulse flex gap-3.5">
-              <div className="w-14 h-14 rounded-2xl bg-surface-alt shrink-0" />
+            <div key={i} className="bg-card rounded-card border border-border-dim p-4 animate-pulse flex gap-3.5">
+              <div className="w-14 h-14 rounded-card bg-surface-alt shrink-0" />
               <div className="flex-1 space-y-2 pt-1">
                 <div className="h-4 bg-surface-alt rounded w-28" />
                 <div className="h-3 bg-surface-alt rounded w-20" />
@@ -232,11 +227,11 @@ function BrowseContent() {
               <Link
                 key={p.id}
                 href={`/providers/${p.id}`}
-                className="bg-white rounded-2xl border border-border-dim shadow-sm hover:border-brand/30 hover:shadow-md active:scale-[0.98] transition-all flex gap-3 p-3.5 lg:p-4 items-start"
+                className="bg-card rounded-card border border-border-dim shadow-card hover:border-brand/30 hover:shadow-md active:scale-[0.98] transition-all flex gap-3 p-3.5 lg:p-4 items-start"
               >
                 {/* Avatar with verified overlay */}
                 <div className="relative shrink-0">
-                  <div className="w-14 h-14 rounded-2xl overflow-hidden border border-border-dim bg-surface-alt">
+                  <div className="w-14 h-14 rounded-card overflow-hidden border border-border-dim bg-surface-alt">
                     <img
                       src={p.user?.image || avatarUrl(p.user?.name, 150)}
                       alt={p.user?.name}
@@ -260,7 +255,7 @@ function BrowseContent() {
                   <p className="text-xs text-ink-sub mb-1.5">{categoryName}</p>
 
                   <div className="flex items-center gap-1 flex-wrap text-2xs">
-                    <Star className="w-3 h-3 text-yellow-500 fill-yellow-500 shrink-0" />
+                    <Star className="w-3 h-3 text-caution fill-caution shrink-0" />
                     <span className="font-bold text-ink">{p.ratingAvg?.toFixed(1) ?? '—'}</span>
                     <span className="text-ink-dim">· {p.completedJobs ?? 0} jobs</span>
                     {responseTime && (
@@ -284,24 +279,23 @@ function BrowseContent() {
           })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center px-4">
-            <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
-              <SearchIcon className="w-7 h-7 text-ink-dim" />
-            </div>
-            <h3 className="font-bold text-base text-ink mb-1">No pros found</h3>
-            <p className="text-sm text-ink-sub mb-6">Try a different category or search term.</p>
-            <button
-              onClick={() => { setCategory(''); setSearch(''); }}
-              className="bg-brand text-white px-6 py-3 rounded-xl text-sm font-bold"
-            >
-              Clear filters
-            </button>
-          </div>
+          <EmptyState
+            icon={SearchIcon}
+            size="lg"
+            title="No pros found"
+            description="Try a different category or search term."
+            action={
+              <button
+                onClick={() => { setCategory(''); setSearch(''); }}
+                className="bg-brand text-white px-6 py-3 rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
+              >
+                Clear filters
+              </button>
+            }
+          />
         )}
         </main>
       </div>
-
-      {session && <MobileNav />}
 
       {/* ── Sort bottom sheet ── */}
       {showSortSheet && (
@@ -310,7 +304,7 @@ function BrowseContent() {
             className="fixed inset-0 bg-ink/40 backdrop-blur-[2px] z-50"
             onClick={() => setShowSortSheet(false)}
           />
-          <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl z-50 shadow-float">
+          <div className="fixed bottom-0 left-0 right-0 bg-card rounded-t-panel z-50 shadow-float">
             <div className="p-5 pb-safe">
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
               <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3 px-1">Sort by</p>
@@ -319,7 +313,7 @@ function BrowseContent() {
                   <button
                     key={opt.id}
                     onClick={() => { setSortBy(opt.id); setShowSortSheet(false); }}
-                    className={`w-full flex items-center justify-between py-3.5 px-4 rounded-2xl text-sm font-semibold transition-all ${
+                    className={`w-full flex items-center justify-between py-3.5 px-4 rounded-card text-sm font-semibold transition-all ${
                       sortBy === opt.id
                         ? 'bg-brand-muted text-brand'
                         : 'text-ink hover:bg-surface-alt'
@@ -334,7 +328,7 @@ function BrowseContent() {
           </div>
         </>
       )}
-    </div>
+    </CustomerLayout>
   );
 }
 

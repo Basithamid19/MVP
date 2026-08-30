@@ -12,6 +12,7 @@ import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
 import { localizedStatus } from '@/lib/status-labels';
 import { useTranslation } from '@/lib/i18n';
+import { PageHeader } from '@/components/ui';
 
 export default function ProviderJobsPage() {
   const { data: session, status } = useSession();
@@ -49,19 +50,21 @@ export default function ProviderJobsPage() {
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-canvas rounded-2xl border border-border-dim mb-5">
-        <Link href="/provider/leads" className="flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
+        <Link href="/provider/leads" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
           {t.providerNav.leads}
         </Link>
-        <div className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
+        <div className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
           {t.providerNav.jobs}
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
-        <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">{t.jobsPage.title}</h1>
+      <PageHeader
+        title={t.jobsPage.title}
+        className="flex-col items-start sm:flex-row sm:items-center gap-3 sm:gap-4 mb-5 sm:mb-8"
+        action={
         <div className="flex gap-1.5">
           {([
             { key: 'active' as const, label: t.jobsPage.filterActive, count: activeCt },
@@ -71,17 +74,18 @@ export default function ProviderJobsPage() {
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
                 filter === f.key
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'bg-white text-ink-sub border border-border-dim hover:text-ink'
+                  ? 'bg-brand text-white shadow-card'
+                  : 'bg-card text-ink-sub border border-border-dim hover:text-ink'
               }`}>
               {f.label} ({f.count})
             </button>
           ))}
         </div>
-      </div>
+        }
+      />
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-dashed border-border-dim p-6 sm:p-10 text-center">
+        <div className="bg-card rounded-card sm:rounded-panel border border-dashed border-border-dim p-6 sm:p-10 text-center">
           <div className="w-10 h-10 sm:w-14 sm:h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
             <Briefcase className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
           </div>
@@ -97,7 +101,7 @@ export default function ProviderJobsPage() {
         <div className="space-y-2.5 sm:space-y-3">
           {filtered.map(b => (
             <Link key={b.id} href={`/provider/jobs/${b.id}`}
-              className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-white rounded-2xl border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-sm hover:shadow-md">
+              className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 transition-all shadow-card hover:shadow-md">
               <div className="flex items-center gap-3 sm:gap-4">
                 <div className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full shrink-0 ${
                   b.status === 'IN_PROGRESS' ? 'bg-caution' :

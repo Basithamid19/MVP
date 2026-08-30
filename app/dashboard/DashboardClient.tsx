@@ -323,7 +323,7 @@ export default function DashboardPage({
       <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-sm font-medium text-brand mb-0.5">{greeting},</p>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">{firstName}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">{firstName}</h1>
         </div>
         <Link
           href="/requests/new"

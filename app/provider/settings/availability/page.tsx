@@ -131,14 +131,14 @@ export default function ProviderAvailabilitySettingsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto pb-28 sm:pb-8">
+    <div className="max-w-2xl mx-auto">
 
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Link
             href="/provider/settings"
-            className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-surface-alt transition-colors text-ink-sub"
+            className="w-9 h-9 flex items-center justify-center rounded-input hover:bg-surface-alt transition-colors text-ink-sub"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
@@ -148,8 +148,8 @@ export default function ProviderAvailabilitySettingsPage() {
           onClick={handleSave}
           disabled={saving || !dirty}
           className={`flex items-center gap-2 px-4 sm:px-5 py-2 rounded-full font-medium text-sm transition-all ${
-            saved ? 'bg-trust text-white shadow-sm'
-            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-sm'
+            saved ? 'bg-trust text-white shadow-card'
+            : dirty ? 'bg-brand text-white hover:bg-brand-dark shadow-card'
             : 'bg-surface-alt text-ink-dim border border-border-dim cursor-default'
           } disabled:opacity-60`}
         >
@@ -164,7 +164,7 @@ export default function ProviderAvailabilitySettingsPage() {
 
       {/* Save error */}
       {saveError && (
-        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-xl text-sm text-caution font-medium flex items-center justify-between gap-2">
+        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-input text-sm text-caution font-medium flex items-center justify-between gap-2">
           <span>{saveError}</span>
           <button onClick={() => setSaveError(null)} className="shrink-0 text-caution hover:opacity-70">
             <X className="w-4 h-4" />
@@ -177,7 +177,7 @@ export default function ProviderAvailabilitySettingsPage() {
         {/* Working hours */}
         <div>
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Working hours</p>
-          <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
+          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
             <p className="font-semibold text-sm mb-4 flex items-center gap-2">
               <Calendar className="w-4 h-4 text-ink-dim" /> Weekly schedule
             </p>
@@ -185,13 +185,13 @@ export default function ProviderAvailabilitySettingsPage() {
               {slots.map((slot, i) => (
                 <div
                   key={i}
-                  className={`flex items-center gap-2.5 p-2.5 rounded-xl transition-all ${slot.enabled ? 'bg-surface-alt' : 'bg-transparent'}`}
+                  className={`flex items-center gap-2.5 p-2.5 rounded-input transition-all ${slot.enabled ? 'bg-surface-alt' : 'bg-transparent'}`}
                 >
                   <button
                     onClick={() => setSlots(prev => prev.map((s, j) => j === i ? { ...s, enabled: !s.enabled } : s))}
                     className={`w-8 h-5 rounded-full relative transition-colors shrink-0 ${slot.enabled ? 'bg-brand' : 'bg-border'}`}
                   >
-                    <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
+                    <div className={`absolute top-0.5 w-4 h-4 bg-card rounded-full shadow transition-transform ${slot.enabled ? 'left-3.5' : 'left-0.5'}`} />
                   </button>
                   <span className={`w-9 text-xs font-bold shrink-0 ${slot.enabled ? 'text-ink' : 'text-ink-dim'}`}>{DAYS[i]}</span>
                   {slot.enabled ? (
@@ -199,7 +199,7 @@ export default function ProviderAvailabilitySettingsPage() {
                       <select
                         value={slot.startTime}
                         onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s))}
-                        className="flex-1 min-w-0 px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none"
+                        className="flex-1 min-w-0 px-2 py-1.5 bg-card border border-border rounded-lg text-xs outline-none"
                       >
                         {ALL_TIMES.slice(0, -1).map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -207,7 +207,7 @@ export default function ProviderAvailabilitySettingsPage() {
                       <select
                         value={slot.endTime}
                         onChange={e => setSlots(prev => prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s))}
-                        className="flex-1 min-w-0 px-2 py-1.5 bg-white border border-border rounded-lg text-xs outline-none"
+                        className="flex-1 min-w-0 px-2 py-1.5 bg-card border border-border rounded-lg text-xs outline-none"
                       >
                         {ALL_TIMES.slice(1).map(t => <option key={t} value={t}>{t}</option>)}
                       </select>
@@ -224,7 +224,7 @@ export default function ProviderAvailabilitySettingsPage() {
         {/* Break between jobs */}
         <div>
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Break between jobs</p>
-          <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
+          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
             <p className="font-semibold text-sm mb-3 flex items-center gap-2">
               <Clock className="w-4 h-4 text-ink-dim" /> Buffer time
             </p>
@@ -235,7 +235,7 @@ export default function ProviderAvailabilitySettingsPage() {
                   onClick={() => setBufferMins(mins)}
                   className={`px-4 py-2 rounded-full text-sm font-bold transition-all ${
                     bufferMins === mins
-                      ? 'bg-brand text-white shadow-sm'
+                      ? 'bg-brand text-white shadow-card'
                       : 'bg-surface-alt text-ink-sub border border-border-dim hover:border-border'
                   }`}
                 >
@@ -249,7 +249,7 @@ export default function ProviderAvailabilitySettingsPage() {
         {/* Days off */}
         <div>
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Days off</p>
-          <div className="bg-white rounded-2xl border border-border-dim shadow-sm p-4 sm:p-6">
+          <div className="bg-card rounded-card border border-border-dim shadow-card p-4 sm:p-6">
             <p className="font-semibold text-sm mb-3 flex items-center gap-2">
               <CalendarOff className="w-4 h-4 text-ink-dim" /> Blackout dates
             </p>
@@ -259,7 +259,7 @@ export default function ProviderAvailabilitySettingsPage() {
                 value={blackoutInput}
                 min={new Date().toISOString().split('T')[0]}
                 onChange={e => setBlackoutInput(e.target.value)}
-                className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
+                className="flex-1 px-3.5 py-2.5 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-base sm:text-sm"
               />
               <button
                 onClick={() => {
@@ -268,7 +268,7 @@ export default function ProviderAvailabilitySettingsPage() {
                     setBlackoutInput('');
                   }
                 }}
-                className="px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-colors"
+                className="px-4 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
               >
                 Add
               </button>
@@ -300,7 +300,7 @@ export default function ProviderAvailabilitySettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving || !dirty}
-          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl font-semibold text-sm transition-all ${
+          className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-card font-semibold text-sm transition-all ${
             saved ? 'bg-trust text-white'
             : dirty ? 'bg-brand text-white hover:bg-brand-dark'
             : 'bg-surface-alt text-ink-dim border border-border-dim'

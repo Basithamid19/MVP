@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui';
 import {
   Loader2, Star, CheckCircle2, Clock, RefreshCcw,
   TrendingUp, AlertTriangle, ThumbsUp, Zap, Award,
@@ -90,36 +91,37 @@ export default function PerformancePage() {
     ratingAvg > 0 ? 'bg-caution-surface text-caution' : 'bg-surface-alt text-ink-dim';
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-2xl shadow-sm mb-5">
-        <div className="flex-1 py-2 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
+      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
+        <div className="flex-1 py-2 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
           Performance
         </div>
-        <Link href="/provider/earnings" className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+        <Link href="/provider/earnings" className="flex-1 py-2 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
           Earnings
         </Link>
       </div>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">Performance</h1>
-          <p className="text-sm text-ink-sub mt-1">Track your quality metrics and standing</p>
-          {/* Status pill — below subtitle on mobile, beside title on desktop */}
-          <div className={`sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold mt-2.5 ${statusStyle}`}>
-            <TrendingUp className="w-3.5 h-3.5" />
+      <PageHeader
+        title="Performance"
+        description="Track your quality metrics and standing"
+        className="mb-5 sm:mb-8"
+        action={
+          <div className={`hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${statusStyle}`}>
+            <TrendingUp className="w-4 h-4" />
             {statusLabel}
           </div>
-        </div>
-        <div className={`hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${statusStyle}`}>
-          <TrendingUp className="w-4 h-4" />
-          {statusLabel}
-        </div>
+        }
+      />
+      {/* Status pill — mobile only (desktop shows it beside the title) */}
+      <div className={`sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold -mt-4 mb-5 ${statusStyle}`}>
+        <TrendingUp className="w-3.5 h-3.5" />
+        {statusLabel}
       </div>
 
       {/* ── Mobile: Business Health Snapshot (single card) ── */}
-      <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm mb-5 overflow-hidden">
+      <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card mb-5 overflow-hidden">
         {/* Hero metrics: completion rate + rating */}
         <div className="grid grid-cols-2 divide-x divide-border-dim">
           <div className="p-4">
@@ -174,7 +176,7 @@ export default function PerformancePage() {
       {/* ── Desktop: Original metric cards grid ── */}
       <div className="hidden sm:grid sm:grid-cols-2 gap-4 mb-6 sm:mb-8">
         {metrics.map(m => (
-          <div key={m.label} className="bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm">
+          <div key={m.label} className="bg-card rounded-card border border-border-dim p-5 sm:p-6 shadow-card">
             <div className="flex items-center gap-2 mb-4">
               <m.icon className={`w-5 h-5 ${m.color}`} />
               <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">{m.label}</p>
@@ -186,7 +188,7 @@ export default function PerformancePage() {
       </div>
 
       {/* ── Desktop: Response speed card ── */}
-      <div className="hidden sm:block bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm mb-5 sm:mb-6">
+      <div className="hidden sm:block bg-card rounded-card border border-border-dim p-5 sm:p-6 shadow-card mb-5 sm:mb-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-trust-surface rounded-full flex items-center justify-center shrink-0">
             <Zap className="w-5 h-5 text-trust" />
@@ -205,7 +207,7 @@ export default function PerformancePage() {
       {(reviews.length > 0 || warnings.length > 0) && (
         <div className="sm:hidden">
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-3">Trust & Quality</p>
-          <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden mb-5">
+          <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden mb-5">
             {/* Rating section */}
             {reviews.length > 0 && (
               <div className="p-4">
@@ -261,7 +263,7 @@ export default function PerformancePage() {
             <div className={`${reviews.length > 0 ? 'border-t border-border-dim' : ''} p-4 space-y-2.5`}>
               <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-1">Account standing</p>
               {warnings.map((w, i) => (
-                <div key={i} className={`flex items-start gap-2.5 p-3 rounded-xl ${
+                <div key={i} className={`flex items-start gap-2.5 p-3 rounded-input ${
                   w.type === 'warning' ? 'bg-caution-surface border border-caution-edge' : 'bg-trust-surface border border-trust-edge'
                 }`}>
                   {w.type === 'warning'
@@ -280,7 +282,7 @@ export default function PerformancePage() {
 
       {/* ── Desktop: Rating distribution (separate card) ── */}
       {reviews.length > 0 && (
-        <div className="hidden sm:block bg-white rounded-2xl border border-border-dim p-5 sm:p-6 shadow-sm mb-5 sm:mb-6">
+        <div className="hidden sm:block bg-card rounded-card border border-border-dim p-5 sm:p-6 shadow-card mb-5 sm:mb-6">
           <div className="flex items-center justify-between mb-5">
             <p className="font-semibold text-ink text-base">Rating breakdown</p>
             <div className="flex items-center gap-1.5">
@@ -317,7 +319,7 @@ export default function PerformancePage() {
       <div className="hidden sm:block space-y-3">
         <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Account standing</p>
         {warnings.map((w, i) => (
-          <div key={i} className={`flex items-start gap-3 p-4 rounded-2xl border ${
+          <div key={i} className={`flex items-start gap-3 p-4 rounded-card border ${
             w.type === 'warning' ? 'bg-caution-surface border-caution-edge' : 'bg-trust-surface border-trust-edge'
           }`}>
             {w.type === 'warning'

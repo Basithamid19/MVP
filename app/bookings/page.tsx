@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
+import { PageHeader } from '@/components/ui';
 import { Loader2, Clock, Star, FileText, Search } from 'lucide-react';
 import { avatarUrl } from '@/lib/avatar';
 import { localizedStatus } from '@/lib/status-labels';
@@ -41,10 +42,10 @@ export default function BookingsPage() {
   return (
     <CustomerLayout maxWidth="max-w-2xl">
       <div className="space-y-5">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">{t.bookingsList.title}</h1>
+        <PageHeader title={t.bookingsList.title} className="mb-0" />
 
         {bookings.length === 0 ? (
-          <div className="bg-white rounded-panel border border-dashed border-border-dim p-12 text-center">
+          <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
             <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="w-7 h-7 text-ink-dim" />
             </div>
@@ -75,7 +76,7 @@ export default function BookingsPage() {
             )}
 
             {ongoing.length === 0 && completed.length === 0 && (
-              <div className="bg-white rounded-panel border border-dashed border-border-dim p-12 text-center">
+              <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
                 <p className="font-bold mb-1">{t.bookingsList.noActiveTitle}</p>
                 <p className="text-sm text-ink-dim">{t.bookingsList.noActiveDesc}</p>
               </div>
@@ -92,12 +93,12 @@ function BookingCard({ b }: { b: any }) {
   return (
     <Link
       href={`/bookings/${b.id}`}
-      className="flex items-start gap-3 bg-white rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
+      className="flex items-start gap-3 bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
     >
       <img
         src={b.provider?.user?.image || avatarUrl(b.provider?.user?.name, 80)}
         alt={b.provider?.user?.name}
-        className="w-11 h-11 rounded-xl object-cover shrink-0"
+        className="w-11 h-11 rounded-input object-cover shrink-0"
       />
       <div className="flex-1 min-w-0">
         <p className="font-bold text-sm truncate">{b.provider?.user?.name}</p>

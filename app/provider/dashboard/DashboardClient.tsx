@@ -137,10 +137,10 @@ export default function DashboardClient({
     : t.verificationPage.tierBasic;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto">
+    <div className="max-w-5xl mx-auto">
 
       {loadError && (
-        <div className="mb-4 flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-xl px-3 py-2.5 sm:px-4 sm:py-3">
+        <div className="mb-4 flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-input px-3 py-2.5 sm:px-4 sm:py-3">
           <AlertCircle className="w-4 h-4 text-caution shrink-0" />
           <p className="text-xs sm:text-sm text-caution flex-1">
             <span className="font-bold">{t.providerDashboard.loadErrorBold}</span> {t.providerDashboard.loadErrorRest}
@@ -151,7 +151,7 @@ export default function DashboardClient({
       {/* ── Mobile: Hero / Business Summary ── */}
       <div className="sm:hidden mb-4">
         {/* Identity + CTA */}
-        <div className="bg-brand rounded-2xl p-4 shadow-md text-white mb-3">
+        <div className="bg-brand rounded-card p-4 shadow-md text-white mb-3">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-11 h-11 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-bold shrink-0 select-none">
               {initialUser.image
@@ -175,7 +175,7 @@ export default function DashboardClient({
           </div>
           <Link
             href="/provider/leads"
-            className="flex items-center justify-center gap-2 w-full bg-white text-brand py-2.5 rounded-xl text-sm font-semibold hover:bg-white/90 transition-all"
+            className="flex items-center justify-center gap-2 w-full bg-card text-brand py-2.5 rounded-input text-sm font-semibold hover:bg-white/90 transition-all"
           >
             {ctaLabel} <ArrowRight className="w-3.5 h-3.5" />
           </Link>
@@ -183,7 +183,7 @@ export default function DashboardClient({
 
         {/* Fresh leads alert */}
         {freshLeads.length > 0 && (
-          <div className="flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-xl px-3 py-2.5 mb-3">
+          <div className="flex items-center gap-2.5 bg-caution-surface border border-caution-edge rounded-input px-3 py-2.5 mb-3">
             <Timer className="w-4 h-4 text-caution shrink-0" />
             <p className="text-xs text-caution flex-1">
               <span className="font-bold">{freshLeads.length} {freshLeads.length > 1 ? t.providerDashboard.freshLeadsPlural : t.providerDashboard.freshLeadSingular}</span> {t.providerDashboard.freshLeadMobileRest}
@@ -194,7 +194,7 @@ export default function DashboardClient({
 
         {/* Verification nudge — compact, only if not verified */}
         {!isVerified && (
-          <Link href="/provider/onboarding" className="flex items-center gap-2.5 bg-brand-muted rounded-xl px-3 py-2.5 mb-3 group">
+          <Link href="/provider/onboarding" className="flex items-center gap-2.5 bg-brand-muted rounded-input px-3 py-2.5 mb-3 group">
             <ShieldCheck className="w-4 h-4 text-brand shrink-0" />
             <p className="text-xs text-brand flex-1">
               <span className="font-bold">{t.providerDashboard.completeVerificationBold}</span> {t.providerDashboard.completeVerificationRest}
@@ -205,7 +205,7 @@ export default function DashboardClient({
 
         {/* Profile completeness nudge */}
         {completePct < 100 && (
-          <Link href="/provider/settings" className="flex items-center gap-2.5 bg-surface-alt border border-border-dim rounded-xl px-3 py-2.5 mb-3 group">
+          <Link href="/provider/settings" className="flex items-center gap-2.5 bg-surface-alt border border-border-dim rounded-input px-3 py-2.5 mb-3 group">
             <div className="relative w-8 h-8 shrink-0">
               <svg className="w-8 h-8 -rotate-90" viewBox="0 0 32 32">
                 <circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" className="text-border-dim" strokeWidth="3" />
@@ -227,21 +227,21 @@ export default function DashboardClient({
       <div className="hidden sm:block">
         {/* Response timer banner */}
         {freshLeads.length > 0 && (
-          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-8 h-8 bg-amber-100 rounded-xl flex items-center justify-center shrink-0">
-              <Timer className="w-4 h-4 text-amber-600" />
+          <div className="mb-6 bg-caution-surface border border-caution-edge rounded-card px-4 py-3 flex items-center gap-3">
+            <div className="w-8 h-8 bg-caution-edge rounded-input flex items-center justify-center shrink-0">
+              <Timer className="w-4 h-4 text-caution" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-amber-800">
+              <p className="text-sm font-bold text-caution">
                 {freshLeads.length} {freshLeads.length > 1 ? t.providerDashboard.freshWaitingPlural : t.providerDashboard.freshWaitingSingular}
               </p>
-              <p className="text-xs text-amber-600 mt-0.5">
+              <p className="text-xs text-caution/80 mt-0.5">
                 {t.providerDashboard.respondHint}
               </p>
             </div>
             <Link
               href="/provider/leads"
-              className="shrink-0 bg-amber-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-amber-600 transition-colors"
+              className="shrink-0 bg-caution text-white px-4 py-2 rounded-input text-xs font-bold hover:opacity-90 transition-opacity"
             >
               {t.providerDashboard.respondNow}
             </Link>
@@ -250,8 +250,8 @@ export default function DashboardClient({
 
         {/* Verification banner */}
         {!isVerified && (
-          <div className="mb-6 bg-brand-muted border border-brand/20 rounded-2xl px-4 py-3 flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/60 rounded-xl flex items-center justify-center shrink-0">
+          <div className="mb-6 bg-brand-muted border border-brand/20 rounded-card px-4 py-3 flex items-center gap-3">
+            <div className="w-8 h-8 bg-white/60 rounded-input flex items-center justify-center shrink-0">
               <ShieldCheck className="w-4 h-4 text-brand" />
             </div>
             <div className="flex-1 min-w-0">
@@ -262,7 +262,7 @@ export default function DashboardClient({
             </div>
             <Link
               href="/provider/onboarding"
-              className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
+              className="shrink-0 bg-brand text-white px-4 py-2 rounded-input text-xs font-bold hover:bg-brand-dark transition-colors"
             >
               {t.providerDashboard.getVerified}
             </Link>
@@ -271,7 +271,7 @@ export default function DashboardClient({
 
         {/* Profile completeness banner */}
         {completePct < 100 && (
-          <div className="mb-6 bg-surface-alt border border-border-dim rounded-2xl px-4 py-3 flex items-center gap-3">
+          <div className="mb-6 bg-surface-alt border border-border-dim rounded-card px-4 py-3 flex items-center gap-3">
             <div className="relative w-10 h-10 shrink-0">
               <svg className="w-10 h-10 -rotate-90" viewBox="0 0 40 40">
                 <circle cx="20" cy="20" r="16" fill="none" stroke="currentColor" className="text-border-dim" strokeWidth="3" />
@@ -288,7 +288,7 @@ export default function DashboardClient({
             </div>
             <Link
               href="/provider/settings"
-              className="shrink-0 bg-brand text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-brand-dark transition-colors"
+              className="shrink-0 bg-brand text-white px-4 py-2 rounded-input text-xs font-bold hover:bg-brand-dark transition-colors"
             >
               {t.providerDashboard.completeProfileBtn}
             </Link>
@@ -298,11 +298,11 @@ export default function DashboardClient({
         {/* Desktop greeting */}
         <div className="flex items-start justify-between gap-6 mb-8 sm:mb-10">
           <div className="flex items-center gap-5">
-            <div className="w-16 h-16 rounded-full bg-brand text-white flex items-center justify-center text-xl font-semibold shrink-0 select-none shadow-sm">
+            <div className="w-16 h-16 rounded-full bg-brand text-white flex items-center justify-center text-xl font-semibold shrink-0 select-none shadow-card">
               {getInitials(initialUser.name)}
             </div>
             <div>
-              <h1 className="text-4xl font-semibold tracking-tight text-ink">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink">
                 {t.providerDashboard.hello} {firstName}
               </h1>
               <div className="flex items-center gap-3 mt-2">
@@ -323,7 +323,7 @@ export default function DashboardClient({
           </div>
           <Link
             href="/provider/leads"
-            className="flex items-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-sm hover:shadow-md"
+            className="flex items-center gap-2 bg-brand text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-brand-dark transition-all shadow-card hover:shadow-md"
           >
             {ctaLabel} <ArrowRight className="w-4 h-4" />
           </Link>
@@ -333,7 +333,7 @@ export default function DashboardClient({
       {/* ── Mobile: KPI strip ── */}
       <div className="sm:hidden grid grid-cols-4 gap-1.5 mb-4">
         {stats.map(({ label, value, icon: Icon, href, badge }) => (
-          <Link key={label} href={href} className="relative bg-white rounded-xl border border-border-dim p-2.5 text-center shadow-sm hover:shadow-md transition-all">
+          <Link key={label} href={href} className="relative bg-card rounded-input border border-border-dim p-2.5 text-center shadow-card hover:shadow-md transition-all">
             {badge && (
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center">{badge}</span>
             )}
@@ -349,9 +349,9 @@ export default function DashboardClient({
       {/* ── Desktop: KPI cards grid ── */}
       <div className="hidden sm:grid lg:grid-cols-4 sm:grid-cols-2 gap-6 mb-10">
         {stats.map(({ label, value, sub, icon: Icon, color, href, badge }) => (
-          <Link key={label} href={href} className="bg-white rounded-2xl border border-border-dim p-6 hover:shadow-md hover:border-brand/30 transition-all shadow-sm relative group">
+          <Link key={label} href={href} className="bg-card rounded-card border border-border-dim p-6 hover:shadow-md hover:border-brand/30 transition-all shadow-card relative group">
             {badge && (
-              <span className="absolute top-4 right-4 w-5 h-5 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center shadow-sm">{badge}</span>
+              <span className="absolute top-4 right-4 w-5 h-5 bg-caution text-white text-3xs font-bold rounded-full flex items-center justify-center shadow-card">{badge}</span>
             )}
             <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${color}`}>
               <Icon className="w-5 h-5" />
@@ -400,9 +400,9 @@ export default function DashboardClient({
               // seeing a card of crossed-out to-dos instead of a plain
               // "no leads right now" state.
               completePct < 100 ? (
-                <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
+                <div className="bg-card rounded-card border border-border-dim p-5 sm:p-8 shadow-card">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 bg-brand-muted rounded-2xl flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 bg-brand-muted rounded-card flex items-center justify-center shrink-0">
                       <Inbox className="w-4 h-4 text-brand" />
                     </div>
                     <div>
@@ -423,8 +423,8 @@ export default function DashboardClient({
                   </Link>
                 </div>
               ) : (
-                <div className="bg-white rounded-2xl border border-dashed border-border-dim p-5 sm:p-8 shadow-sm text-center">
-                  <div className="w-10 h-10 bg-surface-alt rounded-2xl flex items-center justify-center mx-auto mb-3">
+                <div className="bg-card rounded-card border border-dashed border-border-dim p-5 sm:p-8 shadow-card text-center">
+                  <div className="w-10 h-10 bg-surface-alt rounded-card flex items-center justify-center mx-auto mb-3">
                     <Inbox className="w-4 h-4 text-ink-dim" />
                   </div>
                   <p className="font-semibold text-sm text-ink mb-1">{t.providerDashboard.noLeadsTitle}</p>
@@ -454,9 +454,9 @@ export default function DashboardClient({
               </Link>
             </div>
             {activeJobs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-border-dim p-5 sm:p-8 shadow-sm">
+              <div className="bg-card rounded-card border border-border-dim p-5 sm:p-8 shadow-card">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 bg-surface-alt rounded-2xl flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 bg-surface-alt rounded-card flex items-center justify-center shrink-0">
                     <Briefcase className="w-4 h-4 text-ink-dim" />
                   </div>
                   <div>
@@ -472,7 +472,7 @@ export default function DashboardClient({
               <div className="space-y-2.5 sm:space-y-4">
                 {activeJobs.slice(0, 2).map((b: any) => (
                   <Link key={b.id} href={`/provider/jobs/${b.id}`}
-                    className="flex items-center gap-3 sm:gap-4 bg-white rounded-2xl border border-border-dim p-3.5 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all shadow-sm">
+                    className="flex items-center gap-3 sm:gap-4 bg-card rounded-card border border-border-dim p-3.5 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all shadow-card">
                     <div className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0 ${b.status === 'IN_PROGRESS' ? 'bg-caution' : 'bg-info'}`} />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm sm:text-base truncate text-ink">{b.quote?.request?.category?.name ?? t.providerDashboard.jobFallback}</p>
@@ -493,7 +493,7 @@ export default function DashboardClient({
         {/* ── Right column (desktop only) ── */}
         <div className="hidden lg:block space-y-5">
           {/* Quick actions */}
-          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
+          <div className="bg-card border border-border-dim rounded-panel p-5 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.providerDashboard.quickActions}</p>
             <div className="space-y-1">
               {[
@@ -502,7 +502,7 @@ export default function DashboardClient({
                 { label: t.providerDashboard.viewEarnings,   href: '/provider/earnings',    icon: DollarSign },
                 { label: t.mobileNav.stats,                  href: '/provider/performance', icon: TrendingUp },
               ].map(({ label, href, icon: Icon }) => (
-                <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
+                <Link key={href} href={href} className="flex items-center gap-3 px-3 py-2.5 rounded-input text-sm font-medium text-ink-sub hover:text-ink hover:bg-surface-alt transition-all">
                   <div className="w-7 h-7 bg-brand-muted rounded-lg flex items-center justify-center shrink-0">
                     <Icon className="w-3.5 h-3.5 text-brand" />
                   </div>
@@ -514,9 +514,9 @@ export default function DashboardClient({
           </div>
 
           {/* Verification card */}
-          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
+          <div className="bg-card border border-border-dim rounded-panel p-5 shadow-card">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center">
                 <ShieldCheck className="w-5 h-5 text-brand" />
               </div>
               <div>
@@ -533,7 +533,7 @@ export default function DashboardClient({
           </div>
 
           {/* Rating */}
-          <div className="bg-white border border-border-dim rounded-3xl p-5 shadow-sm">
+          <div className="bg-card border border-border-dim rounded-panel p-5 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-3">{t.providerDashboard.yourRating}</p>
             <div className="flex items-end gap-2 mb-2">
               <span className="text-4xl font-bold tracking-tight">
@@ -551,7 +551,7 @@ export default function DashboardClient({
 
       {/* ── Mobile: Business Health ── */}
       <div className="lg:hidden mt-4">
-        <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden">
+        <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
           {/* Verification + Rating in one row */}
           <div className="grid grid-cols-2 divide-x divide-border-dim">
             <div className="p-3.5">
@@ -595,10 +595,10 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
   const hasBudget = lead.budget != null && lead.budget > 0;
 
   return (
-    <div className={`rounded-2xl border transition-all hover:shadow-md ${
+    <div className={`rounded-card border transition-all hover:shadow-md ${
       urgent
         ? 'bg-caution-surface border-caution/30 hover:border-caution/50 p-3.5 sm:p-5'
-        : 'bg-white border-border-dim hover:border-brand/30 shadow-sm p-3.5 sm:p-5'
+        : 'bg-card border-border-dim hover:border-brand/30 shadow-card p-3.5 sm:p-5'
     }`}>
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4">
         <div className="flex-1 min-w-0">
@@ -643,7 +643,7 @@ function LeadCard({ lead, urgent }: { lead: any; urgent?: boolean }) {
         {/* CTA */}
         <Link
           href={`/provider/quote/${lead.id}`}
-          className={`w-full sm:w-auto shrink-0 px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shadow-sm hover:shadow-md text-center ${
+          className={`w-full sm:w-auto shrink-0 px-4 sm:px-5 py-2.5 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap shadow-card hover:shadow-md text-center ${
             urgent
               ? 'bg-caution text-white hover:bg-caution/90'
               : 'bg-brand text-white hover:bg-brand-dark'

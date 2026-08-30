@@ -11,53 +11,9 @@ import {
   MapPin, Heart, Clock, ShieldCheck, Camera,
   Plus,
 } from 'lucide-react';
-import MobileNav from '@/components/MobileNav';
-import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
-
-/* ── Reusable row ── */
-function SettingsRow({
-  icon: Icon,
-  label,
-  sub,
-  href,
-  onClick,
-  muted,
-}: {
-  icon: React.ElementType;
-  label: string;
-  sub?: string;
-  href?: string;
-  onClick?: () => void;
-  muted?: boolean;
-}) {
-  const inner = (
-    <div className="flex items-center gap-3 px-4 py-3 active:bg-surface-alt/50 transition-colors">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${muted ? 'bg-surface-alt' : 'bg-brand-muted'}`}>
-        <Icon className={`w-4 h-4 ${muted ? 'text-ink-dim' : 'text-brand'}`} strokeWidth={1.8} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${muted ? 'text-ink-sub' : 'text-ink'}`}>{label}</p>
-        {sub && <p className="text-2xs text-ink-dim mt-0.5 leading-snug">{sub}</p>}
-      </div>
-      <ChevronRight className="w-3.5 h-3.5 text-ink-dim/40 shrink-0" />
-    </div>
-  );
-
-  if (href) return <Link href={href} className="block">{inner}</Link>;
-  return <button onClick={onClick} className="w-full text-left">{inner}</button>;
-}
-
-/* ── Section wrapper ── */
-function Section({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
-  return (
-    <div id={id} className="scroll-mt-24">
-      <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
-      <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
-        {children}
-      </div>
-    </div>
-  );
-}
+import CustomerLayout from '@/components/CustomerLayout';
+import { Section, SettingsRow, HeroCard } from '@/components/settings';
+import { PageHeader } from '@/components/ui';
 
 export default function AccountPage({
   initialBookings = [],
@@ -85,9 +41,11 @@ export default function AccountPage({
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas">
-        <Loader2 className="w-8 h-8 animate-spin text-brand" />
-      </div>
+      <CustomerLayout maxWidth="max-w-6xl">
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-brand" />
+        </div>
+      </CustomerLayout>
     );
   }
 
@@ -132,20 +90,12 @@ export default function AccountPage({
     : '';
 
   return (
-    <div className="min-h-screen bg-canvas overflow-x-hidden w-full flex flex-col pb-28">
+    <CustomerLayout maxWidth="max-w-6xl">
 
-      {/* ── Top bar ── */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-20 w-full">
-        <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-2">
-            <CustomerMenuDrawer />
-            <h1 className="text-base font-bold text-ink">Account</h1>
-          </div>
-        </div>
-      </header>
+      <PageHeader title="Account" className="mb-5" />
 
       {/* ── Desktop shell: section nav + content pane ── */}
-      <div className="max-w-6xl mx-auto w-full px-4 lg:px-6 lg:flex lg:gap-10 lg:pt-8">
+      <div className="lg:flex lg:gap-10">
 
         {/* Section nav — desktop only */}
         <aside className="hidden lg:block w-48 shrink-0">
@@ -160,7 +110,7 @@ export default function AccountPage({
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="block px-3 py-2 rounded-xl text-sm font-medium text-ink-sub hover:bg-white hover:text-ink transition-all"
+                className="block px-3 py-2 rounded-input text-sm font-medium text-ink-sub hover:bg-card hover:text-ink transition-all"
               >
                 {s.label}
               </a>
@@ -172,22 +122,19 @@ export default function AccountPage({
         <div className="flex-1 min-w-0 lg:max-w-2xl">
 
       {/* ── Profile hero ── */}
-      <div id="profile" className="scroll-mt-24 pt-5 pb-1 lg:pt-0">
-        <div className="bg-brand rounded-2xl p-4 sm:p-5 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.07]" style={{
-            backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)'
-          }} />
+      <div id="profile" className="scroll-mt-24">
+        <HeroCard>
           <div className="relative z-10 sm:flex sm:items-center sm:gap-8">
             <div className="flex items-center gap-3.5 min-w-0 sm:flex-1">
               <label className="relative w-14 h-14 shrink-0 cursor-pointer">
                 <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-                <div className="w-14 h-14 rounded-xl bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
+                <div className="w-14 h-14 rounded-input bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
                   {localAvatar || user?.image
                     ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
                     : <User className="w-7 h-7 text-white/80" />
                   }
                 </div>
-                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full flex items-center justify-center shadow-card">
                   {avatarUploading
                     ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
                     : <Camera className="w-3 h-3 text-brand" />
@@ -220,7 +167,7 @@ export default function AccountPage({
               ))}
             </div>
           </div>
-        </div>
+        </HeroCard>
       </div>
 
       {/* ── Sections ── */}
@@ -254,7 +201,7 @@ export default function AccountPage({
                       const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
                       const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                       return (
-                        <div key={b.id} className="bg-white rounded-xl p-3.5 shadow-sm border border-border-dim">
+                        <div key={b.id} className="bg-card rounded-input p-3.5 shadow-card border border-border-dim">
                           {/* Top: service + amount */}
                           <div className="flex items-start justify-between gap-2 mb-2.5">
                             <div className="min-w-0">
@@ -325,18 +272,18 @@ export default function AccountPage({
 
             {showCredits && (
               <div className="border-t border-border-dim bg-surface-alt/50 p-3 space-y-2.5">
-                <div className="bg-brand rounded-xl p-3.5 text-white">
+                <div className="bg-brand rounded-input p-3.5 text-white">
                   <p className="text-3xs font-bold text-white/50 uppercase tracking-widest mb-1">Credit Balance</p>
                   <p className="text-2xl font-bold leading-tight">€0.00</p>
                   <p className="text-2xs text-white/60 mt-1">Earn €10 for every friend who completes their first booking.</p>
                 </div>
                 {referralLink && (
-                  <div className="flex items-center gap-2 p-2.5 bg-white rounded-lg border border-border-dim">
+                  <div className="flex items-center gap-2 p-2.5 bg-card rounded-lg border border-border-dim">
                     <span className="text-2xs text-ink-sub flex-1 truncate font-mono">{referralLink}</span>
                     <button onClick={() => navigator.clipboard?.writeText(referralLink)} className="shrink-0 px-2.5 py-1 bg-brand text-white rounded-md text-2xs font-bold">Copy</button>
                   </div>
                 )}
-                <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-border-dim rounded-xl text-xs font-semibold text-ink active:bg-surface-alt transition-colors">
+                <button className="w-full flex items-center justify-center gap-2 py-2.5 bg-card border border-border-dim rounded-input text-xs font-semibold text-ink active:bg-surface-alt transition-colors">
                   <Share2 className="w-3.5 h-3.5" /> Share with friends
                 </button>
               </div>
@@ -361,7 +308,7 @@ export default function AccountPage({
         {/* Quick action — visually demoted */}
         <div>
           <Link href="/requests/new"
-            className="flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-dashed border-border-dim hover:border-brand/30 transition-all">
+            className="flex items-center gap-3 px-4 py-3 bg-card rounded-card border border-dashed border-border-dim hover:border-brand/30 transition-all">
             <div className="w-8 h-8 bg-surface-alt rounded-lg flex items-center justify-center shrink-0">
               <Plus className="w-4 h-4 text-ink-dim" />
             </div>
@@ -377,7 +324,7 @@ export default function AccountPage({
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">Account</p>
           <button
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3 bg-white rounded-2xl border border-border-dim text-left hover:border-caution-edge transition-all"
+            className="w-full flex items-center gap-3 px-4 py-3 bg-card rounded-card border border-border-dim text-left hover:border-caution-edge transition-all"
           >
             <LogOut className="w-4 h-4 text-ink-dim" />
             <span className="text-sm font-medium text-ink-sub">Log out</span>
@@ -388,7 +335,6 @@ export default function AccountPage({
         </div>{/* content pane */}
       </div>{/* shell */}
 
-      <MobileNav />
-    </div>
+    </CustomerLayout>
   );
 }

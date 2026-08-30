@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, FileText, Clock, ChevronRight, Inbox } from 'lucide-react';
 import { useTranslation, type Dictionary } from '@/lib/i18n';
+import { PageHeader } from '@/components/ui';
 
 // The provider's sent quotes. Previously a sent quote vanished: the lead left
 // the inbox and no surface showed whether it was pending, declined, expired,
@@ -56,16 +57,15 @@ export default function ProviderQuotesPage() {
   const past = quotes.filter(q => !isPending(q));
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
-      <div className="mb-5 sm:mb-8">
-        <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">{t.myQuotes.title}</h1>
-        <p className="text-xs sm:text-sm text-ink-sub mt-0.5 sm:mt-1">
-          {pending.length} {t.myQuotes.pendingSuffix} · {quotes.length} {t.myQuotes.totalSuffix}
-        </p>
-      </div>
+    <div className="max-w-4xl mx-auto">
+      <PageHeader
+        title={t.myQuotes.title}
+        description={`${pending.length} ${t.myQuotes.pendingSuffix} · ${quotes.length} ${t.myQuotes.totalSuffix}`}
+        className="mb-5 sm:mb-8"
+      />
 
       {quotes.length === 0 ? (
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-dashed border-border-dim p-6 sm:p-10 text-center">
+        <div className="bg-card rounded-card sm:rounded-panel border border-dashed border-border-dim p-6 sm:p-10 text-center">
           <div className="w-10 h-10 sm:w-14 sm:h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
             <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
           </div>
@@ -104,7 +104,7 @@ function QuoteCard({ q }: { q: any }) {
   const state = quoteState(q, t);
   const expiry = expiryLine(q, t);
   const inner = (
-    <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all">
+    <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 hover:border-brand/30 hover:shadow-md transition-all">
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-3xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 py-0.5 rounded-full">

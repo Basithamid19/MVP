@@ -2,6 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
+import { PageHeader } from '@/components/ui';
 import {
   LifeBuoy, Upload, X, CheckCircle2, Loader2,
   Star, DollarSign, MessageSquare, ChevronRight,
@@ -79,18 +80,18 @@ export default function DisputesPage() {
 
   if (submitted) {
     return (
-      <div className="p-6 lg:p-8 max-w-2xl mx-auto text-center py-20">
-        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
+      <div className="max-w-2xl mx-auto text-center py-20">
+        <div className="w-20 h-20 bg-trust-surface rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-10 h-10 text-trust" />
         </div>
-        <h1 className="text-2xl font-bold mb-3">Ticket submitted</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">Ticket submitted</h1>
         {ticketId && (
           <p className="text-ink-dim mb-2">Ticket ID: <span className="font-bold">AL-{ticketId.slice(0, 8).toUpperCase()}</span></p>
         )}
         <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
           Our support team will review your ticket and respond within <strong>24–48 business hours</strong> via email.
         </p>
-        <Link href="/provider/dashboard" className="bg-brand text-white px-8 py-3 rounded-2xl font-bold hover:bg-brand-dark transition-all">
+        <Link href="/provider/dashboard" className="inline-block bg-brand text-white px-8 py-3 rounded-card font-bold hover:bg-brand-dark transition-all">
           Back to Dashboard
         </Link>
       </div>
@@ -98,27 +99,23 @@ export default function DisputesPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
-          <LifeBuoy className="w-5 h-5 text-red-500" />
-        </div>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight">Support & Disputes</h1>
-          <p className="text-sm text-ink-dim">Get help or raise a formal dispute</p>
-        </div>
-      </div>
+    <div className="max-w-2xl mx-auto">
+      <PageHeader
+        title="Support & Disputes"
+        description="Get help or raise a formal dispute"
+        className="mb-6"
+      />
 
       <div className="space-y-5">
         {/* Ticket type */}
-        <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">What do you need help with?</p>
           <div className="space-y-2">
             {TICKET_TYPES.map(t => (
               <button
                 key={t.id}
                 onClick={() => { setTicketType(t.id); setSubject(t.label); }}
-                className={`w-full flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                className={`w-full flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all ${
                   ticketType === t.id ? 'border-brand bg-brand text-white' : 'border-border hover:border-border'
                 }`}
               >
@@ -136,7 +133,7 @@ export default function DisputesPage() {
         {ticketType && (
           <>
             {/* Details */}
-            <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm space-y-4">
+            <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card space-y-4">
               <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Details</p>
 
               <div>
@@ -145,7 +142,7 @@ export default function DisputesPage() {
                   type="text"
                   value={subject}
                   onChange={e => setSubject(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
 
@@ -156,7 +153,7 @@ export default function DisputesPage() {
                   value={bookingRef}
                   onChange={e => setBookingRef(e.target.value)}
                   placeholder="Booking ID or date"
-                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none text-sm"
+                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
                 />
               </div>
 
@@ -172,14 +169,14 @@ export default function DisputesPage() {
                     ticketType === 'no_show' ? 'When was the booking? What happened when you arrived?...' :
                     'Describe your issue in detail...'
                   }
-                  className="w-full p-4 bg-surface-alt border border-border-dim rounded-xl focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
+                  className="w-full p-4 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
                 />
                 <p className="text-xs text-ink-dim mt-1">{description.length} characters</p>
               </div>
             </div>
 
             {/* Evidence upload */}
-            <div className="bg-white rounded-3xl border border-border-dim p-6 shadow-sm">
+            <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
               <p className="font-bold mb-4 flex items-center gap-2"><Upload className="w-4 h-4" /> Evidence <span className="text-xs text-ink-dim font-normal ml-1">(optional)</span></p>
               <input
                 ref={fileRef}
@@ -193,7 +190,7 @@ export default function DisputesPage() {
                 {evidence.map((f, i) => (
                   <div key={i} className="relative">
                     {f.file.type.startsWith('image/') ? (
-                      <div className="w-20 h-20 rounded-xl overflow-hidden border border-border relative">
+                      <div className="w-20 h-20 rounded-input overflow-hidden border border-border relative">
                         <img src={f.preview} alt={f.name} className="w-full h-full object-cover" />
                         <button
                           onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))}
@@ -203,10 +200,10 @@ export default function DisputesPage() {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 px-3 py-2 bg-surface-alt rounded-xl border border-border">
+                      <div className="flex items-center gap-2 px-3 py-2 bg-surface-alt rounded-input border border-border">
                         <FileText className="w-4 h-4 text-ink-dim shrink-0" />
                         <span className="text-xs font-medium text-ink-sub max-w-[80px] truncate">{f.name}</span>
-                        <button onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))} className="text-ink-dim hover:text-red-500">
+                        <button onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))} className="text-ink-dim hover:text-danger">
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -216,7 +213,7 @@ export default function DisputesPage() {
                 <button
                   onClick={() => fileRef.current?.click()}
                   disabled={uploadingEvidence}
-                  className="w-20 h-20 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
+                  className="w-20 h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
                 >
                   {uploadingEvidence ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Upload className="w-4 h-4" /><span className="text-3xs font-bold">Upload</span></>}
                 </button>
@@ -225,7 +222,7 @@ export default function DisputesPage() {
             </div>
 
             {submitError && (
-              <div className="px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl text-sm font-medium text-caution leading-relaxed">
+              <div className="px-4 py-3 bg-caution-surface border border-caution-edge rounded-card text-sm font-medium text-caution leading-relaxed">
                 {submitError}
               </div>
             )}
@@ -233,7 +230,7 @@ export default function DisputesPage() {
             <button
               onClick={handleSubmit}
               disabled={!subject.trim() || !description.trim() || submitting}
-              className="w-full bg-brand text-white py-4 rounded-2xl font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><LifeBuoy className="w-4 h-4" /> Submit Support Ticket</>}
             </button>

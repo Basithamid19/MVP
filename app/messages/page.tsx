@@ -7,14 +7,11 @@ import Link from 'next/link';
 import {
   Loader2, ArrowLeft, MessageCircle, Send, User, Lock,
 } from 'lucide-react';
-import MobileNav from '@/components/MobileNav';
-import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
+import CustomerLayout from '@/components/CustomerLayout';
+import { PageHeader } from '@/components/ui';
+import { avatarUrl } from '@/lib/avatar';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
-
-function avatarUrl(name?: string | null, size = 40) {
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name ?? '?')}&size=${size}&background=e8f5e9&color=1B7A5A&bold=true`;
-}
 
 function timeAgo(date: string, s: Dictionary['messagesPage']) {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -42,7 +39,11 @@ interface Message {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>}>
+    <Suspense fallback={
+      <CustomerLayout flush>
+        <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>
+      </CustomerLayout>
+    }>
       <MessagesContent />
     </Suspense>
   );
@@ -155,9 +156,11 @@ function MessagesContent() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
-      </div>
+      <CustomerLayout flush>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-ink-dim" />
+        </div>
+      </CustomerLayout>
     );
   }
 
@@ -165,14 +168,14 @@ function MessagesContent() {
   // fragment (not an early return) so the desktop two-pane below still
   // renders — the old early return blanked the page on md+ viewports.
   const mobileChat = activeThreadId && activeThread ? (
-      <div className="flex flex-col h-[calc(100dvh-4rem)] md:hidden">
+      <div className="flex flex-col h-[calc(100dvh-8.5rem)] md:hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-border-dim bg-white shrink-0">
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border-dim bg-card shrink-0">
           <button onClick={() => router.push('/messages')} className="text-ink-sub hover:text-ink transition-colors">
             <ArrowLeft className="w-5 h-5" />
           </button>
           <img
-            src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name)}
+            src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name, 40)}
             alt=""
             className="w-9 h-9 rounded-full object-cover"
           />
@@ -197,13 +200,13 @@ function MessagesContent() {
               const isMine = m.senderId === userId;
               return (
                 <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                  <div className={`max-w-[80%] px-3.5 py-2.5 rounded-card text-sm leading-relaxed ${
                     isMine
                       ? 'bg-brand text-white rounded-br-md'
-                      : 'bg-white border border-border-dim text-ink rounded-bl-md'
+                      : 'bg-card border border-border-dim text-ink rounded-bl-md'
                   }`}>
                     {m.imageUrl && (
-                      <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
+                      <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-input mb-1.5" />
                     )}
                     <p>{m.content}</p>
                     <p className={`text-3xs mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
@@ -217,7 +220,7 @@ function MessagesContent() {
         </div>
 
         {/* Input */}
-        <div className="px-3 py-2.5 border-t border-border-dim bg-white shrink-0 mb-safe">
+        <div className="px-3 py-2.5 border-t border-border-dim bg-card shrink-0 mb-safe">
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -240,7 +243,7 @@ function MessagesContent() {
   ) : null;
 
   const emptyState = loadError ? (
-    <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
+    <div className="bg-card rounded-card border border-dashed border-border-dim p-8 sm:p-12 text-center">
       <div className="w-14 h-14 bg-caution-surface rounded-full flex items-center justify-center mx-auto mb-4">
         <MessageCircle className="w-6 h-6 text-caution" />
       </div>
@@ -250,7 +253,7 @@ function MessagesContent() {
       </p>
     </div>
   ) : (
-    <div className="bg-white rounded-2xl border border-dashed border-border-dim p-8 sm:p-12 text-center">
+    <div className="bg-card rounded-card border border-dashed border-border-dim p-8 sm:p-12 text-center">
       <div className="w-14 h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
         <MessageCircle className="w-6 h-6 text-ink-dim" />
       </div>
@@ -264,16 +267,15 @@ function MessagesContent() {
   );
 
   return (
-    <>
+    <CustomerLayout flush>
       {mobileChat}
 
       {/* ── Mobile: inbox list (hidden while a chat is open) ── */}
-      <div className={`md:hidden max-w-3xl mx-auto p-4 pb-28 ${mobileChat ? 'hidden' : ''}`}>
-      <h1 className="text-xl font-semibold tracking-tight text-ink mb-1">{t.messagesPage.title}</h1>
-      <p className="text-sm text-ink-sub mb-6">{t.messagesPage.subtitle}</p>
+      <div className={`md:hidden max-w-3xl mx-auto p-4 ${mobileChat ? 'hidden' : ''}`}>
+      <PageHeader title={t.messagesPage.title} description={t.messagesPage.subtitle} className="mb-6" />
 
       {threadLocked && (
-        <div className="flex items-start gap-3 px-4 py-3 mb-4 bg-caution-surface border border-caution-edge rounded-2xl">
+        <div className="flex items-start gap-3 px-4 py-3 mb-4 bg-caution-surface border border-caution-edge rounded-card">
           <Lock className="w-4 h-4 text-caution shrink-0 mt-0.5" />
           <p className="text-sm font-medium text-caution leading-relaxed">
             {t.messagesPage.lockedNotice}
@@ -284,7 +286,7 @@ function MessagesContent() {
       {threads.length === 0 ? (
         emptyState
       ) : (
-        <div className="bg-white rounded-2xl border border-border-dim overflow-hidden divide-y divide-border-dim">
+        <div className="bg-card rounded-card border border-border-dim overflow-hidden divide-y divide-border-dim">
           {threads.map(th => (
             <Link
               key={th.id}
@@ -294,7 +296,7 @@ function MessagesContent() {
               }`}
             >
               <img
-                src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name)}
+                src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name, 44)}
                 alt=""
                 className="w-11 h-11 rounded-full object-cover shrink-0"
               />
@@ -321,16 +323,12 @@ function MessagesContent() {
 
       {/* ── Desktop: two-pane inbox ── */}
       <div className="hidden md:block max-w-6xl mx-auto p-6 lg:p-8">
-        <div className="flex items-center gap-2 mb-1">
-          {!isProvider && <CustomerMenuDrawer />}
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">{t.messagesPage.title}</h1>
-        </div>
-        <p className="text-sm text-ink-sub mb-6">{t.messagesPage.subtitle}</p>
+        <PageHeader title={t.messagesPage.title} description={t.messagesPage.subtitle} className="mb-6" />
 
         {threads.length === 0 ? (
           emptyState
         ) : (
-          <div className="flex h-[calc(100dvh-15rem)] min-h-[480px] bg-white rounded-2xl border border-border-dim overflow-hidden">
+          <div className="flex h-[calc(100dvh-19rem)] min-h-[480px] bg-card rounded-card border border-border-dim overflow-hidden">
             {/* Left: thread list */}
             <div className="w-80 lg:w-96 shrink-0 border-r border-border-dim overflow-y-auto divide-y divide-border-dim">
               {threads.map(th => (
@@ -342,7 +340,7 @@ function MessagesContent() {
                   }`}
                 >
                   <img
-                    src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name)}
+                    src={th.otherParticipant.image || avatarUrl(th.otherParticipant.name, 44)}
                     alt=""
                     className="w-11 h-11 rounded-full object-cover shrink-0"
                   />
@@ -369,9 +367,9 @@ function MessagesContent() {
               {activeThreadId && activeThread ? (
                 <>
                   {/* Header */}
-                  <div className="flex items-center gap-3 px-5 py-3 border-b border-border-dim bg-white shrink-0">
+                  <div className="flex items-center gap-3 px-5 py-3 border-b border-border-dim bg-card shrink-0">
                     <img
-                      src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name)}
+                      src={activeThread.otherParticipant.image || avatarUrl(activeThread.otherParticipant.name, 40)}
                       alt=""
                       className="w-9 h-9 rounded-full object-cover"
                     />
@@ -396,13 +394,13 @@ function MessagesContent() {
                         const isMine = m.senderId === userId;
                         return (
                           <div key={m.id} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                            <div className={`max-w-[70%] px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                            <div className={`max-w-[70%] px-3.5 py-2.5 rounded-card text-sm leading-relaxed ${
                               isMine
                                 ? 'bg-brand text-white rounded-br-md'
-                                : 'bg-white border border-border-dim text-ink rounded-bl-md'
+                                : 'bg-card border border-border-dim text-ink rounded-bl-md'
                             }`}>
                               {m.imageUrl && (
-                                <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-xl mb-1.5" />
+                                <img src={m.imageUrl} alt="Shared photo" className="max-w-full rounded-input mb-1.5" />
                               )}
                               <p>{m.content}</p>
                               <p className={`text-3xs mt-1 ${isMine ? 'text-white/60' : 'text-ink-dim'}`}>
@@ -416,7 +414,7 @@ function MessagesContent() {
                   </div>
 
                   {/* Input */}
-                  <div className="px-4 py-3 border-t border-border-dim bg-white shrink-0">
+                  <div className="px-4 py-3 border-t border-border-dim bg-card shrink-0">
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -461,8 +459,6 @@ function MessagesContent() {
           </div>
         )}
       </div>
-
-      <MobileNav />
-    </>
+    </CustomerLayout>
   );
 }

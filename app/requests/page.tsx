@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
+import { PageHeader } from '@/components/ui';
 import { Loader2, Clock, FileText, Plus, Users, AlertCircle } from 'lucide-react';
 import { localizedStatus } from '@/lib/status-labels';
 import { useTranslation } from '@/lib/i18n';
@@ -40,18 +41,21 @@ export default function RequestsPage() {
   return (
     <CustomerLayout maxWidth="max-w-2xl">
       <div className="space-y-5">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">{t.requestsList.title}</h1>
-          <Link
-            href="/requests/new"
-            className="inline-flex items-center gap-1.5 bg-brand text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-brand-dark transition-all shrink-0"
-          >
-            <Plus className="w-4 h-4" /> {t.requestsList.newRequest}
-          </Link>
-        </div>
+        <PageHeader
+          title={t.requestsList.title}
+          className="mb-0 items-center"
+          action={
+            <Link
+              href="/requests/new"
+              className="inline-flex items-center gap-1.5 bg-brand text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-brand-dark transition-all shrink-0"
+            >
+              <Plus className="w-4 h-4" /> {t.requestsList.newRequest}
+            </Link>
+          }
+        />
 
         {requests.length === 0 ? (
-          <div className="bg-white rounded-panel border border-dashed border-border-dim p-12 text-center">
+          <div className="bg-card rounded-panel border border-dashed border-border-dim p-12 text-center">
             <div className="w-14 h-14 bg-canvas rounded-full flex items-center justify-center mx-auto mb-4">
               <FileText className="w-7 h-7 text-ink-dim" />
             </div>
@@ -93,7 +97,7 @@ function RequestCard({ r }: { r: any }) {
   return (
     <Link
       href={`/requests/${r.id}`}
-      className="block bg-white rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
+      className="block bg-card rounded-panel border border-border-dim p-4 hover:border-brand/30 hover:shadow-md transition-all"
     >
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <p className="font-bold text-sm text-ink">{r.category?.name ?? t.requestsList.serviceFallback}</p>

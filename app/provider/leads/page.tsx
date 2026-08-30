@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { TIME_OF_DAY_LABELS } from '@/lib/time';
 import { useTranslation } from '@/lib/i18n';
+import { PageHeader } from '@/components/ui';
 
 function ResponseTimer({ createdAt }: { createdAt: string }) {
   const t = useTranslation();
@@ -101,41 +102,40 @@ export default function ProviderLeadsPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto">
       {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-canvas rounded-2xl border border-border-dim mb-5">
-        <div className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
+      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
+        <div className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
           {t.providerNav.leads}
         </div>
-        <Link href="/provider/jobs" className="flex-1 py-2.5 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+        <Link href="/provider/jobs" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
           {t.providerNav.jobs}
         </Link>
       </div>
 
-      <div className="flex items-center justify-between mb-4 sm:mb-8">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-ink">{t.leadsPage.title}</h1>
-          <p className="text-xs sm:text-sm text-ink-sub mt-0.5 sm:mt-1">
-            {visibleLeads.length} {visibleLeads.length !== 1 ? t.leadsPage.openRequestsPlural : t.leadsPage.openRequestSingular}{urgentCt > 0 ? ` · ${urgentCt} ${t.leadsPage.urgentCountSuffix}` : ''}
-          </p>
-        </div>
-        <button onClick={load} className="p-2 border border-border-dim rounded-xl hover:bg-surface-alt transition-colors">
-          <RefreshCcw className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
-        </button>
-      </div>
+      <PageHeader
+        title={t.leadsPage.title}
+        description={`${visibleLeads.length} ${visibleLeads.length !== 1 ? t.leadsPage.openRequestsPlural : t.leadsPage.openRequestSingular}${urgentCt > 0 ? ` · ${urgentCt} ${t.leadsPage.urgentCountSuffix}` : ''}`}
+        className="mb-4 sm:mb-8"
+        action={
+          <button onClick={load} className="p-2 border border-border-dim rounded-input hover:bg-surface-alt transition-colors">
+            <RefreshCcw className="w-4 h-4 sm:w-5 sm:h-5 text-ink-sub" />
+          </button>
+        }
+      />
 
       {/* Category setup nudge — shown when provider has no categories */}
       {!hasCategories && (
         <Link
           href="/provider/settings"
-          className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5 mb-5 hover:bg-amber-100 transition-colors"
+          className="flex items-start gap-3 bg-caution-surface border border-caution-edge rounded-card px-4 py-3.5 mb-5 hover:bg-caution-surface/70 transition-colors"
         >
-          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-900">{t.leadsPage.setCategoriesTitle}</p>
-            <p className="text-xs text-amber-700 mt-0.5">{t.leadsPage.setCategoriesDesc}</p>
+            <p className="text-sm font-semibold text-caution">{t.leadsPage.setCategoriesTitle}</p>
+            <p className="text-xs text-caution/80 mt-0.5">{t.leadsPage.setCategoriesDesc}</p>
           </div>
-          <ChevronRight className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <ChevronRight className="w-4 h-4 text-caution shrink-0 mt-0.5" />
         </Link>
       )}
 
@@ -149,7 +149,7 @@ export default function ProviderLeadsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t.leadsPage.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-3 sm:py-3 bg-white border border-border-dim rounded-xl sm:rounded-2xl focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-sm transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-3 sm:py-3 bg-card border border-border-dim rounded-input sm:rounded-card focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-sm transition-all shadow-card"
             />
           </div>
         )}
@@ -162,8 +162,8 @@ export default function ProviderLeadsPage() {
             <button key={f.key} onClick={() => setFilter(f.key)}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide transition-all ${
                 filter === f.key
-                  ? 'bg-brand text-white shadow-sm'
-                  : 'bg-white text-ink-sub border border-border-dim hover:text-ink'
+                  ? 'bg-brand text-white shadow-card'
+                  : 'bg-card text-ink-sub border border-border-dim hover:text-ink'
               }`}>
               {f.label} ({f.count})
             </button>
@@ -172,7 +172,7 @@ export default function ProviderLeadsPage() {
       </div>
 
       {filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-dashed border-border-dim p-6 sm:p-10 text-center">
+        <div className="bg-card rounded-card sm:rounded-panel border border-dashed border-border-dim p-6 sm:p-10 text-center">
           <div className="w-10 h-10 sm:w-14 sm:h-14 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-3">
             <Inbox className="w-5 h-5 sm:w-6 sm:h-6 text-ink-dim" />
           </div>
@@ -197,7 +197,7 @@ export default function ProviderLeadsPage() {
             const isNew = ageMs < 3600000; // < 1 hour
 
             return (
-              <div key={lead.id} className={`bg-white rounded-2xl border transition-all shadow-sm hover:shadow-md ${
+              <div key={lead.id} className={`bg-card rounded-card border transition-all shadow-card hover:shadow-md ${
                 lead.isUrgent ? 'border-caution/30' : isNew ? 'border-info/30' : 'border-border-dim hover:border-brand/30'
               }`}>
                 <div
@@ -262,25 +262,25 @@ export default function ProviderLeadsPage() {
                 {/* Expanded details */}
                 {isExpanded && (
                   <div className="px-4 sm:px-5 pb-4 sm:pb-5 border-t border-border-dim pt-4 sm:pt-5">
-                    <div className="bg-surface-alt rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-5 text-sm text-ink-sub leading-relaxed">
+                    <div className="bg-surface-alt rounded-input sm:rounded-card p-4 sm:p-5 mb-4 sm:mb-5 text-sm text-ink-sub leading-relaxed">
                       {lead.description}
                     </div>
                     {Array.isArray(lead.photoUrls) && lead.photoUrls.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-4 sm:mb-5">
                         {lead.photoUrls.map((u: string) => (
-                          <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-xl overflow-hidden border border-border-dim">
+                          <a key={u} href={u} target="_blank" rel="noreferrer" className="block w-16 h-16 rounded-input overflow-hidden border border-border-dim">
                             <img src={u} alt="Request photo" className="w-full h-full object-cover" />
                           </a>
                         ))}
                       </div>
                     )}
                     <div className="grid grid-cols-2 sm:grid-cols-2 gap-2.5 sm:gap-4 mb-4 sm:mb-5 text-sm">
-                      <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
+                      <div className="bg-card border border-border-dim rounded-input p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.dateLabel}</p>
                         <p className="font-semibold text-sm sm:text-base text-ink">{new Date(lead.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                         <p className="text-2xs sm:text-xs text-ink-dim mt-0.5">{TIME_OF_DAY_LABELS[lead.timeOfDay] ?? t.wizard.timeFlexible}</p>
                       </div>
-                      <div className="bg-white border border-border-dim rounded-xl p-3 sm:p-4">
+                      <div className="bg-card border border-border-dim rounded-input p-3 sm:p-4">
                         <p className="text-ink-sub text-xs sm:text-sm mb-0.5 sm:mb-1">{t.wizard.reviewBudget}</p>
                         <p className="font-semibold text-sm sm:text-base text-ink">{lead.budget ? `€${lead.budget}` : t.leadsPage.notSpecified}</p>
                       </div>
@@ -288,7 +288,7 @@ export default function ProviderLeadsPage() {
                     <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
                       <Link
                         href={`/provider/quote/${lead.id}`}
-                        className="flex-1 bg-brand text-white py-3 sm:py-3.5 rounded-full text-sm font-medium text-center hover:bg-brand-dark transition-all shadow-sm hover:shadow-md"
+                        className="flex-1 bg-brand text-white py-3 sm:py-3.5 rounded-full text-sm font-medium text-center hover:bg-brand-dark transition-all shadow-card hover:shadow-md"
                       >
                         {t.leadsPage.sendQuote}
                       </Link>

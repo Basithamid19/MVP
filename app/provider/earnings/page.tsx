@@ -11,6 +11,7 @@ import {
 import Link from 'next/link';
 import { PLATFORM_FEE_RATE } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
+import { PageHeader } from '@/components/ui';
 
 // The real platform fee charged by the payment code (Stripe application_fee).
 // This page previously hardcoded a fabricated 12%.
@@ -101,29 +102,32 @@ export default function EarningsPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl mx-auto">
+    <div className="max-w-3xl mx-auto">
       {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-2xl shadow-sm mb-4">
-        <Link href="/provider/performance" className="flex-1 py-2 rounded-xl text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
+      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-4">
+        <Link href="/provider/performance" className="flex-1 py-2 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
           {t.providerNav.performance}
         </Link>
-        <div className="flex-1 py-2 rounded-xl text-sm font-semibold text-center transition-all bg-white text-brand shadow-card">
+        <div className="flex-1 py-2 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
           {t.providerNav.earnings}
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink">{t.earningsPage.title}</h1>
-        {/* Tax Export — desktop only in header */}
-        <button onClick={exportTaxCSV} className="hidden sm:flex items-center gap-2 text-sm font-medium border border-border-dim px-5 py-2.5 rounded-full hover:border-brand/30 hover:shadow-sm transition-all bg-white">
-          <Download className="w-4 h-4" /> {t.earningsPage.taxExport}
-        </button>
-      </div>
+      <PageHeader
+        title={t.earningsPage.title}
+        className="mb-4 sm:mb-8"
+        action={
+          /* Tax Export — desktop only in header */
+          <button onClick={exportTaxCSV} className="hidden sm:flex items-center gap-2 text-sm font-medium border border-border-dim px-5 py-2.5 rounded-full hover:border-brand/30 hover:shadow-card transition-all bg-card">
+            <Download className="w-4 h-4" /> {t.earningsPage.taxExport}
+          </button>
+        }
+      />
 
       {/* ── Mobile: Earnings hero composition ── */}
       <div className="sm:hidden mb-4">
         {/* Total earned — enriched hero */}
-        <div className="bg-brand text-white rounded-2xl p-4 shadow-md mb-2.5">
+        <div className="bg-brand text-white rounded-card p-4 shadow-md mb-2.5">
           <div className="flex items-center justify-between mb-1">
             <p className="text-3xs text-white/50 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
             <div className="flex items-center gap-1 text-white/50">
@@ -141,7 +145,7 @@ export default function EarningsPage() {
         </div>
         {/* Pending — compact companion */}
         {pending.length > 0 ? (
-          <div className="flex items-center justify-between bg-white border border-border-dim rounded-xl px-3.5 py-2.5 shadow-sm">
+          <div className="flex items-center justify-between bg-card border border-border-dim rounded-input px-3.5 py-2.5 shadow-card">
             <div className="flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-ink-dim" />
               <span className="text-xs font-medium text-ink-sub">{t.earningsPage.pendingLabel}</span>
@@ -152,7 +156,7 @@ export default function EarningsPage() {
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between bg-surface-alt rounded-xl px-3.5 py-2.5">
+          <div className="flex items-center justify-between bg-surface-alt rounded-input px-3.5 py-2.5">
             <div className="flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-ink-dim" />
               <span className="text-xs text-ink-dim">{t.earningsPage.noPendingEarnings}</span>
@@ -164,17 +168,17 @@ export default function EarningsPage() {
 
       {/* ── Desktop: Original summary cards grid ── */}
       <div className="hidden sm:grid sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-brand text-white rounded-2xl p-6 shadow-md">
+        <div className="bg-brand text-white rounded-card p-6 shadow-md">
           <p className="text-3xs text-white/60 font-bold uppercase tracking-widest mb-2">{t.earningsPage.totalEarned}</p>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
           <p className="text-sm text-white/60 mt-2">{completed.length} {t.earningsPage.jobsSuffix}</p>
         </div>
-        <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
+        <div className="bg-card border border-border-dim rounded-card p-6 shadow-card">
           <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.pendingLabel}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{pendingAmount.toFixed(2)}</p>
           <p className="text-sm text-ink-sub mt-2">{pending.length} {t.earningsPage.activeJobsSuffix}</p>
         </div>
-        <div className="bg-white border border-border-dim rounded-2xl p-6 shadow-sm">
+        <div className="bg-card border border-border-dim rounded-card p-6 shadow-card">
           <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.settled}</p>
           <p className="text-3xl font-semibold tracking-tight text-ink">€{settledNet.toFixed(2)}</p>
           <p className="text-sm text-ink-sub mt-2">
@@ -185,7 +189,7 @@ export default function EarningsPage() {
 
       {/* Earnings chart */}
       {months.length > 0 && (
-        <div className={`bg-white rounded-2xl sm:rounded-3xl border border-border-dim shadow-sm mb-3.5 sm:mb-8 ${
+        <div className={`bg-card rounded-card sm:rounded-panel border border-border-dim shadow-card mb-3.5 sm:mb-8 ${
           months.length <= 1 ? 'p-4 sm:p-6' : 'px-4 pt-3.5 pb-4 sm:p-6'
         }`}>
           <div className="flex items-center justify-between mb-3 sm:mb-5">
@@ -200,7 +204,7 @@ export default function EarningsPage() {
           {months.length === 1 ? (
             /* Single data point — compact inline display */
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-brand-muted rounded-xl flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 bg-brand-muted rounded-input flex items-center justify-center shrink-0">
                 <TrendingUp className="w-4 h-4 text-brand" />
               </div>
               <div className="flex-1">
@@ -236,15 +240,15 @@ export default function EarningsPage() {
       )}
 
       {/* Earnings sub-tabs — tighter to content */}
-      <div className="flex gap-1 p-1 bg-surface-alt rounded-xl sm:rounded-2xl mb-3.5 sm:mb-8 overflow-x-auto">
+      <div className="flex gap-1 p-1 bg-surface-alt rounded-input sm:rounded-card mb-3.5 sm:mb-8 overflow-x-auto">
         {([
           { key: 'overview' as const, label: t.earningsPage.tabOverview },
           { key: 'history' as const, label: t.earningsPage.tabHistory },
           { key: 'payouts' as const, label: t.earningsPage.tabPayouts },
         ]).map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`flex-1 py-2 rounded-lg sm:rounded-xl text-xs transition-all capitalize ${
-              tab === key ? 'bg-white text-brand shadow-card font-semibold' : 'text-ink-sub hover:text-ink font-medium'
+            className={`flex-1 py-2 rounded-lg sm:rounded-input text-xs transition-all capitalize ${
+              tab === key ? 'bg-card text-brand shadow-card font-semibold' : 'text-ink-sub hover:text-ink font-medium'
             }`}>
             {label}
           </button>
@@ -253,7 +257,7 @@ export default function EarningsPage() {
 
       {/* Overview */}
       {tab === 'overview' && (
-        <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 shadow-sm">
+        <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 shadow-card">
           <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">{t.earningsPage.earningsBreakdown}</p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-ink-sub">{t.earningsPage.grossRevenue}</span><span className="font-semibold">€{totalGross.toFixed(2)}</span></div>
@@ -271,17 +275,17 @@ export default function EarningsPage() {
       {tab === 'history' && (
         <div>
           {completed.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-dashed border-border p-6 sm:p-10 text-center">
+            <div className="bg-card rounded-card border border-dashed border-border p-6 sm:p-10 text-center">
               <DollarSign className="w-7 h-7 text-ink-dim mx-auto mb-2" />
               <p className="font-semibold text-sm mb-1">{t.earningsPage.noCompletedTitle}</p>
               <p className="text-xs text-ink-dim">{t.earningsPage.noCompletedDesc}</p>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
+            <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden divide-y divide-border-dim">
               {completed.map((b, idx) => (
                 <Link key={b.id} href={`/provider/jobs/${b.id}`}
                   className="flex items-center gap-3 p-3.5 sm:p-4 hover:bg-surface-alt/50 transition-colors">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-trust-surface rounded-lg sm:rounded-xl flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-trust-surface rounded-lg sm:rounded-input flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-trust" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -310,9 +314,9 @@ export default function EarningsPage() {
       {tab === 'payouts' && (
         <div className="space-y-3 sm:space-y-4">
           {stripeOnboarded ? (
-            <div className="bg-white rounded-2xl border border-border-dim p-4 sm:p-5 shadow-sm">
+            <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 shadow-card">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 bg-trust-surface rounded-xl flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 bg-trust-surface rounded-input flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4 text-trust" />
                 </div>
                 <div>
@@ -342,7 +346,7 @@ export default function EarningsPage() {
               </button>
             </div>
           ) : (
-            <div className="bg-caution-surface border border-caution-edge rounded-2xl p-4 sm:p-5">
+            <div className="bg-caution-surface border border-caution-edge rounded-card p-4 sm:p-5">
               <div className="flex items-start gap-3">
                 <Landmark className="w-5 h-5 text-caution shrink-0 mt-0.5" />
                 <div className="flex-1">
@@ -353,7 +357,7 @@ export default function EarningsPage() {
                   <button
                     onClick={setUpPayouts}
                     disabled={connectingStripe || stripeOnboarded === null}
-                    className="text-xs sm:text-sm font-bold bg-caution text-white px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className="text-xs sm:text-sm font-bold bg-caution text-white px-4 py-2 rounded-input hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
                     {connectingStripe ? t.earningsPage.openingStripe : t.earningsPage.setUpPayouts}
                   </button>
@@ -363,9 +367,9 @@ export default function EarningsPage() {
           )}
 
           {/* Tax export — mobile only */}
-          <div className="sm:hidden bg-white rounded-2xl border border-border-dim shadow-sm p-4">
+          <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card p-4">
             <button onClick={exportTaxCSV} className="w-full flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-surface-alt rounded-xl flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
+              <div className="w-9 h-9 bg-surface-alt rounded-input flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
                 <FileText className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
               </div>
               <div className="flex-1 text-left">

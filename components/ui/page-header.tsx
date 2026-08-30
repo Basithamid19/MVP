@@ -35,7 +35,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   const titleSize = {
     sm: 'text-lg font-bold',
-    md: 'text-2xl font-bold tracking-tight',
+    md: 'text-2xl sm:text-3xl font-bold tracking-tight',
     lg: 'text-3xl font-bold tracking-tight',
   }[size];
 
@@ -48,7 +48,7 @@ export function PageHeader({
     >
       <div className="min-w-0">
         {eyebrow && (
-          <p className="text-[10px] font-bold uppercase tracking-widest text-ink-dim mb-2">
+          <p className="text-3xs font-bold uppercase tracking-widest text-ink-dim mb-2">
             {eyebrow}
           </p>
         )}

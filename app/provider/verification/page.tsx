@@ -8,6 +8,7 @@ import {
   ArrowRight, Loader2, AlertCircle,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { PageHeader } from '@/components/ui';
 
 interface VerificationDoc {
   id: string;
@@ -20,9 +21,9 @@ interface VerificationDoc {
 
 // Style-only map — labels come from the dictionary in the component.
 const STATUS_STYLES: Record<string, { bg: string; text: string; icon: React.ElementType }> = {
-  PENDING:  { bg: 'bg-yellow-50', text: 'text-yellow-700', icon: Clock },
-  APPROVED: { bg: 'bg-green-50', text: 'text-green-700', icon: CheckCircle2 },
-  REJECTED: { bg: 'bg-red-50', text: 'text-red-700', icon: XCircle },
+  PENDING:  { bg: 'bg-caution-surface', text: 'text-caution', icon: Clock },
+  APPROVED: { bg: 'bg-trust-surface', text: 'text-trust', icon: CheckCircle2 },
+  REJECTED: { bg: 'bg-danger-surface', text: 'text-danger', icon: XCircle },
 };
 
 export default function VerificationStatusPage() {
@@ -69,9 +70,9 @@ export default function VerificationStatusPage() {
 
   const TIER_LABELS: Record<string, { label: string; desc: string; color: string }> = {
     TIER0_BASIC: { label: t.verificationPage.tierBasic, desc: t.verificationPage.tierBasicDesc, color: 'text-ink-dim' },
-    TIER1_ID_VERIFIED: { label: t.verificationPage.tierIdVerified, desc: t.verificationPage.tierIdVerifiedDesc, color: 'text-blue-600' },
+    TIER1_ID_VERIFIED: { label: t.verificationPage.tierIdVerified, desc: t.verificationPage.tierIdVerifiedDesc, color: 'text-info' },
     TIER2_TRADE_VERIFIED: { label: t.verificationPage.tierTradeVerified, desc: t.verificationPage.tierTradeVerifiedDesc, color: 'text-brand' },
-    TIER3_ENHANCED: { label: t.verificationPage.tierEnhanced, desc: t.verificationPage.tierEnhancedDesc, color: 'text-green-600' },
+    TIER3_ENHANCED: { label: t.verificationPage.tierEnhanced, desc: t.verificationPage.tierEnhancedDesc, color: 'text-trust' },
   };
 
   const tierInfo = TIER_LABELS[tier] ?? TIER_LABELS.TIER0_BASIC;
@@ -80,21 +81,20 @@ export default function VerificationStatusPage() {
   const rejectedCount = documents.filter(d => d.status === 'REJECTED').length;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-      <h1 className="text-2xl font-bold tracking-tight text-ink mb-1">{t.verificationPage.title}</h1>
-      <p className="text-sm text-ink-dim mb-8">{t.verificationPage.subtitle}</p>
+    <div className="max-w-2xl mx-auto">
+      <PageHeader title={t.verificationPage.title} description={t.verificationPage.subtitle} />
 
       {/* Tier card */}
-      <div className={`rounded-2xl border p-6 mb-6 ${isVerified ? 'bg-green-50 border-green-200' : 'bg-white border-border-dim'}`}>
+      <div className={`rounded-card border p-6 mb-6 ${isVerified ? 'bg-trust-surface border-trust-edge' : 'bg-card border-border-dim'}`}>
         <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 ${isVerified ? 'bg-green-100' : 'bg-surface-alt'}`}>
-            <ShieldCheck className={`w-7 h-7 ${isVerified ? 'text-green-600' : 'text-ink-dim'}`} />
+          <div className={`w-14 h-14 rounded-card flex items-center justify-center shrink-0 ${isVerified ? 'bg-trust-edge' : 'bg-surface-alt'}`}>
+            <ShieldCheck className={`w-7 h-7 ${isVerified ? 'text-trust' : 'text-ink-dim'}`} />
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
               <h2 className={`text-lg font-bold ${tierInfo.color}`}>{tierInfo.label}</h2>
               {isVerified && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-3xs font-bold uppercase tracking-wider rounded-full">
+                <span className="px-2 py-0.5 bg-trust-edge text-trust text-3xs font-bold uppercase tracking-wider rounded-full">
                   {t.common.verified}
                 </span>
               )}
@@ -107,17 +107,17 @@ export default function VerificationStatusPage() {
       {/* Summary stats */}
       {documents.length > 0 && (
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-yellow-50 rounded-xl p-4 text-center border border-yellow-100">
-            <p className="text-2xl font-bold text-yellow-700">{pendingCount}</p>
-            <p className="text-xs font-medium text-yellow-600">{t.verificationPage.statPending}</p>
+          <div className="bg-caution-surface rounded-input p-4 text-center border border-caution-edge">
+            <p className="text-2xl font-bold text-caution">{pendingCount}</p>
+            <p className="text-xs font-medium text-caution">{t.verificationPage.statPending}</p>
           </div>
-          <div className="bg-green-50 rounded-xl p-4 text-center border border-green-100">
-            <p className="text-2xl font-bold text-green-700">{approvedCount}</p>
-            <p className="text-xs font-medium text-green-600">{t.verificationPage.statApproved}</p>
+          <div className="bg-trust-surface rounded-input p-4 text-center border border-trust-edge">
+            <p className="text-2xl font-bold text-trust">{approvedCount}</p>
+            <p className="text-xs font-medium text-trust">{t.verificationPage.statApproved}</p>
           </div>
-          <div className="bg-red-50 rounded-xl p-4 text-center border border-red-100">
-            <p className="text-2xl font-bold text-red-700">{rejectedCount}</p>
-            <p className="text-xs font-medium text-red-600">{t.verificationPage.statRejected}</p>
+          <div className="bg-danger-surface rounded-input p-4 text-center border border-danger-edge">
+            <p className="text-2xl font-bold text-danger">{rejectedCount}</p>
+            <p className="text-xs font-medium text-danger">{t.verificationPage.statRejected}</p>
           </div>
         </div>
       )}
@@ -130,9 +130,9 @@ export default function VerificationStatusPage() {
             const st = STATUS_STYLES[doc.status] ?? STATUS_STYLES.PENDING;
             const Icon = st.icon;
             return (
-              <div key={doc.id} className={`rounded-xl border p-4 ${st.bg} border-opacity-50`}>
+              <div key={doc.id} className={`rounded-input border p-4 ${st.bg} border-opacity-50`}>
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shrink-0 border border-border-dim">
+                  <div className="w-10 h-10 bg-card rounded-input flex items-center justify-center shrink-0 border border-border-dim">
                     <FileText className="w-5 h-5 text-ink-sub" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -147,9 +147,9 @@ export default function VerificationStatusPage() {
                   </div>
                 </div>
                 {doc.status === 'REJECTED' && doc.rejectionReason && (
-                  <div className="mt-3 ml-14 flex items-start gap-2 p-2.5 bg-white rounded-lg border border-red-200">
-                    <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-700">{doc.rejectionReason}</p>
+                  <div className="mt-3 ml-14 flex items-start gap-2 p-2.5 bg-card rounded-lg border border-danger-edge">
+                    <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
+                    <p className="text-xs text-danger">{doc.rejectionReason}</p>
                   </div>
                 )}
               </div>
@@ -157,7 +157,7 @@ export default function VerificationStatusPage() {
           })}
         </div>
       ) : (
-        <div className="text-center py-12 bg-white rounded-2xl border border-border-dim mb-8">
+        <div className="text-center py-12 bg-card rounded-card border border-border-dim mb-8">
           <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="w-8 h-8 text-ink-dim" />
           </div>
@@ -167,7 +167,7 @@ export default function VerificationStatusPage() {
           </p>
           <Link
             href="/provider/onboarding"
-            className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-xl font-bold hover:bg-brand-dark transition-colors"
+            className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 rounded-input font-bold hover:bg-brand-dark transition-colors"
           >
             {t.verificationPage.startVerification} <ArrowRight className="w-4 h-4" />
           </Link>
@@ -176,17 +176,17 @@ export default function VerificationStatusPage() {
 
       {/* Resubmit if rejected */}
       {rejectedCount > 0 && (
-        <div className="p-5 bg-red-50 border border-red-100 rounded-xl">
+        <div className="p-5 bg-danger-surface border border-danger-edge rounded-input">
           <div className="flex items-start gap-3">
-            <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <XCircle className="w-5 h-5 text-danger shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-sm text-red-900 mb-1">{t.verificationPage.rejectedTitle}</p>
-              <p className="text-xs text-red-700 mb-3">
+              <p className="font-bold text-sm text-danger mb-1">{t.verificationPage.rejectedTitle}</p>
+              <p className="text-xs text-danger mb-3">
                 {t.verificationPage.rejectedDesc}
               </p>
               <Link
                 href="/provider/onboarding"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 hover:text-red-900 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-danger hover:text-danger transition-colors"
               >
                 {t.verificationPage.resubmit} <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -197,12 +197,12 @@ export default function VerificationStatusPage() {
 
       {/* Pending notice */}
       {pendingCount > 0 && rejectedCount === 0 && (
-        <div className="p-5 bg-yellow-50 border border-yellow-100 rounded-xl">
+        <div className="p-5 bg-caution-surface border border-caution-edge rounded-input">
           <div className="flex items-start gap-3">
-            <Clock className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+            <Clock className="w-5 h-5 text-caution shrink-0 mt-0.5" />
             <div>
-              <p className="font-bold text-sm text-yellow-900 mb-1">{t.verificationPage.pendingTitle}</p>
-              <p className="text-xs text-yellow-700">
+              <p className="font-bold text-sm text-caution mb-1">{t.verificationPage.pendingTitle}</p>
+              <p className="text-xs text-caution">
                 {t.verificationPage.pendingDesc}
               </p>
             </div>

@@ -79,9 +79,9 @@ export default function QuoteBuilderPage() {
 
   if (submitted) {
     return (
-      <div className="p-6 lg:p-8 max-w-2xl mx-auto text-center py-20">
-        <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-10 h-10 text-green-600" />
+      <div className="max-w-2xl mx-auto text-center py-20">
+        <div className="w-20 h-20 bg-trust-surface rounded-full flex items-center justify-center mx-auto mb-6">
+          <CheckCircle2 className="w-10 h-10 text-trust" />
         </div>
         <h1 className="text-2xl font-bold mb-3">{t.quoteBuilder.sentTitle}</h1>
         <p className="text-ink-dim mb-8">{t.quoteBuilder.sentDescPrefix} <strong>€{totalPrice().toFixed(2)}</strong> {t.quoteBuilder.sentDescSuffix}</p>
@@ -93,7 +93,7 @@ export default function QuoteBuilderPage() {
   }
 
   return (
-    <div className="p-6 lg:p-8 max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
         <Link href="/provider/leads" className="p-2 hover:bg-surface-alt rounded-full transition-colors">
           <ArrowLeft className="w-5 h-5" />
@@ -109,7 +109,7 @@ export default function QuoteBuilderPage() {
         <div className="bg-surface-alt border border-border-dim rounded-card p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
             {request.isUrgent && (
-              <span className="flex items-center gap-1 text-xs font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+              <span className="flex items-center gap-1 text-xs font-bold text-caution bg-caution-surface px-2 py-0.5 rounded-full">
                 <AlertCircle className="w-3 h-3" /> {t.leadsPage.badgeUrgent}
               </span>
             )}
@@ -131,14 +131,14 @@ export default function QuoteBuilderPage() {
             <span>{new Date(request.dateWindow).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
             <span>·</span>
             <span>{TIME_OF_DAY_LABELS[request.timeOfDay] ?? t.wizard.timeFlexible}</span>
-            {request.budget && <><span>·</span><span className="text-green-600 font-bold">{t.quoteInbox.budgetLabel} €{request.budget}</span></>}
+            {request.budget && <><span>·</span><span className="text-trust font-bold">{t.quoteInbox.budgetLabel} €{request.budget}</span></>}
           </div>
         </div>
       )}
 
       <div className="space-y-5">
         {/* Base price */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="font-bold mb-4 flex items-center gap-2"><DollarSign className="w-4 h-4" /> {t.quoteBuilder.pricing}</p>
           <div className="grid sm:grid-cols-2 gap-4 mb-4">
             <div>
@@ -190,7 +190,7 @@ export default function QuoteBuilderPage() {
                     className="w-full pl-7 pr-3 py-2 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand"
                   />
                 </div>
-                <button onClick={() => setLineItems(p => p.filter((_, j) => j !== i))} className="text-ink-dim hover:text-red-500 transition-colors">
+                <button onClick={() => setLineItems(p => p.filter((_, j) => j !== i))} className="text-ink-dim hover:text-danger transition-colors">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -213,7 +213,7 @@ export default function QuoteBuilderPage() {
         </div>
 
         {/* Notes */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card space-y-4">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card space-y-4">
           <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> {t.quoteBuilder.notesTerms}</p>
           <div>
             <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">{t.quoteBuilder.messageToCustomer}</label>
@@ -248,7 +248,7 @@ export default function QuoteBuilderPage() {
         </div>
 
         {/* Expiry */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="font-bold mb-4 flex items-center gap-2"><Calendar className="w-4 h-4" /> {t.quoteBuilder.quoteExpiry}</p>
           <div className="flex gap-2">
             {['1', '2', '3', '7'].map(d => (
@@ -264,7 +264,7 @@ export default function QuoteBuilderPage() {
         </div>
 
         {submitError && (
-          <div className="flex items-start gap-2.5 px-4 py-3 bg-caution-surface border border-caution-edge rounded-2xl">
+          <div className="flex items-start gap-2.5 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
             <AlertCircle className="w-4 h-4 text-caution shrink-0 mt-0.5" />
             <p className="text-sm font-medium text-caution leading-relaxed">{submitError}</p>
           </div>

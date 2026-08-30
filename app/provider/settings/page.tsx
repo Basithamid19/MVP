@@ -11,51 +11,8 @@ import {
   LifeBuoy, Mail, BarChart2, LogOut, AlertCircle,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-
-/* ── Reusable row ── */
-function SettingsRow({
-  icon: Icon,
-  label,
-  sub,
-  href,
-  onClick,
-  muted,
-}: {
-  icon: React.ElementType;
-  label: string;
-  sub?: string;
-  href?: string;
-  onClick?: () => void;
-  muted?: boolean;
-}) {
-  const inner = (
-    <div className="flex items-center gap-3 px-4 py-3 active:bg-surface-alt/50 transition-colors">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${muted ? 'bg-surface-alt' : 'bg-brand-muted'}`}>
-        <Icon className={`w-4 h-4 ${muted ? 'text-ink-dim' : 'text-brand'}`} strokeWidth={1.8} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${muted ? 'text-ink-sub' : 'text-ink'}`}>{label}</p>
-        {sub && <p className="text-2xs text-ink-dim mt-0.5 leading-snug">{sub}</p>}
-      </div>
-      <ChevronRight className="w-3.5 h-3.5 text-ink-dim/40 shrink-0" />
-    </div>
-  );
-
-  if (href) return <Link href={href} className="block">{inner}</Link>;
-  return <button onClick={onClick} className="w-full text-left">{inner}</button>;
-}
-
-/* ── Section wrapper ── */
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="px-4">
-      <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 px-0.5">{title}</p>
-      <div className="bg-white rounded-2xl border border-border-dim shadow-sm overflow-hidden divide-y divide-border-dim">
-        {children}
-      </div>
-    </div>
-  );
-}
+import { Section, SettingsRow, HeroCard } from '@/components/settings';
+import { PageHeader } from '@/components/ui';
 
 export default function ProviderSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
@@ -152,7 +109,7 @@ export default function ProviderSettingsPage() {
 
   if (loading || status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-canvas">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-brand" />
       </div>
     );
@@ -160,7 +117,7 @@ export default function ProviderSettingsPage() {
 
   if (loadError) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center px-6">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-center">
         <p className="text-base font-semibold text-ink">{t.providerSettingsHub.loadErrorTitle}</p>
         <p className="text-sm text-ink-sub max-w-xs leading-relaxed">{t.providerSettingsHub.loadErrorDesc}</p>
         <button
@@ -179,19 +136,14 @@ export default function ProviderSettingsPage() {
   const totalEarned = invoices.reduce((sum, b) => sum + (b.totalAmount ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-canvas overflow-x-hidden w-full flex flex-col pb-28">
+    <div className="max-w-2xl mx-auto">
 
-      {/* ── Top bar (mobile only — desktop has sidebar) ── */}
-      <header className="bg-white border-b border-border-dim sticky top-0 z-20 w-full md:hidden">
-        <div className="flex items-center px-4 h-14">
-          <h1 className="text-base font-bold text-ink">{t.providerSettingsHub.headerAccount}</h1>
-        </div>
-      </header>
+      <PageHeader title={t.providerSettingsHub.headerAccount} className="mb-5" />
 
       {/* Avatar error surfaced above hero — keeps the upload failure visible
           since the optimistic localAvatar is reverted on error. */}
       {avatarError && (
-        <div className="mx-4 mt-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-xl text-sm text-caution font-medium flex items-center justify-between gap-2">
+        <div className="mb-4 px-4 py-3 bg-caution-surface border border-caution-edge rounded-input text-sm text-caution font-medium flex items-center justify-between gap-2">
           <span>{avatarError}</span>
           <button onClick={() => setAvatarError(null)} className="shrink-0 text-caution hover:opacity-70" aria-label="Dismiss">
             <span className="text-base leading-none">×</span>
@@ -200,19 +152,17 @@ export default function ProviderSettingsPage() {
       )}
 
       {/* ── Profile hero ── */}
-      <div className="px-4 pt-5 pb-1">
-        <div className="bg-brand rounded-2xl p-4 relative overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 80% 20%, white 0%, transparent 60%)' }} />
+      <HeroCard>
           <div className="relative z-10 flex items-center gap-3.5">
             <label className="relative w-14 h-14 shrink-0 cursor-pointer">
               <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-              <div className="w-14 h-14 rounded-xl bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
+              <div className="w-14 h-14 rounded-input bg-white/20 border-2 border-white/30 overflow-hidden flex items-center justify-center">
                 {localAvatar || user?.image
                   ? <img src={localAvatar ?? user?.image ?? ''} alt={user?.name ?? ''} className="w-full h-full object-cover" />
                   : <User className="w-7 h-7 text-white/80" />
                 }
               </div>
-              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-sm">
+              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full flex items-center justify-center shadow-card">
                 {avatarUploading
                   ? <Loader2 className="w-3 h-3 text-brand animate-spin" />
                   : <Camera className="w-3 h-3 text-brand" />
@@ -255,11 +205,10 @@ export default function ProviderSettingsPage() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+      </HeroCard>
 
       {/* ── Sections ── */}
-      <div className="flex flex-col gap-6 pt-4">
+      <div className="flex flex-col gap-6 pt-6">
 
         {/* Setup */}
         <Section title={t.providerSettingsHub.sectionSetup}>
@@ -297,7 +246,7 @@ export default function ProviderSettingsPage() {
                       const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
                       const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                       return (
-                        <div key={b.id} className="bg-white rounded-xl p-3.5 shadow-sm border border-border-dim">
+                        <div key={b.id} className="bg-card rounded-input p-3.5 shadow-card border border-border-dim">
                           {/* Top: service + amount */}
                           <div className="flex items-start justify-between gap-2 mb-2.5">
                             <div className="min-w-0">
