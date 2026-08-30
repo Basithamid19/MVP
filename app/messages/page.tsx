@@ -67,24 +67,39 @@ function ThreadList({
         <Link
           key={th.id}
           href={`/messages?thread=${th.id}`}
-          className={`flex items-center gap-3 px-4 py-3.5 transition-colors ${
+          className={`flex items-start gap-3.5 sm:gap-4 px-4 sm:px-5 py-5 transition-colors ${
             th.id === activeThreadId ? 'bg-brand-muted' : 'hover:bg-surface-alt'
           }`}
         >
-          <Avatar src={th.otherParticipant.image} name={th.otherParticipant.name ?? ''} size="lg" className="w-11 h-11" />
+          <Avatar
+            src={th.otherParticipant.image}
+            name={th.otherParticipant.name ?? ''}
+            size="lg"
+            className="w-12 h-12 mt-0.5"
+          />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <p className="font-semibold text-sm text-ink truncate">{th.otherParticipant.name}</p>
+            {/* Name + relative time on one baseline */}
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-base font-bold text-ink truncate">{th.otherParticipant.name}</p>
               {th.lastMessage && (
-                <span className="text-3xs text-ink-dim shrink-0">{timeAgo(th.lastMessage.createdAt, t.messagesPage)}</span>
+                <span className="text-sm text-ink-dim shrink-0">
+                  {timeAgo(th.lastMessage.createdAt, t.messagesPage)}
+                </span>
               )}
             </div>
-            <p className="text-xs text-ink-dim mt-0.5 truncate">
-              {th.lastMessage
-                ? `${th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}${th.lastMessage.content}`
-                : `${th.category} · ${t.messagesPage.noMessagesShort}`
-              }
-            </p>
+
+            {/* Context line — what this conversation is about */}
+            <p className="text-sm text-ink-sub font-medium mt-0.5 truncate">{th.category}</p>
+
+            {/* Two-line message preview */}
+            {th.lastMessage ? (
+              <p className="text-sm text-ink-sub mt-1.5 leading-relaxed line-clamp-2">
+                {th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}
+                {th.lastMessage.content}
+              </p>
+            ) : (
+              <p className="text-sm text-ink-dim mt-1.5">{t.messagesPage.noMessagesShort}</p>
+            )}
           </div>
         </Link>
       ))}
