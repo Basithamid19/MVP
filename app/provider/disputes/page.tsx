@@ -2,59 +2,106 @@
 
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
-import { PageHeader } from '@/components/ui';
 import {
-  LifeBuoy, Upload, X, CheckCircle2, Loader2,
-  Star, DollarSign, MessageSquare, ChevronRight,
-  AlertTriangle, FileText,
+  LifeBuoy, Upload, X, CheckCircle2, Check, Loader2,
+  Star, DollarSign, MessageSquare, AlertTriangle, FileText, ArrowLeft,
 } from 'lucide-react';
+import { useTranslation, type Dictionary } from '@/lib/i18n';
+import {
+  Button, buttonVariants, Card, Input, PageHeader, SectionHeader,
+  Textarea, useToast,
+} from '@/components/ui';
+import { cn } from '@/lib/utils';
 
 type TicketType = 'dispute_review' | 'refund_request' | 'general' | 'no_show' | 'payment';
 
-const TICKET_TYPES: { id: TicketType; label: string; desc: string; icon: React.ElementType }[] = [
-  { id: 'dispute_review',  label: 'Dispute a review',       desc: 'Believe a review is unfair or violates guidelines', icon: Star },
-  { id: 'refund_request',  label: 'Request refund review',  desc: 'A booking was canceled or work was not completed',   icon: DollarSign },
-  { id: 'no_show',         label: 'Customer no-show',       desc: 'Customer was not present for a scheduled job',       icon: AlertTriangle },
-  { id: 'payment',         label: 'Payment issue',          desc: 'Incorrect payout amount or missing payment',         icon: DollarSign },
-  { id: 'general',         label: 'General support',        desc: 'Any other question or issue',                        icon: MessageSquare },
+// `label` stays English on purpose: it is the value prefixed onto the ticket
+// subject in the POST payload (`[Dispute a review] …`), which admins triage
+// on. Only the rendered copy is localized — see typeCopy() below.
+const TICKET_TYPES: { id: TicketType; label: string; icon: React.ElementType }[] = [
+  { id: 'dispute_review', label: 'Dispute a review',      icon: Star },
+  { id: 'refund_request', label: 'Request refund review', icon: DollarSign },
+  { id: 'no_show',        label: 'Customer no-show',      icon: AlertTriangle },
+  { id: 'payment',        label: 'Payment issue',         icon: DollarSign },
+  { id: 'general',        label: 'General support',       icon: MessageSquare },
 ];
 
+function typeCopy(id: TicketType, t: Dictionary): { label: string; desc: string } {
+  const c = t.disputesPage.types;
+  switch (id) {
+    case 'dispute_review': return { label: c.disputeReviewLabel, desc: c.disputeReviewDesc };
+    case 'refund_request': return { label: c.refundRequestLabel, desc: c.refundRequestDesc };
+    case 'no_show':        return { label: c.noShowLabel,        desc: c.noShowDesc };
+    case 'payment':        return { label: c.paymentLabel,       desc: c.paymentDesc };
+    default:               return { label: c.generalLabel,       desc: c.generalDesc };
+  }
+}
+
+type EvidenceItem = {
+  uid: number;
+  file: File;
+  preview: string;
+  name: string;
+  status: 'uploading' | 'done' | 'error';
+  url?: string;
+};
+
 export default function DisputesPage() {
+  const t = useTranslation();
+  const { toast } = useToast();
   const [ticketType, setTicketType] = useState<TicketType | null>(null);
   const [subject, setSubject] = useState('');
+  const [subjectTouched, setSubjectTouched] = useState(false);
   const [description, setDescription] = useState('');
   const [bookingRef, setBookingRef] = useState('');
-  const [evidence, setEvidence] = useState<{ file: File; preview: string; name: string }[]>([]);
+  const [evidence, setEvidence] = useState<EvidenceItem[]>([]);
   const [uploadingEvidence, setUploadingEvidence] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState<string | null>(null);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const uidRef = useRef(0);
 
   const handleEvidenceSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     setUploadingEvidence(true);
     for (const file of files) {
+      const uid = ++uidRef.current;
       const preview = URL.createObjectURL(file);
-      setEvidence(prev => [...prev, { file, preview, name: file.name }]);
+      setEvidence(prev => [...prev, { uid, file, preview, name: file.name, status: 'uploading' }]);
       try {
         const fd = new FormData();
         fd.append('file', file);
-        await fetch('/api/uploads', { method: 'POST', body: fd });
-      } catch {}
+        const res = await fetch('/api/uploads', { method: 'POST', body: fd });
+        const data = await res.json().catch(() => ({} as any));
+        if (!res.ok || !data?.url) throw new Error(data?.error ?? 'upload failed');
+        // Keep the returned URL on the item — previously the response was
+        // discarded, so a failed upload still rendered a confident thumbnail.
+        setEvidence(prev => prev.map(x => x.uid === uid ? { ...x, status: 'done', url: data.url } : x));
+      } catch {
+        URL.revokeObjectURL(preview);
+        setEvidence(prev => prev.filter(x => x.uid !== uid));
+        toast.error(`${file.name} — ${t.disputesPage.uploadFailed}`);
+      }
     }
     setUploadingEvidence(false);
     if (fileRef.current) fileRef.current.value = '';
   };
 
+  const removeEvidence = (uid: number) => {
+    setEvidence(prev => {
+      const hit = prev.find(x => x.uid === uid);
+      if (hit) URL.revokeObjectURL(hit.preview);
+      return prev.filter(x => x.uid !== uid);
+    });
+  };
+
   const handleSubmit = async () => {
     if (!ticketType || !subject.trim() || !description.trim()) return;
     setSubmitting(true);
-    setSubmitError(null);
     try {
-      const typeLabel = TICKET_TYPES.find(t => t.id === ticketType)?.label ?? 'Support';
+      const typeLabel = TICKET_TYPES.find(x => x.id === ticketType)?.label ?? 'Support';
       const res = await fetch('/api/tickets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,10 +116,10 @@ export default function DisputesPage() {
         setSubmitted(true);
       } else {
         const d = await res.json().catch(() => ({} as any));
-        setSubmitError(d.error ?? 'Could not submit the ticket. Please try again.');
+        toast.error(d.error ?? t.disputesPage.submitFailed);
       }
     } catch {
-      setSubmitError('Network error. Please check your connection and try again.');
+      toast.error(t.common.networkError);
     } finally {
       setSubmitting(false);
     }
@@ -84,100 +131,135 @@ export default function DisputesPage() {
         <div className="w-20 h-20 bg-trust-surface rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-10 h-10 text-trust" />
         </div>
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">Ticket submitted</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-ink mb-3">
+          {t.disputesPage.successTitle}
+        </h1>
         {ticketId && (
-          <p className="text-ink-dim mb-2">Ticket ID: <span className="font-bold">AL-{ticketId.slice(0, 8).toUpperCase()}</span></p>
+          <p className="text-ink-dim mb-2">
+            {t.disputesPage.successTicketId}{' '}
+            <span className="font-bold text-ink">AL-{ticketId.slice(0, 8).toUpperCase()}</span>
+          </p>
         )}
         <p className="text-ink-dim mb-8 max-w-sm mx-auto leading-relaxed">
-          Our support team will review your ticket and respond within <strong>24–48 business hours</strong> via email.
+          {t.disputesPage.successDescPrefix}{' '}
+          <strong className="text-ink">{t.disputesPage.successDescHours}</strong>{' '}
+          {t.disputesPage.successDescSuffix}
         </p>
-        <Link href="/provider/dashboard" className="inline-block bg-brand text-white px-8 py-3 rounded-card font-bold hover:bg-brand-dark transition-all">
-          Back to Dashboard
+        <Link href="/provider/dashboard" className={buttonVariants({ variant: 'primary', size: 'lg' })}>
+          {t.common.backToDashboard}
         </Link>
       </div>
     );
   }
 
+  const descriptionPlaceholder =
+    ticketType === 'dispute_review' ? t.disputesPage.descPlaceholderDisputeReview :
+    ticketType === 'refund_request' ? t.disputesPage.descPlaceholderRefund :
+    ticketType === 'no_show'        ? t.disputesPage.descPlaceholderNoShow :
+    t.disputesPage.descPlaceholderDefault;
+
   return (
     <div className="max-w-2xl mx-auto">
+
+      {/* ── Back ── */}
+      <Link
+        href="/provider/settings"
+        className="inline-flex items-center gap-2 -ml-1.5 mb-3 px-1.5 py-1 rounded-input text-xs font-medium text-ink-dim hover:text-ink hover:bg-surface-alt transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t.providerSettingsHub.backToSettings}
+      </Link>
+
       <PageHeader
-        title="Support & Disputes"
-        description="Get help or raise a formal dispute"
-        className="mb-6"
+        title={t.disputesPage.title}
+        description={t.disputesPage.description}
+        size="sm"
+        className="mb-5"
       />
 
       <div className="space-y-5">
-        {/* Ticket type */}
-        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
-          <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">What do you need help with?</p>
+
+        {/* ── Ticket type ── */}
+        <Card padding="lg">
+          <SectionHeader title={t.disputesPage.typeQuestion} />
           <div className="space-y-2">
-            {TICKET_TYPES.map(t => (
-              <button
-                key={t.id}
-                onClick={() => { setTicketType(t.id); setSubject(t.label); }}
-                className={`w-full flex items-center gap-3 p-4 rounded-card border-2 text-left transition-all ${
-                  ticketType === t.id ? 'border-brand bg-brand text-white' : 'border-border hover:border-border'
-                }`}
-              >
-                <t.icon className={`w-5 h-5 shrink-0 ${ticketType === t.id ? 'text-white' : 'text-ink-dim'}`} />
-                <div>
-                  <p className={`font-bold text-sm ${ticketType === t.id ? 'text-white' : 'text-ink'}`}>{t.label}</p>
-                  <p className={`text-xs ${ticketType === t.id ? 'text-white/70' : 'text-ink-dim'}`}>{t.desc}</p>
-                </div>
-                <ChevronRight className={`w-4 h-4 ml-auto shrink-0 ${ticketType === t.id ? 'text-white/50' : 'text-ink-dim'}`} />
-              </button>
-            ))}
+            {TICKET_TYPES.map(type => {
+              const sel = ticketType === type.id;
+              const copy = typeCopy(type.id, t);
+              return (
+                <button
+                  key={type.id}
+                  type="button"
+                  aria-pressed={sel}
+                  onClick={() => {
+                    setTicketType(type.id);
+                    // Only prefill while the provider has not written their own
+                    // subject — the old handler silently clobbered typed text
+                    // on every type change.
+                    if (!subjectTouched) setSubject(type.label);
+                  }}
+                  className={cn(
+                    'w-full flex items-start gap-3 p-4 rounded-card border text-left transition-colors',
+                    sel
+                      ? 'border-brand bg-brand-muted'
+                      : 'border-border bg-card hover:bg-surface-alt',
+                  )}
+                >
+                  <type.icon
+                    className={cn('w-5 h-5 shrink-0 mt-0.5', sel ? 'text-brand' : 'text-ink-dim')}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className={cn('block font-bold text-sm', sel ? 'text-brand' : 'text-ink')}>
+                      {copy.label}
+                    </span>
+                    <span className="block text-xs text-ink-dim mt-0.5 leading-relaxed">
+                      {copy.desc}
+                    </span>
+                  </span>
+                  {sel && <Check className="w-4 h-4 shrink-0 mt-0.5 text-brand" strokeWidth={2.5} />}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </Card>
 
         {ticketType && (
           <>
-            {/* Details */}
-            <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card space-y-4">
-              <p className="font-bold flex items-center gap-2"><FileText className="w-4 h-4" /> Details</p>
-
-              <div>
-                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Subject</label>
-                <input
+            {/* ── Details ── */}
+            <Card padding="lg">
+              <SectionHeader title={t.disputesPage.sectionDetails} />
+              <div className="space-y-4">
+                <Input
+                  label={`${t.disputesPage.subjectLabel} *`}
                   type="text"
                   value={subject}
-                  onChange={e => setSubject(e.target.value)}
-                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
+                  onChange={e => { setSubjectTouched(true); setSubject(e.target.value); }}
+                  placeholder={t.disputesPage.subjectPlaceholder}
                 />
-              </div>
 
-              <div>
-                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Booking reference <span className="normal-case font-normal">(optional)</span></label>
-                <input
+                <Input
+                  label={t.disputesPage.bookingRefLabel}
+                  labelNote={t.common.optional}
                   type="text"
                   value={bookingRef}
                   onChange={e => setBookingRef(e.target.value)}
-                  placeholder="Booking ID or date"
-                  className="w-full px-4 py-3 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none text-sm"
+                  placeholder={t.disputesPage.bookingRefPlaceholder}
                 />
-              </div>
 
-              <div>
-                <label className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-2 block">Description *</label>
-                <textarea
+                <Textarea
+                  label={`${t.disputesPage.descriptionLabel} *`}
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   rows={5}
-                  placeholder={
-                    ticketType === 'dispute_review' ? 'Explain why this review should be reviewed. Include any relevant context or policy violations...' :
-                    ticketType === 'refund_request' ? 'Describe the booking and why a refund should be considered...' :
-                    ticketType === 'no_show' ? 'When was the booking? What happened when you arrived?...' :
-                    'Describe your issue in detail...'
-                  }
-                  className="w-full p-4 bg-surface-alt border border-border-dim rounded-input focus:ring-2 focus:ring-brand outline-none resize-none text-sm"
+                  placeholder={descriptionPlaceholder}
+                  hint={`${description.trim().length} ${t.disputesPage.charactersSuffix}`}
                 />
-                <p className="text-xs text-ink-dim mt-1">{description.length} characters</p>
               </div>
-            </div>
+            </Card>
 
-            {/* Evidence upload */}
-            <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
-              <p className="font-bold mb-4 flex items-center gap-2"><Upload className="w-4 h-4" /> Evidence <span className="text-xs text-ink-dim font-normal ml-1">(optional)</span></p>
+            {/* ── Evidence ── */}
+            <Card padding="lg">
+              <SectionHeader title={t.disputesPage.evidenceTitle} />
               <input
                 ref={fileRef}
                 type="file"
@@ -186,24 +268,38 @@ export default function DisputesPage() {
                 className="hidden"
                 onChange={handleEvidenceSelect}
               />
-              <div className="flex flex-wrap gap-3 mb-3">
-                {evidence.map((f, i) => (
-                  <div key={i} className="relative">
+              <div className="flex flex-wrap gap-3">
+                {evidence.map(f => (
+                  <div key={f.uid} className="relative">
                     {f.file.type.startsWith('image/') ? (
                       <div className="w-20 h-20 rounded-input overflow-hidden border border-border relative">
                         <img src={f.preview} alt={f.name} className="w-full h-full object-cover" />
+                        {f.status === 'uploading' && (
+                          <div className="absolute inset-0 bg-ink/40 flex items-center justify-center">
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                          </div>
+                        )}
                         <button
-                          onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))}
-                          className="absolute top-1 right-1 w-5 h-5 bg-brand/60 rounded-full flex items-center justify-center"
+                          type="button"
+                          aria-label={`${t.disputesPage.evidenceRemove}: ${f.name}`}
+                          onClick={() => removeEvidence(f.uid)}
+                          className="absolute top-1 right-1 w-5 h-5 bg-ink/60 rounded-full flex items-center justify-center hover:bg-ink transition-colors"
                         >
                           <X className="w-3 h-3 text-white" />
                         </button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 px-3 py-2 bg-surface-alt rounded-input border border-border">
-                        <FileText className="w-4 h-4 text-ink-dim shrink-0" />
+                        {f.status === 'uploading'
+                          ? <Loader2 className="w-4 h-4 text-ink-dim shrink-0 animate-spin" />
+                          : <FileText className="w-4 h-4 text-ink-dim shrink-0" />}
                         <span className="text-xs font-medium text-ink-sub max-w-[80px] truncate">{f.name}</span>
-                        <button onClick={() => setEvidence(prev => prev.filter((_, j) => j !== i))} className="text-ink-dim hover:text-danger">
+                        <button
+                          type="button"
+                          aria-label={`${t.disputesPage.evidenceRemove}: ${f.name}`}
+                          onClick={() => removeEvidence(f.uid)}
+                          className="text-ink-dim hover:text-danger transition-colors"
+                        >
                           <X className="w-3 h-3" />
                         </button>
                       </div>
@@ -211,29 +307,28 @@ export default function DisputesPage() {
                   </div>
                 ))}
                 <button
+                  type="button"
                   onClick={() => fileRef.current?.click()}
                   disabled={uploadingEvidence}
-                  className="w-20 h-20 rounded-input border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-brand transition-colors text-ink-dim hover:text-ink"
+                  className="w-20 h-20 rounded-input border border-dashed border-border flex flex-col items-center justify-center gap-1 text-ink-dim hover:border-brand hover:text-brand disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  {uploadingEvidence ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Upload className="w-4 h-4" /><span className="text-3xs font-bold">Upload</span></>}
+                  {uploadingEvidence
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <><Upload className="w-4 h-4" /><span className="text-3xs font-bold">{t.disputesPage.evidenceUpload}</span></>}
                 </button>
               </div>
-              <p className="text-xs text-ink-dim">Photos, screenshots, or PDF documents. Max 10MB per file.</p>
-            </div>
+              <p className="text-xs text-ink-dim mt-3 leading-relaxed">{t.disputesPage.evidenceHint}</p>
+            </Card>
 
-            {submitError && (
-              <div className="px-4 py-3 bg-caution-surface border border-caution-edge rounded-card text-sm font-medium text-caution leading-relaxed">
-                {submitError}
-              </div>
-            )}
-
-            <button
+            <Button
+              size="lg"
+              className="w-full"
+              loading={submitting}
+              disabled={!subject.trim() || !description.trim()}
               onClick={handleSubmit}
-              disabled={!subject.trim() || !description.trim() || submitting}
-              className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
-              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <><LifeBuoy className="w-4 h-4" /> Submit Support Ticket</>}
-            </button>
+              <LifeBuoy className="w-4 h-4" /> {t.disputesPage.submit}
+            </Button>
           </>
         )}
       </div>

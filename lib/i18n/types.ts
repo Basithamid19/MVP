@@ -157,6 +157,7 @@ export interface Dictionary {
     date: string;
     time: string;
     address: string;
+    optional: string;
   };
 
   // Auth
@@ -1161,8 +1162,14 @@ export interface Dictionary {
   // Quote builder (app/provider/quote/[requestId])
   quoteBuilder: {
     title: string;
+    requestSummary: string;
+    photoAlt: string;
+    lineItemDescription: string;
+    lineItemAmount: string;
+    removeLineItem: string;
     pricing: string;
     basePrice: string;
+    basePriceRequired: string;
     hoursPlaceholder: string;
     optionalLineItems: string;
     itemPlaceholder: string;
@@ -1183,5 +1190,47 @@ export interface Dictionary {
     sentDescPrefix: string;
     sentDescSuffix: string;
     backToLeads: string;
+  };
+
+  // Support & disputes (app/provider/disputes)
+  disputesPage: {
+    title: string;
+    description: string;
+    typeQuestion: string;
+    types: {
+      disputeReviewLabel: string;
+      disputeReviewDesc: string;
+      refundRequestLabel: string;
+      refundRequestDesc: string;
+      noShowLabel: string;
+      noShowDesc: string;
+      paymentLabel: string;
+      paymentDesc: string;
+      generalLabel: string;
+      generalDesc: string;
+    };
+    sectionDetails: string;
+    subjectLabel: string;
+    subjectPlaceholder: string;
+    bookingRefLabel: string;
+    bookingRefPlaceholder: string;
+    descriptionLabel: string;
+    descPlaceholderDisputeReview: string;
+    descPlaceholderRefund: string;
+    descPlaceholderNoShow: string;
+    descPlaceholderDefault: string;
+    charactersSuffix: string;
+    evidenceTitle: string;
+    evidenceUpload: string;
+    evidenceHint: string;
+    evidenceRemove: string;
+    uploadFailed: string;
+    submit: string;
+    submitFailed: string;
+    successTitle: string;
+    successTicketId: string;
+    successDescPrefix: string;
+    successDescHours: string;
+    successDescSuffix: string;
   };
 }
