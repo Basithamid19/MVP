@@ -33,7 +33,8 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Thread not found' }, { status: 404 });
       }
 
-      let authorized = role === 'ADMIN' || thread.participants.some(p => p.id === userId);
+      let isParticipant = thread.participants.some(p => p.id === userId);
+      let authorized = role === 'ADMIN' || isParticipant;
 
       // Fallback compatibility: legacy threads created via the scalar-only
       // path in quotes/route.ts may have been persisted without populating
@@ -46,6 +47,7 @@ export async function GET(request: Request) {
             select: { customerId: true, providerId: true } as any,
           });
           if (scalar && (scalar.customerId === userId || scalar.providerId === userId)) {
+            isParticipant = true;
             authorized = true;
           }
         } catch {
@@ -104,11 +106,15 @@ export async function GET(request: Request) {
 
       // Viewing the thread marks the counterpart's messages as read. Fire and
       // forget: a pre-20260709 DB without readAt must not fail the poll, and
-      // the response doesn't depend on the write landing.
-      prisma.chatMessage.updateMany({
-        where: { threadId, senderId: { not: userId }, readAt: null },
-        data: { readAt: new Date() },
-      }).catch(() => { /* readAt column missing on this DB */ });
+      // the response doesn't depend on the write landing. Participants only —
+      // an admin opening a thread for moderation must not wipe the actual
+      // recipient's unread state (senderId != admin matches every message).
+      if (isParticipant) {
+        prisma.chatMessage.updateMany({
+          where: { threadId, senderId: { not: userId }, readAt: null },
+          data: { readAt: new Date() },
+        }).catch(() => { /* readAt column missing on this DB */ });
+      }
 
       return NextResponse.json(messages);
     }
