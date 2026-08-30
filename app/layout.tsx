@@ -3,6 +3,7 @@ import { Manrope } from 'next/font/google';
 import './globals.css';
 import AuthProvider from '@/components/providers/auth-provider';
 import { I18nProvider } from '@/lib/i18n/context';
+import { ToastProvider } from '@/components/ui/toast';
 
 /*
  * Manrope — premium, modern sans-serif with excellent legibility at all sizes.
@@ -27,7 +28,10 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
       <body suppressHydrationWarning className="font-sans overflow-x-hidden">
         <AuthProvider>
           <I18nProvider>
-            {children}
+            {/* Innermost: toasts sit above every surface and replace alert(). */}
+            <ToastProvider>
+              {children}
+            </ToastProvider>
           </I18nProvider>
         </AuthProvider>
       </body>
