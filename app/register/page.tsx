@@ -1,12 +1,15 @@
 'use client';
 
 import { AladdinIcon } from '@/components/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight, User, Briefcase } from 'lucide-react';
+import { Loader2, ArrowRight, User, Briefcase, Mail, MessageSquare } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const MIN_PASSWORD_LENGTH = 8;
 
 export default function RegisterPage() {
   const [role, setRole] = useState<'CUSTOMER' | 'PROVIDER'>('CUSTOMER');
@@ -15,27 +18,69 @@ export default function RegisterPage() {
     email: '',
     password: '',
   });
+  const [phone, setPhone] = useState('');
+  const [channel, setChannel] = useState<'email' | 'sms'>('email');
+  // Only offer SMS when this deployment actually has an SMS provider wired up.
+  const [smsAvailable, setSmsAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const t = useTranslation();
 
+  useEffect(() => {
+    fetch('/api/auth/verification-channels')
+      .then((res) => res.json())
+      .then((data) => setSmsAvailable(!!data?.sms))
+      .catch(() => setSmsAvailable(false));
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    // Mirror the server-side rules so the user gets the message next to the
+    // form instead of a round-trip.
+    if (!EMAIL_RE.test(formData.email.trim())) {
+      setError(t.authFlow.invalidEmail);
+      return;
+    }
+    if (formData.password.length < MIN_PASSWORD_LENGTH) {
+      setError(t.authFlow.passwordTooShort);
+      return;
+    }
+    if (channel === 'sms' && !phone.trim()) {
+      setError(t.authFlow.invalidPhone);
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, role }),
+        body: JSON.stringify({
+          ...formData,
+          role,
+          channel,
+          // Only send the number when it's actually part of the chosen flow —
+          // a stale value from a switched-away SMS choice would 400 the signup.
+          ...(channel === 'sms' && phone.trim() ? { phone: phone.trim() } : {}),
+        }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        router.push('/login?registered=true');
+        // No provider configured server-side → the account is already usable.
+        if (data.verification === 'none') {
+          router.push('/login?registered=true');
+        } else {
+          router.push(
+            `/verify?email=${encodeURIComponent(formData.email.trim().toLowerCase())}&channel=${data.verification}`,
+          );
+        }
       } else {
-        const data = await res.json();
         setError(data.error || 'Registration failed');
       }
     } catch (err) {
@@ -124,9 +169,52 @@ export default function RegisterPage() {
                 className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
                 placeholder="••••••••"
               />
+              <p className="text-xs text-ink-dim mt-2">{t.authFlow.passwordHint}</p>
             </div>
 
-            <button 
+            {smsAvailable && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.verifyByLabel}</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setChannel('email')}
+                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all ${
+                      channel === 'email' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+                    }`}
+                  >
+                    <Mail className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-widest">{t.authFlow.channelEmail}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setChannel('sms')}
+                    className={`p-4 rounded-input border flex items-center justify-center gap-2 transition-all ${
+                      channel === 'sms' ? 'border-brand bg-brand text-white shadow-elevated' : 'border-border bg-white text-ink-sub hover:border-border-dim hover:bg-surface-alt'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="text-xs font-bold uppercase tracking-widest">{t.authFlow.channelSms}</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {smsAvailable && channel === 'sms' && (
+              <div>
+                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.authFlow.phone}</label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full p-4 bg-white border border-border rounded-input focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-ink placeholder:text-ink-dim"
+                  placeholder={t.authFlow.phonePlaceholder}
+                />
+              </div>
+            )}
+
+            <button
               type="submit" 
               disabled={loading}
               className="w-full bg-brand text-white p-4 rounded-input font-bold hover:bg-brand-dark transition-all flex items-center justify-center gap-2 disabled:opacity-50"

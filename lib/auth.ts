@@ -1,7 +1,40 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { isColumnError } from "@/lib/prisma-errors";
+
+// NextAuth v5 surfaces `code` from a CredentialsSignin subclass on the
+// signIn() result, which is how the login page tells "you haven't verified
+// yet" apart from "wrong password".
+class UnverifiedError extends CredentialsSignin {
+  code = "UNVERIFIED";
+}
+
+// Explicit selects (never `include`/bare findUnique) so a database that hasn't
+// run the 20260708 verification migration doesn't blow up every login with a
+// P2022. On that path we re-query the pre-migration columns and treat the
+// account as verified — see CLAUDE.md "migration-safety pattern".
+const AUTH_USER_SELECT = {
+  id: true, name: true, email: true, password: true, role: true,
+  verifiedAt: true, phone: true,
+} as const;
+
+const AUTH_USER_FALLBACK_SELECT = {
+  id: true, name: true, email: true, password: true, role: true,
+} as const;
+
+async function findAuthUser(email: string) {
+  return prisma.user
+    .findUnique({ where: { email }, select: AUTH_USER_SELECT })
+    .catch(async (err: unknown) => {
+      if (!isColumnError(err)) return null;
+      const legacy = await prisma.user
+        .findUnique({ where: { email }, select: AUTH_USER_FALLBACK_SELECT })
+        .catch(() => null);
+      return legacy ? { ...legacy, verifiedAt: new Date(), phone: null } : null;
+    });
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -19,11 +52,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Try exact match first (fast path for correctly-cased emails).
         // Then try lowercased (in case DB stored it that way).
-        let user = await prisma.user.findUnique({ where: { email } }).catch(() => null);
+        let user = await findAuthUser(email);
         if (!user) {
           const lower = email.toLowerCase();
           if (lower !== email) {
-            user = await prisma.user.findUnique({ where: { email: lower } }).catch(() => null);
+            user = await findAuthUser(lower);
           }
         }
 
@@ -31,6 +64,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) return null;
+
+        // Verification gate. Distinct error so the login page can offer
+        // "resend verification" instead of "invalid email or password".
+        if (!user.verifiedAt) throw new UnverifiedError();
 
         return {
           id: user.id,

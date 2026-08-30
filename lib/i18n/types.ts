@@ -176,6 +176,63 @@ export interface Dictionary {
     providerDesc: string;
   };
 
+  // Account verification, resend, and password reset
+  authFlow: {
+    // Register — channel choice + phone
+    verifyByLabel: string;
+    channelEmail: string;
+    channelSms: string;
+    phone: string;
+    phonePlaceholder: string;
+    passwordHint: string;
+    invalidEmail: string;
+    invalidPhone: string;
+    passwordTooShort: string;
+
+    // Verify page
+    verifyEmailTitle: string;
+    verifyEmailBody: string;
+    verifySmsTitle: string;
+    verifySmsBody: string;
+    spamNote: string;
+    codeLabel: string;
+    codePlaceholder: string;
+    verifyButton: string;
+    codeInvalid: string;
+    resendButton: string;
+    resendSent: string;
+    resendCooldownPrefix: string;
+    resendThrottled: string;
+    backToLogin: string;
+
+    // Login banners
+    verifiedSuccess: string;
+    verifiedFailed: string;
+    unverifiedError: string;
+    resendVerification: string;
+    forgotPassword: string;
+
+    // Forgot password
+    forgotTitle: string;
+    forgotSubtitle: string;
+    forgotButton: string;
+    forgotSent: string;
+    forgotUnavailable: string;
+
+    // Reset password
+    resetTitle: string;
+    resetSubtitle: string;
+    newPassword: string;
+    confirmNewPassword: string;
+    resetButton: string;
+    resetSuccess: string;
+    resetMismatch: string;
+    resetMissingToken: string;
+    goToLogin: string;
+
+    genericError: string;
+  };
+
   // Hero "Your project / Your Way" card
   heroCard: {
     heading: string;

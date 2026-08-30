@@ -1,11 +1,11 @@
 'use client';
 
 import { AladdinIcon } from '@/components/icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, MailCheck } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
@@ -14,13 +14,49 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Set when authorize() throws UnverifiedError — swaps the generic credential
+  // error for a resend affordance.
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [banner, setBanner] = useState<'verified' | 'expired' | null>(null);
   const router = useRouter();
   const t = useTranslation();
+
+  // Read from window.location (not useSearchParams) to avoid the Suspense
+  // requirement, matching how callbackUrl is handled below.
+  useEffect(() => {
+    const verified = new URLSearchParams(window.location.search).get('verified');
+    if (verified === '1') setBanner('verified');
+    else if (verified === '0') setBanner('expired');
+  }, []);
+
+  const handleResend = async () => {
+    if (resending) return;
+    setResending(true);
+    setNotice('');
+
+    try {
+      const res = await fetch('/api/auth/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setNotice(res.status === 429 ? t.authFlow.resendThrottled : t.authFlow.resendSent);
+    } catch (err) {
+      setNotice(t.authFlow.genericError);
+    } finally {
+      setResending(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setNotice('');
+    setUnverified(false);
+    setBanner(null);
 
     try {
       const result = await signIn('credentials', {
@@ -30,7 +66,15 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Invalid email or password');
+        // NextAuth v5 carries the CredentialsSignin subclass `code` on the
+        // result; older shapes fold it into `error`, so check both.
+        const code = (result as any).code ?? '';
+        if (code === 'UNVERIFIED' || String(result.error).includes('UNVERIFIED')) {
+          setUnverified(true);
+          setError(t.authFlow.unverifiedError);
+        } else {
+          setError('Invalid email or password');
+        }
       } else {
         const session = await getSession();
         const role = (session?.user as any)?.role;
@@ -69,9 +113,45 @@ export default function LoginPage() {
           <p className="text-ink-sub mb-10">{t.auth.loginSubtitle}.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {banner === 'verified' && (
+              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input flex items-start gap-3">
+                <MailCheck className="w-5 h-5 shrink-0" />
+                {t.authFlow.verifiedSuccess}
+              </div>
+            )}
+            {banner === 'expired' && (
+              <div className="p-4 bg-caution-surface border border-caution-edge text-caution text-sm font-medium rounded-input">
+                {t.authFlow.verifiedFailed}
+              </div>
+            )}
+
             {error && (
               <div className="p-4 bg-danger-surface border border-danger-edge text-danger text-sm font-medium rounded-input">
                 {error}
+                {unverified && (
+                  <div className="mt-3 flex flex-wrap items-center gap-4">
+                    <button
+                      type="button"
+                      onClick={handleResend}
+                      disabled={resending}
+                      className="font-bold underline disabled:opacity-50"
+                    >
+                      {resending ? <Loader2 className="w-4 h-4 animate-spin" /> : t.authFlow.resendVerification}
+                    </button>
+                    <Link
+                      href={`/verify?email=${encodeURIComponent(email.trim().toLowerCase())}`}
+                      className="font-bold underline"
+                    >
+                      {t.authFlow.verifyButton}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {notice && (
+              <div className="p-4 bg-trust-surface border border-trust-edge text-trust text-sm font-medium rounded-input">
+                {notice}
               </div>
             )}
 
@@ -88,9 +168,14 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="text-xs font-bold uppercase tracking-widest text-ink-dim mb-2 block">{t.auth.password}</label>
-              <input 
-                type="password" 
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold uppercase tracking-widest text-ink-dim">{t.auth.password}</label>
+                <Link href="/forgot-password" className="text-xs font-bold text-brand hover:underline">
+                  {t.authFlow.forgotPassword}
+                </Link>
+              </div>
+              <input
+                type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
