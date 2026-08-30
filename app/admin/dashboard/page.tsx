@@ -1,1459 +1,93 @@
 'use client';
 
-import { AladdinIcon } from '@/components/icons';
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { signOut } from 'next-auth/react';
-import {
-  BarChart3, ShieldCheck, Briefcase, AlertTriangle, Star,
-  Settings, Users, FileWarning, LogOut, CheckCircle2,
-  XCircle, Loader2, TrendingUp, Eye, EyeOff, Plus,
-  Clock, DollarSign, Package, Activity, RefreshCcw,
-  ChevronRight, MessageSquare, ArrowUpRight, X, Tag, Menu, FileText,
-  ZoomIn, AlertCircle, FileCheck, Upload, ExternalLink, ChevronDown, ChevronUp,
-} from 'lucide-react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
+import { LogOut, Menu, ShieldAlert, X } from 'lucide-react';
+import { AladdinIcon } from '@/components/icons';
+import { Button, buttonVariants, EmptyState } from '@/components/ui';
+import { cn } from '@/lib/utils';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+import { MODULES, type AdminModuleId } from '../components/modules';
+import { AnalyticsModule }     from '../modules/analytics';
+import { VerificationsModule } from '../modules/verifications';
+import { ProvidersModule }     from '../modules/providers';
+import { BookingsModule }      from '../modules/bookings';
+import { DisputesModule }      from '../modules/disputes';
+import { ReviewsModule }       from '../modules/reviews';
+import { CategoriesModule }    from '../modules/categories';
+import { CRMModule }           from '../modules/crm';
+import { IncidentModule }      from '../modules/incidents';
 
-function ModuleLoader() {
-  return (
-    <div className="flex items-center justify-center h-48">
-      <Loader2 className="w-6 h-6 animate-spin text-ink-dim" />
-    </div>
-  );
-}
+/* ─── Admin shell ───────────────────────────────────────────────────────────
+ * Auth gate + navigation only. Every module lives in app/admin/modules and
+ * owns its own data fetching, exactly as it did inside the old monolith.
+ * Admin is an internal English-only tool — no i18n dictionary is wired here.
+ * ────────────────────────────────────────────────────────────────────────── */
 
-function ModuleHeader({ title, description, action }: { title: string; description: string; action?: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-3 mb-5 sm:mb-6">
-      <div className="min-w-0">
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-ink">{title}</h1>
-        <p className="text-ink-dim text-xs sm:text-sm mt-0.5">{description}</p>
-      </div>
-      {action && <div className="shrink-0 flex items-center gap-2">{action}</div>}
-    </div>
-  );
-}
-
-function Badge({ color, label }: { color: string; label: string }) {
-  const colors: Record<string, string> = {
-    green: 'bg-trust-surface text-trust border border-trust-edge',
-    red: 'bg-danger-surface text-danger border border-danger-edge',
-    blue: 'bg-info-surface text-info border border-info-edge',
-    orange: 'bg-caution-surface text-caution border border-caution-edge',
-    gray: 'bg-surface-alt text-ink-dim border border-border-dim',
-    yellow: 'bg-caution-surface text-caution border border-caution-edge',
-    purple: 'bg-brand-muted text-brand-dark border border-brand/20',
-  };
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-chip text-2xs font-semibold uppercase tracking-wide ${colors[color] || colors.gray}`}>
-      {label}
-    </span>
-  );
-}
-
-function AdminEmpty({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description?: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-10 text-center">
-      <div className="w-11 h-11 bg-surface-alt rounded-xl flex items-center justify-center mb-3">
-        <Icon className="w-5 h-5 text-ink-dim/60" />
-      </div>
-      <p className="text-sm font-semibold text-ink mb-0.5">{title}</p>
-      {description && <p className="text-xs text-ink-dim max-w-xs">{description}</p>}
-    </div>
-  );
-}
-
-function FilterChip({ label, active, count, onClick }: { label: string; active: boolean; count?: number; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-        active
-          ? 'bg-ink text-white shadow-sm'
-          : 'bg-white border border-border-dim text-ink-sub hover:border-border hover:text-ink'
-      }`}
-    >
-      {label}{count != null ? ` (${count})` : ''}
-    </button>
-  );
-}
-
-const TIER_COLORS: Record<string, string> = {
-  TIER0_BASIC: 'gray',
-  TIER1_ID_VERIFIED: 'blue',
-  TIER2_TRADE_VERIFIED: 'purple',
-  TIER3_ENHANCED: 'green',
+const MODULE_COMPONENTS: Record<AdminModuleId, React.ComponentType> = {
+  analytics:     AnalyticsModule,
+  verifications: VerificationsModule,
+  providers:     ProvidersModule,
+  bookings:      BookingsModule,
+  disputes:      DisputesModule,
+  reviews:       ReviewsModule,
+  categories:    CategoriesModule,
+  crm:           CRMModule,
+  incidents:     IncidentModule,
 };
 
-const TIER_LABELS: Record<string, string> = {
-  TIER0_BASIC: 'Tier 0',
-  TIER1_ID_VERIFIED: 'Tier 1 – ID',
-  TIER2_TRADE_VERIFIED: 'Tier 2 – Trade',
-  TIER3_ENHANCED: 'Tier 3 – Enhanced',
-};
-
-// ─── Module 1: Analytics Dashboard ───────────────────────────────────────────
-
-function AnalyticsModule() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [apiError, setApiError] = useState<string | null>(null);
-  const [seeding, setSeeding] = useState(false);
-  const [seedMsg, setSeedMsg] = useState<string | null>(null);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    setApiError(null);
-    fetch('/api/admin?section=overview')
-      .then(async r => {
-        if (!r.ok) {
-          const body = await r.json().catch(() => ({}));
-          setApiError(body.error ?? `Server error ${r.status}`);
-          setLoading(false);
-          return;
-        }
-        const d = await r.json();
-        setData(d);
-        setLoading(false);
-      })
-      .catch(err => {
-        setApiError(err.message ?? 'Network error — could not reach the server');
-        setLoading(false);
-      });
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const seedDatabase = async () => {
-    setSeeding(true);
-    setSeedMsg(null);
-    try {
-      const r = await fetch('/api/admin/seed', { method: 'POST' });
-      const d = await r.json();
-      setSeedMsg(d.message ?? 'Done');
-      load();
-    } catch {
-      setSeedMsg('Seed failed — check server logs.');
-    } finally {
-      setSeeding(false);
-    }
-  };
-
-  if (loading) return <ModuleLoader />;
-
-  // API / DB connection error
-  if (apiError) {
-    return (
-      <div>
-        <ModuleHeader title="Command Center" description="Marketplace overview and operational health." />
-        <div className="bg-danger-surface border border-danger-edge rounded-2xl p-6 text-center">
-          <AlertCircle className="w-8 h-8 text-danger mx-auto mb-3" />
-          <p className="font-bold text-sm text-danger mb-1">API Error</p>
-          <p className="text-xs text-ink-sub mb-4 font-mono">{apiError}</p>
-          <button onClick={load} className="inline-flex items-center gap-2 bg-danger text-white text-sm font-semibold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity">
-            <RefreshCcw className="w-4 h-4" /> Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-  const s = data?.stats ?? {};
-  const pendingCount = (data?.pendingVerifications ?? []).length;
-  const canceledCount = s.canceledBookings ?? 0;
-  const cancellationRate = s.cancellationRate ?? 0;
-  const isEmpty = (s.totalUsers ?? 0) === 0 && (s.totalProviders ?? 0) === 0 && (s.totalRequests ?? 0) === 0;
-
-  // Action items derived from real data
-  const actions = [
-    pendingCount > 0 && { label: `${pendingCount} provider${pendingCount > 1 ? 's' : ''} awaiting approval`, color: 'text-caution', bg: 'bg-caution-surface', icon: ShieldCheck },
-    canceledCount > 0 && { label: `${canceledCount} cancelled booking${canceledCount > 1 ? 's' : ''} to review`, color: 'text-danger', bg: 'bg-danger-surface', icon: AlertTriangle },
-    cancellationRate > 15 && { label: `Cancellation rate at ${cancellationRate}% — above threshold`, color: 'text-danger', bg: 'bg-danger-surface', icon: XCircle },
-    (s.quoteRate ?? 0) < 30 && (s.totalRequests ?? 0) > 0 && { label: `Quote rate low at ${s.quoteRate}% — supply may be thin`, color: 'text-caution', bg: 'bg-caution-surface', icon: MessageSquare },
-  ].filter(Boolean) as { label: string; color: string; bg: string; icon: React.ElementType }[];
-
-  // Primary KPIs — key decision metrics
-  const primaryKpis = [
-    { label: 'Requests', value: s.totalRequests ?? 0, icon: Package, accent: 'bg-info-surface text-info' },
-    { label: 'GMV', value: `€${(s.gmv ?? 0).toFixed(0)}`, icon: DollarSign, accent: 'bg-trust-surface text-trust' },
-    { label: 'Conversion', value: `${s.conversionRate ?? 0}%`, icon: TrendingUp, accent: 'bg-brand-muted text-brand' },
-    { label: 'Quote Rate', value: `${s.quoteRate ?? 0}%`, icon: MessageSquare, accent: 'bg-caution-surface text-caution' },
-  ];
-
-  // Secondary KPIs — context metrics
-  const secondaryKpis = [
-    { label: 'Cancellation', value: `${s.cancellationRate ?? 0}%` },
-    { label: 'Providers', value: s.totalProviders ?? 0 },
-    { label: 'Users', value: s.totalUsers ?? 0 },
-    { label: 'Reviews', value: s.totalReviews ?? 0 },
-  ];
-
-  // Marketplace health derived from available data
-  const completionRate = (s.totalBookings ?? 0) > 0
-    ? Math.round(((s.completedBookings ?? 0) / s.totalBookings) * 100)
-    : 0;
-  const supplyRatio = (s.totalRequests ?? 0) > 0
-    ? ((s.totalProviders ?? 0) / s.totalRequests).toFixed(1)
-    : '—';
-
+function NavList({
+  active,
+  onSelect,
+  itemClassName,
+}: {
+  active:         string;
+  onSelect:       (id: AdminModuleId) => void;
+  itemClassName?: string;
+}) {
   return (
-    <div>
-      <ModuleHeader title="Command Center" description="Marketplace overview and operational health." />
+    <>
+      {MODULES.map(m => (
+        <button
+          key={m.id}
+          type="button"
+          onClick={() => onSelect(m.id)}
+          aria-current={active === m.id ? 'page' : undefined}
+          className={cn(
+            'w-full flex items-center gap-3 px-4 rounded-input text-sm font-medium text-left border',
+            'transition-all duration-150',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2',
+            active === m.id
+              ? 'bg-card shadow-card border-border-dim text-brand'
+              : 'border-transparent text-ink-sub hover:text-ink hover:bg-card/60',
+            itemClassName ?? 'py-3'
+          )}
+        >
+          <m.icon className="w-4 h-4 shrink-0" />
+          {m.label}
+        </button>
+      ))}
+    </>
+  );
+}
 
-      {/* ── Empty DB Banner ── */}
-      {isEmpty && (
-        <div className="mb-5 bg-caution-surface border border-caution-edge rounded-2xl p-5">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-caution shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <p className="font-bold text-sm text-caution mb-1">Database is empty</p>
-              <p className="text-xs text-ink-sub mb-3">No users, providers, or requests found. Seed the database with demo data to populate the dashboard.</p>
-              {seedMsg && <p className="text-xs font-semibold text-trust mb-2">{seedMsg}</p>}
-              <button
-                onClick={seedDatabase}
-                disabled={seeding}
-                className="inline-flex items-center gap-2 bg-caution text-white text-xs font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {seeding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Activity className="w-3.5 h-3.5" />}
-                {seeding ? 'Seeding…' : 'Seed Demo Data'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Action Needed ── */}
-      {actions.length > 0 && (
-        <div className="mb-5">
-          <p className="text-2xs font-bold text-ink-dim uppercase tracking-widest mb-2">Action needed</p>
-          <div className="space-y-1.5">
-            {actions.map((a, i) => (
-              <div key={i} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl ${a.bg}`}>
-                <a.icon className={`w-3.5 h-3.5 shrink-0 ${a.color}`} />
-                <span className={`text-xs font-semibold ${a.color}`}>{a.label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ── Primary KPIs ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
-        {primaryKpis.map((k) => (
-          <div key={k.label} className="bg-white rounded-xl border border-border-dim p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className={`w-7 h-7 ${k.accent} rounded-lg flex items-center justify-center`}>
-                <k.icon className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-2xs font-semibold text-ink-dim uppercase tracking-wide">{k.label}</span>
-            </div>
-            <div className="text-2xl font-bold tracking-tight tabular-nums">{k.value}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Secondary KPIs ── */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
-        {secondaryKpis.map((k) => (
-          <div key={k.label} className="bg-white rounded-xl border border-border-dim px-3 py-3 text-center">
-            <div className="text-lg font-bold tabular-nums text-ink">{k.value}</div>
-            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide mt-0.5">{k.label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Marketplace Activity Chart ── */}
-      <div className="bg-white rounded-xl border border-border-dim p-4 sm:p-5 mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-sm text-ink">Weekly Activity</h2>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-ink rounded-sm" /><span className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Requests</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 bg-border rounded-sm" /><span className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Bookings</span></div>
-          </div>
-        </div>
-        <div className="h-44 sm:h-56">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data?.weeklyActivity ?? []}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} width={28} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', fontSize: '12px' }} />
-              <Bar dataKey="requests" fill="#1a1f2e" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="bookings" fill="#e5e7eb" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ── Marketplace Health ── */}
-      <div className="bg-white rounded-xl border border-border-dim p-4 sm:p-5">
-        <h2 className="font-bold text-sm text-ink mb-3">Marketplace Health</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Demand</p>
-            <p className="text-sm font-bold text-ink mt-0.5">{s.totalRequests ?? 0} requests</p>
-            <p className="text-2xs text-ink-dim">{s.totalBookings ?? 0} converted to bookings</p>
-          </div>
-          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Supply</p>
-            <p className="text-sm font-bold text-ink mt-0.5">{s.totalProviders ?? 0} providers</p>
-            <p className="text-2xs text-ink-dim">{supplyRatio} providers per request</p>
-          </div>
-          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Fulfilment</p>
-            <p className="text-sm font-bold text-ink mt-0.5">{completionRate}% completed</p>
-            <p className="text-2xs text-ink-dim">{canceledCount} cancelled</p>
-          </div>
-          <div className="px-3 py-2.5 rounded-lg bg-surface-alt">
-            <p className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Trust</p>
-            <p className="text-sm font-bold text-ink mt-0.5">{s.totalReviews ?? 0} reviews</p>
-            <p className="text-2xs text-ink-dim">{pendingCount} pending verification{pendingCount !== 1 ? 's' : ''}</p>
-          </div>
-        </div>
-      </div>
+function Brand({ compact }: { compact?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shadow-card shrink-0">
+        <AladdinIcon className="w-5 h-5 text-white" />
+      </span>
+      <span className={compact ? 'block' : undefined}>
+        <span className="font-semibold text-base sm:text-lg tracking-tight text-ink block">Aladdin</span>
+        <span className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
+      </span>
     </div>
   );
 }
-
-// ─── Module 2: Provider Approval Queue ───────────────────────────────────────
-
-function ProvidersModule() {
-  const [providers, setProviders] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
-
-  const load = useCallback(() => {
-    setLoading(true);
-    fetch('/api/admin?section=providers')
-      .then(async r => { const d = await r.json(); setProviders(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const update = async (providerId: string, isVerified: boolean, verificationTier?: string) => {
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update_provider', providerId, isVerified, verificationTier }),
-    });
-    load();
-  };
-
-  if (loading) return <ModuleLoader />;
-
-  const needsReview = providers.filter(p => !p.isVerified);
-  const approved = providers.filter(p => p.isVerified);
-  const filtered = filter === 'ALL' ? providers
-    : filter === 'NEEDS_REVIEW' ? needsReview
-    : approved;
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Provider Queue"
-        description="Review trust status, approve, suspend, or change provider tiers."
-        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
-      />
-
-      {/* Summary strip */}
-      <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
-        <span><span className="font-bold text-ink tabular-nums">{providers.length}</span> total</span>
-        {needsReview.length > 0 && <span className="text-caution font-semibold">{needsReview.length} needs review</span>}
-        <span><span className="font-bold text-ink tabular-nums">{approved.length}</span> approved</span>
-      </div>
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        <FilterChip label="All" active={filter === 'ALL'} count={providers.length} onClick={() => setFilter('ALL')} />
-        <FilterChip label="Needs Review" active={filter === 'NEEDS_REVIEW'} count={needsReview.length} onClick={() => setFilter('NEEDS_REVIEW')} />
-        <FilterChip label="Approved" active={filter === 'APPROVED'} count={approved.length} onClick={() => setFilter('APPROVED')} />
-      </div>
-
-      {filtered.length === 0 ? <AdminEmpty icon={ShieldCheck} title="No providers match this filter" description="Providers will appear here once they register on the platform." /> : (
-        <div className="space-y-2.5">
-          {filtered.map((p) => (
-            <div key={p.id} className="bg-white rounded-xl border border-border-dim p-4">
-              {/* Identity row */}
-              <div className="flex items-center gap-3 mb-3">
-                <img
-                  src={p.user.image || `https://i.pravatar.cc/80?u=${p.id}`}
-                  alt={p.user.name}
-                  className="w-9 h-9 rounded-lg object-cover shrink-0 grayscale"
-                />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm truncate">{p.user.name}</span>
-                    <Badge color={p.isVerified ? 'green' : 'gray'} label={p.isVerified ? 'Active' : 'Unverified'} />
-                  </div>
-                  <p className="text-2xs text-ink-dim truncate">{p.categories.map((c: any) => c.name).join(', ')}</p>
-                </div>
-              </div>
-
-              {/* Stats + Tier row */}
-              <div className="flex items-center justify-between gap-3 mb-3 pb-3 border-b border-border-dim">
-                <div className="flex items-center gap-4 text-xs text-ink-dim">
-                  <span><span className="font-semibold text-ink tabular-nums">{p._count.bookings}</span> jobs</span>
-                  <span><span className="font-semibold text-ink tabular-nums">{p._count.reviews}</span> reviews</span>
-                </div>
-                <Badge color={TIER_COLORS[p.verificationTier] ?? 'gray'} label={TIER_LABELS[p.verificationTier] ?? p.verificationTier} />
-              </div>
-
-              {/* Actions row */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <select
-                  defaultValue={p.verificationTier}
-                  onChange={(e) => update(p.id, p.isVerified, e.target.value)}
-                  className="text-xs border border-border-dim rounded-lg px-2.5 py-1.5 font-medium bg-surface-alt focus:ring-2 focus:ring-brand outline-none"
-                >
-                  <option value="TIER0_BASIC">Tier 0 – Basic</option>
-                  <option value="TIER1_ID_VERIFIED">Tier 1 – ID</option>
-                  <option value="TIER2_TRADE_VERIFIED">Tier 2 – Trade</option>
-                  <option value="TIER3_ENHANCED">Tier 3 – Enhanced</option>
-                </select>
-                <div className="flex-1" />
-                {!p.isVerified ? (
-                  <button onClick={() => update(p.id, true, p.verificationTier)} className="flex items-center gap-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-semibold hover:bg-trust-surface/80 transition-colors">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Approve
-                  </button>
-                ) : (
-                  <button onClick={() => update(p.id, false, 'TIER0_BASIC')} className="flex items-center gap-1 px-2.5 py-1.5 bg-caution-surface text-caution border border-caution-edge rounded-lg text-xs font-semibold hover:bg-caution-surface/80 transition-colors">
-                    <AlertTriangle className="w-3.5 h-3.5" /> Suspend
-                  </button>
-                )}
-                <button onClick={() => update(p.id, false, p.verificationTier)} className="flex items-center gap-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-semibold hover:bg-danger-surface/80 transition-colors">
-                  <XCircle className="w-3.5 h-3.5" /> Reject
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Module 3: Booking Operations Console ────────────────────────────────────
-
-const STATUS_COLORS: Record<string, string> = {
-  SCHEDULED: 'blue', IN_PROGRESS: 'orange', COMPLETED: 'green', CANCELED: 'red',
-};
-
-function BookingsModule() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
-
-  useEffect(() => {
-    fetch('/api/admin?section=bookings')
-      .then(async r => { const d = await r.json(); setBookings(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  if (loading) return <ModuleLoader />;
-
-  const filtered = filter === 'ALL' ? bookings : bookings.filter(b => b.status === filter);
-
-  return (
-    <div>
-      <ModuleHeader title="Booking Console" description="Track every booking, status, and case owner." />
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {['ALL', 'SCHEDULED', 'IN_PROGRESS', 'COMPLETED', 'CANCELED'].map(s => (
-          <FilterChip
-            key={s}
-            label={s === 'ALL' ? 'All' : s.replace('_', ' ')}
-            active={filter === s}
-            count={s === 'ALL' ? bookings.length : bookings.filter(b => b.status === s).length}
-            onClick={() => setFilter(s)}
-          />
-        ))}
-      </div>
-      {filtered.length === 0 ? <AdminEmpty icon={Briefcase} title="No bookings match this filter" description="Try a different status filter or check back later." /> : (
-        <div className="space-y-2.5">
-          {filtered.map((b) => (
-            <div key={b.id} className="bg-white rounded-xl border border-border-dim p-4">
-              {/* Service + Status */}
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                  <span className="font-bold text-sm truncate">{b.quote?.request?.category?.name ?? 'Service'}</span>
-                  <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status.replace('_', ' ')} />
-                  {b.quote?.request?.isUrgent && <Badge color="orange" label="Urgent" />}
-                </div>
-                <div className="text-right shrink-0">
-                  <span className="font-bold text-sm tabular-nums">€{b.totalAmount?.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {/* Parties + Meta */}
-              <div className="flex items-center justify-between gap-3 text-xs text-ink-dim">
-                <div className="min-w-0">
-                  <span className="font-medium text-ink-sub">{b.customer?.user?.name}</span>
-                  <span className="mx-1.5">→</span>
-                  <span className="font-medium text-ink-sub">{b.provider?.user?.name}</span>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  {b.payment && <span className="tabular-nums">{b.payment.status}</span>}
-                  {b.scheduledAt && (
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(b.scheduledAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Module 4: Refund & Dispute Center ───────────────────────────────────────
-
-function DisputesModule() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    fetch('/api/admin?section=bookings')
-      .then(async r => {
-        const d = await r.json();
-        const list = Array.isArray(d) ? d : [];
-        setBookings(list.filter((b: any) => b.status === 'CANCELED' || b.payment?.status === 'PENDING' || b.payment?.status === 'REFUNDED'));
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const refund = async (bookingId: string) => {
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'refund', bookingId }),
-    });
-    load();
-  };
-
-  if (loading) return <ModuleLoader />;
-
-  const refundedCount = bookings.filter(b => b.payment?.status === 'REFUNDED').length;
-  const pendingCount = bookings.filter(b => b.payment?.status !== 'REFUNDED').length;
-  const totalAmount = bookings.reduce((sum: number, b: any) => sum + (b.totalAmount ?? 0), 0);
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Refund & Disputes"
-        description="Review cases, approve refunds, and enforce policy."
-        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
-      />
-
-      {/* Summary strip */}
-      {bookings.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-            <div className="text-lg font-bold tabular-nums text-ink">{bookings.length}</div>
-            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Total Cases</div>
-          </div>
-          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-            <div className="text-lg font-bold tabular-nums text-caution">{pendingCount}</div>
-            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Pending</div>
-          </div>
-          <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-            <div className="text-lg font-bold tabular-nums text-trust">{refundedCount}</div>
-            <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Refunded</div>
-          </div>
-        </div>
-      )}
-
-      {bookings.length === 0 ? <AdminEmpty icon={DollarSign} title="No open disputes or refunds" description="Cancelled bookings and refund requests will surface here." /> : (
-        <div className="space-y-2.5">
-          {bookings.map((b) => {
-            const isRefunded = b.payment?.status === 'REFUNDED';
-            const daysSince = Math.floor((Date.now() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-            return (
-              <div key={b.id} className={`bg-white rounded-xl border p-4 ${isRefunded ? 'border-border-dim opacity-70' : 'border-border-dim'}`}>
-                {/* Service + Amount */}
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                    <span className="font-bold text-sm truncate">{b.quote?.request?.category?.name ?? 'Service'}</span>
-                    <Badge color={STATUS_COLORS[b.status] ?? 'gray'} label={b.status} />
-                    {b.payment && <Badge color={isRefunded ? 'green' : 'orange'} label={isRefunded ? 'Refunded' : b.payment.status} />}
-                  </div>
-                  <span className="font-bold text-sm tabular-nums shrink-0">€{b.totalAmount?.toFixed(2)}</span>
-                </div>
-
-                {/* Parties + Age + Action */}
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3 text-xs text-ink-dim min-w-0">
-                    <span className="truncate">
-                      <span className="font-medium text-ink-sub">{b.customer?.user?.name}</span>
-                      <span className="mx-1">→</span>
-                      <span className="font-medium text-ink-sub">{b.provider?.user?.name}</span>
-                    </span>
-                    <span className="shrink-0 tabular-nums">{daysSince}d ago</span>
-                  </div>
-                  <div className="shrink-0">
-                    {!isRefunded && b.status !== 'CANCELED' ? (
-                      <button onClick={() => refund(b.id)} className="flex items-center gap-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-xs font-semibold hover:bg-danger-surface/80 transition-colors">
-                        <DollarSign className="w-3.5 h-3.5" /> Refund
-                      </button>
-                    ) : isRefunded ? (
-                      <span className="text-2xs font-semibold text-trust">Resolved</span>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Module 5: Review Moderation ─────────────────────────────────────────────
-
-function ReviewsModule() {
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
-
-  const load = useCallback(() => {
-    setLoading(true);
-    fetch('/api/admin?section=reviews')
-      .then(async r => { const d = await r.json(); setReviews(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const toggle = async (reviewId: string, isHidden: boolean) => {
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: isHidden ? 'unblock_review' : 'block_review', reviewId }),
-    });
-    load();
-  };
-
-  if (loading) return <ModuleLoader />;
-
-  const visible = reviews.filter(r => !r.isHidden);
-  const blocked = reviews.filter(r => r.isHidden);
-  const filtered = filter === 'ALL' ? reviews
-    : filter === 'VISIBLE' ? visible
-    : blocked;
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((sum: number, r: any) => sum + (r.rating ?? 0), 0) / reviews.length).toFixed(1)
-    : '—';
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Review Moderation"
-        description="Maintain review integrity and handle flagged content."
-        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
-      />
-
-      {/* Summary strip */}
-      {reviews.length > 0 && (
-        <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
-          <span><span className="font-bold text-ink tabular-nums">{reviews.length}</span> total</span>
-          <span>Avg <span className="font-bold text-ink tabular-nums">{avgRating}</span> stars</span>
-          {blocked.length > 0 && <span className="text-danger font-semibold">{blocked.length} blocked</span>}
-        </div>
-      )}
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        <FilterChip label="All" active={filter === 'ALL'} count={reviews.length} onClick={() => setFilter('ALL')} />
-        <FilterChip label="Visible" active={filter === 'VISIBLE'} count={visible.length} onClick={() => setFilter('VISIBLE')} />
-        <FilterChip label="Blocked" active={filter === 'BLOCKED'} count={blocked.length} onClick={() => setFilter('BLOCKED')} />
-      </div>
-
-      {filtered.length === 0 ? <AdminEmpty icon={Star} title="No reviews to moderate" description="Reviews will appear here as customers leave feedback." /> : (
-        <div className="space-y-2.5">
-          {filtered.map((r) => (
-            <div key={r.id} className={`bg-white rounded-xl border p-4 transition-all ${r.isHidden ? 'border-danger-edge/50 opacity-60' : 'border-border-dim'}`}>
-              {/* Rating + Action */}
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-0.5">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className={`w-3.5 h-3.5 ${i <= r.rating ? 'text-caution fill-caution' : 'text-border'}`} />
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold tabular-nums text-ink">{r.rating}/5</span>
-                  {r.isHidden && <Badge color="red" label="Blocked" />}
-                </div>
-                <button
-                  onClick={() => toggle(r.id, r.isHidden)}
-                  className={`shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                    r.isHidden
-                      ? 'bg-trust-surface text-trust border border-trust-edge hover:bg-trust-surface/80'
-                      : 'bg-danger-surface text-danger border border-danger-edge hover:bg-danger-surface/80'
-                  }`}
-                >
-                  {r.isHidden ? <><Eye className="w-3.5 h-3.5" /> Restore</> : <><EyeOff className="w-3.5 h-3.5" /> Block</>}
-                </button>
-              </div>
-
-              {/* Review text */}
-              {r.comment && (
-                <p className="text-sm text-ink-sub mb-2 leading-relaxed line-clamp-2">&quot;{r.comment}&quot;</p>
-              )}
-
-              {/* Meta: reviewer → provider, date */}
-              <div className="flex items-center justify-between text-xs text-ink-dim">
-                <span>
-                  <span className="font-medium text-ink-sub">{r.customer?.user?.name}</span>
-                  <span className="mx-1">→</span>
-                  <span className="font-medium text-ink-sub">{r.provider?.user?.name}</span>
-                </span>
-                <span className="tabular-nums">{new Date(r.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Module 6: Category & Pricing Config ─────────────────────────────────────
-
-const PLATFORM_FEE = 12; // % — displayed as read-only config
-
-function CategoriesModule() {
-  const [categories, setCategories] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch('/api/admin?section=categories')
-      .then(async r => { const d = await r.json(); setCategories(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  if (loading) return <ModuleLoader />;
-
-  const totalProviders = categories.reduce((sum: number, c: any) => sum + (c._count.providers ?? 0), 0);
-  const totalRequests = categories.reduce((sum: number, c: any) => sum + (c._count.requests ?? 0), 0);
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Category Config"
-        description="Service taxonomy, supply coverage, and platform fee rules."
-      />
-
-      {/* Platform settings */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-          <div className="text-lg font-bold tabular-nums text-ink">{PLATFORM_FEE}%</div>
-          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Take Rate</div>
-        </div>
-        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-          <div className="text-lg font-bold tabular-nums text-ink">{categories.length}</div>
-          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Categories</div>
-        </div>
-        <div className="bg-white rounded-xl border border-border-dim px-3 py-2.5 text-center">
-          <div className="text-lg font-bold text-ink">Quote</div>
-          <div className="text-3xs font-semibold text-ink-dim uppercase tracking-wide">Mode</div>
-        </div>
-      </div>
-
-      {/* Category rows */}
-      <div className="space-y-2.5">
-        {categories.map((c) => (
-          <div key={c.id} className="bg-white rounded-xl border border-border-dim p-4">
-            <div className="flex items-start gap-3 mb-2.5">
-              <div className="w-8 h-8 bg-surface-alt rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                <Tag className="w-4 h-4 text-ink-dim" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-sm">{c.name}</p>
-                {c.description && <p className="text-xs text-ink-dim mt-0.5 line-clamp-1">{c.description}</p>}
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 ml-11">
-              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
-                <span className="text-sm font-bold tabular-nums text-ink">{c._count.providers}</span>
-                <span className="text-3xs text-ink-dim ml-1">providers</span>
-              </div>
-              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
-                <span className="text-sm font-bold tabular-nums text-ink">{c._count.requests}</span>
-                <span className="text-3xs text-ink-dim ml-1">requests</span>
-              </div>
-              <div className="text-center px-2 py-1.5 rounded-lg bg-surface-alt">
-                <span className="text-sm font-bold tabular-nums text-ink">{PLATFORM_FEE}%</span>
-                <span className="text-3xs text-ink-dim ml-1">fee</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Module 7: CRM / Referral Controls ───────────────────────────────────────
-
-function CRMModule() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [roleFilter, setRoleFilter] = useState('ALL');
-  const [creditUser, setCreditUser] = useState<any>(null);
-  const [creditNote, setCreditNote] = useState('');
-
-  useEffect(() => {
-    fetch('/api/admin?section=users')
-      .then(async r => { const d = await r.json(); setUsers(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  if (loading) return <ModuleLoader />;
-
-  const filtered = roleFilter === 'ALL' ? users : users.filter(u => u.role === roleFilter);
-
-  const ROLE_COLORS: Record<string, string> = { CUSTOMER: 'blue', PROVIDER: 'purple', ADMIN: 'orange' };
-
-  return (
-    <div>
-      <ModuleHeader title="CRM / Referrals" description="User operations, credits, and activity tracking." />
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        {['ALL', 'CUSTOMER', 'PROVIDER', 'ADMIN'].map(r => (
-          <FilterChip
-            key={r}
-            label={r === 'ALL' ? 'All' : r}
-            active={roleFilter === r}
-            count={r === 'ALL' ? users.length : users.filter(u => u.role === r).length}
-            onClick={() => setRoleFilter(r)}
-          />
-        ))}
-      </div>
-
-      {/* Credit panel */}
-      {creditUser && (
-        <div className="mb-4 bg-info-surface border border-info-edge rounded-xl p-3">
-          <p className="text-xs font-semibold text-info mb-2">Issue credit to {creditUser.name}</p>
-          <div className="flex items-center gap-2">
-            <input
-              value={creditNote}
-              onChange={e => setCreditNote(e.target.value)}
-              placeholder="Credit description..."
-              className="flex-1 text-xs p-2 bg-white border border-border-dim rounded-lg outline-none focus:ring-2 focus:ring-brand"
-            />
-            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-2.5 py-1.5 border border-border-dim rounded-lg text-xs font-semibold text-ink-dim hover:bg-surface-alt transition-colors">Cancel</button>
-            <button onClick={() => { setCreditUser(null); setCreditNote(''); }} className="px-2.5 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-brand-dark transition-colors">Confirm</button>
-          </div>
-        </div>
-      )}
-
-      <div className="space-y-2.5">
-        {filtered.map((u) => (
-          <div key={u.id} className="bg-white rounded-xl border border-border-dim p-4">
-            {/* Identity row */}
-            <div className="flex items-center gap-3 mb-2">
-              <img src={u.image || `https://i.pravatar.cc/80?u=${u.id}`} alt={u.name} className="w-8 h-8 rounded-lg object-cover grayscale shrink-0" />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-sm truncate">{u.name}</span>
-                  <Badge color={ROLE_COLORS[u.role] ?? 'gray'} label={u.role} />
-                </div>
-                <p className="text-2xs text-ink-dim truncate">{u.email}</p>
-              </div>
-            </div>
-
-            {/* Meta + Action row */}
-            <div className="flex items-center justify-between gap-3 text-xs text-ink-dim">
-              <div className="flex items-center gap-3 min-w-0">
-                <span className="tabular-nums">Joined {new Date(u.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}</span>
-                {u.providerProfile && (
-                  <span className="truncate">{u.providerProfile.completedJobs} jobs · {u.providerProfile.ratingAvg?.toFixed(1)} avg</span>
-                )}
-              </div>
-              <button onClick={() => setCreditUser(u)} className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-info-surface text-info border border-info-edge rounded-lg text-xs font-semibold hover:bg-info-surface/80 transition-colors">
-                <Plus className="w-3 h-3" /> Credit
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Module 8: Incident Log ───────────────────────────────────────────────────
-
-function IncidentModule() {
-  const [tickets, setTickets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ subject: '', description: '' });
-  const [submitting, setSubmitting] = useState(false);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    fetch('/api/admin?section=tickets')
-      .then(async r => { const d = await r.json(); setTickets(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const createTicket = async () => {
-    if (!form.subject.trim() || !form.description.trim()) return;
-    setSubmitting(true);
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'create_ticket', ...form, reporterId: 'admin' }),
-    });
-    setForm({ subject: '', description: '' });
-    setShowForm(false);
-    setSubmitting(false);
-    load();
-  };
-
-  const updateStatus = async (ticketId: string, status: string) => {
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'update_ticket', ticketId, status }),
-    });
-    load();
-  };
-
-  const TICKET_COLORS: Record<string, string> = { OPEN: 'orange', RESOLVED: 'green', CLOSED: 'gray' };
-  const [statusFilter, setStatusFilter] = useState('ALL');
-
-  if (loading) return <ModuleLoader />;
-
-  const openCount = tickets.filter(t => t.status === 'OPEN').length;
-  const resolvedCount = tickets.filter(t => t.status === 'RESOLVED').length;
-  const closedCount = tickets.filter(t => t.status === 'CLOSED').length;
-  const filteredTickets = statusFilter === 'ALL' ? tickets : tickets.filter(t => t.status === statusFilter);
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Incident Log"
-        description="Safety concerns, escalations, and compliance tracking."
-        action={
-          <button onClick={() => setShowForm(!showForm)} className="flex items-center gap-1.5 bg-ink text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-ink/80 transition-all">
-            <Plus className="w-3.5 h-3.5" /> New
-          </button>
-        }
-      />
-
-      {/* Summary strip */}
-      {tickets.length > 0 && (
-        <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
-          <span><span className="font-bold text-ink tabular-nums">{tickets.length}</span> total</span>
-          {openCount > 0 && <span className="text-caution font-semibold">{openCount} open</span>}
-          <span><span className="font-bold text-ink tabular-nums">{resolvedCount}</span> resolved</span>
-          <span><span className="font-bold text-ink tabular-nums">{closedCount}</span> closed</span>
-        </div>
-      )}
-
-      {/* Filter chips */}
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        <FilterChip label="All" active={statusFilter === 'ALL'} count={tickets.length} onClick={() => setStatusFilter('ALL')} />
-        <FilterChip label="Open" active={statusFilter === 'OPEN'} count={openCount} onClick={() => setStatusFilter('OPEN')} />
-        <FilterChip label="Resolved" active={statusFilter === 'RESOLVED'} count={resolvedCount} onClick={() => setStatusFilter('RESOLVED')} />
-        <FilterChip label="Closed" active={statusFilter === 'CLOSED'} count={closedCount} onClick={() => setStatusFilter('CLOSED')} />
-      </div>
-
-      {/* New incident form — compact, de-emphasized */}
-      {showForm && (
-        <div className="bg-surface-alt rounded-xl border border-border-dim p-4 mb-5">
-          <p className="text-xs font-semibold text-ink mb-3">Record new incident</p>
-          <div className="space-y-2.5">
-            <input
-              value={form.subject}
-              onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
-              placeholder="Subject — e.g. Safety complaint – Marius K."
-              className="w-full p-2.5 bg-white border border-border-dim rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand"
-            />
-            <textarea
-              value={form.description}
-              onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              rows={2}
-              placeholder="Describe the incident, evidence, and recommended action..."
-              className="w-full p-2.5 bg-white border border-border-dim rounded-lg text-xs outline-none focus:ring-2 focus:ring-brand resize-none"
-            />
-            <div className="flex gap-2">
-              <button onClick={() => setShowForm(false)} className="px-2.5 py-1.5 border border-border-dim rounded-lg text-xs font-semibold text-ink-dim hover:bg-white transition-colors">Cancel</button>
-              <button onClick={createTicket} disabled={submitting} className="flex items-center gap-1.5 bg-ink text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold hover:bg-ink/80 disabled:opacity-50 transition-colors">
-                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                Submit
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {filteredTickets.length === 0 ? <AdminEmpty icon={FileWarning} title="No incidents recorded" description="Safety concerns and escalations will be tracked here." /> : (
-        <div className="space-y-2.5">
-          {filteredTickets.map((t) => {
-            const daysSince = Math.floor((Date.now() - new Date(t.createdAt).getTime()) / (1000 * 60 * 60 * 24));
-            return (
-              <div key={t.id} className={`bg-white rounded-xl border p-4 ${t.status === 'CLOSED' ? 'border-border-dim opacity-60' : t.status === 'OPEN' ? 'border-caution-edge/50' : 'border-border-dim'}`}>
-                {/* Subject + Status */}
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2 min-w-0 flex-wrap">
-                    <span className="font-bold text-sm truncate">{t.subject}</span>
-                    <Badge color={TICKET_COLORS[t.status] ?? 'gray'} label={t.status} />
-                  </div>
-                  <span className="text-2xs text-ink-dim tabular-nums shrink-0">{daysSince}d ago</span>
-                </div>
-
-                {/* Description */}
-                <p className="text-xs text-ink-sub mb-2.5 leading-relaxed line-clamp-2">{t.description}</p>
-
-                {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <span className="text-2xs text-ink-dim tabular-nums">
-                    {new Date(t.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · {new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  <div className="flex gap-1.5">
-                    {t.status === 'OPEN' && (
-                      <button onClick={() => updateStatus(t.id, 'RESOLVED')} className="px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-xs font-semibold hover:bg-trust-surface/80 transition-colors">Resolve</button>
-                    )}
-                    {t.status !== 'CLOSED' && (
-                      <button onClick={() => updateStatus(t.id, 'CLOSED')} className="px-2.5 py-1.5 bg-surface-alt text-ink-dim border border-border-dim rounded-lg text-xs font-semibold hover:bg-border-dim transition-colors">Close</button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Verifications Module ─────────────────────────────────────────────────────
-
-const REQUIRED_DOCS = ['SELFIE', 'ID', 'INSURANCE', 'CERTIFICATE'] as const;
-const DOC_LABELS: Record<string, string> = { ID: 'Identity Document', CERTIFICATE: 'Certificate / License', INSURANCE: 'Liability Insurance', SELFIE: 'Selfie Verification' };
-const DOC_ICONS: Record<string, React.ElementType> = { ID: ShieldCheck, CERTIFICATE: FileCheck, INSURANCE: FileText, SELFIE: Users };
-
-function getProviderStatus(documents: any[]): 'PENDING' | 'APPROVED' | 'REJECTED' | 'INCOMPLETE' {
-  if (documents.length === 0) return 'INCOMPLETE';
-  const hasPending = documents.some((d: any) => d.status === 'PENDING');
-  const hasRejected = documents.some((d: any) => d.status === 'REJECTED');
-  const allApproved = documents.every((d: any) => d.status === 'APPROVED');
-  if (allApproved && documents.length >= REQUIRED_DOCS.length) return 'APPROVED';
-  if (hasPending) return 'PENDING';
-  if (hasRejected) return 'REJECTED';
-  return 'INCOMPLETE';
-}
-
-const STATUS_STYLE: Record<string, string> = {
-  PENDING: 'bg-yellow-50 text-yellow-700',
-  APPROVED: 'bg-green-50 text-green-700',
-  REJECTED: 'bg-red-50 text-red-700',
-  INCOMPLETE: 'bg-blue-50 text-blue-600',
-  MISSING: 'bg-surface-alt text-ink-dim',
-};
-
-function VerificationsModule() {
-  const [cases, setCases] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('ALL');
-  const [reviewCase, setReviewCase] = useState<any | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [rejectDocId, setRejectDocId] = useState<string | null>(null);
-  const [rejectReason, setRejectReason] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    fetch('/api/admin?section=verifications')
-      .then(async r => { const d = await r.json(); setCases(Array.isArray(d) ? d : []); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  // Compute status for each case
-  const casesWithStatus = useMemo(() =>
-    cases.map(c => ({ ...c, overallStatus: getProviderStatus(c.documents) })),
-    [cases]
-  );
-
-  const filtered = useMemo(() =>
-    filter === 'ALL' ? casesWithStatus : casesWithStatus.filter(c => c.overallStatus === filter),
-    [casesWithStatus, filter]
-  );
-
-  const counts = useMemo(() => ({
-    total: casesWithStatus.length,
-    PENDING: casesWithStatus.filter(c => c.overallStatus === 'PENDING').length,
-    APPROVED: casesWithStatus.filter(c => c.overallStatus === 'APPROVED').length,
-    REJECTED: casesWithStatus.filter(c => c.overallStatus === 'REJECTED').length,
-  }), [casesWithStatus]);
-
-  const handleVerify = async (verificationId: string, status: string, rejectionReason?: string, tier?: string) => {
-    setActionLoading(true);
-    await fetch('/api/admin', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'verify', verificationId, status, tier, rejectionReason }),
-    });
-    // Refresh data
-    const res = await fetch('/api/admin?section=verifications');
-    const d = await res.json();
-    setCases(Array.isArray(d) ? d : []);
-    // Update the open review case if applicable
-    if (reviewCase) {
-      const updated = (Array.isArray(d) ? d : []).find((c: any) => c.providerId === reviewCase.providerId);
-      if (updated) setReviewCase({ ...updated, overallStatus: getProviderStatus(updated.documents) });
-    }
-    setActionLoading(false);
-  };
-
-  const handleApproveAll = async (documents: any[]) => {
-    setActionLoading(true);
-    const pending = documents.filter((d: any) => d.status === 'PENDING');
-    for (const doc of pending) {
-      await fetch('/api/admin', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'verify', verificationId: doc.id, status: 'APPROVED', tier: 'TIER2_TRADE_VERIFIED' }),
-      });
-    }
-    const res = await fetch('/api/admin?section=verifications');
-    const d = await res.json();
-    setCases(Array.isArray(d) ? d : []);
-    if (reviewCase) {
-      const updated = (Array.isArray(d) ? d : []).find((c: any) => c.providerId === reviewCase.providerId);
-      if (updated) setReviewCase({ ...updated, overallStatus: getProviderStatus(updated.documents) });
-      else setReviewCase(null);
-    }
-    setActionLoading(false);
-  };
-
-  if (loading) return <ModuleLoader />;
-
-  return (
-    <div>
-      <ModuleHeader
-        title="Verification Queue"
-        description="Review provider verification cases — all documents grouped per provider."
-        action={<button onClick={load} className="p-2 rounded-lg hover:bg-surface-alt transition-colors"><RefreshCcw className="w-4 h-4 text-ink-dim" /></button>}
-      />
-
-      <div className="flex items-center gap-4 mb-4 text-xs text-ink-dim">
-        <span><span className="font-bold text-ink tabular-nums">{counts.total}</span> providers</span>
-        {counts.PENDING > 0 && <span className="text-caution font-semibold">{counts.PENDING} pending</span>}
-        <span><span className="font-bold text-ink tabular-nums">{counts.APPROVED}</span> approved</span>
-        <span><span className="font-bold text-ink tabular-nums">{counts.REJECTED}</span> rejected</span>
-      </div>
-
-      <div className="flex gap-2 mb-5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
-        <FilterChip label="Pending" active={filter === 'PENDING'} count={counts.PENDING} onClick={() => setFilter('PENDING')} />
-        <FilterChip label="All" active={filter === 'ALL'} count={counts.total} onClick={() => setFilter('ALL')} />
-        <FilterChip label="Approved" active={filter === 'APPROVED'} count={counts.APPROVED} onClick={() => setFilter('APPROVED')} />
-        <FilterChip label="Rejected" active={filter === 'REJECTED'} count={counts.REJECTED} onClick={() => setFilter('REJECTED')} />
-      </div>
-
-      {filtered.length === 0 ? (
-        <AdminEmpty icon={ShieldCheck} title="No verification cases" description="Provider submissions will appear here." />
-      ) : (
-        <div className="space-y-2.5">
-          {filtered.map(c => {
-            const docTypes = c.documents.map((d: any) => d.docType);
-            const missing = REQUIRED_DOCS.filter(t => !docTypes.includes(t));
-            const pendingDocs = c.documents.filter((d: any) => d.status === 'PENDING').length;
-            const categories = c.provider?.categories?.map((cat: any) => cat.name).join(', ') || null;
-            return (
-              <div key={c.providerId} className="bg-white rounded-xl border border-border-dim p-4 hover:shadow-card transition-shadow">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
-                    {c.provider?.user?.image ? (
-                      <img src={c.provider.user.image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
-                        {c.provider?.user?.name?.charAt(0) ?? '?'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{c.provider?.user?.name ?? 'Unknown'}</p>
-                    <p className="text-xs text-ink-dim truncate">{c.provider?.user?.email}</p>
-                    {categories && <p className="text-3xs text-ink-dim mt-0.5">{categories}</p>}
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wider shrink-0 ${STATUS_STYLE[c.overallStatus]}`}>
-                    {c.overallStatus}
-                  </span>
-                </div>
-
-                {/* Document summary */}
-                <div className="flex items-center gap-3 mb-3 text-xs text-ink-dim">
-                  <span className="flex items-center gap-1"><Upload className="w-3 h-3" /> {c.documents.length}/{REQUIRED_DOCS.length} docs</span>
-                  {pendingDocs > 0 && <span className="text-caution font-semibold">{pendingDocs} to review</span>}
-                  {missing.length > 0 && <span className="text-info">Missing: {missing.map((m: string) => DOC_LABELS[m]?.split(' ')[0]).join(', ')}</span>}
-                </div>
-
-                {/* Document type pills */}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {REQUIRED_DOCS.map(type => {
-                    const doc = c.documents.find((d: any) => d.docType === type);
-                    const st = doc ? doc.status : 'MISSING';
-                    return (
-                      <span key={type} className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-3xs font-semibold ${STATUS_STYLE[st]}`}>
-                        {st === 'APPROVED' && <CheckCircle2 className="w-2.5 h-2.5" />}
-                        {st === 'REJECTED' && <XCircle className="w-2.5 h-2.5" />}
-                        {st === 'PENDING' && <Clock className="w-2.5 h-2.5" />}
-                        {DOC_LABELS[type]?.split(' ')[0] ?? type}
-                      </span>
-                    );
-                  })}
-                </div>
-
-                <button
-                  onClick={() => setReviewCase({ ...c, overallStatus: c.overallStatus })}
-                  className="w-full px-3 py-2 bg-surface-alt text-ink border border-border-dim rounded-lg text-xs font-bold hover:bg-border-dim/30 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <Eye className="w-3.5 h-3.5" /> Review Case
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* ═══ Review Case Modal ════════════════════════════════════════════════ */}
-      {reviewCase && (
-        <>
-          <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm z-50" onClick={() => setReviewCase(null)} />
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <div className="bg-white w-full sm:max-w-lg max-h-[90vh] rounded-t-3xl sm:rounded-2xl shadow-float flex flex-col overflow-hidden">
-              {/* Header */}
-              <div className="px-5 py-4 border-b border-border-dim flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-surface-alt overflow-hidden shrink-0">
-                    {reviewCase.provider?.user?.image ? (
-                      <img src={reviewCase.provider.user.image} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-ink-dim text-sm font-bold">
-                        {reviewCase.provider?.user?.name?.charAt(0) ?? '?'}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-sm text-ink truncate">{reviewCase.provider?.user?.name}</p>
-                    <p className="text-2xs text-ink-dim truncate">{reviewCase.provider?.user?.email}</p>
-                  </div>
-                </div>
-                <button onClick={() => setReviewCase(null)} className="p-1.5 rounded-lg hover:bg-surface-alt transition-colors">
-                  <X className="w-5 h-5 text-ink-dim" />
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4">
-                {/* Overall status */}
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-ink-dim uppercase tracking-wider">Case Status</span>
-                  <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wider ${STATUS_STYLE[reviewCase.overallStatus]}`}>
-                    {reviewCase.overallStatus}
-                  </span>
-                </div>
-
-                {/* Document checklist */}
-                <div className="space-y-3">
-                  <p className="text-xs font-bold text-ink-dim uppercase tracking-wider">Document Checklist</p>
-                  {REQUIRED_DOCS.map(type => {
-                    const doc = reviewCase.documents.find((d: any) => d.docType === type);
-                    const Icon = DOC_ICONS[type] || FileText;
-                    return (
-                      <div key={type} className="bg-surface-alt rounded-xl p-3.5">
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 border border-border-dim">
-                            <Icon className="w-4 h-4 text-ink-dim" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-ink">{DOC_LABELS[type]}</p>
-                            {doc ? (
-                              <p className="text-3xs text-ink-dim">
-                                Uploaded {new Date(doc.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            ) : (
-                              <p className="text-3xs text-ink-dim">Not uploaded</p>
-                            )}
-                          </div>
-                          <span className={`px-2 py-0.5 rounded-md text-3xs font-bold uppercase ${STATUS_STYLE[doc ? doc.status : 'MISSING']}`}>
-                            {doc ? doc.status : 'Missing'}
-                          </span>
-                        </div>
-
-                        {doc && (
-                          <>
-                            {/* Document preview */}
-                            <button
-                              onClick={() => setPreviewUrl(doc.docUrl)}
-                              className="w-full h-32 rounded-lg overflow-hidden border border-border-dim bg-white mb-2 relative group cursor-pointer"
-                            >
-                              <img src={doc.docUrl} alt={doc.docType} className="w-full h-full object-cover" />
-                              <div className="absolute inset-0 bg-ink/0 group-hover:bg-ink/30 transition-all flex items-center justify-center">
-                                <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                              </div>
-                            </button>
-
-                            {/* Rejection reason display */}
-                            {doc.status === 'REJECTED' && doc.rejectionReason && (
-                              <div className="flex items-start gap-2 p-2 bg-danger-surface rounded-lg mb-2">
-                                <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0 mt-0.5" />
-                                <p className="text-2xs text-danger">{doc.rejectionReason}</p>
-                              </div>
-                            )}
-
-                            {/* Per-document actions */}
-                            {doc.status === 'PENDING' && (
-                              <div className="flex gap-2">
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => handleVerify(doc.id, 'APPROVED', undefined, 'TIER1_ID_VERIFIED')}
-                                  className="flex-1 px-2.5 py-1.5 bg-trust-surface text-trust border border-trust-edge rounded-lg text-2xs font-bold hover:bg-trust-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                                >
-                                  <CheckCircle2 className="w-3 h-3" /> Approve
-                                </button>
-                                <button
-                                  disabled={actionLoading}
-                                  onClick={() => { setRejectDocId(doc.id); setRejectReason(''); }}
-                                  className="flex-1 px-2.5 py-1.5 bg-danger-surface text-danger border border-danger-edge rounded-lg text-2xs font-bold hover:bg-danger-surface/80 transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                                >
-                                  <XCircle className="w-3 h-3" /> Reject
-                                </button>
-                              </div>
-                            )}
-
-                            {/* Reject reason input */}
-                            {rejectDocId === doc.id && (
-                              <div className="mt-2 space-y-2">
-                                <textarea
-                                  value={rejectReason}
-                                  onChange={e => setRejectReason(e.target.value)}
-                                  placeholder="Reason for rejection (shown to provider)..."
-                                  className="w-full px-3 py-2 text-xs border border-border-dim rounded-lg focus:ring-1 focus:ring-brand focus:border-brand resize-none"
-                                  rows={2}
-                                  autoFocus
-                                />
-                                <div className="flex gap-2">
-                                  <button
-                                    disabled={actionLoading}
-                                    onClick={async () => {
-                                      await handleVerify(doc.id, 'REJECTED', rejectReason || undefined);
-                                      setRejectDocId(null);
-                                      setRejectReason('');
-                                    }}
-                                    className="flex-1 px-2.5 py-1.5 bg-danger text-white rounded-lg text-2xs font-bold hover:bg-danger/90 transition-colors disabled:opacity-50"
-                                  >
-                                    Confirm Reject
-                                  </button>
-                                  <button
-                                    onClick={() => { setRejectDocId(null); setRejectReason(''); }}
-                                    className="px-3 py-1.5 bg-surface-alt text-ink-dim rounded-lg text-2xs font-bold hover:bg-border-dim/30 transition-colors"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            )}
-                          </>
-                        )}
-
-                        {/* Not uploaded state */}
-                        {!doc && (
-                          <div className="flex items-center gap-2 p-2 rounded-lg bg-white border border-dashed border-border-dim">
-                            <Upload className="w-3.5 h-3.5 text-ink-dim" />
-                            <p className="text-2xs text-ink-dim">Provider has not uploaded this document yet.</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Footer actions */}
-              {reviewCase.documents.some((d: any) => d.status === 'PENDING') && (
-                <div className="px-5 py-4 border-t border-border-dim shrink-0 flex gap-2">
-                  <button
-                    disabled={actionLoading}
-                    onClick={() => handleApproveAll(reviewCase.documents)}
-                    className="flex-1 px-4 py-2.5 bg-brand text-white rounded-xl text-sm font-bold hover:bg-brand-dark transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
-                  >
-                    <CheckCircle2 className="w-4 h-4" /> Approve All Pending
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ═══ Image Preview Lightbox ═══════════════════════════════════════════ */}
-      {previewUrl && (
-        <>
-          <div className="fixed inset-0 bg-ink/80 backdrop-blur-sm z-[60]" onClick={() => setPreviewUrl(null)} />
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <button
-              onClick={() => setPreviewUrl(null)}
-              className="absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-            <img
-              src={previewUrl}
-              alt="Document preview"
-              className="max-w-full max-h-[85vh] rounded-xl shadow-float object-contain"
-            />
-            <a
-              href={previewUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="absolute bottom-6 right-6 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <ExternalLink className="w-3.5 h-3.5" /> Open Original
-            </a>
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-// ─── Sidebar Navigation ───────────────────────────────────────────────────────
-
-const MODULES = [
-  { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-  { id: 'verifications', label: 'Verification Queue', icon: FileText },
-  { id: 'providers', label: 'Provider Queue', icon: ShieldCheck },
-  { id: 'bookings', label: 'Booking Console', icon: Briefcase },
-  { id: 'disputes', label: 'Refund & Disputes', icon: DollarSign },
-  { id: 'reviews', label: 'Review Moderation', icon: Star },
-  { id: 'categories', label: 'Category Config', icon: Settings },
-  { id: 'crm', label: 'CRM / Referrals', icon: Users },
-  { id: 'incidents', label: 'Incident Log', icon: FileWarning },
-];
-
-// ─── Main Admin Shell ─────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
-  const [active, setActive] = useState('analytics');
+  const [active, setActive]     = useState<AdminModuleId>('analytics');
   const [forbidden, setForbidden] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
@@ -1465,152 +99,125 @@ export default function AdminDashboard() {
 
   if (forbidden) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-surface-alt gap-4">
-        <p className="text-2xl font-bold">Access Denied</p>
-        <p className="text-ink-dim">Admin privileges required.</p>
-        <a href="/login" className="bg-brand text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-dark">Log in</a>
+      <div className="min-h-screen bg-canvas flex items-center justify-center p-6">
+        <EmptyState
+          icon={ShieldAlert}
+          size="lg"
+          title="Access denied"
+          description="This console is restricted to marketplace administrators. Sign in with an admin account to continue."
+          action={
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Link href="/" className={buttonVariants({ variant: 'primary', size: 'md' })}>
+                Back to Aladdin
+              </Link>
+              <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'md' })}>
+                Log in
+              </Link>
+            </div>
+          }
+        />
       </div>
     );
   }
 
   const activeModule = MODULES.find(m => m.id === active) ?? MODULES[0];
-
-  const renderModule = () => {
-    switch (active) {
-      case 'analytics':      return <AnalyticsModule />;
-      case 'verifications': return <VerificationsModule />;
-      case 'providers':     return <ProvidersModule />;
-      case 'bookings':   return <BookingsModule />;
-      case 'disputes':   return <DisputesModule />;
-      case 'reviews':    return <ReviewsModule />;
-      case 'categories': return <CategoriesModule />;
-      case 'crm':        return <CRMModule />;
-      case 'incidents':  return <IncidentModule />;
-      default:           return <AnalyticsModule />;
-    }
-  };
+  const ActiveComponent = MODULE_COMPONENTS[active] ?? AnalyticsModule;
 
   return (
     <div className="min-h-screen bg-canvas flex">
-      {/* Desktop Sidebar */}
+      {/* ── Desktop rail ─────────────────────────────────────────────────── */}
       <aside className="hidden md:flex w-64 shrink-0 bg-canvas border-r border-border-dim/50 flex-col sticky top-0 h-screen">
-        <div className="p-8">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
-          </div>
-          <span className="text-3xs font-bold text-ink-dim uppercase tracking-widest ml-11">Admin Panel</span>
+        <div className="p-8 pb-6">
+          <Brand />
         </div>
 
-        <nav className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
-          {MODULES.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => setActive(m.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left border ${
-                active === m.id
-                  ? 'bg-white shadow-sm border-border-dim text-brand'
-                  : 'border-transparent text-ink-sub hover:text-ink hover:bg-white/60'
-              }`}
-            >
-              <m.icon className="w-4 h-4 shrink-0" />
-              {m.label}
-            </button>
-          ))}
+        <nav aria-label="Admin modules" className="flex-1 px-4 py-2 space-y-1 overflow-y-auto">
+          <NavList active={active} onSelect={setActive} />
         </nav>
 
         <div className="p-6">
-          <button
+          <Button
+            variant="ghost"
+            className="w-full justify-start px-4 py-3 rounded-input font-medium hover:text-danger hover:bg-danger-surface"
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
-            Log Out
-          </button>
+            <LogOut className="w-4 h-4 shrink-0" /> Log Out
+          </Button>
         </div>
       </aside>
 
-      {/* Mobile Slide-out Menu Overlay */}
+      {/* ── Mobile drawer ────────────────────────────────────────────────── */}
       {showMobileMenu && (
         <div
+          aria-hidden="true"
           className="md:hidden fixed inset-0 bg-ink/40 backdrop-blur-sm z-40"
           onClick={() => setShowMobileMenu(false)}
         />
       )}
 
-      {/* Mobile Slide-out Menu Panel */}
-      <aside className={`md:hidden fixed top-0 left-0 h-full w-72 bg-canvas z-50 flex flex-col shadow-float transition-transform duration-300 ${showMobileMenu ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside
+        className={cn(
+          'md:hidden fixed top-0 left-0 h-full w-72 bg-canvas z-50 flex flex-col shadow-float',
+          'transition-transform duration-250 [transition-timing-function:var(--ease-out-quart)]',
+          showMobileMenu ? 'translate-x-0' : '-translate-x-full'
+        )}
+      >
         <div className="p-6 flex items-center justify-between border-b border-border-dim">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm">
-              <AladdinIcon className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <span className="font-semibold text-base tracking-tight text-ink block">Aladdin</span>
-              <span className="text-3xs font-bold text-ink-dim uppercase tracking-widest">Admin Panel</span>
-            </div>
-          </div>
-          <button
+          <Brand compact />
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Close menu"
+            className="rounded-input"
             onClick={() => setShowMobileMenu(false)}
-            className="p-2 rounded-xl hover:bg-surface-alt transition-colors text-ink-dim"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {MODULES.map((m) => (
-            <button
-              key={m.id}
-              onClick={() => { setActive(m.id); setShowMobileMenu(false); }}
-              className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all text-left border ${
-                active === m.id
-                  ? 'bg-white shadow-sm border-border-dim text-brand'
-                  : 'border-transparent text-ink-sub hover:text-ink hover:bg-white/60'
-              }`}
-            >
-              <m.icon className="w-4 h-4 shrink-0" />
-              {m.label}
-            </button>
-          ))}
+        <nav aria-label="Admin modules" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          <NavList
+            active={active}
+            onSelect={id => { setActive(id); setShowMobileMenu(false); }}
+            itemClassName="py-3.5"
+          />
         </nav>
 
         <div className="p-4 border-t border-border-dim">
-          <button
+          <Button
+            variant="ghost"
+            className="w-full justify-start px-4 py-3.5 rounded-input font-medium hover:text-danger hover:bg-danger-surface"
             onClick={() => signOut({ callbackUrl: '/' })}
-            className="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
-            Log Out
-          </button>
+            <LogOut className="w-4 h-4 shrink-0" /> Log Out
+          </Button>
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* ── Content ──────────────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile Top Bar */}
-        <header className="md:hidden sticky top-0 z-30 bg-canvas/90 backdrop-blur-xl border-b border-border-dim/50 px-4 py-3 flex items-center gap-3">
-          <button
+        <header className="md:hidden sticky top-0 z-30 bg-canvas/80 backdrop-blur-xl border-b border-border-dim/50 px-4 py-3 flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="Open menu"
+            className="rounded-input"
             onClick={() => setShowMobileMenu(true)}
-            className="p-2 rounded-xl hover:bg-surface-alt transition-colors text-ink-sub"
           >
             <Menu className="w-5 h-5" />
-          </button>
+          </Button>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <activeModule.icon className="w-4 h-4 text-brand shrink-0" />
             <span className="font-semibold text-sm text-ink truncate">{activeModule.label}</span>
           </div>
-          <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center shadow-sm shrink-0">
+          <span className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shadow-card shrink-0">
             <AladdinIcon className="w-4 h-4 text-white" />
-          </div>
+          </span>
         </header>
 
-        {/* Content */}
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-10">
-            {renderModule()}
+          <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
+            <ActiveComponent />
           </div>
         </main>
       </div>
