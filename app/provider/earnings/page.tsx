@@ -4,14 +4,17 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import {
-  Loader2, DollarSign, Clock, CheckCircle2, Download,
-  TrendingUp, Calendar, ChevronRight, Landmark, FileText,
+  DollarSign, Clock, CheckCircle2, Download,
+  TrendingUp, ChevronRight, Landmark,
   Briefcase,
 } from 'lucide-react';
 import Link from 'next/link';
 import { PLATFORM_FEE_RATE } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
-import { PageHeader } from '@/components/ui';
+import { cn } from '@/lib/utils';
+import {
+  Card, EmptyState, PageHeader, Skeleton, SkeletonStat, StatCard, buttonVariants,
+} from '@/components/ui';
 
 // The real platform fee charged by the payment code (Stripe application_fee).
 // This page previously hardcoded a fabricated 12%.
@@ -53,7 +56,17 @@ export default function EarningsPage() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-ink-dim" /></div>;
+  if (loading) return (
+    <div className="max-w-3xl mx-auto">
+      <Skeleton rounded="chip" className="h-8 w-56 mb-6 sm:mb-8" />
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-4 sm:mb-8">
+        <Skeleton rounded="card" className="col-span-2 sm:col-span-1 h-28" />
+        <SkeletonStat />
+        <SkeletonStat />
+      </div>
+      <Skeleton rounded="card" className="h-40" />
+    </div>
+  );
 
   const completed = bookings.filter(b => b.status === 'COMPLETED');
   const pending = bookings.filter(b => b.status === 'SCHEDULED' || b.status === 'IN_PROGRESS');
@@ -117,81 +130,62 @@ export default function EarningsPage() {
         title={t.earningsPage.title}
         className="mb-4 sm:mb-8"
         action={
-          /* Tax Export — desktop only in header */
-          <button onClick={exportTaxCSV} className="hidden sm:flex items-center gap-2 text-sm font-medium border border-border-dim px-5 py-2.5 rounded-full hover:border-brand/30 hover:shadow-card transition-all bg-card">
+          <button onClick={exportTaxCSV} className={buttonVariants({ variant: 'secondary', size: 'sm' })}>
             <Download className="w-4 h-4" /> {t.earningsPage.taxExport}
           </button>
         }
       />
 
-      {/* ── Mobile: Earnings hero composition ── */}
-      <div className="sm:hidden mb-4">
-        {/* Total earned — enriched hero */}
-        <div className="bg-brand text-white rounded-card p-4 shadow-md mb-2.5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-3xs text-white/50 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
-            <div className="flex items-center gap-1 text-white/50">
+      {/* ── Money summary — one tree: brand hero + two stat tiles ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-4 mb-4 sm:mb-8">
+        <div className="col-span-2 sm:col-span-1 bg-brand text-white rounded-card p-4 sm:p-6 shadow-elevated">
+          <div className="flex items-center justify-between gap-2 mb-1 sm:mb-2">
+            <p className="text-3xs text-white/60 font-bold uppercase tracking-widest">{t.earningsPage.netEarned}</p>
+            <div className="flex items-center gap-1 text-white/60">
               <Briefcase className="w-3 h-3" />
               <span className="text-3xs font-bold">{completed.length} {t.earningsPage.jobsSuffix}</span>
             </div>
           </div>
           <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
           {totalGross > 0 && (
-            <p className="text-xs text-white/40 mt-1">
+            <p className="text-xs text-white/50 mt-1 sm:mt-2">
               €{totalGross.toFixed(2)} {t.earningsPage.grossSuffix} · {t.earningsPage.platformFeeShort}
               {processingNet > 0 && <> · €{processingNet.toFixed(2)} {t.earningsPage.stillProcessing}</>}
             </p>
           )}
         </div>
-        {/* Pending — compact companion */}
-        {pending.length > 0 ? (
-          <div className="flex items-center justify-between bg-card border border-border-dim rounded-input px-3.5 py-2.5 shadow-card">
-            <div className="flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-ink-dim" />
-              <span className="text-xs font-medium text-ink-sub">{t.earningsPage.pendingLabel}</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-semibold text-ink">€{pendingAmount.toFixed(2)}</span>
-              <span className="text-3xs text-ink-dim">{pending.length} {pending.length !== 1 ? t.earningsPage.jobsPlural : t.earningsPage.jobSingular}</span>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between bg-surface-alt rounded-input px-3.5 py-2.5">
-            <div className="flex items-center gap-2">
-              <Clock className="w-3.5 h-3.5 text-ink-dim" />
-              <span className="text-xs text-ink-dim">{t.earningsPage.noPendingEarnings}</span>
-            </div>
-            <span className="text-sm font-medium text-ink-dim">€0.00</span>
-          </div>
-        )}
-      </div>
 
-      {/* ── Desktop: Original summary cards grid ── */}
-      <div className="hidden sm:grid sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-brand text-white rounded-card p-6 shadow-md">
-          <p className="text-3xs text-white/60 font-bold uppercase tracking-widest mb-2">{t.earningsPage.totalEarned}</p>
-          <p className="text-3xl font-semibold tracking-tight">€{totalNet.toFixed(2)}</p>
-          <p className="text-sm text-white/60 mt-2">{completed.length} {t.earningsPage.jobsSuffix}</p>
-        </div>
-        <div className="bg-card border border-border-dim rounded-card p-6 shadow-card">
-          <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.pendingLabel}</p>
-          <p className="text-3xl font-semibold tracking-tight text-ink">€{pendingAmount.toFixed(2)}</p>
-          <p className="text-sm text-ink-sub mt-2">{pending.length} {t.earningsPage.activeJobsSuffix}</p>
-        </div>
-        <div className="bg-card border border-border-dim rounded-card p-6 shadow-card">
-          <p className="text-3xs text-ink-dim font-bold uppercase tracking-widest mb-2">{t.earningsPage.settled}</p>
-          <p className="text-3xl font-semibold tracking-tight text-ink">€{settledNet.toFixed(2)}</p>
-          <p className="text-sm text-ink-sub mt-2">
-            {processingNet > 0 ? `€${processingNet.toFixed(2)} ${t.earningsPage.processingSuffix}` : `${t.earningsPage.feeLabel} · €${(totalGross * PLATFORM_FEE).toFixed(2)} ${t.earningsPage.totalSuffix}`}
-          </p>
-        </div>
+        <StatCard
+          label={t.earningsPage.pendingLabel}
+          value={`€${pendingAmount.toFixed(2)}`}
+          sub={pending.length > 0
+            ? `${pending.length} ${t.earningsPage.activeJobsSuffix}`
+            : t.earningsPage.noPendingEarnings}
+          icon={Clock}
+          className="p-3.5 sm:p-5"
+        />
+
+        <StatCard
+          label={t.earningsPage.settled}
+          value={`€${settledNet.toFixed(2)}`}
+          sub={processingNet > 0
+            ? `€${processingNet.toFixed(2)} ${t.earningsPage.processingSuffix}`
+            : `${t.earningsPage.feeLabel} · €${(totalGross * PLATFORM_FEE).toFixed(2)} ${t.earningsPage.totalSuffix}`}
+          icon={CheckCircle2}
+          iconClassName="bg-trust-surface text-trust"
+          className="p-3.5 sm:p-5"
+        />
       </div>
 
       {/* Earnings chart */}
       {months.length > 0 && (
-        <div className={`bg-card rounded-card sm:rounded-panel border border-border-dim shadow-card mb-3.5 sm:mb-8 ${
-          months.length <= 1 ? 'p-4 sm:p-6' : 'px-4 pt-3.5 pb-4 sm:p-6'
-        }`}>
+        <Card
+          padding="none"
+          className={cn(
+            'sm:rounded-panel mb-3.5 sm:mb-8',
+            months.length <= 1 ? 'p-4 sm:p-6' : 'px-4 pt-3.5 pb-4 sm:p-6',
+          )}
+        >
           <div className="flex items-center justify-between mb-3 sm:mb-5">
             <p className="font-semibold text-ink text-sm sm:text-base flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-ink-dim" /> {t.earningsPage.monthlyEarnings}
@@ -221,22 +215,22 @@ export default function EarningsPage() {
                 const pct = (value / maxMonth) * 100;
                 return (
                   <div key={month} className="flex-1 flex flex-col items-center min-w-0">
-                    <span className="text-3xs sm:text-3xs font-bold text-ink-dim mb-1 truncate">
+                    <span className="text-3xs font-bold text-ink-dim mb-1 truncate">
                       €{value >= 1000 ? `${(value / 1000).toFixed(1)}k` : value.toFixed(0)}
                     </span>
                     <div className="w-full flex-1 flex items-end">
                       <div
-                        className={`w-full rounded-t-md sm:rounded-t-lg transition-all ${isMax ? 'bg-brand' : 'bg-brand/50'}`}
+                        className={`w-full rounded-t-chip sm:rounded-t-input transition-all ${isMax ? 'bg-brand' : 'bg-brand/50'}`}
                         style={{ height: `${Math.max(pct, 6)}%` }}
                       />
                     </div>
-                    <span className="text-3xs sm:text-3xs font-bold text-ink-dim uppercase mt-1.5 truncate">{month}</span>
+                    <span className="text-3xs font-bold text-ink-dim uppercase mt-1.5 truncate">{month}</span>
                   </div>
                 );
               })}
             </div>
           )}
-        </div>
+        </Card>
       )}
 
       {/* Earnings sub-tabs — tighter to content */}
@@ -247,7 +241,7 @@ export default function EarningsPage() {
           { key: 'payouts' as const, label: t.earningsPage.tabPayouts },
         ]).map(({ key, label }) => (
           <button key={key} onClick={() => setTab(key)}
-            className={`flex-1 py-2 rounded-lg sm:rounded-input text-xs transition-all capitalize ${
+            className={`flex-1 py-2 rounded-chip sm:rounded-input text-xs transition-all capitalize ${
               tab === key ? 'bg-card text-brand shadow-card font-semibold' : 'text-ink-sub hover:text-ink font-medium'
             }`}>
             {label}
@@ -257,8 +251,8 @@ export default function EarningsPage() {
 
       {/* Overview */}
       {tab === 'overview' && (
-        <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 shadow-card">
-          <p className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">{t.earningsPage.earningsBreakdown}</p>
+        <Card padding="sm" className="sm:p-5">
+          <p className="font-semibold text-sm sm:text-base text-ink mb-3 sm:mb-4">{t.earningsPage.earningsBreakdown}</p>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-ink-sub">{t.earningsPage.grossRevenue}</span><span className="font-semibold">€{totalGross.toFixed(2)}</span></div>
             <div className="flex justify-between"><span className="text-ink-sub">{t.earningsPage.platformFee}</span><span className="text-ink-sub">−€{(totalGross * PLATFORM_FEE).toFixed(2)}</span></div>
@@ -268,43 +262,46 @@ export default function EarningsPage() {
             <Clock className="w-3.5 h-3.5 text-ink-dim shrink-0" />
             <p className="text-xs text-ink-sub">{t.earningsPage.payoutNote}</p>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* History */}
       {tab === 'history' && (
         <div>
           {completed.length === 0 ? (
-            <div className="bg-card rounded-card border border-dashed border-border p-6 sm:p-10 text-center">
-              <DollarSign className="w-7 h-7 text-ink-dim mx-auto mb-2" />
-              <p className="font-semibold text-sm mb-1">{t.earningsPage.noCompletedTitle}</p>
-              <p className="text-xs text-ink-dim">{t.earningsPage.noCompletedDesc}</p>
-            </div>
+            <Card padding="md" className="border-dashed sm:p-10">
+              <EmptyState
+                icon={DollarSign}
+                size="sm"
+                title={t.earningsPage.noCompletedTitle}
+                description={t.earningsPage.noCompletedDesc}
+              />
+            </Card>
           ) : (
-            <div className="bg-card rounded-card border border-border-dim shadow-card overflow-hidden divide-y divide-border-dim">
-              {completed.map((b, idx) => (
+            <Card padding="none" className="overflow-hidden divide-y divide-border-dim">
+              {completed.map(b => (
                 <Link key={b.id} href={`/provider/jobs/${b.id}`}
                   className="flex items-center gap-3 p-3.5 sm:p-4 hover:bg-surface-alt/50 transition-colors">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-trust-surface rounded-lg sm:rounded-input flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 bg-trust-surface rounded-input flex items-center justify-center shrink-0">
                     <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-trust" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm sm:text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
+                    <p className="font-semibold text-sm text-ink truncate">{b.quote?.request?.category?.name ?? t.requestsList.serviceFallback}</p>
                     <p className="text-2xs text-ink-dim mt-0.5">
                       {new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                       {b.customer?.user?.name && <span> · {b.customer.user.name}</span>}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-semibold text-trust text-sm sm:text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
+                    <p className="font-semibold text-trust text-sm">+€{(b.totalAmount * (1 - PLATFORM_FEE)).toFixed(2)}</p>
                     <p className={`text-3xs ${b.payment?.status === 'PAID' ? 'text-trust' : 'text-caution'}`}>
                       {b.payment?.status === 'PAID' ? t.earningsPage.paidOut : t.earningsPage.processing}
                     </p>
                   </div>
-                  <ChevronRight className="w-3.5 h-3.5 text-ink-dim/50 shrink-0 hidden sm:block" />
+                  <ChevronRight className="w-3.5 h-3.5 text-ink-dim/50 shrink-0" />
                 </Link>
               ))}
-            </div>
+            </Card>
           )}
         </div>
       )}
@@ -314,7 +311,7 @@ export default function EarningsPage() {
       {tab === 'payouts' && (
         <div className="space-y-3 sm:space-y-4">
           {stripeOnboarded ? (
-            <div className="bg-card rounded-card border border-border-dim p-4 sm:p-5 shadow-card">
+            <Card padding="sm" className="sm:p-5">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-9 h-9 bg-trust-surface rounded-input flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4 text-trust" />
@@ -324,7 +321,7 @@ export default function EarningsPage() {
                   <p className="text-2xs sm:text-xs text-ink-dim">{t.earningsPage.connectedViaStripe}</p>
                 </div>
               </div>
-              <div className="space-y-1.5 text-sm sm:text-sm">
+              <div className="space-y-1.5 text-sm">
                 {[
                   [t.earningsPage.rowMethod, t.earningsPage.rowMethodValue],
                   [t.earningsPage.rowWhen, t.earningsPage.rowWhenValue],
@@ -344,7 +341,7 @@ export default function EarningsPage() {
               >
                 {connectingStripe ? t.earningsPage.openingStripe : t.earningsPage.managePayouts}
               </button>
-            </div>
+            </Card>
           ) : (
             <div className="bg-caution-surface border border-caution-edge rounded-card p-4 sm:p-5">
               <div className="flex items-start gap-3">
@@ -357,7 +354,7 @@ export default function EarningsPage() {
                   <button
                     onClick={setUpPayouts}
                     disabled={connectingStripe || stripeOnboarded === null}
-                    className="text-xs sm:text-sm font-bold bg-caution text-white px-4 py-2 rounded-input hover:opacity-90 transition-opacity disabled:opacity-50"
+                    className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'bg-caution hover:bg-caution/90')}
                   >
                     {connectingStripe ? t.earningsPage.openingStripe : t.earningsPage.setUpPayouts}
                   </button>
@@ -365,20 +362,6 @@ export default function EarningsPage() {
               </div>
             </div>
           )}
-
-          {/* Tax export — mobile only */}
-          <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card p-4">
-            <button onClick={exportTaxCSV} className="w-full flex items-center gap-3 group">
-              <div className="w-9 h-9 bg-surface-alt rounded-input flex items-center justify-center shrink-0 group-hover:bg-brand-muted transition-colors">
-                <FileText className="w-4 h-4 text-ink-dim group-hover:text-brand transition-colors" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-ink">{t.earningsPage.taxExportMobile}</p>
-                <p className="text-2xs text-ink-dim">{t.earningsPage.taxExportDesc}</p>
-              </div>
-              <Download className="w-4 h-4 text-ink-dim shrink-0" />
-            </button>
-          </div>
         </div>
       )}
     </div>
