@@ -500,6 +500,9 @@ export interface Dictionary {
     keepBooking: string;
     yesCancel: string;
     markComplete: string;
+    heroScheduled: string;
+    heroInProgress: string;
+    heroCompleted: string;
   };
 
   // Messages inbox (app/messages)
@@ -526,6 +529,31 @@ export interface Dictionary {
     minutesSuffix: string;
     hoursSuffix: string;
     daysSuffix: string;
+  };
+
+  // Shared chat surface (components/shared/chat-view + app/messages)
+  chatView: {
+    today: string;
+    yesterday: string;
+    roleProvider: string;
+    roleCustomer: string;
+    emptyTitle: string;
+    emptyDesc: string;
+    sharedPhoto: string;
+    attachPhoto: string;
+    callAction: string;
+    eventTimeline: string;
+    closeTimeline: string;
+    eventQuoteSent: string;
+    eventQuoteAccepted: string;
+    eventBookingConfirmed: string;
+    eventJobStarted: string;
+    eventJobCompleted: string;
+    eventReviewLeft: string;
+    lockedTitle: string;
+    lockedDesc: string;
+    payNow: string;
+    uploadFailed: string;
   };
 
   // Public provider profile (app/providers/[id])

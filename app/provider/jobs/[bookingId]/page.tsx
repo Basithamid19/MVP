@@ -5,13 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, MapPin, Phone, MessageSquare, CheckCircle2,
-  Circle, Camera, Loader2, Navigation, Clock, X,
-  ImagePlus, AlertTriangle, DollarSign, Timer, ChevronRight,
+  Camera, Loader2, Navigation, Clock, X,
+  ImagePlus, AlertTriangle, ChevronRight,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
+import { Avatar, Button, DomainStatusBadge, StatusBadge, useToast } from '@/components/ui';
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
-import { localizedStatus } from '@/lib/status-labels';
 import { useTranslation } from '@/lib/i18n';
 
 // Transition map only — labels/colors come from the shared status module so
@@ -40,6 +40,7 @@ export default function ProviderJobDetailPage() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const router = useRouter();
   const t = useTranslation();
+  const { toast } = useToast();
   const [booking, setBooking] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState(false);
@@ -97,7 +98,7 @@ export default function ProviderJobDetailPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? t.jobDetail.updateFailed);
+        toast.error(d.error ?? t.jobDetail.updateFailed);
       }
       load();
     } finally {
@@ -179,15 +180,12 @@ export default function ProviderJobDetailPage() {
               <p className="text-3xs text-ink-dim mt-0.5 font-medium">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
             </div>
             <div className="flex flex-col items-end gap-1 shrink-0">
-              <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wide ${localizedStatus(t, 'booking', booking.status).cls}`}>
-                {localizedStatus(t, 'booking', booking.status).label}
-              </span>
+              <DomainStatusBadge kind="booking" status={booking.status} dict={t} />
               {!isCanceled && !isCompleted && (
-                <span className={`px-2.5 py-1 rounded-full text-3xs font-bold uppercase tracking-wide ${
-                  chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
-                }`}>
-                  {chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
-                </span>
+                <StatusBadge
+                  variant={chatUnlocked ? 'success' : 'warning'}
+                  label={chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
+                />
               )}
             </div>
           </div>
@@ -227,15 +225,13 @@ export default function ProviderJobDetailPage() {
           <p className="text-xs text-ink-dim">{t.jobDetail.idLabel} {booking.id.slice(0, 8)}…</p>
         </div>
         {!isCanceled && !isCompleted && (
-          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-            chatUnlocked ? 'bg-trust-surface text-trust' : 'bg-caution-surface text-caution'
-          }`}>
-            {chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
-          </span>
+          <StatusBadge
+            size="md"
+            variant={chatUnlocked ? 'success' : 'warning'}
+            label={chatUnlocked ? t.jobDetail.depositPaid : t.jobDetail.depositPending}
+          />
         )}
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${localizedStatus(t, 'booking', booking.status).cls}`}>
-          {localizedStatus(t, 'booking', booking.status).label}
-        </span>
+        <DomainStatusBadge kind="booking" status={booking.status} dict={t} size="md" />
       </div>
 
       <div className="space-y-3 sm:space-y-5">
@@ -266,10 +262,12 @@ export default function ProviderJobDetailPage() {
         {/* ── Mobile: Customer compact card ── */}
         <div className="sm:hidden bg-card rounded-card border border-border-dim shadow-card overflow-hidden">
           <div className="flex items-center gap-3 p-3.5">
-            <img
-              src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
-              alt={customer?.user?.name}
-              className="w-10 h-10 rounded-input object-cover shrink-0"
+            <Avatar
+              src={customer?.user?.image}
+              name={customer?.user?.name ?? ''}
+              size="md"
+              shape="square"
+              className="rounded-input"
             />
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm text-ink">{customer?.user?.name}</p>
@@ -292,7 +290,7 @@ export default function ProviderJobDetailPage() {
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
-                else alert(t.bookingDetail.callMasking);
+                else toast.info(t.bookingDetail.callMasking);
               }}
               className="flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-ink-sub hover:bg-surface-alt/50 transition-colors"
             >
@@ -313,10 +311,12 @@ export default function ProviderJobDetailPage() {
         <div className="hidden sm:block bg-card rounded-panel border border-border-dim p-5 shadow-card">
           <p className="text-3xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.jobDetail.customer}</p>
           <div className="flex items-center gap-3 mb-4">
-            <img
-              src={customer?.user?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer?.user?.name ?? 'User')}&size=160&background=cdd9d0&color=1c3828&bold=true&rounded=true`}
-              alt={customer?.user?.name}
-              className="w-12 h-12 rounded-card object-cover shrink-0"
+            <Avatar
+              src={customer?.user?.image}
+              name={customer?.user?.name ?? ''}
+              size="lg"
+              shape="square"
+              className="w-12 h-12"
             />
             <div className="flex-1">
               <p className="font-bold">{customer?.user?.name}</p>
@@ -328,21 +328,21 @@ export default function ProviderJobDetailPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              className="flex-1"
               onClick={() => {
                 const phone = customer?.phone;
                 if (phone) window.location.href = `tel:${phone}`;
-                else alert(t.bookingDetail.callMasking);
+                else toast.info(t.bookingDetail.callMasking);
               }}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 border border-border rounded-input text-sm font-bold hover:border-border transition-colors"
             >
               <Phone className="w-4 h-4" /> {t.bookingDetail.call}
-            </button>
+            </Button>
             {chatUnlocked && (
-              <button onClick={() => setShowChat(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors">
+              <Button className="flex-1" onClick={() => setShowChat(true)}>
                 <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
-              </button>
+              </Button>
             )}
             {address && (
               <a href={mapsUrl} target="_blank" rel="noreferrer"
@@ -472,7 +472,7 @@ export default function ProviderJobDetailPage() {
                   <img src={p.preview} alt={p.label} className="w-full h-full object-cover" />
                   <button
                     onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))}
-                    className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm"
+                    className="absolute top-1 right-1 w-5 h-5 bg-ink/60 rounded-full flex items-center justify-center backdrop-blur-sm"
                   >
                     <X className="w-3 h-3 text-white" />
                   </button>
@@ -513,13 +513,15 @@ export default function ProviderJobDetailPage() {
           <div className="bg-card/95 backdrop-blur-sm border-t border-border-dim p-3 sm:p-4">
             <div className="max-w-2xl mx-auto">
               {chatUnlocked ? (
-                <button
+                <Button
                   onClick={() => updateStatus(flow.next)}
-                  disabled={actioning}
-                  className="w-full bg-brand text-white py-3.5 sm:py-4 rounded-card sm:rounded-card font-semibold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-elevated"
+                  loading={actioning}
+                  size="lg"
+                  className="w-full py-3.5 sm:py-4 shadow-elevated"
                 >
-                  {actioning ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle2 className="w-5 h-5" /> {nextLabel}</>}
-                </button>
+                  {!actioning && <CheckCircle2 className="w-5 h-5" />}
+                  {nextLabel}
+                </Button>
               ) : (
                 <div className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 bg-caution-surface border border-caution-edge rounded-card sm:rounded-card">
                   <Clock className="w-4 h-4 text-caution shrink-0" />

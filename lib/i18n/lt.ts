@@ -471,6 +471,9 @@ export const lt: Dictionary = {
     keepBooking: 'Palikti užsakymą',
     yesCancel: 'Taip, atšaukti',
     markComplete: 'Pažymėti kaip atliktą',
+    heroScheduled: 'Jūsų užsakymas patvirtintas. Meistras atvyks sutartu laiku.',
+    heroInProgress: 'Meistras šiuo metu atlieka darbą.',
+    heroCompleted: 'Darbas užbaigtas. Žemiau pateikta informacija jūsų apskaitai.',
   },
 
   messagesPage: {
@@ -496,6 +499,30 @@ export const lt: Dictionary = {
     minutesSuffix: ' min.',
     hoursSuffix: ' val.',
     daysSuffix: ' d.',
+  },
+
+  chatView: {
+    today: 'Šiandien',
+    yesterday: 'Vakar',
+    roleProvider: 'Jūsų meistras',
+    roleCustomer: 'Klientas',
+    emptyTitle: 'Pradėkite pokalbį',
+    emptyDesc: 'Pasidalykite detalėmis, nuotraukomis ir patekimo informacija prieš vizitą.',
+    sharedPhoto: 'Atsiųsta nuotrauka',
+    attachPhoto: 'Pridėti nuotrauką',
+    callAction: 'Skambinti',
+    eventTimeline: 'Įvykių eiga',
+    closeTimeline: 'Uždaryti eigą',
+    eventQuoteSent: 'Meistras atsiuntė pasiūlymą',
+    eventQuoteAccepted: 'Pasiūlymas priimtas',
+    eventBookingConfirmed: 'Užsakymas patvirtintas',
+    eventJobStarted: 'Darbas pradėtas',
+    eventJobCompleted: 'Darbas užbaigtas',
+    eventReviewLeft: 'Paliktas atsiliepimas',
+    lockedTitle: 'Pokalbis užrakintas',
+    lockedDesc: 'Sumokėkite užsakymo užstatą, kad atrakintumėte susirašinėjimą.',
+    payNow: 'Sumokėti',
+    uploadFailed: 'Nepavyko išsiųsti nuotraukos. Bandykite dar kartą.',
   },
 
   providerProfile: {

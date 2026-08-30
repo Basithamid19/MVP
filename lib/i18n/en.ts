@@ -471,6 +471,9 @@ export const en: Dictionary = {
     keepBooking: 'Keep booking',
     yesCancel: 'Yes, cancel',
     markComplete: 'Mark Complete',
+    heroScheduled: 'Your booking is confirmed. Your pro will arrive at the scheduled time.',
+    heroInProgress: 'Your pro is on the job right now.',
+    heroCompleted: 'This job is complete. Everything below is for your records.',
   },
 
   messagesPage: {
@@ -496,6 +499,30 @@ export const en: Dictionary = {
     minutesSuffix: 'm ago',
     hoursSuffix: 'h ago',
     daysSuffix: 'd ago',
+  },
+
+  chatView: {
+    today: 'Today',
+    yesterday: 'Yesterday',
+    roleProvider: 'Your pro',
+    roleCustomer: 'Customer',
+    emptyTitle: 'Start the conversation',
+    emptyDesc: 'Share details, photos and access notes before the visit.',
+    sharedPhoto: 'Shared photo',
+    attachPhoto: 'Attach a photo',
+    callAction: 'Call',
+    eventTimeline: 'Event timeline',
+    closeTimeline: 'Close timeline',
+    eventQuoteSent: 'Pro sent a quote',
+    eventQuoteAccepted: 'Quote accepted',
+    eventBookingConfirmed: 'Booking confirmed',
+    eventJobStarted: 'Job started',
+    eventJobCompleted: 'Job completed',
+    eventReviewLeft: 'Review left',
+    lockedTitle: 'Chat locked',
+    lockedDesc: 'Pay the booking deposit to unlock messaging.',
+    payNow: 'Pay now',
+    uploadFailed: 'Could not send the photo. Please try again.',
   },
 
   providerProfile: {

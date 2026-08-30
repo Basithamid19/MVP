@@ -4,14 +4,19 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
-import { avatarUrl } from '@/lib/avatar';
 import {
-  ArrowLeft, Star, ShieldCheck, MapPin, Calendar,
+  ArrowLeft, Star, MapPin, Calendar,
   Clock, Phone, MessageSquare, CheckCircle2, XCircle,
-  Loader2, AlertCircle, DollarSign, Timer, LifeBuoy,
+  Loader2, DollarSign, Timer, LifeBuoy,
   ChevronRight, Info,
 } from 'lucide-react';
 import ChatPage from '@/components/shared/chat-view';
+import {
+  Avatar, Button, buttonVariants, DomainStatusBadge, Modal, ModalFooter,
+  StatusBadge, statusVariant, useToast,
+} from '@/components/ui';
+import type { BadgeVariant } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import { formatVilnius } from '@/lib/time';
 import { DEPOSIT_RATE } from '@/lib/fees';
 import { localizedStatus } from '@/lib/status-labels';
@@ -24,6 +29,40 @@ const STEP_INDEX: Record<string, number> = {
   COMPLETED: 2,
   CANCELED: -1,
 };
+
+/* ─── Status hero tones ─────────────────────────────────────────────────────
+ * This page used to stack up to six equal-weight colored banners above the
+ * content. Now exactly one state — the highest-precedence one — becomes the
+ * hero card (state + single message + primary action) and everything else
+ * collapses into a quiet notice list. Transient Stripe outcomes are toasts.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+type Tone = 'danger' | 'caution' | 'trust' | 'info' | 'brand';
+
+const TONE_STYLE: Record<Tone, { medallion: string; accent: string; text: string }> = {
+  danger:  { medallion: 'bg-danger-surface text-danger',   accent: 'bg-danger',  text: 'text-danger' },
+  caution: { medallion: 'bg-caution-surface text-caution', accent: 'bg-caution', text: 'text-caution' },
+  trust:   { medallion: 'bg-trust-surface text-trust',     accent: 'bg-trust',   text: 'text-trust' },
+  info:    { medallion: 'bg-info-surface text-info',       accent: 'bg-info',    text: 'text-info' },
+  brand:   { medallion: 'bg-brand-muted text-brand',       accent: 'bg-brand',   text: 'text-brand' },
+};
+
+const VARIANT_TONE: Partial<Record<BadgeVariant, Tone>> = {
+  success: 'trust',
+  warning: 'caution',
+  info:    'info',
+  danger:  'danger',
+  brand:   'brand',
+};
+
+interface Notice {
+  key:      string;
+  tone:     Tone;
+  icon:     React.ElementType;
+  title:    string;
+  message:  React.ReactNode;
+  actions?: React.ReactNode;
+}
 
 function deriveEta(booking: any, s: Dictionary['bookingDetail']): string | null {
   if (!booking) return null;
@@ -46,6 +85,7 @@ export default function BookingPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const t = useTranslation();
+  const { toast } = useToast();
 
   const BOOKING_STEPS = [
     t.bookingDetail.stepScheduled,
@@ -82,13 +122,13 @@ export default function BookingPage() {
       if (res.ok) {
         setReportingIssue(false);
         setIssueText('');
-        alert(t.bookingDetail.issueReported);
+        toast.success(t.bookingDetail.issueReported);
       } else {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? t.bookingDetail.issueFailed);
+        toast.error(d.error ?? t.bookingDetail.issueFailed);
       }
     } catch {
-      alert(t.common.networkError);
+      toast.error(t.common.networkError);
     } finally {
       setSubmittingIssue(false);
     }
@@ -124,6 +164,32 @@ export default function BookingPage() {
     return () => clearTimeout(t);
   }, [paymentBanner, paymentConfirmed, load]);
 
+  // The Stripe return states are transient — they announce once and get out of
+  // the way instead of occupying a permanent slab above the booking.
+  const firedCanceled  = useRef(false);
+  const firedFinalizing = useRef(false);
+  const firedReceived  = useRef(false);
+
+  useEffect(() => {
+    if (paymentBanner === 'canceled' && !firedCanceled.current) {
+      firedCanceled.current = true;
+      toast.info(t.bookingDetail.paymentCanceled);
+    }
+  }, [paymentBanner, toast, t]);
+
+  useEffect(() => {
+    if (paymentBanner !== 'success') return;
+    if (paymentConfirmed) {
+      if (!firedReceived.current) {
+        firedReceived.current = true;
+        toast.success(t.bookingDetail.depositReceived);
+      }
+    } else if (!firedFinalizing.current) {
+      firedFinalizing.current = true;
+      toast.info(t.bookingDetail.finalizing);
+    }
+  }, [paymentBanner, paymentConfirmed, toast, t]);
+
   const updateStatus = async (status: string) => {
     setActioning(true);
     try {
@@ -134,7 +200,7 @@ export default function BookingPage() {
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({} as any));
-        alert(d.error ?? t.bookingDetail.updateFailed);
+        toast.error(d.error ?? t.bookingDetail.updateFailed);
       }
       load();
     } finally {
@@ -170,7 +236,7 @@ export default function BookingPage() {
       if (data.url) {
         window.location.href = data.url;
       } else {
-        alert(data.error ?? t.bookingDetail.checkoutFailed);
+        toast.error(data.error ?? t.bookingDetail.checkoutFailed);
       }
     } finally {
       setPayingDeposit(false);
@@ -249,26 +315,186 @@ export default function BookingPage() {
   const finalPrice = booking.totalAmount;
   const priceAdjusted = quotedPrice && finalPrice && Math.abs(finalPrice - quotedPrice) > 0.01;
 
+  const depositLabel = booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2);
+
+  /* ── Notice precedence ─────────────────────────────────────────────────
+   * canceled > deposit required > price adjusted (needs a decision) >
+   * price approved. The first becomes the hero; the rest become quiet rows.
+   * (Stripe success/canceled are transient → toasts, above.) */
+  const notices: Notice[] = [];
+
+  if (isCanceled) {
+    notices.push({
+      key: 'canceled',
+      tone: 'danger',
+      icon: XCircle,
+      // The status badge already says "Canceled" — don't say it twice.
+      title: '',
+      message: t.bookingDetail.canceledNotice,
+    });
+  }
+
+  if (!isCanceled && booking.payment?.status === 'PENDING') {
+    notices.push({
+      key: 'deposit',
+      tone: 'caution',
+      icon: Info,
+      title: t.bookingDetail.depositRequiredTitle,
+      message: (
+        <>
+          {t.bookingDetail.depositPayPrefix} <span className="font-bold text-ink">€{depositLabel} {t.bookingDetail.depositBold}</span> {t.bookingDetail.depositPaySuffix}
+        </>
+      ),
+      actions: (
+        <Button
+          onClick={handlePayDeposit}
+          loading={payingDeposit}
+          size="lg"
+          className="w-full sm:w-auto"
+        >
+          {!payingDeposit && <DollarSign className="w-4 h-4" />}
+          {t.bookingDetail.payDepositBtn} · €{depositLabel}
+        </Button>
+      ),
+    });
+  }
+
+  if (isCompleted && priceAdjusted && !priceApproved) {
+    notices.push({
+      key: 'price-decision',
+      tone: 'caution',
+      icon: Info,
+      title: t.bookingDetail.priceAdjustedTitle,
+      message: (
+        <>
+          {t.bookingDetail.priceAdjustedFrom} <span className="font-bold text-ink">€{quotedPrice?.toFixed(2)}</span> {t.bookingDetail.priceAdjustedTo} <span className="font-bold text-ink">€{finalPrice?.toFixed(2)}</span>.
+          {' '}{t.bookingDetail.priceAdjustedAction}
+        </>
+      ),
+      actions: (
+        <>
+          <Button onClick={handleApprovePrice} loading={approvingPrice} size="lg" className="flex-1">
+            {!approvingPrice && <CheckCircle2 className="w-4 h-4" />}
+            {t.bookingDetail.approveBtn} €{finalPrice?.toFixed(2)}
+          </Button>
+          <Button variant="danger" size="lg" onClick={() => setReportingIssue(true)}>
+            {t.bookingDetail.dispute}
+          </Button>
+        </>
+      ),
+    });
+  }
+
+  if (priceAdjusted && priceApproved) {
+    notices.push({
+      key: 'price-approved',
+      tone: 'trust',
+      icon: CheckCircle2,
+      title: t.bookingDetail.priceApprovedNotice,
+      message: null,
+    });
+  }
+
+  // No outstanding notice → a calm hero that just states where the job is.
+  const DEFAULT_ICON: Record<string, React.ElementType> = {
+    SCHEDULED: Calendar,
+    IN_PROGRESS: Timer,
+    COMPLETED: CheckCircle2,
+    CANCELED: XCircle,
+  };
+  const DEFAULT_MESSAGE: Record<string, string> = {
+    SCHEDULED: t.bookingDetail.heroScheduled,
+    IN_PROGRESS: t.bookingDetail.heroInProgress,
+    COMPLETED: t.bookingDetail.heroCompleted,
+    CANCELED: t.bookingDetail.canceledNotice,
+  };
+
+  const hero: Notice = notices[0] ?? {
+    key: 'status',
+    tone: VARIANT_TONE[statusVariant('booking', booking.status)] ?? 'brand',
+    icon: DEFAULT_ICON[booking.status] ?? Calendar,
+    title: '',
+    message: DEFAULT_MESSAGE[booking.status] ?? '',
+  };
+  const secondary = notices.slice(1);
+  const heroTone = TONE_STYLE[hero.tone];
+  const HeroIcon = hero.icon;
+
   return (
     <CustomerLayout maxWidth="max-w-2xl">
-      {/* Inline sub-header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => router.back()} className="p-2 hover:bg-surface-alt rounded-full transition-colors">
+      {/* Back row */}
+      <div className="flex items-center gap-2 mb-3">
+        <button
+          onClick={() => router.back()}
+          className="p-2 -ml-2 hover:bg-surface-alt rounded-full transition-colors text-ink-sub hover:text-ink"
+          aria-label={t.common.back}
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="flex-1">
-          <h1 className="font-bold text-lg">{category?.name ?? t.bookingDetail.bookingFallback}</h1>
-          <p className="text-xs text-ink-dim">ID: {booking.id.slice(0, 8)}…</p>
-        </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${localizedStatus(t, 'booking', booking.status).cls}`}>
-          {localizedStatus(t, 'booking', booking.status).label}
-        </span>
+        <span className="text-xs text-ink-dim">{t.common.back}</span>
       </div>
 
       <div className="space-y-5 pb-24">
+        {/* ── Status hero: one card, one message, one primary action ── */}
+        <div className="relative bg-card rounded-panel border border-border-dim shadow-card overflow-hidden">
+          <span className={cn('absolute inset-y-0 left-0 w-1', heroTone.accent)} aria-hidden="true" />
+          <div className="p-5 sm:p-6 pl-6 sm:pl-7">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-bold tracking-tight text-ink truncate">
+                  {category?.name ?? t.bookingDetail.bookingFallback}
+                </h1>
+                <p className="text-2xs text-ink-dim font-medium mt-0.5">ID: {booking.id.slice(0, 8)}…</p>
+              </div>
+              <DomainStatusBadge kind="booking" status={booking.status} dict={t} className="shrink-0" />
+            </div>
+
+            <div className="flex items-start gap-3 mt-4">
+              <div className={cn('w-10 h-10 rounded-card flex items-center justify-center shrink-0', heroTone.medallion)}>
+                <HeroIcon className="w-5 h-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                {hero.title && <p className="font-bold text-sm text-ink">{hero.title}</p>}
+                {hero.message && (
+                  <p className="text-sm text-ink-sub leading-relaxed mt-0.5">{hero.message}</p>
+                )}
+                {!hero.title && !hero.message && eta && (
+                  <p className="text-sm text-ink-sub leading-relaxed">{eta}</p>
+                )}
+              </div>
+            </div>
+
+            {hero.actions && (
+              <div className="flex flex-col sm:flex-row gap-3 mt-4">{hero.actions}</div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Secondary notices: quiet stacked list, no color slabs ── */}
+        {secondary.length > 0 && (
+          <div className="bg-card rounded-card border border-border-dim p-4 space-y-3">
+            {secondary.map(n => {
+              const NoticeIcon = n.icon;
+              return (
+                <div key={n.key}>
+                  <div className="flex items-start gap-2.5">
+                    <NoticeIcon className={cn('w-4 h-4 shrink-0 mt-0.5', TONE_STYLE[n.tone].text)} />
+                    <p className="text-sm text-ink-sub leading-relaxed">
+                      {n.title && <span className="font-semibold text-ink">{n.title}</span>}
+                      {n.title && n.message ? ' — ' : null}
+                      {n.message}
+                    </p>
+                  </div>
+                  {n.actions && <div className="flex gap-2 mt-2.5 pl-6">{n.actions}</div>}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
         {/* Status timeline */}
         {!isCanceled && (
-          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+          <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.jobProgress}</p>
             <div className="flex items-center mb-4">
               {BOOKING_STEPS.map((s, i) => (
@@ -299,113 +525,21 @@ export default function BookingPage() {
           </div>
         )}
 
-        {isCanceled && (
-          <div className="bg-danger-surface border border-danger-edge rounded-card p-4 flex items-center gap-3">
-            <XCircle className="w-5 h-5 text-danger shrink-0" />
-            <p className="text-sm font-medium text-danger">{t.bookingDetail.canceledNotice}</p>
-          </div>
-        )}
-
-        {/* Stripe return feedback */}
-        {paymentBanner === 'success' && (
-          paymentConfirmed ? (
-            <div className="flex items-center gap-3 px-4 py-3 bg-trust-surface border border-trust-edge rounded-card">
-              <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
-              <p className="text-sm font-medium text-trust">{t.bookingDetail.depositReceived}</p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 px-4 py-3 bg-info-surface border border-info-edge rounded-card">
-              <Loader2 className="w-5 h-5 text-info shrink-0 animate-spin" />
-              <p className="text-sm font-medium text-info">{t.bookingDetail.finalizing}</p>
-            </div>
-          )
-        )}
-        {paymentBanner === 'canceled' && (
-          <div className="flex items-start justify-between gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
-            <div className="flex items-center gap-3">
-              <XCircle className="w-5 h-5 text-caution shrink-0" />
-              <p className="text-sm font-medium text-caution">{t.bookingDetail.paymentCanceled}</p>
-            </div>
-            <button onClick={() => setPaymentBanner(null)} className="shrink-0 text-caution hover:opacity-70 text-xs font-bold">{t.bookingDetail.dismiss}</button>
-          </div>
-        )}
-
-        {/* Deposit payment banner */}
-        {!isCanceled && booking.payment?.status === 'PENDING' && (
-          <div className="bg-caution-surface border border-caution-edge rounded-panel p-5 shadow-card">
-            <div className="flex items-start gap-3 mb-4">
-              <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-caution">{t.bookingDetail.depositRequiredTitle}</p>
-                <p className="text-sm text-caution mt-1 leading-relaxed">
-                  {t.bookingDetail.depositPayPrefix} <span className="font-bold">€{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)} {t.bookingDetail.depositBold}</span> {t.bookingDetail.depositPaySuffix}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handlePayDeposit}
-              disabled={payingDeposit}
-              className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              {payingDeposit ? <Loader2 className="w-4 h-4 animate-spin" /> : <><DollarSign className="w-4 h-4" /> {t.bookingDetail.payDepositBtn} · €{booking.payment?.depositAmount?.toFixed(2) ?? (booking.totalAmount * DEPOSIT_RATE).toFixed(2)}</>}
-            </button>
-          </div>
-        )}
-
-        {/* Approve final price */}
-        {isCompleted && priceAdjusted && !priceApproved && (
-          <div className="bg-caution-surface border border-caution-edge rounded-panel p-6 shadow-card">
-            <div className="flex items-start gap-3 mb-4">
-              <Info className="w-5 h-5 text-caution shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-caution">{t.bookingDetail.priceAdjustedTitle}</p>
-                <p className="text-sm text-caution mt-0.5 leading-relaxed">
-                  {t.bookingDetail.priceAdjustedFrom} <span className="font-bold">€{quotedPrice?.toFixed(2)}</span> {t.bookingDetail.priceAdjustedTo} <span className="font-bold">€{finalPrice?.toFixed(2)}</span>.
-                  {' '}{t.bookingDetail.priceAdjustedAction}
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleApprovePrice}
-                disabled={approvingPrice}
-                className="flex-1 bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {approvingPrice ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.bookingDetail.approveBtn} €{finalPrice?.toFixed(2)}</>}
-              </button>
-              <button
-                onClick={() => setReportingIssue(true)}
-                className="px-4 py-3 border border-danger-edge text-danger rounded-input font-bold text-sm hover:bg-danger-surface transition-colors"
-              >
-                {t.bookingDetail.dispute}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {priceAdjusted && priceApproved && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-trust-surface rounded-card border border-trust-edge">
-            <CheckCircle2 className="w-5 h-5 text-trust shrink-0" />
-            <p className="text-sm font-medium text-trust">{t.bookingDetail.priceApprovedNotice}</p>
-          </div>
-        )}
-
         {/* Provider card */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.yourPro}</p>
           <div className="flex items-start gap-4 mb-4">
-            <img
-              src={provider?.user?.image || avatarUrl(provider?.user?.name, 150)}
-              alt={provider?.user?.name}
-              className="w-14 h-14 rounded-card object-cover shrink-0"
+            <Avatar
+              src={provider?.user?.image}
+              name={provider?.user?.name ?? ''}
+              size="lg"
+              shape="square"
             />
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                 <span className="font-bold text-lg">{provider?.user?.name}</span>
                 {provider?.isVerified && (
-                  <span className="flex items-center gap-1 bg-trust-surface text-trust px-2 py-0.5 rounded-full text-2xs font-bold uppercase">
-                    <ShieldCheck className="w-3 h-3" /> {t.common.verified}
-                  </span>
+                  <StatusBadge variant="success" label={t.common.verified} />
                 )}
               </div>
               <div className="flex items-center gap-3 text-xs text-ink-dim">
@@ -419,29 +553,28 @@ export default function BookingPage() {
             </div>
           </div>
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="secondary"
+              size="lg"
+              className="flex-1"
               onClick={() => {
                 if (provider?.phone) {
                   window.location.href = `tel:${provider.phone}`;
                 } else {
-                  alert(t.bookingDetail.callMasking);
+                  toast.info(t.bookingDetail.callMasking);
                 }
               }}
-              className="flex-1 flex items-center justify-center gap-2 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
             >
               <Phone className="w-4 h-4" /> {t.bookingDetail.call}
-            </button>
+            </Button>
             {chatUnlocked && (
-              <button
-                onClick={() => setShowChat(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-brand text-white rounded-input text-sm font-bold hover:bg-brand-dark transition-colors"
-              >
+              <Button size="lg" className="flex-1" onClick={() => setShowChat(true)}>
                 <MessageSquare className="w-4 h-4" /> {t.bookingDetail.message}
-              </button>
+              </Button>
             )}
             <Link
               href={`/providers/${provider?.id}`}
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-border rounded-input text-sm font-bold hover:border-border-dim transition-colors"
+              className={buttonVariants({ variant: 'secondary', size: 'lg' })}
             >
               {t.common.profile}
             </Link>
@@ -449,7 +582,7 @@ export default function BookingPage() {
         </div>
 
         {/* Booking details */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.bookingDetails}</p>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between">
@@ -470,7 +603,7 @@ export default function BookingPage() {
         </div>
 
         {/* Payment */}
-        <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+        <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
           <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.paymentTitle}</p>
           <div className="space-y-2 text-sm mb-4">
             {quotedPrice && quotedPrice !== booking.totalAmount && (
@@ -531,7 +664,7 @@ export default function BookingPage() {
 
         {/* Review section */}
         {isCompleted && (!priceAdjusted || priceApproved) && (
-          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+          <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
             <p className="text-xs font-bold text-ink-dim uppercase tracking-widest mb-4">{t.bookingDetail.rateExperience}</p>
             {booking.review || reviewSubmitted ? (
               <div className="flex flex-col items-center py-4 text-center">
@@ -566,13 +699,16 @@ export default function BookingPage() {
                   placeholder={t.bookingDetail.reviewPlaceholder}
                   className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand resize-none"
                 />
-                <button
+                <Button
                   onClick={submitReview}
-                  disabled={!review.rating || submittingReview}
-                  className="w-full bg-brand text-white py-3 rounded-input font-bold text-sm hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                  disabled={!review.rating}
+                  loading={submittingReview}
+                  size="lg"
+                  className="w-full"
                 >
-                  {submittingReview ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Star className="w-4 h-4" /> {t.bookingDetail.submitReview}</>}
-                </button>
+                  {!submittingReview && <Star className="w-4 h-4" />}
+                  {t.bookingDetail.submitReview}
+                </Button>
               </div>
             )}
           </div>
@@ -580,7 +716,7 @@ export default function BookingPage() {
 
         {/* Report issue */}
         {!isCanceled && (
-          <div className="bg-white rounded-panel border border-border-dim p-6 shadow-card">
+          <div className="bg-card rounded-panel border border-border-dim p-6 shadow-card">
             {reportingIssue ? (
               <div>
                 <p className="font-bold mb-3 flex items-center gap-2">
@@ -594,36 +730,38 @@ export default function BookingPage() {
                   className="w-full p-3 bg-surface-alt border border-border-dim rounded-input text-sm outline-none focus:ring-2 focus:ring-brand resize-none mb-3"
                 />
                 <div className="flex gap-3">
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="flex-1"
                     onClick={() => { setReportingIssue(false); setIssueText(''); }}
-                    className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim transition-colors"
                   >
                     {t.common.cancel}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="lg"
+                    className="flex-1"
                     onClick={submitIssue}
-                    disabled={!issueText.trim() || submittingIssue}
-                    className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 transition-colors disabled:opacity-40 flex items-center justify-center"
+                    disabled={!issueText.trim()}
+                    loading={submittingIssue}
                   >
-                    {submittingIssue ? <Loader2 className="w-4 h-4 animate-spin" /> : t.bookingDetail.submitReport}
-                  </button>
+                    {t.bookingDetail.submitReport}
+                  </Button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <LifeBuoy className="w-5 h-5 text-ink-dim" />
-                  <div>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <LifeBuoy className="w-5 h-5 text-ink-dim shrink-0" />
+                  <div className="min-w-0">
                     <p className="font-bold text-sm">{t.bookingDetail.needHelp}</p>
                     <p className="text-xs text-ink-dim">{t.bookingDetail.contactSupport}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setReportingIssue(true)}
-                  className="flex items-center gap-1 text-sm font-bold text-ink hover:underline"
-                >
+                <Button variant="ghost" size="sm" onClick={() => setReportingIssue(true)}>
                   {t.bookingDetail.contact} <ChevronRight className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             )}
           </div>
@@ -631,50 +769,48 @@ export default function BookingPage() {
       </div>
 
       {/* Cancel confirm modal */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-white rounded-panel p-6 w-full max-w-sm">
-            <h2 className="font-bold text-lg mb-2">{t.bookingDetail.cancelTitle}</h2>
-            <p className="text-sm text-ink-sub mb-6">{t.bookingDetail.cancelDesc}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-border-dim"
-              >
-                {t.bookingDetail.keepBooking}
-              </button>
-              <button
-                onClick={handleCancel}
-                disabled={actioning}
-                className="flex-1 bg-danger text-white py-3 rounded-input text-sm font-bold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : t.bookingDetail.yesCancel}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <Modal
+        open={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        title={t.bookingDetail.cancelTitle}
+        description={t.bookingDetail.cancelDesc}
+        size="sm"
+        footer={
+          <ModalFooter>
+            <Button variant="secondary" size="lg" className="flex-1" onClick={() => setShowCancelConfirm(false)}>
+              {t.bookingDetail.keepBooking}
+            </Button>
+            <Button variant="danger" size="lg" className="flex-1" onClick={handleCancel} loading={actioning}>
+              {t.bookingDetail.yesCancel}
+            </Button>
+          </ModalFooter>
+        }
+      />
 
       {/* Bottom action bar — Mark Complete only exists once the deposit is
           paid (server enforces the same rule with a 409). */}
       {!isCanceled && !isCompleted && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border-dim p-4 z-30">
+        <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border-dim p-4 z-30">
           <div className="max-w-2xl mx-auto flex gap-3">
-            <button
+            <Button
+              variant="secondary"
+              size="lg"
+              className="flex-1"
               onClick={() => setShowCancelConfirm(true)}
               disabled={actioning}
-              className="flex-1 py-3 border border-border rounded-input text-sm font-bold text-ink-sub hover:border-danger-edge hover:text-danger transition-all disabled:opacity-50"
             >
               {t.common.cancel}
-            </button>
+            </Button>
             {chatUnlocked && (
-              <button
+              <Button
+                size="lg"
+                className="flex-1"
                 onClick={() => updateStatus('COMPLETED')}
-                disabled={actioning}
-                className="flex-1 bg-brand text-white py-3 rounded-input text-sm font-bold hover:bg-brand-dark transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                loading={actioning}
               >
-                {actioning ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle2 className="w-4 h-4" /> {t.bookingDetail.markComplete}</>}
-              </button>
+                {!actioning && <CheckCircle2 className="w-4 h-4" />}
+                {t.bookingDetail.markComplete}
+              </Button>
             )}
           </div>
         </div>
