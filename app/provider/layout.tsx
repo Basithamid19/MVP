@@ -206,7 +206,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
             <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
           </Link>
 
-          <LanguageSwitcher className="hidden sm:flex" />
+          <LanguageSwitcher />
           {/* Notifications bell + dropdown */}
           <div className="relative" ref={panelRef}>
             <button

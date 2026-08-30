@@ -1468,7 +1468,7 @@ export default function AdminDashboard() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-surface-alt gap-4">
         <p className="text-2xl font-bold">Access Denied</p>
         <p className="text-ink-dim">Admin privileges required.</p>
-        <a href="/login" className="bg-brand text-white px-6 py-3 rounded-2xl font-bold hover:bg-gray-800">Log in</a>
+        <a href="/login" className="bg-brand text-white px-6 py-3 rounded-2xl font-bold hover:bg-brand-dark">Log in</a>
       </div>
     );
   }

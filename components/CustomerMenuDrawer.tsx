@@ -9,16 +9,7 @@ import { useSession, signOut } from 'next-auth/react';
 import {
   Menu, X, Home, Search, MessageCircle, LayoutDashboard, Users, LogOut, LogIn,
 } from 'lucide-react';
-
-// Mirrors the customer nav set — adds Messages (the old CustomerLayout sidebar
-// was missing it). `authOnly` items are hidden for logged-out guests.
-const NAV_ITEMS = [
-  { href: '/',          label: 'Home',       Icon: Home,            match: (p: string) => p === '/' },
-  { href: '/browse',    label: 'Find Pros',  Icon: Search,          match: (p: string) => p === '/browse' || p.startsWith('/providers') },
-  { href: '/messages',  label: 'Messages',   Icon: MessageCircle,   match: (p: string) => p.startsWith('/messages'),                                              authOnly: true },
-  { href: '/dashboard', label: 'Dashboard',  Icon: LayoutDashboard, match: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests'), authOnly: true },
-  { href: '/account',   label: 'My Account', Icon: Users,           match: (p: string) => p === '/account',                                                        authOnly: true },
-];
+import { useTranslation } from '@/lib/i18n';
 
 // Routes that get their own navigation (providers/admin) or are intentionally
 // chrome-free (auth screens, the focused request wizard).
@@ -30,6 +21,17 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
   const role = (session?.user as any)?.role;
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const t = useTranslation();
+
+  // Mirrors the customer nav set — adds Messages (the old CustomerLayout sidebar
+  // was missing it). `authOnly` items are hidden for logged-out guests.
+  const NAV_ITEMS = [
+    { href: '/',          label: t.nav.home,      Icon: Home,            match: (p: string) => p === '/' },
+    { href: '/browse',    label: t.nav.findPros,  Icon: Search,          match: (p: string) => p === '/browse' || p.startsWith('/providers') },
+    { href: '/messages',  label: t.nav.messages,  Icon: MessageCircle,   match: (p: string) => p.startsWith('/messages'),                                              authOnly: true },
+    { href: '/dashboard', label: t.nav.dashboard, Icon: LayoutDashboard, match: (p: string) => p === '/dashboard' || p.startsWith('/bookings') || p.startsWith('/requests'), authOnly: true },
+    { href: '/account',   label: t.nav.myAccount, Icon: Users,           match: (p: string) => p === '/account',                                                        authOnly: true },
+  ];
 
   useEffect(() => setMounted(true), []);
 
@@ -119,7 +121,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-ink-dim hover:text-danger hover:bg-danger-surface transition-all"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>Log Out</span>
+              <span>{t.nav.logOut}</span>
             </button>
           ) : (
             <Link
@@ -128,7 +130,7 @@ export default function CustomerMenuDrawer({ className = '' }: { className?: str
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-brand hover:bg-brand-muted transition-all"
             >
               <LogIn className="w-4 h-4 shrink-0" />
-              <span>Log In</span>
+              <span>{t.nav.logIn}</span>
             </Link>
           )}
         </div>

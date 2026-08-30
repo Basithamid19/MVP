@@ -79,6 +79,7 @@
     width: 100%;
     max-width: 100%;
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -102,13 +103,18 @@
 
   /* Focus ring — replace browser default with brand ring */
   :focus-visible {
-    outline: 2px solid var(--color-navy);
+    outline: 2px solid var(--color-brand);
     outline-offset: 2px;
   }
 
-  /* Smooth scroll for anchor nav */
-  html {
-    scroll-behavior: smooth;
+  /* Respect users who ask the OS to minimize motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 

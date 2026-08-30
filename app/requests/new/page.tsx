@@ -340,7 +340,7 @@ function NewRequestContent() {
                       <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
                         selected ? 'bg-brand text-white' : 'bg-surface-alt text-ink-sub'
                       }`}>
-                        <Icon className="w-4.5 h-4.5" strokeWidth={1.5} />
+                        <Icon className="w-4 h-4" strokeWidth={1.5} />
                       </div>
                       <p className={`font-semibold text-sm leading-snug ${selected ? 'text-brand' : 'text-ink'}`}>{item.label}</p>
                     </button>

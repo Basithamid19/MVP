@@ -8,7 +8,7 @@ import {
   Loader2, Gift, Share2, FileText, LogOut,
   ChevronRight, User, Receipt, Download, Star,
   Mail, MessageCircle, HelpCircle, LifeBuoy,
-  MapPin, Heart, Clock, Bell, ShieldCheck, Camera,
+  MapPin, Heart, Clock, ShieldCheck, Camera,
   Plus,
 } from 'lucide-react';
 import MobileNav from '@/components/MobileNav';
@@ -141,9 +141,6 @@ export default function AccountPage({
             <CustomerMenuDrawer />
             <h1 className="text-base font-bold text-ink">Account</h1>
           </div>
-          <button className="w-9 h-9 flex items-center justify-center rounded-xl text-ink-dim">
-            <Bell className="w-5 h-5" />
-          </button>
         </div>
       </header>
 
@@ -254,7 +251,7 @@ export default function AccountPage({
                 ) : (
                   <div className="p-3 space-y-2">
                     {completedBookings.map(b => {
-                      const invoiceNo = `VP-${b.id.slice(0, 8).toUpperCase()}`;
+                      const invoiceNo = `AL-${b.id.slice(0, 8).toUpperCase()}`;
                       const date = new Date(b.scheduledAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
                       return (
                         <div key={b.id} className="bg-white rounded-xl p-3.5 shadow-sm border border-border-dim">

@@ -28,6 +28,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem(STORAGE_KEY) as Locale | null;
     if (saved && (saved === 'en' || saved === 'lt')) {
       setLocaleState(saved);
+      // Keep <html lang> honest on first paint too, not only after a manual
+      // toggle — screen readers and search engines read this attribute.
+      document.documentElement.lang = saved;
     }
   }, []);
 

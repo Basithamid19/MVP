@@ -398,7 +398,7 @@ export default function OnboardingPage() {
             </div>
             <Link
               href="/provider/dashboard"
-              className="inline-flex items-center gap-2 bg-brand text-white px-8 py-4 rounded-card font-bold hover:bg-gray-800 transition-all"
+              className="inline-flex items-center gap-2 bg-brand text-white px-8 py-4 rounded-card font-bold hover:bg-brand-dark transition-all"
             >
               {t.onboarding.goToDashboard} <ArrowRight className="w-4 h-4" />
             </Link>
@@ -419,7 +419,7 @@ export default function OnboardingPage() {
               <button
                 onClick={() => setStep(s => s + 1)}
                 disabled={!canProceed()}
-                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {t.wizard.continueBtn} <ArrowRight className="w-4 h-4" />
               </button>
@@ -427,7 +427,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleFinish}
                 disabled={!canProceed() || saving}
-                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-gray-800 transition-all disabled:opacity-40 flex items-center justify-center gap-2"
+                className="w-full bg-brand text-white py-4 rounded-card font-bold hover:bg-brand-dark transition-all disabled:opacity-40 flex items-center justify-center gap-2"
               >
                 {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Shield className="w-4 h-4" /> {t.onboarding.submitForReview}</>}
               </button>

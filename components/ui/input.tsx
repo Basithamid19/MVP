@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useId } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /* ─── Input ─────────────────────────────────────────────────────────────────
@@ -33,7 +34,10 @@ export function Input({
   id,
   ...props
 }: InputProps) {
-  const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+  // useId, not a slug of the label — two fields with the same label on one
+  // page must not share a DOM id.
+  const autoId = useId();
+  const inputId = id ?? autoId;
 
   return (
     <div className={cn('space-y-1.5', wrapperClassName)}>
@@ -69,6 +73,8 @@ export function Input({
             'outline-none',
             /* Focus */
             'focus:ring-2 focus:ring-brand/20 focus:border-brand',
+            /* Disabled */
+            'disabled:opacity-50 disabled:cursor-not-allowed',
             /* State */
             error
               ? 'border-danger focus:ring-danger/20 focus:border-danger'
@@ -123,7 +129,8 @@ export function Textarea({
   id,
   ...props
 }: TextareaProps) {
-  const fieldId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const autoId = useId();
+  const fieldId = id ?? autoId;
 
   return (
     <div className={cn('space-y-1.5', wrapperClassName)}>
@@ -150,6 +157,7 @@ export function Textarea({
           'transition-all duration-150',
           'outline-none',
           'focus:ring-2 focus:ring-brand/20 focus:border-brand',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
           error
             ? 'border-danger focus:ring-danger/20 focus:border-danger'
             : 'border-border hover:border-border-dim',
@@ -190,7 +198,8 @@ export function Select({
   children,
   ...props
 }: SelectProps) {
-  const fieldId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
+  const autoId = useId();
+  const fieldId = id ?? autoId;
 
   return (
     <div className={cn('space-y-1.5', wrapperClassName)}>
@@ -203,24 +212,29 @@ export function Select({
         </label>
       )}
 
-      <select
-        id={fieldId}
-        className={cn(
-          'w-full px-4 py-3 text-sm text-ink bg-surface-alt',
-          'border rounded-input',
-          'appearance-none',
-          'transition-all duration-150',
-          'outline-none',
-          'focus:ring-2 focus:ring-brand/20 focus:border-brand',
-          error
-            ? 'border-danger'
-            : 'border-border hover:border-border-dim',
-          className
-        )}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={fieldId}
+          className={cn(
+            'w-full pl-4 pr-10 py-3 text-sm text-ink bg-surface-alt',
+            'border rounded-input',
+            'appearance-none',
+            'transition-all duration-150',
+            'outline-none',
+            'focus:ring-2 focus:ring-brand/20 focus:border-brand',
+            'disabled:opacity-50 disabled:cursor-not-allowed',
+            error
+              ? 'border-danger focus:ring-danger/20 focus:border-danger'
+              : 'border-border hover:border-border-dim',
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </select>
+        {/* appearance-none removes the native arrow — draw our own */}
+        <ChevronDown className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-ink-dim pointer-events-none" />
+      </div>
 
       {error && <p className="text-xs text-danger font-medium">{error}</p>}
       {hint && !error && <p className="text-xs text-ink-dim">{hint}</p>}

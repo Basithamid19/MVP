@@ -111,7 +111,7 @@ export default function CustomerLayout({
           </div>
 
           <div className="flex items-center gap-2">
-          <LanguageSwitcher className="hidden sm:flex" />
+          <LanguageSwitcher />
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotifs(!showNotifs)}
