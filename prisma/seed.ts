@@ -15,6 +15,9 @@ async function main() {
       name: 'Admin Vilnius',
       password: hashedPassword,
       role: 'ADMIN',
+      // Seeded accounts skip the verification flow — otherwise the login gate
+      // in lib/auth.ts would lock every seeded user out.
+      verifiedAt: new Date(),
     },
   });
   console.log('✓ Admin created');
@@ -56,6 +59,9 @@ async function main() {
         name: c.name,
         password: hashedPassword,
         role: 'CUSTOMER',
+        // Seeded accounts skip the verification flow — otherwise the login gate
+        // in lib/auth.ts would lock every seeded user out.
+        verifiedAt: new Date(),
         customerProfile: {
           create: {
             address: c.address,
@@ -92,6 +98,9 @@ async function main() {
         image: p.image,
         password: hashedPassword,
         role: 'PROVIDER',
+        // Seeded accounts skip the verification flow — otherwise the login gate
+        // in lib/auth.ts would lock every seeded user out.
+        verifiedAt: new Date(),
         providerProfile: {
           create: {
             bio: p.bio,

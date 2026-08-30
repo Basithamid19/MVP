@@ -58,6 +58,9 @@ export async function POST(request: Request) {
         name: 'Admin',
         password: hashedPassword,
         role: 'ADMIN',
+        // Bootstrapped accounts bypass the verification flow — they have no
+        // real mailbox behind them and the login gate would lock them out.
+        verifiedAt: new Date(),
       },
     });
 
@@ -93,9 +96,11 @@ export async function POST(request: Request) {
     ];
     let createdProviders = 0;
     for (const p of providerDefs) {
+      // Narrow select: `include` reads every User column, which would P2022 on
+      // a database that hasn't run the 20260708 verification migration.
       const existing = await prisma.user.findUnique({
         where: { email: p.email },
-        include: { providerProfile: true },
+        select: { id: true, providerProfile: { select: { id: true } } },
       });
       if (existing?.providerProfile) continue;
 
@@ -124,6 +129,8 @@ export async function POST(request: Request) {
           image: p.image,
           password: hashedPassword,
           role: 'PROVIDER',
+          // See the admin upsert above — seeded logins must skip verification.
+          verifiedAt: new Date(),
           providerProfile: {
             create: {
               bio: p.bio,

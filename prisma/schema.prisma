@@ -43,6 +43,8 @@ model User {
   email         String    @unique
   password      String?
   image         String?
+  phone         String?   // E.164, used for SMS verification and contact — login stays email-based
+  verifiedAt    DateTime? // null = account not verified yet; login is blocked until set
   role          UserRole  @default(CUSTOMER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -51,6 +53,23 @@ model User {
   providerProfile ProviderProfile?
   chatThreads     ChatThread[]
   notifications   Notification[]
+  authTokens      AuthToken[]
+}
+
+// Short-lived, single-use credentials for account verification and password
+// reset. `token` holds a 48-char hex string for link flows (EMAIL_VERIFY,
+// PASSWORD_RESET) and a 6-digit code for PHONE_VERIFY.
+model AuthToken {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "EMAIL_VERIFY", "PHONE_VERIFY", "PASSWORD_RESET"
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
 }
 
 model CustomerProfile {

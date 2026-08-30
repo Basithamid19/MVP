@@ -12,6 +12,8 @@ export function isColumnError(e: unknown): boolean {
     m.includes('blackoutDates') ||
     m.includes('stripeAccountId') ||
     m.includes('stripeOnboarded') ||
+    m.includes('verifiedAt') ||
+    m.includes('AuthToken') ||
     m.includes('does not exist in the current database')
   );
 }

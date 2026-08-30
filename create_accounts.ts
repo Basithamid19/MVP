@@ -15,6 +15,9 @@ async function main() {
       name: 'Admin Aladdin',
       password: hashedPassword,
       role: 'ADMIN',
+      // Seeded accounts skip the verification flow — otherwise the login gate
+      // in lib/auth.ts would lock every seeded user out.
+      verifiedAt: new Date(),
     },
   });
   console.log('✓ Admin created:', admin.email);
@@ -140,6 +143,9 @@ async function main() {
         name: p.name,
         password: hashedPassword,
         role: 'PROVIDER',
+        // Seeded accounts skip the verification flow — otherwise the login gate
+        // in lib/auth.ts would lock every seeded user out.
+        verifiedAt: new Date(),
       },
     });
 
