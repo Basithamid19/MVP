@@ -7,7 +7,12 @@ import { buildVilniusScheduledAt } from '@/lib/time';
 import { DEPOSIT_RATE, PLATFORM_FEE_RATE } from '@/lib/fees';
 import { redactPII } from '@/lib/pii-filter';
 import { isColumnError } from '@/lib/prisma-errors';
-import { providerThreadsByRequest } from '@/lib/chat-access';
+import {
+  ensureThreadForRequest,
+  findThreadForRequest as findThreadId,
+  providerThreadsByRequest,
+  writeStructuredMessage,
+} from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,35 +41,30 @@ function looksLikeMissingColumn(err: unknown): boolean {
   );
 }
 
-// Resolve the thread for a (request, customer user, provider user) triple.
-// Scalar WHERE first, participants relation as the pre-20260403 fallback.
-async function findThreadId(
-  requestId: string | null | undefined,
-  customerUserId: string | null | undefined,
-  providerUserId: string | null | undefined,
-): Promise<string | null> {
-  if (!requestId || !customerUserId || !providerUserId) return null;
-  const thread = await prisma.chatThread.findFirst({
-    where: { requestId, customerId: customerUserId, providerId: providerUserId },
-    select: { id: true },
-  }).catch(async () =>
-    prisma.chatThread.findFirst({
-      where: {
-        requestId,
-        AND: [
-          { participants: { some: { id: providerUserId } } },
-          { participants: { some: { id: customerUserId } } },
-        ],
-      },
-      select: { id: true },
-    }).catch(() => null)
-  );
-  return thread?.id ?? null;
-}
+// Thread resolution/creation lives in lib/chat-access.ts now — a direct
+// service request opens the same conversation before any quote exists, so both
+// entry points have to agree on the (request, customer, provider) key.
+// `findThreadId` is the local alias for findThreadForRequest.
+
+// Plain-text spellings used when kind/payload aren't deployed and the card has
+// to degrade to a bubble. English only, like the rest of the server-side copy.
+const OFFER_PLAIN: Record<OfferAction, string> = {
+  offer:   'Offer',
+  counter: 'Counter-offer',
+  accept:  'Offer accepted',
+  decline: 'Offer declined',
+};
+
+const SYSTEM_PLAIN: Record<string, string> = {
+  booking_created:     'Booking created',
+  deposit_paid:        'Deposit paid — messaging unlocked',
+  quote_auto_declined: 'Quote declined — another pro was booked',
+};
 
 // Write the offer card for one negotiation action. `content` carries a short
 // human-readable fallback so pre-W2 clients (which render content as text)
-// still show something meaningful.
+// still show something meaningful; a DB without kind/payload degrades to a
+// plain bubble rather than losing the event (see writeStructuredMessage).
 async function writeOfferMessage(
   threadId: string | null | undefined,
   senderUserId: string,
@@ -72,31 +72,25 @@ async function writeOfferMessage(
   quote: { id: string; price: number; estimatedHours?: number | null; expiresAt?: Date | string | null },
   opts: { note?: string | null; by: Side },
 ): Promise<void> {
-  if (!threadId) return;
   const note = opts.note ? redactPII(String(opts.note)).trim() : '';
-  await prisma.chatMessage.create({
-    data: {
-      threadId,
-      senderId: senderUserId,
-      content: `[${action}] €${Math.round(quote.price)}`,
-      kind: 'offer',
-      payload: {
-        action,
-        quoteId: quote.id,
-        price: quote.price,
-        estimatedHours: quote.estimatedHours ?? null,
-        expiresAt: quote.expiresAt ? new Date(quote.expiresAt).toISOString() : null,
-        note: note || null,
-        by: opts.by,
-      },
+  await writeStructuredMessage(
+    threadId,
+    senderUserId,
+    'offer',
+    {
+      action,
+      quoteId: quote.id,
+      price: quote.price,
+      estimatedHours: quote.estimatedHours ?? null,
+      expiresAt: quote.expiresAt ? new Date(quote.expiresAt).toISOString() : null,
+      note: note || null,
+      by: opts.by,
     },
-    select: { id: true },
-  }).catch((err: unknown) => {
-    // Pre-migration DB (no kind/payload) or any other write failure: the
-    // negotiation state itself lives on the Quote row, so degrade silently to
-    // today's behaviour (no persisted card) instead of failing the action.
-    console.error('[quotes] offer message write failed:', err);
-  });
+    {
+      structured: `[${action}] €${Math.round(quote.price)}`,
+      plain: `${OFFER_PLAIN[action]} — €${Math.round(quote.price)}${note ? `: ${note}` : ''}`,
+    },
+  );
 }
 
 // Quiet centred chip in the thread: 'booking_created', 'quote_auto_declined',
@@ -107,19 +101,16 @@ async function writeSystemMessage(
   event: string,
   extra: Record<string, unknown> = {},
 ): Promise<void> {
-  if (!threadId) return;
-  await prisma.chatMessage.create({
-    data: {
-      threadId,
-      senderId: senderUserId,
-      content: `[system] ${event}`,
-      kind: 'system',
-      payload: { event, ...extra },
+  await writeStructuredMessage(
+    threadId,
+    senderUserId,
+    'system',
+    { event, ...extra },
+    {
+      structured: `[system] ${event}`,
+      plain: SYSTEM_PLAIN[event] ?? `Update: ${event}`,
     },
-    select: { id: true },
-  }).catch((err: unknown) => {
-    console.error('[quotes] system message write failed:', err);
-  });
+  );
 }
 
 // GET — the caller's own sent quotes (provider only). Closes the "quote
@@ -357,47 +348,13 @@ export async function POST(request: Request) {
     select: { userId: true },
   });
 
-  // Auto-create chat thread between provider and customer (if not exists).
-  // Runs BEFORE the notification now: the quote lives in the conversation, so
-  // the notification should deep-link to the thread when we have one.
-  let threadId: string | null = null;
-  if (customerProfile) {
-    try {
-      // Try scalar WHERE first; fall back to participants if columns don't exist yet
-      const existingThread = await findThreadId(requestId, customerProfile.userId, providerUserId);
-
-      if (!existingThread) {
-        const created = await prisma.chatThread.create({
-          data: {
-            requestId,
-            customerId: customerProfile.userId,
-            providerId: providerUserId,
-            participants: {
-              connect: [{ id: providerUserId }, { id: customerProfile.userId }],
-            },
-          },
-          select: { id: true },
-        }).catch(async (err: any) => {
-          // P2002 = concurrent create; the other writer already has the row.
-          // Anything else is a real bug we want to see in logs rather than
-          // silently swallow — the prior "create without scalars" fallback
-          // violated the NOT NULL constraint added in 20260403 and always
-          // failed, so thread creation appeared to succeed but never did.
-          if (err?.code === 'P2002') {
-            const id = await findThreadId(requestId, customerProfile.userId, providerUserId);
-            return id ? { id } : null;
-          }
-          console.error('[quotes POST] Failed to create chat thread:', err);
-          return null;
-        });
-        threadId = created?.id ?? null;
-      } else {
-        threadId = existingThread;
-      }
-    } catch (err: any) {
-      console.error('[quotes] Failed to create chat thread:', err);
-    }
-  }
+  // Find-or-create the chat thread between provider and customer. A DIRECT
+  // request already opened it at request time (see /api/requests POST), so this
+  // usually just resolves the existing row. Runs BEFORE the notification: the
+  // quote lives in the conversation, so the notification deep-links to it.
+  const threadId: string | null = customerProfile
+    ? await ensureThreadForRequest(requestId, customerProfile.userId, providerUserId)
+    : null;
 
   // The offer card — first message of the negotiation. Best-effort.
   await writeOfferMessage(

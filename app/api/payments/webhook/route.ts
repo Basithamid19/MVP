@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import prisma from '@/lib/prisma';
 import { stripe } from '@/lib/stripe';
 import { createNotification } from '@/lib/notifications';
+import { findThreadForRequest, writeStructuredMessage } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,42 +57,26 @@ export async function POST(request: Request) {
       const customerUserId = booking.customer?.user?.id;
       const providerUserId = booking.provider?.user?.id;
       if (customerUserId && providerUserId) {
-        const thread = await prisma.chatThread.findFirst({
-          where: {
-            requestId: booking.quote.requestId,
-            customerId: customerUserId,
-            providerId: providerUserId,
-          },
-          select: { id: true },
-        }).catch(async () =>
-          prisma.chatThread.findFirst({
-            where: {
-              requestId: booking.quote!.requestId,
-              AND: [
-                { participants: { some: { id: providerUserId } } },
-                { participants: { some: { id: customerUserId } } },
-              ],
-            },
-            select: { id: true },
-          }).catch(() => null)
+        // Same (request, customer, provider) key every writer uses, so the
+        // chip can't land in a different thread than the negotiation.
+        const threadId = await findThreadForRequest(
+          booking.quote.requestId,
+          customerUserId,
+          providerUserId,
         );
 
-        if (thread?.id) {
-          await prisma.chatMessage.create({
-            data: {
-              threadId: thread.id,
-              senderId: customerUserId, // the payer
-              content: '[system] deposit_paid',
-              kind: 'system',
-              payload: { event: 'deposit_paid', bookingId },
-            },
-            select: { id: true },
-          }).catch((err: unknown) => {
-            // Pre-20260710 DB (no kind/payload) or any write failure: the
-            // notifications below still tell both sides.
-            console.error('[webhook] deposit_paid system message failed:', err);
-          });
-        }
+        // Degrades to a plain 'Deposit paid — messaging unlocked' bubble on a
+        // DB without kind/payload rather than dropping the milestone.
+        await writeStructuredMessage(
+          threadId,
+          customerUserId, // the payer
+          'system',
+          { event: 'deposit_paid', bookingId },
+          {
+            structured: '[system] deposit_paid',
+            plain: 'Deposit paid — messaging unlocked',
+          },
+        );
       }
     }
 

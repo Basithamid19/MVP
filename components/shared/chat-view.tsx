@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Alert, Avatar, EmptyState, buttonVariants, useToast } from '@/components/ui';
 import {
-  OfferCard, asOfferPayload, asSystemPayload, viewerSideOf,
+  OfferCard, asOfferPayload, asSystemPayload, offerPayloadFromNegotiation, viewerSideOf,
   type Negotiation, type Side, type SystemPayload,
 } from '@/components/OfferCard';
 import { cn } from '@/lib/utils';
@@ -250,6 +250,14 @@ function SystemChip({
  * auto-decline). An offer/system row whose payload is missing or malformed
  * falls back to a plain bubble showing `content` — the server mirrors every
  * payload as text precisely so that fallback still says something true.
+ *
+ * BACKSTOP: the offer cards are best-effort writes, so the stream can be
+ * missing the card for a negotiation that is very much live. Whenever
+ * `negotiation` points at a quote with no card in the stream, one is
+ * SYNTHESIZED from the negotiation state and appended — same OfferCard, same
+ * action row, same handlers. A negotiation is therefore always actionable in
+ * its own thread, and a settled one always leaves a summary behind, no matter
+ * what happened to the message rows.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export function MessageThread({
@@ -259,6 +267,7 @@ export function MessageThread({
   otherImage,
   negotiation,
   onActed,
+  hideEmptyState = false,
   className,
 }: {
   messages: ChatMessage[];
@@ -269,6 +278,12 @@ export function MessageThread({
   negotiation?: Negotiation | null;
   /** Called after an offer action lands, so the caller can re-fetch. */
   onActed?: () => void;
+  /**
+   * Suppress the "start the conversation" empty state — for surfaces that
+   * already render their own context above the stream (the pinned RequestCard
+   * in /messages), where a second empty slab reads as a dead end.
+   */
+  hideEmptyState?: boolean;
   className?: string;
 }) {
   const t = useTranslation();
@@ -304,7 +319,19 @@ export function MessageThread({
     return null;
   }, [messages]);
 
-  if (messages.length === 0) {
+  // The backstop card: rebuilt from negotiation state when the stream has no
+  // card for the negotiation's quote. Never rendered when the real card is
+  // present, so a healthy thread looks exactly as before.
+  const syntheticOffer = useMemo(() => {
+    if (!negotiation?.quoteId) return null;
+    const hasCard = messages.some(
+      m => messageKind(m) === 'offer' && asOfferPayload(m.payload)?.quoteId === negotiation.quoteId,
+    );
+    return hasCard ? null : offerPayloadFromNegotiation(negotiation);
+  }, [messages, negotiation]);
+
+  if (messages.length === 0 && !syntheticOffer) {
+    if (hideEmptyState) return null;
     return (
       <EmptyState
         icon={MessageCircle}
@@ -412,6 +439,21 @@ export function MessageThread({
         </React.Fragment>
         );
       })}
+
+      {syntheticOffer && (
+        <OfferCard
+          payload={syntheticOffer}
+          createdAt={negotiation?.createdAt ?? new Date().toISOString()}
+          // Authorship comes from payload.by vs viewerSide; isMine is only the
+          // no-viewer-side (admin spectator) fallback.
+          isMine={false}
+          otherName={otherName}
+          negotiation={negotiation}
+          viewerSide={viewerSide}
+          isLatestOffer
+          onActed={onActed}
+        />
+      )}
     </div>
   );
 }
@@ -425,6 +467,12 @@ export function MessageThread({
  * server-side. Structured mode shows the reason instead of an input the user
  * would only get rejected from; the actionable controls live on the offer card
  * in the stream, not down here.
+ *
+ * `structuredState` picks WHICH reason. It used to always say "use the offer
+ * above to accept, counter or decline" — which was a lie on a direct-request
+ * thread where no offer exists yet, and the founder-reported dead end. Pass
+ * 'awaitQuote' when there is no negotiation and the copy names the real next
+ * step for each side instead.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export function ChatComposer({
@@ -432,12 +480,18 @@ export function ChatComposer({
   onSent,
   onLocked,
   mode = 'text',
+  structuredState = 'offer',
+  viewerIsProvider = false,
   className,
 }: {
   threadId: string;
   onSent: (message: ChatMessage) => void;
   onLocked?: () => void;
   mode?: 'text' | 'structured';
+  /** 'offer' = an offer is on the table; 'awaitQuote' = no quote yet. */
+  structuredState?: 'offer' | 'awaitQuote';
+  /** Which side reads the 'awaitQuote' notice. */
+  viewerIsProvider?: boolean;
   className?: string;
 }) {
   const t = useTranslation();
@@ -518,9 +572,15 @@ export function ChatComposer({
   };
 
   if (mode === 'structured') {
+    const notice =
+      structuredState === 'awaitQuote'
+        ? viewerIsProvider
+          ? t.negotiation.composerNoticeSendQuote
+          : t.negotiation.composerNoticeAwaitQuote
+        : t.negotiation.composerNotice;
     return (
       <Alert variant="info" className={cn('py-2.5', className)}>
-        {t.negotiation.composerNotice}
+        {notice}
       </Alert>
     );
   }

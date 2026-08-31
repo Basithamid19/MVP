@@ -20,7 +20,7 @@ import type { Dictionary, Locale } from '@/lib/i18n/types';
  * Contract (see the doc comment at the top of app/api/chat/route.ts):
  *   message.payload = { action, quoteId, price, estimatedHours, expiresAt,
  *                       note, by }
- *   GET /api/chat?threadId → { messages, textUnlocked, negotiation }
+ *   GET /api/chat?threadId → { messages, textUnlocked, negotiation, request }
  *
  * The action row appears on exactly ONE card in a thread — the latest offer
  * message, when the thread's live negotiation still points at that quote, is
@@ -42,6 +42,9 @@ export interface Negotiation {
   status: string;
   expiresAt: string | null;
   providerUserId: string | null;
+  /** Present since 20260711 — needed to synthesize a card from state alone. */
+  estimatedHours?: number | null;
+  createdAt?: string | null;
 }
 
 /** ChatMessage.payload for kind='offer'. */
@@ -83,6 +86,44 @@ export function asOfferPayload(payload: unknown): OfferPayload | null {
   if (typeof p.price !== 'number' || !Number.isFinite(p.price)) return null;
   if (typeof p.quoteId !== 'string' || !p.quoteId) return null;
   return p;
+}
+
+/**
+ * Rebuild an offer payload from the thread's negotiation state.
+ *
+ * The kind='offer' ChatMessages are the history, and they are written
+ * BEST-EFFORT by /api/quotes — a failed write (or a card that landed in a
+ * sibling thread) used to leave a live PENDING quote with no actionable UI
+ * anywhere, which is the one thing this product cannot do. The Quote row is the
+ * source of truth, so the card can always be reconstructed from it:
+ *
+ *   • price   = effectivePrice (currentPrice ?? price) — what's on the table now.
+ *   • action  = 'counter' once countered, else 'offer'; a settled negotiation
+ *               renders as its outcome ('accept' / 'decline') with no actions.
+ *   • by      = the side that made the last move: for a PENDING offer that's
+ *               the side whose turn it ISN'T; for a settled one it's the side
+ *               that held the turn when it acted.
+ *   • note    = omitted deliberately. Quote.notes is the ORIGINAL note, not the
+ *               latest counter's, and it is not redactPII'd at rest.
+ */
+export function offerPayloadFromNegotiation(n: Negotiation): OfferPayload {
+  const settled = n.status !== 'PENDING';
+  const action: OfferPayload['action'] =
+    n.status === 'ACCEPTED' ? 'accept' :
+    n.status === 'DECLINED' ? 'decline' :
+    n.currentPrice != null ? 'counter' : 'offer';
+
+  const other: Side = n.turn === 'customer' ? 'provider' : 'customer';
+
+  return {
+    action,
+    quoteId: n.quoteId,
+    price: n.effectivePrice,
+    estimatedHours: n.estimatedHours ?? null,
+    expiresAt: n.expiresAt ?? null,
+    note: null,
+    by: settled ? n.turn : other,
+  };
 }
 
 /** Narrow an unknown payload to a SystemPayload, or null if it isn't one. */

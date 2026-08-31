@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
-import { requestThreadsByProvider } from '@/lib/chat-access';
+import { ensureThreadForRequest, requestThreadsByProvider } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +36,10 @@ export async function POST(request: Request) {
   // and actually offers the chosen category; otherwise fall back to an open
   // broadcast so a stale/foreign providerId never blackholes the request.
   let targetProviderId: string | null = null;
+  // The target's USER id, kept from the same lookup — the notification href and
+  // the ChatThread both need it, and ChatThread.customerId/providerId reference
+  // User rather than the profile rows.
+  let targetProviderUserId: string | null = null;
   if (typeof providerId === 'string' && providerId) {
     const target = await prisma.providerProfile.findUnique({
       where: { id: providerId },
@@ -43,6 +47,7 @@ export async function POST(request: Request) {
     });
     if (target && target.categories.some(c => c.id === categoryId)) {
       targetProviderId = target.id;
+      targetProviderUserId = target.userId;
     }
   }
 
@@ -74,21 +79,30 @@ export async function POST(request: Request) {
   const categoryName = serviceRequest.category?.name ?? 'service';
   const urgentPrefix = isUrgent ? '🔴 Urgent: ' : '';
 
-  if (targetProviderId) {
+  if (targetProviderId && targetProviderUserId) {
+    // Direct request: the conversation opens NOW, before any quote exists.
+    // Both parties then see the request in /messages — the provider with a
+    // "Send your quote" CTA, the customer waiting on it — and the existing
+    // offer → counter → accept machinery takes over from there.
+    //
+    // Best-effort by construction (ensureThreadForRequest swallows every
+    // failure and returns null): a thread problem must never lose the
+    // customer's request, so we fall back to the old leads deep link.
+    // Open/broadcast requests stay leads-only — no thread per candidate pro.
+    const threadId = await ensureThreadForRequest(
+      serviceRequest.id,
+      customer.userId,
+      targetProviderUserId,
+    );
+
     // Direct request: notify ONLY the chosen provider.
-    const target = await prisma.providerProfile.findUnique({
-      where: { id: targetProviderId },
-      select: { userId: true },
+    createNotification({
+      userId: targetProviderUserId,
+      type: 'lead',
+      title: `${urgentPrefix}You've received a direct request`,
+      body: `A customer chose you for a ${categoryName.toLowerCase()} job${address ? ` in ${address}` : ''}. Send your quote.`,
+      href: threadId ? `/messages?thread=${threadId}` : '/provider/leads',
     });
-    if (target) {
-      createNotification({
-        userId: target.userId,
-        type: 'lead',
-        title: `${urgentPrefix}You've received a direct request`,
-        body: `A customer chose you for a ${categoryName.toLowerCase()} job${address ? ` in ${address}` : ''}. Send your quote.`,
-        href: '/provider/leads',
-      });
-    }
   } else {
     // Open request: broadcast to all providers in this category.
     const matchingProviders = await prisma.providerProfile.findMany({

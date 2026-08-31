@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { isColumnError } from '@/lib/prisma-errors';
 
 // Chat access policy: a customer and provider may only message each other once
 // a booking between them is CONFIRMED — deposit held (or later: paid /
@@ -64,6 +65,14 @@ export type NegotiationQuote = {
   status: string;
   expiresAt: Date | null;
   providerUserId: string | null;
+  /**
+   * Enough to rebuild the offer card from state alone. The chat cards are
+   * best-effort writes; when one is missing the client synthesizes a card from
+   * this payload so a live negotiation is never unactionable (see the
+   * `syntheticOffer` path in components/shared/chat-view.tsx).
+   */
+  estimatedHours: number | null;
+  createdAt: Date | null;
 };
 
 export async function negotiationQuotes(requestIds: string[]): Promise<NegotiationQuote[]> {
@@ -72,6 +81,7 @@ export async function negotiationQuotes(requestIds: string[]): Promise<Negotiati
 
   const BASE = {
     id: true, requestId: true, price: true, status: true, expiresAt: true,
+    estimatedHours: true, createdAt: true,
     provider: { select: { userId: true } },
   } as const;
 
@@ -89,7 +99,11 @@ export async function negotiationQuotes(requestIds: string[]): Promise<Negotiati
       // provider's original ask awaiting the customer.
       return prisma.quote.findMany({
         where: { requestId: { in: ids } },
-        select: { id: true, requestId: true, price: true, status: true, provider: { select: { userId: true } } },
+        select: {
+          id: true, requestId: true, price: true, status: true,
+          estimatedHours: true, createdAt: true,
+          provider: { select: { userId: true } },
+        },
         orderBy: { createdAt: 'desc' },
       }).catch(() => [] as any[]);
     }
@@ -107,6 +121,8 @@ export async function negotiationQuotes(requestIds: string[]): Promise<Negotiati
     status: q.status,
     expiresAt: q.expiresAt ?? null,
     providerUserId: q.provider?.userId ?? null,
+    estimatedHours: q.estimatedHours ?? null,
+    createdAt: q.createdAt ?? null,
   }));
 
   // One negotiation per (request, provider) pair. Rows arrive newest-first, so
@@ -152,6 +168,206 @@ function isThreadColumnError(err: unknown): boolean {
     msg.includes('customerId') || msg.includes('providerId') ||
     msg.includes('column') || msg.includes('P2022')
   );
+}
+
+/**
+ * Resolve the thread for a (request, customer user, provider user) triple.
+ * Scalar WHERE first, participants relation as the pre-20260403 fallback,
+ * null on anything else — callers treat "no thread" as a soft state.
+ */
+export async function findThreadForRequest(
+  requestId: string | null | undefined,
+  customerUserId: string | null | undefined,
+  providerUserId: string | null | undefined,
+): Promise<string | null> {
+  if (!requestId || !customerUserId || !providerUserId) return null;
+  const thread = await prisma.chatThread.findFirst({
+    where: { requestId, customerId: customerUserId, providerId: providerUserId },
+    select: { id: true },
+  }).catch(async () =>
+    prisma.chatThread.findFirst({
+      where: {
+        requestId,
+        AND: [
+          { participants: { some: { id: providerUserId } } },
+          { participants: { some: { id: customerUserId } } },
+        ],
+      },
+      select: { id: true },
+    }).catch(() => null)
+  );
+  return thread?.id ?? null;
+}
+
+/**
+ * Find-or-create the conversation for one request between one customer and one
+ * provider. Both ids are USER ids (ChatThread.customerId/providerId reference
+ * User, not the profile rows).
+ *
+ * Every failure path returns null instead of throwing: this is called from the
+ * request/quote creation flows, where a missing conversation is a degraded but
+ * survivable outcome and an exception would lose the customer's request.
+ *   • P2002 (concurrent create, or the 20260403 dedup unique index) → re-find.
+ *   • Missing scalar columns → findThreadForRequest's participants fallback
+ *     handles the read; the create still needs them (NOT NULL since 20260403),
+ *     so a genuinely pre-20260403 DB logs and yields null.
+ */
+export async function ensureThreadForRequest(
+  requestId: string | null | undefined,
+  customerUserId: string | null | undefined,
+  providerUserId: string | null | undefined,
+): Promise<string | null> {
+  if (!requestId || !customerUserId || !providerUserId) return null;
+  // A provider acting as their own customer would create a one-person thread.
+  if (customerUserId === providerUserId) return null;
+
+  try {
+    const existing = await findThreadForRequest(requestId, customerUserId, providerUserId);
+    if (existing) return existing;
+
+    const created = await prisma.chatThread.create({
+      data: {
+        requestId,
+        customerId: customerUserId,
+        providerId: providerUserId,
+        participants: { connect: [{ id: customerUserId }, { id: providerUserId }] },
+      },
+      select: { id: true },
+    }).catch(async (err: any) => {
+      if (err?.code === 'P2002') {
+        const id = await findThreadForRequest(requestId, customerUserId, providerUserId);
+        return id ? { id } : null;
+      }
+      console.error('[chat-access] ensureThreadForRequest create failed:', err);
+      return null;
+    });
+
+    return created?.id ?? null;
+  } catch (err) {
+    console.error('[chat-access] ensureThreadForRequest failed:', err);
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Structured card writes (20260711).
+//
+// Offer/system cards are ChatMessage rows with kind + payload. Those two
+// columns arrived in 20260710, and the write used to be swallowed wholesale on
+// failure — so on a DB behind that migration the negotiation history simply
+// never appeared and the thread read as empty. It now DEGRADES TO TEXT: the
+// same event is persisted as a plain kind-less message carrying human-readable
+// content, which every client renders as a bubble. Only if that second write
+// also fails do we log and drop.
+//
+// Still strictly best-effort in every path — these calls sit inside the
+// money/booking flows and must never throw.
+// ---------------------------------------------------------------------------
+
+export async function writeStructuredMessage(
+  threadId: string | null | undefined,
+  senderUserId: string | null | undefined,
+  kind: 'offer' | 'system',
+  payload: Record<string, unknown>,
+  content: { structured: string; plain: string },
+): Promise<void> {
+  if (!threadId || !senderUserId) return;
+
+  try {
+    await prisma.chatMessage.create({
+      data: { threadId, senderId: senderUserId, content: content.structured, kind, payload: payload as any },
+      select: { id: true },
+    });
+    return;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const missingColumn =
+      isColumnError(err) || msg.includes('kind') || msg.includes('column');
+    if (!missingColumn) {
+      console.error(`[chat-access] ${kind} message write failed:`, err);
+      return;
+    }
+    // kind/payload not deployed here — keep the event, lose the card.
+    await prisma.chatMessage.create({
+      data: { threadId, senderId: senderUserId, content: content.plain },
+      select: { id: true },
+    }).catch((err2: unknown) => {
+      console.error(`[chat-access] ${kind} message text fallback failed:`, err2);
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Request context for a thread (20260711).
+//
+// Every conversation is anchored on a ServiceRequest, and a direct request now
+// opens the thread BEFORE any quote exists — so the request itself is the only
+// content the thread has to show. /api/chat surfaces this summary on both the
+// detail response and each list row (see the contract comment in
+// app/api/chat/route.ts).
+//
+// Batched (one findMany for every surfaced thread) and fully degrading: an
+// orphaned requestId or a DB behind on migrations yields no row, and the caller
+// renders `request: null`.
+// ---------------------------------------------------------------------------
+
+export type RequestSummary = {
+  id: string;
+  description: string | null;
+  budget: number | null;
+  dateWindow: Date | null;
+  isUrgent: boolean;
+  status: string;
+  categoryName: string | null;
+};
+
+export async function requestSummaries(
+  requestIds: (string | null | undefined)[],
+): Promise<Map<string, RequestSummary>> {
+  const out = new Map<string, RequestSummary>();
+  const ids = Array.from(new Set(requestIds.filter(Boolean))) as string[];
+  if (!ids.length) return out;
+
+  const REQUEST_SELECT = {
+    id: true,
+    description: true,
+    budget: true,
+    dateWindow: true,
+    isUrgent: true,
+    status: true,
+    category: { select: { name: true } },
+  } as const;
+
+  const rows: any[] = await prisma.serviceRequest.findMany({
+    where: { id: { in: ids } },
+    select: REQUEST_SELECT,
+  }).catch((err: unknown) => {
+    console.error('[chat-access] requestSummaries failed:', err);
+    return [] as any[];
+  });
+
+  for (const r of rows) {
+    if (!r?.id) continue;
+    out.set(r.id, {
+      id: r.id,
+      description: r.description ?? null,
+      budget: r.budget ?? null,
+      dateWindow: r.dateWindow ?? null,
+      isUrgent: !!r.isUrgent,
+      status: r.status ?? '',
+      categoryName: r.category?.name ?? null,
+    });
+  }
+  return out;
+}
+
+/** Single-thread convenience wrapper around `requestSummaries`. */
+export async function requestSummary(
+  requestId: string | null | undefined,
+): Promise<RequestSummary | null> {
+  if (!requestId) return null;
+  const map = await requestSummaries([requestId]);
+  return map.get(requestId) ?? null;
 }
 
 /**

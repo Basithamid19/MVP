@@ -6,6 +6,8 @@ import {
   hasConfirmedBookingBetween,
   negotiationQuotes,
   negotiationSummary,
+  requestSummaries,
+  requestSummary,
   CONFIRMED_PAYMENT_STATUSES,
   ACTIVE_BOOKING_STATUSES,
 } from '@/lib/chat-access';
@@ -26,7 +28,8 @@ export const dynamic = 'force-dynamic';
 //     textUnlocked: boolean,   // free-text composer allowed? (admin, or the pair
 //                              // has a confirmed/paid booking). Reads are ALWAYS
 //                              // allowed for participants now — no more 403.
-//     negotiation: Negotiation | null
+//     negotiation: Negotiation | null,
+//     request: RequestSummary | null   // NEW (20260711)
 //   }
 //
 // GET /api/chat  (thread list)  →  ARRAY (unchanged container) of
@@ -36,17 +39,35 @@ export const dynamic = 'force-dynamic';
 //     category, createdAt, unreadCount,
 //     requestId: string,                 // NEW — the thread's ServiceRequest
 //     textUnlocked: boolean,             // NEW — same meaning as above
-//     negotiation: Negotiation | null    // NEW
+//     negotiation: Negotiation | null,   // NEW
+//     request: RequestSummary | null     // NEW (20260711)
 //   }
-//   Threads now appear from the FIRST QUOTE onward; previously anything without
-//   a paid booking was filtered out of the inbox entirely.
+//   Threads appear from the moment the conversation exists: the FIRST QUOTE for
+//   an open request, or REQUEST CREATION for a direct request (which opens the
+//   thread before any quote — /api/requests POST). Previously anything without a
+//   paid booking was filtered out of the inbox entirely.
+//   One row per THREAD, not per counterpart: a request is a negotiation is a
+//   conversation, so two requests with the same pro are two rows. Only true
+//   duplicates of the same (counterpart, requestId) collapse — preferring the
+//   thread that has messages, then the most recent activity.
 //
-// Negotiation (latest PENDING quote for the thread's request + provider):
+// RequestSummary — the ServiceRequest the thread is anchored on. Present on both
+// shapes so the conversation can show what the job is before a single message
+// exists (this is the ONLY content a fresh direct-request thread has):
+//   { id, description, budget, dateWindow, isUrgent, status, categoryName }
+//   Resolved via lib/chat-access.requestSummaries, which degrades to null on an
+//   orphaned requestId or a DB behind on migrations.
+//
+// Negotiation (latest quote for the thread's request + provider — PENDING wins,
+// else the newest, so settled deals keep their figure):
 //   { quoteId, requestId, price, currentPrice, effectivePrice, turn, status,
-//     expiresAt, providerUserId }
+//     expiresAt, providerUserId, estimatedHours, createdAt }
 //   • price = the provider's original ask, currentPrice = latest counter (null
 //     if never countered), effectivePrice = currentPrice ?? price.
 //   • turn = 'customer' | 'provider' — whose accept/counter is pending.
+//   • estimatedHours/createdAt exist so the client can SYNTHESIZE an offer card
+//     from state when the kind='offer' ChatMessage is missing (the card writes
+//     are best-effort). A live negotiation must never be unactionable.
 //
 // ChatMessage.payload:
 //   kind='offer'  → { action: 'offer'|'counter'|'accept'|'decline', quoteId,
@@ -193,6 +214,12 @@ export async function GET(request: Request) {
 
       const negotiation = await negotiationSummary(thread.requestId, providerUserId);
 
+      // The job this conversation is about. For a direct-request thread this is
+      // the only content there is until the provider quotes, so it carries the
+      // whole conversation; null (orphaned requestId / pre-migration DB) just
+      // hides the pinned card.
+      const requestContext = await requestSummary(thread.requestId);
+
       // Viewing the thread marks the counterpart's messages as read. Fire and
       // forget: a pre-20260709 DB without readAt must not fail the poll, and
       // the response doesn't depend on the write landing. Participants only —
@@ -205,7 +232,7 @@ export async function GET(request: Request) {
         }).catch(() => { /* readAt column missing on this DB */ });
       }
 
-      return NextResponse.json({ messages, textUnlocked, negotiation });
+      return NextResponse.json({ messages, textUnlocked, negotiation, request: requestContext });
     }
 
     // Otherwise, return all threads for the current user
@@ -322,16 +349,21 @@ export async function GET(request: Request) {
       }
     }
 
-    // Collapse duplicates: legacy data holds several threads per
-    // customer↔provider pair (one per request). Surface one conversation per
-    // counterpart — the ranked-best thread — so the inbox never shows the
-    // same person twice.
+    // Collapse only TRUE duplicates: several ChatThread rows for the same
+    // (counterpart, requestId). A request is a negotiation is a conversation, so
+    // two different requests with the same pro are two rows — collapsing on the
+    // counterpart alone used to surface whichever thread ranked first and HIDE
+    // the one holding the live negotiation, so a deep link landed on an empty
+    // shell with no way back. Within a duplicate group `ranked` already put the
+    // thread that has messages (then the most recent) first.
     const seen = new Set<string>();
     const result: any[] = [];
     for (const t of ranked) {
       const otherP = t.participants.find((p: any) => p.id !== userId) ?? t.participants[0] ?? null;
-      if (!otherP || seen.has(otherP.id)) continue;
-      seen.add(otherP.id);
+      if (!otherP) continue;
+      const dedupeKey = `${otherP.id}::${t.requestId ?? t.id}`;
+      if (seen.has(dedupeKey)) continue;
+      seen.add(dedupeKey);
       const last = t.messages[0] ?? null;
       result.push({
         id: t.id,
@@ -341,8 +373,9 @@ export async function GET(request: Request) {
         category: t.request?.category?.name ?? 'Service',
         createdAt: t.createdAt,
         textUnlocked: confirmedPartnerIds ? confirmedPartnerIds.has(otherP.id) : true,
-        // Filled in below by one batched query for all surfaced threads.
+        // Both filled in below by one batched query each for all surfaced threads.
         negotiation: null as any,
+        request: null as any,
         // Internal: which participant is the provider, for negotiation matching.
         _providerUserId:
           t.participants.find((p: any) => p.role === 'PROVIDER')?.id ??
@@ -355,10 +388,14 @@ export async function GET(request: Request) {
     // negotiationQuotes' own fallback.
     if (result.length) {
       const quotes = await negotiationQuotes(result.map(r => r.requestId));
+      // The job each row is about — one batched query, so a fresh
+      // direct-request row can say what it's for before any message exists.
+      const requests = await requestSummaries(result.map(r => r.requestId));
       for (const r of result) {
         r.negotiation =
           quotes.find(q => q.requestId === r.requestId && q.providerUserId === r._providerUserId) ??
           null;
+        r.request = requests.get(r.requestId) ?? null;
         delete r._providerUserId;
       }
     }

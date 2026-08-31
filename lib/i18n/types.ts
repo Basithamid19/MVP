@@ -642,6 +642,16 @@ export interface Dictionary {
     counterNoteHint: string;
     counterSubmit: string;
     composerNotice: string;
+    composerNoticeSendQuote: string;
+    composerNoticeAwaitQuote: string;
+    requestLabel: string;
+    requestUrgent: string;
+    requestBudget: string;
+    requestPreferredDate: string;
+    sendYourQuote: string;
+    awaitQuotePrefix: string;
+    awaitQuoteSuffix: string;
+    previewNewRequest: string;
     systemBookingCreated: string;
     systemDepositPaid: string;
     systemQuoteAutoDeclined: string;

@@ -10,6 +10,7 @@ import { Alert, Avatar, EmptyState, PageHeader, StatusBadge } from '@/components
 import type { BadgeVariant } from '@/components/ui';
 import { ChatComposer, MessageThread, type ChatMessage } from '@/components/shared/chat-view';
 import { compactMoney, viewerSideOf, type Negotiation } from '@/components/OfferCard';
+import { RequestCard, asThreadRequest, type ThreadRequest } from '@/components/RequestCard';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
 
@@ -38,6 +39,8 @@ interface Thread {
   /** Free text allowed? False while the deposit is unpaid. */
   textUnlocked?: boolean;
   negotiation?: Negotiation | null;
+  /** The job this conversation is about (20260711 payload). */
+  request?: ThreadRequest | null;
 }
 
 /**
@@ -48,7 +51,15 @@ interface Thread {
  */
 function previewLine(thread: Thread, t: Dictionary): string | null {
   const last = thread.lastMessage;
-  if (!last) return null;
+  if (!last) {
+    // A direct-request thread exists before anyone has said anything. "No
+    // messages yet" made that row look broken; name the job instead.
+    if (!thread.request) return null;
+    const category = thread.request.categoryName ?? thread.category;
+    return category
+      ? `${t.negotiation.previewNewRequest} · ${category}`
+      : t.negotiation.previewNewRequest;
+  }
   if (last.kind === 'offer') return t.negotiation.previewOffer;
   if (last.kind === 'system') return t.negotiation.previewSystem;
   return last.content;
@@ -190,8 +201,11 @@ function ConversationPane({
   thread,
   messages,
   msgLoading,
+  msgError,
   userId,
   negotiation,
+  request,
+  viewerIsProvider,
   textUnlocked,
   onActed,
   t,
@@ -202,8 +216,13 @@ function ConversationPane({
   thread: Thread;
   messages: ChatMessage[];
   msgLoading: boolean;
+  /** The message fetch failed — say so instead of faking an empty thread. */
+  msgError: boolean;
   userId?: string;
   negotiation: Negotiation | null;
+  /** The job this thread is anchored on — pinned above the stream. */
+  request: ThreadRequest | null;
+  viewerIsProvider: boolean;
   /** Free text allowed? Drives the composer mode. */
   textUnlocked: boolean;
   /** Immediate re-fetch of thread + list after an offer action. */
@@ -220,6 +239,11 @@ function ConversationPane({
   }, [messages]);
 
   const name = thread.otherParticipant.name ?? '';
+  // Any quote at all retires the "Send your quote" CTA: POST /api/quotes
+  // enforces one quote per provider per request, so re-offering after a decline
+  // would 409 in the builder. The synthesized summary card in the stream is
+  // what explains a settled negotiation instead.
+  const offerOnTable = !!negotiation;
 
   return (
     <div className={className}>
@@ -237,8 +261,23 @@ function ConversationPane({
         </div>
       </div>
 
-      {/* Messages */}
+      {/* Messages — the job is pinned above the stream, and is the ONLY
+          content a fresh direct-request thread has. */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 bg-canvas">
+        {request && (
+          <RequestCard
+            request={request}
+            viewerIsProvider={viewerIsProvider}
+            otherName={name}
+            offerOnTable={offerOnTable}
+            className="mb-2"
+          />
+        )}
+        {msgError && (
+          <Alert variant="caution" icon={AlertCircle} className="mb-2">
+            {t.messagesPage.loadErrorDesc}
+          </Alert>
+        )}
         {msgLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-ink-dim" />
@@ -251,16 +290,21 @@ function ConversationPane({
             otherImage={thread.otherParticipant.image}
             negotiation={negotiation}
             onActed={onActed}
+            hideEmptyState={!!request}
           />
         )}
       </div>
 
-      {/* Composer — free text post-deposit, structured notice before it */}
+      {/* Composer — free text post-deposit, structured notice before it. The
+          notice names the real next step: with no quote yet there is no
+          "offer above" to act on. */}
       <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-border-dim bg-card shrink-0">
         <ChatComposer
           threadId={thread.id}
           onSent={onSent}
           mode={textUnlocked ? 'text' : 'structured'}
+          structuredState={offerOnTable ? 'offer' : 'awaitQuote'}
+          viewerIsProvider={viewerIsProvider}
         />
       </div>
     </div>
@@ -279,7 +323,9 @@ function MessagesContent() {
   const [loadError, setLoadError] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [msgError, setMsgError] = useState(false);
   const [negotiation, setNegotiation] = useState<Negotiation | null>(null);
+  const [detailRequest, setDetailRequest] = useState<ThreadRequest | null>(null);
   const [detailUnlocked, setDetailUnlocked] = useState<boolean | null>(null);
   // Bumped by offer actions so both polls re-run immediately instead of
   // leaving the user staring at stale state for up to 15s.
@@ -324,7 +370,9 @@ function MessagesContent() {
   // blank the stream the user is looking at.
   useEffect(() => {
     setMsgLoading(!!activeThreadId);
+    setMsgError(false);
     setNegotiation(null);
+    setDetailRequest(null);
     setDetailUnlocked(null);
   }, [activeThreadId]);
 
@@ -333,21 +381,29 @@ function MessagesContent() {
     if (!activeThreadId) { setMessages([]); return; }
     let cancelled = false;
 
-    // GET ?threadId returns { messages, textUnlocked, negotiation }; it used to
-    // return a bare array. Accept both so a stale deployment still renders.
+    // GET ?threadId returns { messages, textUnlocked, negotiation, request }; it
+    // used to return a bare array. Accept both so a stale deployment still
+    // renders.
+    //
+    // A failed detail fetch used to be indistinguishable from an empty thread:
+    // `list` came back null, messages stayed [] and the user read "Start the
+    // conversation" on a thread that actually has history. Surface it instead.
     const fetchMsgs = () =>
       fetch(`/api/chat?threadId=${activeThreadId}`)
-        .then(r => r.json())
-        .then(d => {
+        .then(async r => ({ ok: r.ok, d: await r.json().catch(() => null) }))
+        .then(({ ok, d }) => {
           if (cancelled) return;
           const list = Array.isArray(d) ? d : Array.isArray(d?.messages) ? d.messages : null;
-          if (list) setMessages(list);
+          if (!ok || !list) { setMsgError(true); return; }
+          setMsgError(false);
+          setMessages(list);
           if (!Array.isArray(d) && d && typeof d === 'object') {
             setNegotiation((d.negotiation as Negotiation) ?? null);
+            setDetailRequest(asThreadRequest(d.request));
             setDetailUnlocked(d.textUnlocked !== false);
           }
         })
-        .catch(() => {});
+        .catch(() => { if (!cancelled) setMsgError(true); });
 
     fetchMsgs().finally(() => { if (!cancelled) setMsgLoading(false); });
     const interval = setInterval(fetchMsgs, 3000);
@@ -364,6 +420,11 @@ function MessagesContent() {
   // first message fetch is in flight. Default open so an older API shape
   // without the flag keeps today's behaviour.
   const textUnlocked = detailUnlocked ?? activeThread?.textUnlocked ?? true;
+
+  // Same precedence for the pinned request: the detail response is freshest,
+  // the list row covers the first paint (and an older API shape that omits it).
+  const threadRequest =
+    detailRequest ?? asThreadRequest(activeThread?.request) ?? null;
 
   if (status === 'loading' || loading) {
     return (
@@ -386,8 +447,11 @@ function MessagesContent() {
       thread={activeThread}
       messages={messages}
       msgLoading={msgLoading}
+      msgError={msgError}
       userId={userId}
       negotiation={negotiation}
+      request={threadRequest}
+      viewerIsProvider={isProvider}
       textUnlocked={textUnlocked}
       onActed={refreshNow}
       t={t}
@@ -465,8 +529,11 @@ function MessagesContent() {
                   thread={activeThread}
                   messages={messages}
                   msgLoading={msgLoading}
+                  msgError={msgError}
                   userId={userId}
                   negotiation={negotiation}
+                  request={threadRequest}
+                  viewerIsProvider={isProvider}
                   textUnlocked={textUnlocked}
                   onActed={refreshNow}
                   t={t}
