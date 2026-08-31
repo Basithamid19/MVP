@@ -8,6 +8,7 @@ import { Loader2, Calendar, ChevronRight, MapPin, Briefcase } from 'lucide-react
 import { formatVilnius } from '@/lib/time';
 import { providerNet } from '@/lib/fees';
 import { useTranslation } from '@/lib/i18n';
+import { ProviderWorkTabs } from '@/components/ProviderWorkTabs';
 import { PageHeader, EmptyState, DomainStatusBadge, buttonVariants } from '@/components/ui';
 import { SegmentedFilter } from '@/components/SegmentedFilter';
 
@@ -48,19 +49,7 @@ export default function ProviderJobsPage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Mobile-only section tabs — the rail is hidden below md, so every work
-          surface (leads, jobs, quotes) has to be reachable from here. */}
-      <nav className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
-        <Link href="/provider/leads" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center text-ink-sub hover:text-ink transition-colors">
-          {t.providerNav.leads}
-        </Link>
-        <span aria-current="page" className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center bg-card text-brand shadow-card">
-          {t.providerNav.jobs}
-        </span>
-        <Link href="/provider/quotes" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center text-ink-sub hover:text-ink transition-colors">
-          {t.providerNav.myQuotes}
-        </Link>
-      </nav>
+      <ProviderWorkTabs active="jobs" />
 
       <PageHeader
         title={t.jobsPage.title}

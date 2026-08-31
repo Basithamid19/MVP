@@ -64,6 +64,8 @@ export default function ProviderQuotesPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
+      <ProviderWorkTabs active="quotes" />
+
       <PageHeader
         title={t.myQuotes.title}
         description={`${pending.length} ${t.myQuotes.pendingSuffix} · ${quotes.length} ${t.myQuotes.totalSuffix}`}

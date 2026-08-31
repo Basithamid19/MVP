@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { TIME_OF_DAY_LABELS } from '@/lib/time';
 import { useTranslation } from '@/lib/i18n';
+import { ProviderWorkTabs } from '@/components/ProviderWorkTabs';
 import { PageHeader } from '@/components/ui';
 
 function ResponseTimer({ createdAt }: { createdAt: string }) {
@@ -103,15 +104,7 @@ export default function ProviderLeadsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* Mobile-only section tabs */}
-      <div className="md:hidden flex gap-1 p-1 bg-surface-alt rounded-card border border-border-dim mb-5">
-        <div className="flex-1 py-2.5 rounded-input text-sm font-semibold text-center transition-all bg-card text-brand shadow-card">
-          {t.providerNav.leads}
-        </div>
-        <Link href="/provider/jobs" className="flex-1 py-2.5 rounded-input text-sm font-medium text-center transition-all text-ink-sub hover:text-ink">
-          {t.providerNav.jobs}
-        </Link>
-      </div>
+      <ProviderWorkTabs active="leads" />
 
       <PageHeader
         title={t.leadsPage.title}
