@@ -603,9 +603,6 @@ export interface Dictionary {
     eventJobStarted: string;
     eventJobCompleted: string;
     eventReviewLeft: string;
-    lockedTitle: string;
-    lockedDesc: string;
-    payNow: string;
     uploadFailed: string;
   };
 
@@ -641,9 +638,6 @@ export interface Dictionary {
     counterNoteLabel: string;
     counterNoteHint: string;
     counterSubmit: string;
-    composerNotice: string;
-    composerNoticeSendQuote: string;
-    composerNoticeAwaitQuote: string;
     requestLabel: string;
     requestUrgent: string;
     requestBudget: string;

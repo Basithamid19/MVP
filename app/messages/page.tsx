@@ -295,18 +295,18 @@ function ConversationPane({
         )}
       </div>
 
-      {/* Composer — free text post-deposit, structured notice before it. The
-          notice names the real next step: with no quote yet there is no
-          "offer above" to act on. */}
-      <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-border-dim bg-card shrink-0">
-        <ChatComposer
-          threadId={thread.id}
-          onSent={onSent}
-          mode={textUnlocked ? 'text' : 'structured'}
-          structuredState={offerOnTable ? 'offer' : 'awaitQuote'}
-          viewerIsProvider={viewerIsProvider}
-        />
-      </div>
+      {/* Composer — free text only once the deposit is paid. Before that the
+          slot is absent entirely (bar included): the offer cards in the stream
+          are the conversation, and we never tell either side it's "locked". */}
+      {textUnlocked && (
+        <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-border-dim bg-card shrink-0">
+          <ChatComposer
+            threadId={thread.id}
+            onSent={onSent}
+            mode={textUnlocked ? 'text' : 'structured'}
+          />
+        </div>
+      )}
     </div>
   );
 }

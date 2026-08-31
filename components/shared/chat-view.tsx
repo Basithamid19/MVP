@@ -4,14 +4,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
   Send, Loader2, ArrowLeft, Phone, ImagePlus, X, XCircle,
-  CheckCircle2, Calendar, Star, Clock, Lock, MessageCircle,
+  CheckCircle2, Calendar, Star, Clock, MessageCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Alert, Avatar, EmptyState, buttonVariants, useToast } from '@/components/ui';
+import { Avatar, EmptyState, buttonVariants, useToast } from '@/components/ui';
 import {
-  OfferCard, asOfferPayload, asSystemPayload, offerPayloadFromNegotiation, viewerSideOf,
-  type Negotiation, type Side, type SystemPayload,
+  OfferCard, OfferEventRow, asOfferPayload, asSystemPayload, offerPayloadFromNegotiation,
+  viewerSideOf, type Negotiation, type Side, type SystemPayload,
 } from '@/components/OfferCard';
 import { cn } from '@/lib/utils';
 import { useLocale, useTranslation } from '@/lib/i18n';
@@ -358,19 +358,33 @@ export function MessageThread({
         );
 
         if (offer) {
+          // Superseded offers collapse to a timeline row — only the live one is
+          // a card, so the thread reads as a sequence of moves, not a stack of
+          // near-identical price slabs.
+          const isLatest = msg.id === latestOfferId;
           return (
             <React.Fragment key={msg.id}>
               {daySeparator}
-              <OfferCard
-                payload={offer}
-                createdAt={msg.createdAt}
-                isMine={isMine}
-                otherName={otherName}
-                negotiation={negotiation}
-                viewerSide={viewerSide}
-                isLatestOffer={msg.id === latestOfferId}
-                onActed={onActed}
-              />
+              {isLatest ? (
+                <OfferCard
+                  payload={offer}
+                  createdAt={msg.createdAt}
+                  isMine={isMine}
+                  otherName={otherName}
+                  negotiation={negotiation}
+                  viewerSide={viewerSide}
+                  isLatestOffer
+                  onActed={onActed}
+                />
+              ) : (
+                <OfferEventRow
+                  payload={offer}
+                  createdAt={msg.createdAt}
+                  isMine={isMine}
+                  otherName={otherName}
+                  viewerSide={viewerSide}
+                />
+              )}
             </React.Fragment>
           );
         }
@@ -462,17 +476,16 @@ export function MessageThread({
  * THE composer. Owns its draft, the /api/uploads → /api/chat attachment path
  * and failure toasts; callers just receive the created message.
  *
- * `mode` — 'text' (default, unchanged behaviour: input + photo button) or
- * 'structured' for a pre-deposit thread, where free text is still gated
- * server-side. Structured mode shows the reason instead of an input the user
- * would only get rejected from; the actionable controls live on the offer card
- * in the stream, not down here.
+ * `mode` — 'text' (default: input + photo button) or 'structured' for a
+ * pre-deposit thread, where free text is still gated server-side. Structured
+ * mode renders NOTHING: pre-deposit the offer cards in the stream ARE the
+ * conversation, so the composer simply doesn't exist yet.
  *
- * `structuredState` picks WHICH reason. It used to always say "use the offer
- * above to accept, counter or decline" — which was a lie on a direct-request
- * thread where no offer exists yet, and the founder-reported dead end. Pass
- * 'awaitQuote' when there is no negotiation and the copy names the real next
- * step for each side instead.
+ * It used to render a notice explaining that messaging was locked. That copy is
+ * gone by founder decision — we never tell either side the chat is locked; the
+ * absence of an input says everything true about it, and the next real step
+ * (send a quote / respond to the offer / pay the deposit) is already stated on
+ * the RequestCard, the offer card and the system chips above.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export function ChatComposer({
@@ -480,18 +493,12 @@ export function ChatComposer({
   onSent,
   onLocked,
   mode = 'text',
-  structuredState = 'offer',
-  viewerIsProvider = false,
   className,
 }: {
   threadId: string;
   onSent: (message: ChatMessage) => void;
   onLocked?: () => void;
   mode?: 'text' | 'structured';
-  /** 'offer' = an offer is on the table; 'awaitQuote' = no quote yet. */
-  structuredState?: 'offer' | 'awaitQuote';
-  /** Which side reads the 'awaitQuote' notice. */
-  viewerIsProvider?: boolean;
   className?: string;
 }) {
   const t = useTranslation();
@@ -571,19 +578,8 @@ export function ChatComposer({
     }
   };
 
-  if (mode === 'structured') {
-    const notice =
-      structuredState === 'awaitQuote'
-        ? viewerIsProvider
-          ? t.negotiation.composerNoticeSendQuote
-          : t.negotiation.composerNoticeAwaitQuote
-        : t.negotiation.composerNotice;
-    return (
-      <Alert variant="info" className={cn('py-2.5', className)}>
-        {notice}
-      </Alert>
-    );
-  }
+  // Pre-deposit: no composer at all. The cards in the stream carry the turn.
+  if (mode === 'structured') return null;
 
   return (
     <form onSubmit={send} className={cn('flex items-center gap-2', className)}>
@@ -783,30 +779,19 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
         />
       </div>
 
-      {/* Composer / lock banner */}
-      <div className="p-4 bg-card border-t border-border-dim">
-        {isLocked ? (
-          <div className="flex items-center gap-3 px-4 py-3 bg-caution-surface border border-caution-edge rounded-card">
-            <Lock className="w-5 h-5 text-caution shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-bold text-caution">{t.chatView.lockedTitle}</p>
-              <p className="text-xs text-caution leading-relaxed">{t.chatView.lockedDesc}</p>
-            </div>
-            {booking?.id && (
-              <Link href={`/bookings/${booking.id}`} className="text-xs font-bold text-caution underline shrink-0">
-                {t.chatView.payNow}
-              </Link>
-            )}
-          </div>
-        ) : (
+      {/* Composer — pre-deposit there is none, and no banner explaining its
+          absence either. The deposit CTA already lives on the booking page and
+          on the booking_created chip in the stream above. */}
+      {!isLocked && (
+        <div className="p-4 bg-card border-t border-border-dim">
           <ChatComposer
             threadId={threadId}
             className="max-w-4xl mx-auto"
             onSent={(msg) => setMessages(prev => [...prev, msg])}
             onLocked={() => setIsLocked(true)}
           />
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

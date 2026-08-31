@@ -799,7 +799,7 @@ export async function PATCH(request: Request) {
       userId: acceptCustomerProfile.userId,
       type: 'payment',
       title: 'Pay deposit to confirm booking',
-      body: `Pay €${depositAmount.toFixed(2)} deposit (20%) to lock in your booking and unlock messaging.`,
+      body: `Pay the €${depositAmount.toFixed(2)} deposit (20%) to confirm your booking.`,
       href: `/bookings/${booking.id}`,
     });
   }

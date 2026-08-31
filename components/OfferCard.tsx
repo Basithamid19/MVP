@@ -2,7 +2,7 @@
 
 import React, { useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Hourglass } from 'lucide-react';
+import { ArrowLeftRight, Check, Clock, Hourglass, Tag, X } from 'lucide-react';
 import {
   Alert, Button, Input, Modal, ModalFooter, StatusBadge, Textarea, useToast,
 } from '@/components/ui';
@@ -27,6 +27,10 @@ import type { Dictionary, Locale } from '@/lib/i18n/types';
  * PENDING, and the ball is in the viewer's court. Everything else is history.
  * All three actions go through PATCH /api/quotes; nothing here writes chat
  * messages itself (the server does that).
+ *
+ * Superseded offers don't render as cards at all — `OfferEventRow` renders them
+ * as one quiet timeline row each, so a long haggle reads as a sequence instead
+ * of a stack of near-identical price slabs.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export type Side = 'customer' | 'provider';
@@ -451,6 +455,62 @@ export function OfferCard({
           />
         </form>
       </Modal>
+    </div>
+  );
+}
+
+/* ─── OfferEventRow ─────────────────────────────────────────────────────────
+ * A superseded offer message. Same data as the card, none of the weight: one
+ * hairline row with an icon, the action, the price it put on the table and who
+ * moved. Sits in the stream next to the day separators and system chips so the
+ * thread scans top-to-bottom as request → the steps that got here → the live
+ * offer card. Never actionable — only the latest offer is.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const EVENT_ROW: Record<
+  OfferPayload['action'],
+  { Icon: React.ElementType; key: keyof Dictionary['negotiation'] }
+> = {
+  offer:   { Icon: Tag,            key: 'chipOffer' },
+  counter: { Icon: ArrowLeftRight, key: 'chipCounter' },
+  accept:  { Icon: Check,          key: 'chipAccepted' },
+  decline: { Icon: X,              key: 'chipDeclined' },
+};
+
+export function OfferEventRow({
+  payload,
+  createdAt,
+  isMine,
+  otherName,
+  viewerSide,
+  className,
+}: {
+  payload: OfferPayload;
+  createdAt: string;
+  /** Fallback for authorship when the viewer's side can't be resolved. */
+  isMine: boolean;
+  otherName: string;
+  viewerSide: Side | null;
+  className?: string;
+}) {
+  const t = useTranslation();
+  const s = t.negotiation;
+  const { locale } = useLocale();
+
+  const { Icon, key } = EVENT_ROW[payload.action];
+  const byMe = viewerSide ? payload.by === viewerSide : isMine;
+
+  return (
+    <div className={cn('flex justify-center mt-2', className)}>
+      <span className="inline-flex max-w-full items-center gap-2 px-3 py-1.5 rounded-chip bg-surface-alt border border-border-dim">
+        <Icon className="w-3.5 h-3.5 shrink-0 text-ink-dim" aria-hidden="true" />
+        <span className="text-3xs text-ink-sub truncate">
+          {`${s[key]} — ${money(payload.price)} · ${byMe ? s.byYou : `${s.byPrefix} ${otherName}`}`}
+        </span>
+        <span className="text-3xs text-ink-dim shrink-0">
+          {new Date(createdAt).toLocaleTimeString(intlLocale(locale), { hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </span>
     </div>
   );
 }
