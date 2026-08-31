@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, FileText, Clock, ChevronRight, Inbox } from 'lucide-react';
 import { useTranslation, type Dictionary } from '@/lib/i18n';
+import { ProviderWorkTabs } from '@/components/ProviderWorkTabs';
 import {
   buttonVariants, EmptyState, PageHeader, StatusBadge,
   type BadgeVariant,

@@ -635,7 +635,9 @@ export async function PATCH(request: Request) {
   // before committing. Degrades to allow on un-migrated DBs.
   if (action === 'accept') {
     const avail = await checkAvailability(quote.providerId, scheduledAt);
-    if (!avail.ok) {
+    // `=== false` (not `!avail.ok`): with strict:false the truthiness check
+    // doesn't narrow the discriminated union and tsc rejects .reason/.code.
+    if (avail.ok === false) {
       return NextResponse.json({ error: avail.reason, errorCode: avail.code }, { status: 409 });
     }
   }

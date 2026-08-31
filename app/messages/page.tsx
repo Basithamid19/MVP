@@ -1,13 +1,15 @@
 'use client';
 
-import React, { Suspense, useState, useEffect, useRef } from 'react';
+import React, { Suspense, useCallback, useState, useEffect, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ArrowLeft, MessageCircle, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, MessageCircle, AlertCircle } from 'lucide-react';
 import CustomerLayout from '@/components/CustomerLayout';
-import { Avatar, EmptyState, PageHeader, StatusBadge } from '@/components/ui';
+import { Alert, Avatar, EmptyState, PageHeader, StatusBadge } from '@/components/ui';
+import type { BadgeVariant } from '@/components/ui';
 import { ChatComposer, MessageThread, type ChatMessage } from '@/components/shared/chat-view';
+import { compactMoney, viewerSideOf, type Negotiation } from '@/components/OfferCard';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
 
@@ -21,11 +23,59 @@ function timeAgo(date: string, s: Dictionary['messagesPage']) {
 
 interface Thread {
   id: string;
+  /** The ServiceRequest this conversation is about (20260710 payload). */
+  requestId?: string;
   otherParticipant: { id: string; name: string | null; image: string | null; role: string };
-  lastMessage: { content: string; senderId: string; createdAt: string } | null;
+  lastMessage: {
+    content: string;
+    senderId: string;
+    createdAt: string;
+    kind?: 'text' | 'offer' | 'system';
+  } | null;
   category: string;
   createdAt: string;
   unreadCount?: number;
+  /** Free text allowed? False while the deposit is unpaid. */
+  textUnlocked?: boolean;
+  negotiation?: Negotiation | null;
+}
+
+/**
+ * Inbox preview line. Offer/system messages persist their payload mirrored as
+ * raw text ('[counter] €45', '[system] booking_created') so text-only clients
+ * show something — but that's debug copy for a human reading the inbox, and
+ * the negotiation chip below already carries the price.
+ */
+function previewLine(thread: Thread, t: Dictionary): string | null {
+  const last = thread.lastMessage;
+  if (!last) return null;
+  if (last.kind === 'offer') return t.negotiation.previewOffer;
+  if (last.kind === 'system') return t.negotiation.previewSystem;
+  return last.content;
+}
+
+/**
+ * One-line negotiation chip for a thread row: where the money currently
+ * stands, and whether the viewer owes a response.
+ */
+function negotiationChip(
+  thread: Thread,
+  userId: string | undefined,
+  t: Dictionary,
+): { variant: BadgeVariant; label: string } | null {
+  const n = thread.negotiation;
+  if (!n) return null;
+
+  if (n.status === 'ACCEPTED') return { variant: 'success', label: t.negotiation.chipAccepted };
+  if (n.status === 'DECLINED') return { variant: 'neutral', label: t.negotiation.chipDeclined };
+  if (n.status !== 'PENDING')   return { variant: 'neutral', label: t.negotiation.expired };
+
+  const side = viewerSideOf(userId, n);
+  const yours = !!side && side === n.turn;
+  return {
+    variant: yours ? 'warning' : 'neutral',
+    label: `${compactMoney(n.effectivePrice)} · ${yours ? t.negotiation.yourTurn : t.negotiation.waiting}`,
+  };
 }
 
 export default function MessagesPage() {
@@ -43,10 +93,6 @@ export default function MessagesPage() {
 /* ─── ThreadList ────────────────────────────────────────────────────────────
  * ONE thread list, rendered by both the mobile inbox card and the desktop
  * sidebar — the two used to be ~30 duplicated lines that drifted apart.
- *
- * Note: the thread API (app/api/chat/route.ts) returns no read/unread state,
- * so there is no unread affordance to render here yet. Add `unreadCount` to
- * the GET payload first, then bold the row + show a brand dot.
  * ────────────────────────────────────────────────────────────────────────── */
 
 function ThreadList({
@@ -68,6 +114,8 @@ function ThreadList({
         // Unread only counts while the thread is closed — the open thread is
         // being marked read by its own poll.
         const unread = (th.unreadCount ?? 0) > 0 && th.id !== activeThreadId;
+        const preview = previewLine(th, t);
+        const chip = negotiationChip(th, userId, t);
         return (
           <Link
             key={th.id}
@@ -102,15 +150,22 @@ function ThreadList({
               <p className="text-sm text-ink-sub font-medium mt-0.5 truncate">{th.category}</p>
 
               {/* Two-line message preview — bold while unread */}
-              {th.lastMessage ? (
+              {preview ? (
                 <p className={`text-sm mt-1.5 leading-relaxed line-clamp-2 ${
                   unread ? 'text-ink font-semibold' : 'text-ink-sub'
                 }`}>
-                  {th.lastMessage.senderId === userId ? t.messagesPage.youPrefix : ''}
-                  {th.lastMessage.content}
+                  {th.lastMessage?.senderId === userId ? t.messagesPage.youPrefix : ''}
+                  {preview}
                 </p>
               ) : (
                 <p className="text-sm text-ink-dim mt-1.5">{t.messagesPage.noMessagesShort}</p>
+              )}
+
+              {/* Where the money stands + whose move it is */}
+              {chip && (
+                <p className="mt-2">
+                  <StatusBadge variant={chip.variant} label={chip.label} className="max-w-full overflow-hidden" />
+                </p>
               )}
             </div>
           </Link>
@@ -130,6 +185,9 @@ function ConversationPane({
   messages,
   msgLoading,
   userId,
+  negotiation,
+  textUnlocked,
+  onActed,
   t,
   onBack,
   onSent,
@@ -139,6 +197,11 @@ function ConversationPane({
   messages: ChatMessage[];
   msgLoading: boolean;
   userId?: string;
+  negotiation: Negotiation | null;
+  /** Free text allowed? Drives the composer mode. */
+  textUnlocked: boolean;
+  /** Immediate re-fetch of thread + list after an offer action. */
+  onActed: () => void;
   t: Dictionary;
   onBack?: () => void;
   onSent: (msg: ChatMessage) => void;
@@ -180,13 +243,19 @@ function ConversationPane({
             currentUserId={userId}
             otherName={name}
             otherImage={thread.otherParticipant.image}
+            negotiation={negotiation}
+            onActed={onActed}
           />
         )}
       </div>
 
-      {/* Composer */}
+      {/* Composer — free text post-deposit, structured notice before it */}
       <div className="px-3 sm:px-4 py-2.5 sm:py-3 border-t border-border-dim bg-card shrink-0">
-        <ChatComposer threadId={thread.id} onSent={onSent} />
+        <ChatComposer
+          threadId={thread.id}
+          onSent={onSent}
+          mode={textUnlocked ? 'text' : 'structured'}
+        />
       </div>
     </div>
   );
@@ -204,8 +273,15 @@ function MessagesContent() {
   const [loadError, setLoadError] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
+  const [negotiation, setNegotiation] = useState<Negotiation | null>(null);
+  const [detailUnlocked, setDetailUnlocked] = useState<boolean | null>(null);
+  // Bumped by offer actions so both polls re-run immediately instead of
+  // leaving the user staring at stale state for up to 15s.
+  const [refreshKey, setRefreshKey] = useState(0);
   const userId = (session?.user as any)?.id;
   const isProvider = (session?.user as any)?.role === 'PROVIDER';
+
+  const refreshNow = useCallback(() => setRefreshKey(k => k + 1), []);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -236,34 +312,52 @@ function MessagesContent() {
     fetchThreads();
     const interval = setInterval(fetchThreads, 15000);
     return () => { cancelled = true; clearInterval(interval); };
-  }, [status]);
+  }, [status, refreshKey]);
 
-  // Fetch messages for active thread
+  // Spinner only on thread switch — a refresh after an offer action must not
+  // blank the stream the user is looking at.
+  useEffect(() => {
+    setMsgLoading(!!activeThreadId);
+    setNegotiation(null);
+    setDetailUnlocked(null);
+  }, [activeThreadId]);
+
+  // Fetch messages + negotiation state for the active thread.
   useEffect(() => {
     if (!activeThreadId) { setMessages([]); return; }
-    setMsgLoading(true);
-    // GET ?threadId returns { messages, textUnlocked, negotiation } as of the
-    // negotiation change; it used to return a bare array. Accept both so this
-    // keeps working either way (negotiation UI lands separately).
+    let cancelled = false;
+
+    // GET ?threadId returns { messages, textUnlocked, negotiation }; it used to
+    // return a bare array. Accept both so a stale deployment still renders.
     const fetchMsgs = () =>
       fetch(`/api/chat?threadId=${activeThreadId}`)
         .then(r => r.json())
         .then(d => {
+          if (cancelled) return;
           const list = Array.isArray(d) ? d : Array.isArray(d?.messages) ? d.messages : null;
           if (list) setMessages(list);
+          if (!Array.isArray(d) && d && typeof d === 'object') {
+            setNegotiation((d.negotiation as Negotiation) ?? null);
+            setDetailUnlocked(d.textUnlocked !== false);
+          }
         })
         .catch(() => {});
 
-    fetchMsgs().finally(() => setMsgLoading(false));
+    fetchMsgs().finally(() => { if (!cancelled) setMsgLoading(false); });
     const interval = setInterval(fetchMsgs, 3000);
-    return () => clearInterval(interval);
-  }, [activeThreadId]);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [activeThreadId, refreshKey]);
 
   const activeThread = threads.find(th => th.id === activeThreadId);
-  // Deep link (e.g. an old notification) to a conversation that isn't
-  // unlocked yet — the server filters it out of the list and 403s reads, so
-  // without this the pane rendered silently blank.
+  // Threads now appear from the first quote onward, so a deep link that isn't
+  // in the list is genuinely unreachable for this account (deleted, not
+  // theirs, or a stale notification href) — not "waiting on a deposit".
   const threadLocked = !!activeThreadId && !activeThread && !loading;
+
+  // Detail response wins (freshest); the list row is the fallback while the
+  // first message fetch is in flight. Default open so an older API shape
+  // without the flag keeps today's behaviour.
+  const textUnlocked = detailUnlocked ?? activeThread?.textUnlocked ?? true;
 
   if (status === 'loading' || loading) {
     return (
@@ -287,6 +381,9 @@ function MessagesContent() {
       messages={messages}
       msgLoading={msgLoading}
       userId={userId}
+      negotiation={negotiation}
+      textUnlocked={textUnlocked}
+      onActed={refreshNow}
       t={t}
       onBack={() => router.push('/messages')}
       onSent={appendMessage}
@@ -323,12 +420,9 @@ function MessagesContent() {
         {pageHeader}
 
         {threadLocked && (
-          <div className="flex items-start gap-3 px-4 py-3 mb-4 bg-caution-surface border border-caution-edge rounded-card">
-            <Lock className="w-4 h-4 text-caution shrink-0 mt-0.5" />
-            <p className="text-sm font-medium text-caution leading-relaxed">
-              {t.messagesPage.lockedNotice}
-            </p>
-          </div>
+          <Alert variant="caution" icon={AlertCircle} className="mb-4">
+            {t.messagesPage.lockedNotice}
+          </Alert>
         )}
 
         {threads.length === 0 ? emptyState : (
@@ -366,13 +460,16 @@ function MessagesContent() {
                   messages={messages}
                   msgLoading={msgLoading}
                   userId={userId}
+                  negotiation={negotiation}
+                  textUnlocked={textUnlocked}
+                  onActed={refreshNow}
                   t={t}
                   onSent={appendMessage}
                 />
               ) : threadLocked ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
                   <EmptyState
-                    icon={Lock}
+                    icon={AlertCircle}
                     size="lg"
                     title={t.messagesPage.messagingLocked}
                     description={t.messagesPage.lockedNotice}

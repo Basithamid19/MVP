@@ -3,12 +3,16 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import {
-  Send, Loader2, ArrowLeft, Phone, ImagePlus, X,
+  Send, Loader2, ArrowLeft, Phone, ImagePlus, X, XCircle,
   CheckCircle2, Calendar, Star, Clock, Lock, MessageCircle,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Avatar, EmptyState, useToast } from '@/components/ui';
+import { Alert, Avatar, EmptyState, buttonVariants, useToast } from '@/components/ui';
+import {
+  OfferCard, asOfferPayload, asSystemPayload, viewerSideOf,
+  type Negotiation, type Side, type SystemPayload,
+} from '@/components/OfferCard';
 import { cn } from '@/lib/utils';
 import { useLocale, useTranslation } from '@/lib/i18n';
 import type { Dictionary, Locale } from '@/lib/i18n/types';
@@ -40,7 +44,15 @@ export interface ChatMessage {
   imageUrl?: string | null;
   createdAt: string;
   isSystem?: boolean;
+  /** 20260710 negotiation columns. Absent/legacy rows read as 'text'. */
+  kind?: 'text' | 'offer' | 'system';
+  /** Structured card data — shape depends on `kind`. See OfferCard. */
+  payload?: unknown;
 }
+
+/** Anything other than 'text' renders as a card/chip, not a bubble. */
+const messageKind = (msg: ChatMessage): 'text' | 'offer' | 'system' =>
+  msg.kind === 'offer' || msg.kind === 'system' ? msg.kind : 'text';
 
 interface SystemEvent {
   id: string;
@@ -151,13 +163,18 @@ function buildRows(
     const isMine = !!currentUserId && msg.senderId === currentUserId;
 
     const newDay = !prev || dayKey(new Date(prev.createdAt)) !== dayKey(date);
+    // An offer card / system chip between two texts breaks the visual group:
+    // without this the text after it inherits the group and loses its avatar
+    // and timestamp.
     const brokeFromPrev =
       newDay ||
+      messageKind(prev) !== 'text' ||
       prev.senderId !== msg.senderId ||
       date.getTime() - new Date(prev.createdAt).getTime() > GROUP_GAP_MS;
     const breaksToNext =
       !next ||
       dayKey(new Date(next.createdAt)) !== dayKey(date) ||
+      messageKind(next) !== 'text' ||
       next.senderId !== msg.senderId ||
       new Date(next.createdAt).getTime() - date.getTime() > GROUP_GAP_MS;
 
@@ -171,9 +188,68 @@ function buildRows(
   });
 }
 
+/* ─── System chips ──────────────────────────────────────────────────────────
+ * Persisted kind='system' milestones (written by /api/quotes and the Stripe
+ * webhook). Distinct from the synthetic buildTimeline events above, which are
+ * derived from booking state for legacy deals.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const SYSTEM_EVENT: Record<
+  SystemPayload['event'],
+  { Icon: React.ElementType; tone: string; key: keyof Dictionary['negotiation'] }
+> = {
+  booking_created:     { Icon: Calendar,     tone: 'bg-brand-muted text-brand border-brand/20',      key: 'systemBookingCreated' },
+  deposit_paid:        { Icon: CheckCircle2, tone: 'bg-trust-surface text-trust border-trust-edge',  key: 'systemDepositPaid' },
+  quote_auto_declined: { Icon: XCircle,      tone: 'bg-surface-alt text-ink-sub border-border',      key: 'systemQuoteAutoDeclined' },
+};
+
+function SystemChip({
+  payload,
+  viewerSide,
+  t,
+}: {
+  payload: SystemPayload;
+  viewerSide: Side | null;
+  t: Dictionary;
+}) {
+  const { Icon, tone, key } = SYSTEM_EVENT[payload.event];
+  // The deposit lives on the booking page; only the paying side gets the CTA.
+  const showPay =
+    payload.event === 'booking_created' && !!payload.bookingId && viewerSide === 'customer';
+
+  return (
+    <div className="flex flex-col items-center gap-2 py-4">
+      <span
+        className={cn(
+          'inline-flex items-center gap-1.5 px-3 py-1 rounded-chip border',
+          'text-2xs font-bold uppercase tracking-wide text-center',
+          tone,
+        )}
+      >
+        <Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+        {t.negotiation[key]}
+      </span>
+      {showPay && (
+        <Link
+          href={`/bookings/${payload.bookingId}`}
+          className={buttonVariants({ variant: 'primary', size: 'sm' })}
+        >
+          {t.negotiation.payDeposit}
+        </Link>
+      )}
+    </div>
+  );
+}
+
 /* ─── MessageThread ─────────────────────────────────────────────────────────
  * The message stream itself. Callers own the scroll container and its
  * padding; this renders the separators + grouped bubbles inside it.
+ *
+ * Three message kinds share the stream: 'text' bubbles, 'offer' cards (the
+ * negotiation itself) and 'system' chips (booking created / deposit paid /
+ * auto-decline). An offer/system row whose payload is missing or malformed
+ * falls back to a plain bubble showing `content` — the server mirrors every
+ * payload as text precisely so that fallback still says something true.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export function MessageThread({
@@ -181,21 +257,48 @@ export function MessageThread({
   currentUserId,
   otherName,
   otherImage,
+  negotiation,
+  onActed,
   className,
 }: {
   messages: ChatMessage[];
   currentUserId?: string;
   otherName: string;
   otherImage?: string | null;
+  /** Live negotiation for this thread, from GET /api/chat?threadId. */
+  negotiation?: Negotiation | null;
+  /** Called after an offer action lands, so the caller can re-fetch. */
+  onActed?: () => void;
   className?: string;
 }) {
   const t = useTranslation();
   const { locale } = useLocale();
+  const { data: session } = useSession();
 
   const rows = useMemo(
     () => buildRows(messages, currentUserId, t, locale),
     [messages, currentUserId, t, locale],
   );
+
+  // Which side of the negotiation the viewer is on. The negotiation payload is
+  // authoritative while a quote is PENDING; once it's accepted/declined the
+  // negotiation goes null, so fall back to the session role (an ADMIN
+  // spectator resolves to null either way and gets a read-only stream).
+  const sessionRole = (session?.user as any)?.role;
+  const viewerSide: Side | null =
+    viewerSideOf(currentUserId, negotiation) ??
+    (sessionRole === 'PROVIDER' ? 'provider' : sessionRole === 'CUSTOMER' ? 'customer' : null);
+
+  // Only the LAST offer message can be actionable — everything above it is
+  // superseded history.
+  const latestOfferId = useMemo(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messageKind(messages[i]) === 'offer' && asOfferPayload(messages[i].payload)) {
+        return messages[i].id;
+      }
+    }
+    return null;
+  }, [messages]);
 
   if (messages.length === 0) {
     return (
@@ -210,15 +313,49 @@ export function MessageThread({
 
   return (
     <div className={className}>
-      {rows.map(({ msg, isMine, separator, firstOfGroup, lastOfGroup }) => (
+      {rows.map(({ msg, isMine, separator, firstOfGroup, lastOfGroup }) => {
+        const kind = messageKind(msg);
+        const offer = kind === 'offer' ? asOfferPayload(msg.payload) : null;
+        const system = kind === 'system' ? asSystemPayload(msg.payload) : null;
+
+        const daySeparator = separator && (
+          <div className="flex items-center justify-center py-4">
+            <span className="px-3 py-1 rounded-chip bg-surface-alt text-ink-dim text-2xs font-bold uppercase tracking-widest">
+              {separator}
+            </span>
+          </div>
+        );
+
+        if (offer) {
+          return (
+            <React.Fragment key={msg.id}>
+              {daySeparator}
+              <OfferCard
+                payload={offer}
+                createdAt={msg.createdAt}
+                isMine={isMine}
+                otherName={otherName}
+                negotiation={negotiation}
+                viewerSide={viewerSide}
+                isLatestOffer={msg.id === latestOfferId}
+                onActed={onActed}
+              />
+            </React.Fragment>
+          );
+        }
+
+        if (system) {
+          return (
+            <React.Fragment key={msg.id}>
+              {daySeparator}
+              <SystemChip payload={system} viewerSide={viewerSide} t={t} />
+            </React.Fragment>
+          );
+        }
+
+        return (
         <React.Fragment key={msg.id}>
-          {separator && (
-            <div className="flex items-center justify-center py-4">
-              <span className="px-3 py-1 rounded-chip bg-surface-alt text-ink-dim text-2xs font-bold uppercase tracking-widest">
-                {separator}
-              </span>
-            </div>
-          )}
+          {daySeparator}
 
           <div
             className={cn(
@@ -269,7 +406,8 @@ export function MessageThread({
             </div>
           </div>
         </React.Fragment>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -277,17 +415,25 @@ export function MessageThread({
 /* ─── ChatComposer ──────────────────────────────────────────────────────────
  * THE composer. Owns its draft, the /api/uploads → /api/chat attachment path
  * and failure toasts; callers just receive the created message.
+ *
+ * `mode` — 'text' (default, unchanged behaviour: input + photo button) or
+ * 'structured' for a pre-deposit thread, where free text is still gated
+ * server-side. Structured mode shows the reason instead of an input the user
+ * would only get rejected from; the actionable controls live on the offer card
+ * in the stream, not down here.
  * ────────────────────────────────────────────────────────────────────────── */
 
 export function ChatComposer({
   threadId,
   onSent,
   onLocked,
+  mode = 'text',
   className,
 }: {
   threadId: string;
   onSent: (message: ChatMessage) => void;
   onLocked?: () => void;
+  mode?: 'text' | 'structured';
   className?: string;
 }) {
   const t = useTranslation();
@@ -366,6 +512,14 @@ export function ChatComposer({
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
+
+  if (mode === 'structured') {
+    return (
+      <Alert variant="info" className={cn('py-2.5', className)}>
+        {t.negotiation.composerNotice}
+      </Alert>
+    );
+  }
 
   return (
     <form onSubmit={send} className={cn('flex items-center gap-2', className)}>

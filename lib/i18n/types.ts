@@ -609,6 +609,49 @@ export interface Dictionary {
     uploadFailed: string;
   };
 
+  // In-inbox negotiation — offer cards, counter modal, system chips
+  // (components/OfferCard.tsx, components/shared/chat-view.tsx, app/messages)
+  negotiation: {
+    chipOffer: string;
+    chipCounter: string;
+    chipAccepted: string;
+    chipDeclined: string;
+    byYou: string;
+    byPrefix: string;
+    waitingPrefix: string;
+    waitingSuffix: string;
+    estHoursPrefix: string;
+    minutesShort: string;
+    hoursShort: string;
+    daysShort: string;
+    expiresInPrefix: string;
+    expired: string;
+    accept: string;
+    counter: string;
+    decline: string;
+    actionFailed: string;
+    acceptedToast: string;
+    declinedToast: string;
+    counterSentToast: string;
+    counterTitle: string;
+    counterDesc: string;
+    counterPriceLabel: string;
+    counterPriceHint: string;
+    counterPriceInvalid: string;
+    counterNoteLabel: string;
+    counterNoteHint: string;
+    counterSubmit: string;
+    composerNotice: string;
+    systemBookingCreated: string;
+    systemDepositPaid: string;
+    systemQuoteAutoDeclined: string;
+    payDeposit: string;
+    yourTurn: string;
+    waiting: string;
+    previewOffer: string;
+    previewSystem: string;
+  };
+
   // Public provider profile (app/providers/[id])
   providerProfile: {
     notFound: string;
