@@ -4,7 +4,6 @@ import { AladdinIcon } from '@/components/icons';
 import React from 'react';
 import Link from 'next/link';
 import MobileNav from '@/components/MobileNav';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import CustomerMenuDrawer from '@/components/CustomerMenuDrawer';
 import NotificationBell from '@/components/NotificationBell';
 
@@ -43,10 +42,7 @@ export default function CustomerLayout({
               </Link>
             </div>
 
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <NotificationBell />
-            </div>
+            <NotificationBell />
           </div>
         </header>
 

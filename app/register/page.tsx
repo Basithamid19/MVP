@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowRight, User, Briefcase, Mail, MessageSquare, Eye, EyeOff } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AuthShowcase from '@/components/AuthShowcase';
 import { Button, Input } from '@/components/ui';
 
@@ -97,14 +96,13 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-canvas flex flex-col lg:flex-row overflow-hidden">
       <div className="flex-1 flex flex-col lg:justify-center px-8 lg:px-24 pt-12 pb-12 lg:py-12 relative z-10">
         <div className="max-w-md w-full mx-auto">
-          <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center mb-10">
             <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 bg-brand rounded-input flex items-center justify-center shrink-0">
                 <AladdinIcon className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
             </Link>
-            <LanguageSwitcher />
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight text-ink mb-2">{t.auth.registerTitle}.</h1>

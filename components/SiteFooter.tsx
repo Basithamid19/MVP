@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { useTranslation } from '@/lib/i18n';
 
 /* ─── SiteFooter ────────────────────────────────────────────────────────────
@@ -66,9 +65,8 @@ export default function SiteFooter() {
           ))}
         </div>
 
-        <div className="mt-10 pt-6 border-t border-border-dim flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
+        <div className="mt-10 pt-6 border-t border-border-dim flex flex-col-reverse sm:flex-row items-center justify-between">
           <p className="text-xs text-ink-dim">&copy; 2026 {t.footer.copyright}</p>
-          <LanguageSwitcher />
         </div>
 
       </div>

@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { AladdinIcon } from '@/components/icons';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { buttonVariants } from '@/components/ui';
 import { useTranslation } from '@/lib/i18n';
 
@@ -37,7 +36,6 @@ export default function SiteNav({ ctaLabel, ctaHref = '/register' }: SiteNavProp
         </Link>
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <LanguageSwitcher className="hidden sm:flex" />
           <Link href="/login" className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
             {t.nav.logIn}
           </Link>

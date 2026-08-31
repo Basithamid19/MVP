@@ -10,7 +10,6 @@ import {
   BarChart2, Settings, LifeBuoy, LogOut, ShieldCheck,
   MessageSquare, FileText,
 } from 'lucide-react';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 import MobileNav from '@/components/MobileNav';
 import NotificationBell from '@/components/NotificationBell';
 import { useTranslation } from '@/lib/i18n';
@@ -130,10 +129,7 @@ export default function ProviderLayout({ children }: { children: React.ReactNode
               <span className="font-semibold text-lg tracking-tight text-ink">Aladdin</span>
             </Link>
 
-            <div className="flex items-center gap-2">
-              <LanguageSwitcher />
-              <NotificationBell />
-            </div>
+            <NotificationBell />
           </div>
         </header>
 
