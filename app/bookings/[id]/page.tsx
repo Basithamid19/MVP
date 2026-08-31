@@ -22,6 +22,7 @@ import { DEPOSIT_RATE } from '@/lib/fees';
 import { localizedStatus } from '@/lib/status-labels';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
+import { fetchJsonWithRetry } from '@/lib/fetch-retry';
 
 const STEP_INDEX: Record<string, number> = {
   SCHEDULED: 0,
@@ -135,10 +136,12 @@ export default function BookingPage() {
   };
 
   const load = useCallback(() => {
-    fetch(`/api/bookings?id=${id}`)
-      .then(r => r.json())
-      .then(d => { setBooking(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    // Retried on cold-start / 5xx. On a failed refresh we keep whatever is
+    // already rendered rather than blanking the booking the user is reading.
+    fetchJsonWithRetry<any>(`/api/bookings?id=${id}`)
+      .then(d => setBooking(d))
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [id]);
 
   useEffect(() => { load(); }, [load]);

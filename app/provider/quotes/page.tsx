@@ -12,6 +12,7 @@ import {
   type BadgeVariant,
 } from '@/components/ui';
 import { cn } from '@/lib/utils';
+import { fetchJsonOr } from '@/lib/fetch-retry';
 
 // The provider's sent quotes. Previously a sent quote vanished: the lead left
 // the inbox and no surface showed whether it was pending, declined, expired,
@@ -53,10 +54,10 @@ export default function ProviderQuotesPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
-      fetch('/api/quotes')
-        .then(r => r.json())
-        .then(d => { setQuotes(Array.isArray(d) ? d : []); setLoading(false); })
-        .catch(() => setLoading(false));
+      // Retried on cold-start / 5xx so a single blip doesn't render an empty
+      // quote inbox to a provider who has pending quotes.
+      fetchJsonOr<any[]>('/api/quotes', [])
+        .then(d => { setQuotes(Array.isArray(d) ? d : []); setLoading(false); });
     }
   }, [status, router]);
 

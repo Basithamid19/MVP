@@ -13,6 +13,7 @@ import { compactMoney, viewerSideOf, type Negotiation } from '@/components/Offer
 import { RequestCard, asThreadRequest, type ThreadRequest } from '@/components/RequestCard';
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
+import { fetchJsonWithRetry, isDefinitiveError } from '@/lib/fetch-retry';
 
 function timeAgo(date: string, s: Dictionary['messagesPage']) {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -330,6 +331,13 @@ function MessagesContent() {
   // Bumped by offer actions so both polls re-run immediately instead of
   // leaving the user staring at stale state for up to 15s.
   const [refreshKey, setRefreshKey] = useState(0);
+  // "Have we ever got a good answer out of /api/chat?" Error banners are gated
+  // on this: a poll that fails over an inbox that already rendered must stay
+  // silent, and a deep link must not be declared unreachable just because the
+  // list fetch is still failing.
+  const threadsLoadedRef = useRef(false);
+  // Same idea for the open thread — set false on every thread switch.
+  const detailLoadedRef = useRef(false);
   const userId = (session?.user as any)?.id;
   const isProvider = (session?.user as any)?.role === 'PROVIDER';
 
@@ -348,15 +356,17 @@ function MessagesContent() {
     let cancelled = false;
     const fetchThreads = async () => {
       try {
-        const r = await fetch('/api/chat');
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        const d = await r.json();
+        const d = await fetchJsonWithRetry<any>('/api/chat');
         if (!cancelled && Array.isArray(d)) {
+          threadsLoadedRef.current = true;
           setThreads(d);
           setLoadError(false);
         }
       } catch {
-        if (!cancelled) setLoadError(true);
+        // Retries are exhausted at this point. Only shout about it if the
+        // inbox has nothing to show — a background poll failing over a list
+        // that's already on screen is invisible by design.
+        if (!cancelled && !threadsLoadedRef.current) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -374,12 +384,16 @@ function MessagesContent() {
     setNegotiation(null);
     setDetailRequest(null);
     setDetailUnlocked(null);
+    detailLoadedRef.current = false;
   }, [activeThreadId]);
 
   // Fetch messages + negotiation state for the active thread.
   useEffect(() => {
     if (!activeThreadId) { setMessages([]); return; }
     let cancelled = false;
+    // Scoped to this effect run (i.e. to this thread) so switching threads
+    // never inherits a stuck flag from the previous conversation's poll.
+    let inFlight = false;
 
     // GET ?threadId returns { messages, textUnlocked, negotiation, request }; it
     // used to return a bare array. Accept both so a stale deployment still
@@ -387,23 +401,41 @@ function MessagesContent() {
     //
     // A failed detail fetch used to be indistinguishable from an empty thread:
     // `list` came back null, messages stayed [] and the user read "Start the
-    // conversation" on a thread that actually has history. Surface it instead.
-    const fetchMsgs = () =>
-      fetch(`/api/chat?threadId=${activeThreadId}`)
-        .then(async r => ({ ok: r.ok, d: await r.json().catch(() => null) }))
-        .then(({ ok, d }) => {
-          if (cancelled) return;
-          const list = Array.isArray(d) ? d : Array.isArray(d?.messages) ? d.messages : null;
-          if (!ok || !list) { setMsgError(true); return; }
-          setMsgError(false);
-          setMessages(list);
-          if (!Array.isArray(d) && d && typeof d === 'object') {
-            setNegotiation((d.negotiation as Negotiation) ?? null);
-            setDetailRequest(asThreadRequest(d.request));
-            setDetailUnlocked(d.textUnlocked !== false);
-          }
-        })
-        .catch(() => { if (!cancelled) setMsgError(true); });
+    // conversation" on a thread that actually has history. Surface it — but
+    // only once the retries are spent and only when there's nothing on screen,
+    // otherwise a cold-start blip mid-conversation flashes a scary banner over
+    // a perfectly readable thread.
+    const fetchMsgs = async () => {
+      // The poll runs every 3s and a retried attempt can outlive that; skip
+      // rather than stack overlapping requests on a struggling backend.
+      if (inFlight) return;
+      inFlight = true;
+      try {
+        const d = await fetchJsonWithRetry<any>(`/api/chat?threadId=${activeThreadId}`);
+        if (cancelled) return;
+        const list = Array.isArray(d) ? d : Array.isArray(d?.messages) ? d.messages : null;
+        if (!list) {
+          if (!detailLoadedRef.current) setMsgError(true);
+          return;
+        }
+        detailLoadedRef.current = true;
+        setMsgError(false);
+        setMessages(list);
+        if (!Array.isArray(d) && d && typeof d === 'object') {
+          setNegotiation((d.negotiation as Negotiation) ?? null);
+          setDetailRequest(asThreadRequest(d.request));
+          setDetailUnlocked(d.textUnlocked !== false);
+        }
+      } catch (err) {
+        if (cancelled) return;
+        // 403/404 is the server's final answer: this thread genuinely isn't
+        // available to this account. Anything else (5xx, network) only surfaces
+        // when we have no messages to show.
+        if (isDefinitiveError(err) || !detailLoadedRef.current) setMsgError(true);
+      } finally {
+        inFlight = false;
+      }
+    };
 
     fetchMsgs().finally(() => { if (!cancelled) setMsgLoading(false); });
     const interval = setInterval(fetchMsgs, 3000);
@@ -414,7 +446,13 @@ function MessagesContent() {
   // Threads now appear from the first quote onward, so a deep link that isn't
   // in the list is genuinely unreachable for this account (deleted, not
   // theirs, or a stale notification href) — not "waiting on a deposit".
-  const threadLocked = !!activeThreadId && !activeThread && !loading;
+  //
+  // "Genuinely" is load-bearing: a cold-start failure of the list fetch also
+  // leaves `threads` empty, and that used to read as "We couldn't open that
+  // conversation". Require an actually-successful list read before making that
+  // claim.
+  const threadLocked =
+    !!activeThreadId && !activeThread && !loading && threadsLoadedRef.current && !loadError;
 
   // Detail response wins (freshest); the list row is the fallback while the
   // first message fetch is in flight. Default open so an older API shape

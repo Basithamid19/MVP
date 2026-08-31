@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { TIME_OF_DAY_LABELS } from '@/lib/time';
 import { useTranslation } from '@/lib/i18n';
+import { fetchJsonWithRetry } from '@/lib/fetch-retry';
 import { ProviderWorkTabs } from '@/components/ProviderWorkTabs';
 import { PageHeader } from '@/components/ui';
 
@@ -66,9 +67,11 @@ export default function ProviderLeadsPage() {
   };
 
   const load = useCallback(() => {
+    // Independent reads, fired in parallel and each retried on cold-start /
+    // 5xx failures so one blip doesn't render an empty lead board.
     Promise.allSettled([
-      fetch('/api/provider/leads').then(r => r.json()),
-      fetch('/api/provider/profile').then(r => r.json()),
+      fetchJsonWithRetry<any[]>('/api/provider/leads'),
+      fetchJsonWithRetry<any>('/api/provider/profile'),
     ]).then(([leadsRes, profileRes]) => {
       if (leadsRes.status === 'fulfilled' && Array.isArray(leadsRes.value)) {
         setLeads(leadsRes.value);

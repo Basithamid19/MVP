@@ -15,14 +15,31 @@ class UnverifiedError extends CredentialsSignin {
 // run the 20260708 verification migration doesn't blow up every login with a
 // P2022. On that path we re-query the pre-migration columns and treat the
 // account as verified — see CLAUDE.md "migration-safety pattern".
+// `image` is selected so the JWT can mirror the avatar from the moment of
+// sign-in. It used to be filled in by a DB read inside the session() callback
+// on every request; that read is now throttled (see TOKEN_SYNC_TTL_MS), so if
+// authorize() didn't seed it the avatar would be missing for the first few
+// minutes of a session. `image` is part of the initial NextAuth User model, so
+// it is safe in the pre-migration fallback select too.
 const AUTH_USER_SELECT = {
-  id: true, name: true, email: true, password: true, role: true,
+  id: true, name: true, email: true, password: true, role: true, image: true,
   verifiedAt: true, phone: true,
 } as const;
 
 const AUTH_USER_FALLBACK_SELECT = {
-  id: true, name: true, email: true, password: true, role: true,
+  id: true, name: true, email: true, password: true, role: true, image: true,
 } as const;
+
+// Columns the JWT mirrors. Kept tiny on purpose — this is the only read the
+// throttled token sync performs.
+const TOKEN_SYNC_SELECT = { id: true, image: true, role: true } as const;
+
+// How long a token's mirrored role/image is trusted before we re-read the DB.
+// The old code re-read on EVERY auth() call, i.e. on every API route and every
+// server page render — 1-2 extra round-trips per request, paid twice over on a
+// cold lambda. Five minutes keeps role/avatar edits fresh enough while making
+// the common authenticated request cost ZERO auth queries.
+const TOKEN_SYNC_TTL_MS = 5 * 60 * 1000;
 
 async function findAuthUser(email: string) {
   return prisma.user
@@ -74,6 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
+          image: user.image ?? null,
         };
       },
     }),
@@ -81,66 +99,65 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async jwt({ token, user, trigger }) {
       // On sign-in: persist everything the session needs so subsequent
-      // session() calls can hydrate without hitting the DB.
+      // session() calls can hydrate without hitting the DB. authorize() just
+      // read the row, so the mirror is fresh — stamp the TTL.
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
         token.image = (user as any).image ?? null;
+        token.dbSyncedAt = Date.now();
+        return token;
       }
 
+      const syncedAt = typeof token.dbSyncedAt === 'number' ? token.dbSyncedAt : 0;
+      const isStale = Date.now() - syncedAt > TOKEN_SYNC_TTL_MS;
+
       // Client-side `update()` forces a DB refresh so profile edits (new
-      // avatar, role change) surface without requiring re-login.
-      if (trigger === 'update' && token.id) {
-        const fresh = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { id: true, image: true, role: true },
-        }).catch(() => null);
-        if (fresh) {
-          token.role = fresh.role;
-          token.image = fresh.image ?? null;
-        }
+      // avatar, role change) surface without requiring re-login. Otherwise we
+      // only re-read once the mirror has aged past the TTL.
+      if (trigger !== 'update' && !isStale) return token;
+
+      let queryFailed = false;
+      const readUser = async (where: { id: string } | { email: string }) =>
+        prisma.user
+          .findUnique({ where, select: TOKEN_SYNC_SELECT })
+          .catch(() => { queryFailed = true; return null; });
+
+      let dbUser = token.id ? await readUser({ id: token.id as string }) : null;
+
+      // Stale-JWT recovery — deployed tokens from before the 42P05 era carry
+      // outdated token.id values. Resolve via email so downstream Prisma reads
+      // hit the right row. See CLAUDE.md "Auth `id` cast" lesson: "don't clean
+      // up" this fallback. Difference from before: the corrected id is written
+      // BACK to the token, so the token heals permanently instead of paying the
+      // email lookup on every single request for the rest of its life.
+      if (!dbUser && !queryFailed && token.email) {
+        dbUser = await readUser({ email: token.email as string });
+        if (dbUser) token.id = dbUser.id;
       }
+
+      if (dbUser) {
+        token.role = dbUser.role;
+        token.image = dbUser.image ?? null;
+      }
+
+      // Only skip the timestamp bump when a query actually errored (DB
+      // unreachable / cold pool), so the next request retries immediately and
+      // the token keeps its last-known-good role. A clean "no such row" is a
+      // real answer — stamp it, or a deleted user would re-query forever.
+      if (!queryFailed) token.dbSyncedAt = Date.now();
 
       return token;
     },
+    // Pure token → session mapping. No DB access: the DB sync lives in jwt()
+    // above, throttled to once per TTL, so an authenticated request costs zero
+    // auth queries in the common case.
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         if (token.image !== undefined) {
           session.user.image = token.image as string | null;
-        }
-
-        // Stale-JWT recovery — deployed tokens from before the 42P05 era carry
-        // outdated token.id values. Resolve via email so downstream Prisma reads
-        // hit the right row. See CLAUDE.md "Auth `id` cast" lesson: "don't
-        // clean up" this fallback.
-        try {
-          let dbUser = token.id
-            ? await prisma.user.findUnique({
-                where: { id: token.id as string },
-                select: { id: true, image: true, role: true },
-              }).catch(() => null)
-            : null;
-
-          if (!dbUser && session.user.email) {
-            dbUser = await prisma.user.findUnique({
-              where: { email: session.user.email },
-              select: { id: true, image: true, role: true },
-            }).catch(() => null);
-            if (dbUser) {
-              (session.user as any).id = dbUser.id;
-            }
-          }
-
-          if (dbUser) {
-            (session.user as any).role = dbUser.role;
-            if (session.user.image == null) {
-              session.user.image = dbUser.image;
-            }
-          }
-        } catch {
-          // DB unreachable — keep JWT-only values so the session stays valid.
         }
       }
       return session;

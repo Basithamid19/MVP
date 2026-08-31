@@ -15,6 +15,7 @@ import { Section, SettingsRow, HeroCard } from '@/components/settings';
 import { Button, StatusBadge, statusVariant, useToast } from '@/components/ui';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { fetchJsonOr } from '@/lib/fetch-retry';
 
 /* Anchor ids for the desktop rail — also the scroll-spy observation set. */
 const SECTION_IDS = ['profile', 'activity', 'services', 'support', 'account'] as const;
@@ -39,10 +40,10 @@ export default function AccountPage({
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (hasInitial) { setLoading(false); return; }
     if (status === 'authenticated') {
-      fetch('/api/bookings')
-        .then(r => r.json())
-        .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
-        .catch(() => setLoading(false));
+      // Retried on cold-start / 5xx — this list feeds the invoices/credits
+      // sections, which read as "nothing here" when the fetch drops.
+      fetchJsonOr<any[]>('/api/bookings', [])
+        .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); });
     }
   }, [status, router, hasInitial]);
 

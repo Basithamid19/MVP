@@ -10,6 +10,7 @@ import {
 } from '@/components/ui';
 import { Clock, Star, FileText, Search } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { fetchJsonOr } from '@/lib/fetch-retry';
 
 /* Anything that isn't live work belongs in history — CANCELED bookings used to
  * be filtered out of both sections and became unreachable from this page. */
@@ -25,10 +26,10 @@ export default function BookingsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
-      fetch('/api/bookings')
-        .then(r => r.json())
-        .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
-        .catch(() => setLoading(false));
+      // Retried on cold-start / 5xx so a single blip doesn't show "no bookings"
+      // to a customer who has bookings.
+      fetchJsonOr<any[]>('/api/bookings', [])
+        .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); });
     }
   }, [status, router]);
 

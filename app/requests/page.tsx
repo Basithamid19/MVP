@@ -10,6 +10,7 @@ import {
 } from '@/components/ui';
 import { Clock, FileText, Plus, AlertCircle } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
+import { fetchJsonOr } from '@/lib/fetch-retry';
 
 const ACTIVE = ['NEW', 'CHATTING', 'QUOTED'];
 
@@ -23,10 +24,10 @@ export default function RequestsPage() {
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
     if (status === 'authenticated') {
-      fetch('/api/requests')
-        .then(r => r.json())
-        .then(d => { setRequests(Array.isArray(d) ? d : []); setLoading(false); })
-        .catch(() => setLoading(false));
+      // Retried on cold-start / 5xx so a single blip doesn't show "no requests"
+      // to a customer who has requests.
+      fetchJsonOr<any[]>('/api/requests', [])
+        .then(d => { setRequests(Array.isArray(d) ? d : []); setLoading(false); });
     }
   }, [status, router]);
 

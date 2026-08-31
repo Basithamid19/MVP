@@ -15,6 +15,7 @@ import {
 } from '@/components/ui';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { fetchJsonOr } from '@/lib/fetch-retry';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 
@@ -237,23 +238,23 @@ export default function DashboardPage({
 
     // Top pros comes from the edge-cached /api/providers — cheap, fire it
     // regardless of whether we got initial data from the server.
-    fetch('/api/providers')
-      .then(r => r.json())
+    fetchJsonOr<any[]>('/api/providers', [])
       .then(prosData => {
         setTopPros(Array.isArray(prosData) ? prosData.slice(0, 4) : []);
-      })
-      .catch(() => {});
+      });
 
     // Server already rendered us with requests/bookings — skip the refetch.
     if (hasInitial) { setLoading(false); return; }
 
+    // Independent reads, already parallel. Retried individually so one cold
+    // lambda doesn't zero out both lists.
     Promise.all([
-      fetch('/api/requests').then(r => r.json()),
-      fetch('/api/bookings').then(r => r.json()),
+      fetchJsonOr<any[]>('/api/requests', []),
+      fetchJsonOr<any[]>('/api/bookings', []),
     ]).then(([reqData, bookData]) => {
       setRequests(Array.isArray(reqData)  ? reqData  : []);
       setBookings(Array.isArray(bookData) ? bookData : []);
-    }).catch(console.error).finally(() => setLoading(false));
+    }).finally(() => setLoading(false));
   }, [status, session, router, hasInitial]);
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
