@@ -337,8 +337,9 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
               <span className="font-bold text-lg tracking-tight text-ink">Aladdin</span>
             </Link>
           </div>
+          {/* Kept intentionally minimal: the language switcher lives in the
+              footer, and sign-up is reachable from the login page. */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <LanguageSwitcher />
             {session ? (
               <Link
                 href="/requests/new"
@@ -347,21 +348,12 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 {t.nav.bookAPro}
               </Link>
             ) : (
-              <>
-                {/* One primary per viewport: sign-up is the action, log-in is quiet. */}
-                <Link
-                  href="/login"
-                  className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-                >
-                  {t.nav.logIn}
-                </Link>
-                <Link
-                  href="/register"
-                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
-                >
-                  {t.nav.signUp}
-                </Link>
-              </>
+              <Link
+                href="/login"
+                className={buttonVariants({ variant: 'primary', size: 'sm' })}
+              >
+                {t.nav.logIn}
+              </Link>
             )}
           </div>
         </div>
