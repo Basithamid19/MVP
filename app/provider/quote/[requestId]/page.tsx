@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, X, Send, Loader2, CheckCircle2, Check, AlertCircle,
@@ -18,6 +18,7 @@ const EXPIRY_OPTIONS = ['1', '2', '3', '7'] as const;
 
 export default function QuoteBuilderPage() {
   const { requestId } = useParams<{ requestId: string }>();
+  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [request, setRequest] = useState<any>(null);
@@ -67,6 +68,16 @@ export default function QuoteBuilderPage() {
         }),
       });
       if (res.ok) {
+        // The quote IS the first message of the negotiation, so land the pro in
+        // the conversation where the customer will counter or accept — not on a
+        // terminal "sent!" screen that dead-ends back at the leads list.
+        // POST /api/quotes returns threadId; it can still be null if thread
+        // creation failed server-side, in which case keep the old success page.
+        const created = await res.json().catch(() => ({} as any));
+        if (created?.threadId) {
+          router.push(`/messages?thread=${created.threadId}`);
+          return;
+        }
         setSubmitted(true);
       } else {
         const d = await res.json().catch(() => ({} as any));

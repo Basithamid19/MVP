@@ -613,6 +613,9 @@ export const en: Dictionary = {
     waiting: 'waiting',
     previewOffer: 'Offer update',
     previewSystem: 'Booking update',
+    openConversation: 'Open conversation',
+    viewConversation: 'View conversation',
+    inboxHint: 'Prices are agreed in the conversation. Open a chat to accept, counter or decline.',
   },
 
   providerProfile: {

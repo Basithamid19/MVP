@@ -613,6 +613,9 @@ export const lt: Dictionary = {
     waiting: 'laukiama',
     previewOffer: 'Pasiūlymo atnaujinimas',
     previewSystem: 'Užsakymo atnaujinimas',
+    openConversation: 'Atverti pokalbį',
+    viewConversation: 'Žiūrėti pokalbį',
+    inboxHint: 'Dėl kainos susitariama pokalbyje. Atverkite pokalbį, kad priimtumėte, pasiūlytumėte kitą kainą arba atmestumėte.',
   },
 
   providerProfile: {

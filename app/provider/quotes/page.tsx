@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, FileText, Clock, ChevronRight, Inbox } from 'lucide-react';
+import { Loader2, FileText, Clock, ChevronRight, Inbox, MessageSquare } from 'lucide-react';
 import { useTranslation, type Dictionary } from '@/lib/i18n';
 import { ProviderWorkTabs } from '@/components/ProviderWorkTabs';
 import {
@@ -26,6 +26,11 @@ function quoteState(q: any, t: Dictionary): { label: string; variant: BadgeVaria
     return { label: t.statuses.quote.EXPIRED, variant: 'neutral' };
   }
   return { label: t.statuses.quote.PENDING, variant: 'warning' };
+}
+
+/** Still live — PENDING and not past its validity window. */
+function isPending(q: any): boolean {
+  return q.status === 'PENDING' && !(q.expiresAt && new Date(q.expiresAt).getTime() < Date.now());
 }
 
 function expiryLine(q: any, t: Dictionary): string | null {
@@ -59,7 +64,6 @@ export default function ProviderQuotesPage() {
     return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-brand" /></div>;
   }
 
-  const isPending = (q: any) => q.status === 'PENDING' && !(q.expiresAt && new Date(q.expiresAt).getTime() < Date.now());
   const pending = quotes.filter(isPending);
   const past = quotes.filter(q => !isPending(q));
 
@@ -114,17 +118,20 @@ function QuoteCard({ q }: { q: any }) {
   const t = useTranslation();
   const state = quoteState(q, t);
   const expiry = expiryLine(q, t);
-  // Only accepted quotes with a booking navigate anywhere — everything else is
-  // inert, so it must not lift or tint on hover and promise a click target.
-  const href = q.status === 'ACCEPTED' && q.booking?.id ? `/provider/jobs/${q.booking.id}` : null;
 
-  const inner = (
-    <div
-      className={cn(
-        'bg-card rounded-card border border-border-dim p-4 sm:p-5 shadow-card',
-        href && 'transition-all duration-150 hover:border-brand/30 hover:shadow-elevated hover:-translate-y-0.5',
-      )}
-    >
+  // Where a row goes. The negotiation lives in the conversation now, so every
+  // quote with a thread is navigable — pending, countered, declined, expired.
+  // Accepted work keeps the job page as its primary destination (that's where
+  // scheduling, completion and payout live) and gets the conversation as a
+  // secondary link. A quote with neither is inert and must not lift on hover.
+  const jobHref = q.status === 'ACCEPTED' && q.booking?.id ? `/provider/jobs/${q.booking.id}` : null;
+  const threadHref = q.threadId ? `/messages?thread=${q.threadId}` : null;
+  const primaryHref = jobHref ?? threadHref;
+  const primaryLabel = jobHref ? t.myQuotes.viewJob : t.negotiation.openConversation;
+  const secondaryHref = jobHref && threadHref ? threadHref : null;
+
+  const body = (
+    <>
       <div className="flex items-start justify-between gap-3 mb-1.5">
         <div className="flex items-center gap-2 flex-wrap min-w-0">
           <span className="text-3xs font-bold uppercase tracking-widest bg-surface-alt text-ink-sub px-2 py-0.5 rounded-chip">
@@ -143,14 +150,38 @@ function QuoteCard({ q }: { q: any }) {
           <Clock className="w-3 h-3" />
           {t.myQuotes.sentPrefix} {new Date(q.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
         </span>
-        {href && (
+        {primaryHref && (
           <span className="flex items-center gap-1 text-xs font-bold text-brand">
-            {t.myQuotes.viewJob} <ChevronRight className="w-3.5 h-3.5" />
+            {primaryLabel} <ChevronRight className="w-3.5 h-3.5" />
           </span>
         )}
       </div>
-    </div>
+    </>
   );
 
-  return href ? <Link href={href} className="block">{inner}</Link> : inner;
+  return (
+    <div
+      className={cn(
+        'bg-card rounded-card border border-border-dim shadow-card',
+        primaryHref && 'transition-all duration-150 hover:border-brand/30 hover:shadow-elevated hover:-translate-y-0.5',
+      )}
+    >
+      {/* The card body is the primary link; the secondary sits outside it —
+          an <a> can never be nested inside another <a>. */}
+      {primaryHref
+        ? <Link href={primaryHref} className="block p-4 sm:p-5">{body}</Link>
+        : <div className="p-4 sm:p-5">{body}</div>}
+
+      {secondaryHref && (
+        <div className="px-4 sm:px-5 pb-4 -mt-1">
+          <Link
+            href={secondaryHref}
+            className="inline-flex items-center gap-1 text-xs font-bold text-ink-sub hover:text-brand transition-colors"
+          >
+            <MessageSquare className="w-3.5 h-3.5" /> {t.negotiation.viewConversation}
+          </Link>
+        </div>
+      )}
+    </div>
+  );
 }

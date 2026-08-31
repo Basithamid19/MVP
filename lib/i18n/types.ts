@@ -650,6 +650,9 @@ export interface Dictionary {
     waiting: string;
     previewOffer: string;
     previewSystem: string;
+    openConversation: string;
+    viewConversation: string;
+    inboxHint: string;
   };
 
   // Public provider profile (app/providers/[id])

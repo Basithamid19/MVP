@@ -57,6 +57,11 @@ function previewLine(thread: Thread, t: Dictionary): string | null {
 /**
  * One-line negotiation chip for a thread row: where the money currently
  * stands, and whether the viewer owes a response.
+ *
+ * Settled deals keep their chip forever — /api/chat returns the latest quote
+ * whatever its status, so a booked thread reads '€120 · Accepted' rather than
+ * losing the figure the moment the negotiation ends. Only PENDING carries a
+ * turn indicator; there's nothing left to answer on the others.
  */
 function negotiationChip(
   thread: Thread,
@@ -66,15 +71,16 @@ function negotiationChip(
   const n = thread.negotiation;
   if (!n) return null;
 
-  if (n.status === 'ACCEPTED') return { variant: 'success', label: t.negotiation.chipAccepted };
-  if (n.status === 'DECLINED') return { variant: 'neutral', label: t.negotiation.chipDeclined };
-  if (n.status !== 'PENDING')   return { variant: 'neutral', label: t.negotiation.expired };
+  const price = compactMoney(n.effectivePrice);
+  if (n.status === 'ACCEPTED') return { variant: 'success', label: `${price} · ${t.negotiation.chipAccepted}` };
+  if (n.status === 'DECLINED') return { variant: 'neutral', label: `${price} · ${t.negotiation.chipDeclined}` };
+  if (n.status !== 'PENDING')   return { variant: 'neutral', label: `${price} · ${t.negotiation.expired}` };
 
   const side = viewerSideOf(userId, n);
   const yours = !!side && side === n.turn;
   return {
     variant: yours ? 'warning' : 'neutral',
-    label: `${compactMoney(n.effectivePrice)} · ${yours ? t.negotiation.yourTurn : t.negotiation.waiting}`,
+    label: `${price} · ${yours ? t.negotiation.yourTurn : t.negotiation.waiting}`,
   };
 }
 

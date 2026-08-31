@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
+import { requestThreadsByProvider } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -198,7 +199,31 @@ export async function GET(request: Request) {
         },
       },
     });
-    return NextResponse.json(req);
+    if (!req) return NextResponse.json(null);
+
+    // threadId per quote: the negotiation now lives in /messages, so the
+    // request detail page's only per-quote action is opening that conversation.
+    // ONE batched lookup for the whole request. Exposed only for threads the
+    // viewer is actually in — a provider reading this lead must not learn a
+    // rival's thread id (the /api/chat participant check would reject them
+    // anyway, but there's no reason to hand it over).
+    const threadByProvider = await requestThreadsByProvider(
+      req.id,
+      req.customer?.user?.id ?? null,
+    );
+    const viewerProviderUserId = role === 'PROVIDER' ? userId : null;
+    const quotes = (req.quotes ?? []).map((q: any) => {
+      const quoteProviderUserId = q.provider?.user?.id ?? null;
+      const visible = !viewerProviderUserId || viewerProviderUserId === quoteProviderUserId;
+      return {
+        ...q,
+        threadId: visible && quoteProviderUserId
+          ? threadByProvider.get(quoteProviderUserId) ?? null
+          : null,
+      };
+    });
+
+    return NextResponse.json({ ...req, quotes });
   }
 
   const role = (session.user as any).role;

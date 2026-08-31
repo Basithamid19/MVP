@@ -281,9 +281,13 @@ export function MessageThread({
   );
 
   // Which side of the negotiation the viewer is on. The negotiation payload is
-  // authoritative while a quote is PENDING; once it's accepted/declined the
-  // negotiation goes null, so fall back to the session role (an ADMIN
-  // spectator resolves to null either way and gets a read-only stream).
+  // authoritative and now persists past accept/decline (it carries the latest
+  // quote whatever its status), so this normally resolves from it; the session
+  // role is the fallback for a thread that never had a quote, or a pre-
+  // negotiation API shape that returns no negotiation at all.
+  // Caveat: an ADMIN spectator resolves to 'customer' whenever a negotiation
+  // is present — read-only in practice (the action row also requires PENDING
+  // plus the turn), but it does surface the customer's deposit CTA.
   const sessionRole = (session?.user as any)?.role;
   const viewerSide: Side | null =
     viewerSideOf(currentUserId, negotiation) ??

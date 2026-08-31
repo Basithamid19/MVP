@@ -7,6 +7,7 @@ import { buildVilniusScheduledAt } from '@/lib/time';
 import { DEPOSIT_RATE, PLATFORM_FEE_RATE } from '@/lib/fees';
 import { redactPII } from '@/lib/pii-filter';
 import { isColumnError } from '@/lib/prisma-errors';
+import { providerThreadsByRequest } from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,14 +125,18 @@ async function writeSystemMessage(
 // GET — the caller's own sent quotes (provider only). Closes the "quote
 // disappears into a black hole" gap: after sending, the lead leaves the
 // inbox and there was no surface listing quote status anywhere.
+//
+// Each row also carries `threadId: string | null` — the conversation this quote
+// is being negotiated in, so /provider/quotes can link straight into /messages.
 export async function GET() {
   const session = await auth();
   if (!session?.user || (session.user as any).role !== 'PROVIDER') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const providerUserId = (session.user as any).id;
   const provider = await prisma.providerProfile.findUnique({
-    where: { userId: (session.user as any).id },
+    where: { userId: providerUserId },
     select: { id: true },
   });
   if (!provider) return NextResponse.json([]);
@@ -179,7 +184,20 @@ export async function GET() {
     throw err;
   });
 
-  return NextResponse.json(quotes);
+  // One batched thread lookup for the whole page of quotes (never N+1); the
+  // helper degrades to an empty map on an un-migrated DB, which just means no
+  // 'Open conversation' affordance rather than a failed list.
+  const threadByRequest = await providerThreadsByRequest(
+    quotes.map((q: any) => q.request?.id),
+    providerUserId,
+  );
+
+  return NextResponse.json(
+    quotes.map((q: any) => ({
+      ...q,
+      threadId: q.request?.id ? threadByRequest.get(q.request.id) ?? null : null,
+    })),
+  );
 }
 
 export async function POST(request: Request) {
