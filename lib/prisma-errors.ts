@@ -14,6 +14,12 @@ export function isColumnError(e: unknown): boolean {
     m.includes('stripeOnboarded') ||
     m.includes('verifiedAt') ||
     m.includes('AuthToken') ||
+    // 20260710 negotiation columns. 'kind' is deliberately absent — the word
+    // is too generic to match safely in an error string; the generic
+    // 'does not exist' / P2022 checks below cover a missing ChatMessage.kind.
+    m.includes('currentPrice') ||
+    m.includes('.turn') || // matches "Quote.turn"; a bare 'turn' would hit "returned"
+    m.includes('payload') ||
     m.includes('does not exist in the current database')
   );
 }

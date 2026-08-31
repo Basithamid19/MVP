@@ -2,9 +2,64 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { redactPII } from '@/lib/pii-filter';
-import { hasConfirmedBookingBetween, CONFIRMED_PAYMENT_STATUSES, ACTIVE_BOOKING_STATUSES } from '@/lib/chat-access';
+import {
+  hasConfirmedBookingBetween,
+  negotiationQuotes,
+  negotiationSummary,
+  CONFIRMED_PAYMENT_STATUSES,
+  ACTIVE_BOOKING_STATUSES,
+} from '@/lib/chat-access';
 
 export const dynamic = 'force-dynamic';
+
+// ===========================================================================
+// API SHAPES (20260710 in-inbox negotiation) — clients build against these.
+//
+// GET /api/chat?threadId=…  →  OBJECT (was: bare array of messages)
+//   {
+//     messages: Array<{
+//       id, threadId, senderId, content, createdAt,
+//       imageUrl?: string | null,          // absent on pre-20260701 DBs
+//       kind: 'text' | 'offer' | 'system', // always present; 'text' on pre-20260710 DBs
+//       payload: object | null             // structured card data, see below
+//     }>,
+//     textUnlocked: boolean,   // free-text composer allowed? (admin, or the pair
+//                              // has a confirmed/paid booking). Reads are ALWAYS
+//                              // allowed for participants now — no more 403.
+//     negotiation: Negotiation | null
+//   }
+//
+// GET /api/chat  (thread list)  →  ARRAY (unchanged container) of
+//   {
+//     id, otherParticipant: { id, name, image, role },
+//     lastMessage: { id, senderId, content, createdAt, kind } | null,
+//     category, createdAt, unreadCount,
+//     requestId: string,                 // NEW — the thread's ServiceRequest
+//     textUnlocked: boolean,             // NEW — same meaning as above
+//     negotiation: Negotiation | null    // NEW
+//   }
+//   Threads now appear from the FIRST QUOTE onward; previously anything without
+//   a paid booking was filtered out of the inbox entirely.
+//
+// Negotiation (latest PENDING quote for the thread's request + provider):
+//   { quoteId, requestId, price, currentPrice, effectivePrice, turn, status,
+//     expiresAt, providerUserId }
+//   • price = the provider's original ask, currentPrice = latest counter (null
+//     if never countered), effectivePrice = currentPrice ?? price.
+//   • turn = 'customer' | 'provider' — whose accept/counter is pending.
+//
+// ChatMessage.payload:
+//   kind='offer'  → { action: 'offer'|'counter'|'accept'|'decline', quoteId,
+//                     price, estimatedHours|null, expiresAt(ISO)|null,
+//                     note|null (already redactPII'd), by: 'customer'|'provider' }
+//   kind='system' → { event: 'booking_created'|'deposit_paid'|'quote_auto_declined', … }
+//   `content` mirrors the payload as plain text ('[counter] €45', '[system]
+//   booking_created') so any client that only knows about text still shows
+//   something sane.
+//
+// Offer/system messages are written server-side by /api/quotes and the Stripe
+// webhook ONLY. POST /api/chat always forces kind='text'.
+// ===========================================================================
 
 export async function GET(request: Request) {
   try {
@@ -25,7 +80,8 @@ export async function GET(request: Request) {
       const thread = await prisma.chatThread.findUnique({
         where: { id: threadId },
         select: {
-          participants: { select: { id: true } },
+          requestId: true,
+          participants: { select: { id: true, role: true } },
         },
       }).catch(() => null);
 
@@ -60,49 +116,82 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
-      // Chat gate: conversations only open once a booking between the two
-      // participants is confirmed (deposit paid). Admin exempt.
-      if (role !== 'ADMIN') {
-        const pairIds = thread.participants.map(p => p.id);
-        // Legacy threads may lack the participants relation — fall back to
-        // the scalar customerId/providerId columns for the pair.
-        if (pairIds.length < 2) {
-          try {
-            const scalar: any = await prisma.chatThread.findUnique({
-              where: { id: threadId },
-              select: { customerId: true, providerId: true } as any,
-            });
-            for (const pid of [scalar?.customerId, scalar?.providerId]) {
-              if (pid && !pairIds.includes(pid)) pairIds.push(pid);
-            }
-          } catch { /* scalar columns missing on this DB */ }
-        }
-        const confirmed = await hasConfirmedBookingBetween(pairIds);
-        if (!confirmed) {
-          return NextResponse.json(
-            { error: 'Messaging unlocks once your booking is confirmed.', locked: true },
-            { status: 403 },
-          );
-        }
+      // Pair identity: needed both for the text-unlock check and to resolve
+      // the thread's live negotiation. Legacy threads may lack the
+      // participants relation — fall back to the scalar customerId/providerId
+      // columns for the pair.
+      const pairIds = thread.participants.map(p => p.id);
+      let providerUserId: string | null =
+        thread.participants.find(p => p.role === 'PROVIDER')?.id ?? null;
+      if (pairIds.length < 2 || !providerUserId) {
+        try {
+          const scalar: any = await prisma.chatThread.findUnique({
+            where: { id: threadId },
+            select: { customerId: true, providerId: true } as any,
+          });
+          for (const pid of [scalar?.customerId, scalar?.providerId]) {
+            if (pid && !pairIds.includes(pid)) pairIds.push(pid);
+          }
+          providerUserId = providerUserId ?? scalar?.providerId ?? null;
+        } catch { /* scalar columns missing on this DB */ }
       }
 
-      // Explicit select: imageUrl (migration 20260701*) may not exist in the
-      // DB yet — fall back to a select without it rather than failing the poll.
-      const messages = await prisma.chatMessage.findMany({
+      // Reading a thread you're in is ALWAYS allowed now: the negotiation
+      // (offer → counter → accept) happens inside the conversation, so the
+      // old "no booking, no thread" 403 would have hidden the very cards the
+      // customer has to act on. The deposit gate moved to free text only —
+      // textUnlocked below — which is what actually protects against
+      // off-platform leakage.
+      const textUnlocked = role === 'ADMIN' ? true : await hasConfirmedBookingBetween(pairIds);
+
+      // Explicit select: imageUrl (20260701*) and kind/payload (20260710) may
+      // not exist in the DB yet — fall back down the ladder rather than
+      // failing the poll. Pre-20260710 rows all read as kind 'text'.
+      const MSG_SELECT_FULL = {
+        id: true, threadId: true, senderId: true, content: true,
+        imageUrl: true, kind: true, payload: true, createdAt: true,
+      } as const;
+      const MSG_SELECT_NO_KIND = {
+        id: true, threadId: true, senderId: true, content: true, imageUrl: true, createdAt: true,
+      } as const;
+      const MSG_SELECT_MINIMAL = {
+        id: true, threadId: true, senderId: true, content: true, createdAt: true,
+      } as const;
+
+      const rawMessages: any[] = await prisma.chatMessage.findMany({
         where: { threadId },
-        select: { id: true, threadId: true, senderId: true, content: true, imageUrl: true, createdAt: true },
+        select: MSG_SELECT_FULL,
         orderBy: { createdAt: 'asc' },
       }).catch(async (err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
-        if (msg.includes('imageUrl') || msg.includes('column') || msg.includes('P2022')) {
+        if (msg.includes('payload') || msg.includes('kind') || msg.includes('column') || msg.includes('P2022')) {
           return prisma.chatMessage.findMany({
             where: { threadId },
-            select: { id: true, threadId: true, senderId: true, content: true, createdAt: true },
+            select: MSG_SELECT_NO_KIND,
             orderBy: { createdAt: 'asc' },
+          }).catch(async (err2: unknown) => {
+            const msg2 = err2 instanceof Error ? err2.message : String(err2);
+            if (msg2.includes('imageUrl') || msg2.includes('column') || msg2.includes('P2022')) {
+              return prisma.chatMessage.findMany({
+                where: { threadId },
+                select: MSG_SELECT_MINIMAL,
+                orderBy: { createdAt: 'asc' },
+              });
+            }
+            throw err2;
           });
         }
         throw err;
       });
+
+      // Normalise so clients never have to branch on migration state.
+      const messages = rawMessages.map(m => ({
+        ...m,
+        kind: m.kind ?? 'text',
+        payload: m.payload ?? null,
+      }));
+
+      const negotiation = await negotiationSummary(thread.requestId, providerUserId);
 
       // Viewing the thread marks the counterpart's messages as read. Fire and
       // forget: a pre-20260709 DB without readAt must not fail the poll, and
@@ -116,14 +205,16 @@ export async function GET(request: Request) {
         }).catch(() => { /* readAt column missing on this DB */ });
       }
 
-      return NextResponse.json(messages);
+      return NextResponse.json({ messages, textUnlocked, negotiation });
     }
 
     // Otherwise, return all threads for the current user
 
     // Safe select: never references customerId/providerId/isLocked which may not
     // exist in the DB if migration 20260403000000_add_chat_thread_dedup hasn't run.
-    const SAFE_THREAD_SELECT = {
+    // `withKind` toggles the 20260710 ChatMessage.kind column so the inbox can
+    // label offer previews; dropped wholesale on a DB that predates it.
+    const threadSelect = (withKind: boolean) => ({
       id: true,
       requestId: true,
       createdAt: true,
@@ -132,9 +223,11 @@ export async function GET(request: Request) {
       },
       // Explicit column list: an implicit SELECT * here would break on DBs
       // that haven't run the 20260701* imageUrl migration yet. The preview
-      // only needs sender/content/timestamp anyway.
+      // only needs sender/content/kind/timestamp anyway.
       messages: {
-        select: { id: true, senderId: true, content: true, createdAt: true },
+        select: withKind
+          ? { id: true, senderId: true, content: true, kind: true, createdAt: true }
+          : { id: true, senderId: true, content: true, createdAt: true },
         orderBy: { createdAt: 'desc' as const },
         take: 1,
       },
@@ -143,32 +236,42 @@ export async function GET(request: Request) {
           category: { select: { name: true } },
         },
       },
-    } as const;
+    } as any);
 
     // Primary query: tries customerId/providerId scalar WHERE clauses.
     // Falls back to participants-only select if the migration hasn't run yet.
-    const threads: any[] = await prisma.chatThread.findMany({
-      where: {
-        OR: [
-          { customerId: userId },
-          { providerId: userId },
-          { participants: { some: { id: userId } } },
-        ],
-      },
-      select: SAFE_THREAD_SELECT,
-      orderBy: { createdAt: 'desc' },
-    }).catch(async (err: unknown) => {
+    const loadThreads = (withKind: boolean): Promise<any[]> =>
+      prisma.chatThread.findMany({
+        where: {
+          OR: [
+            { customerId: userId },
+            { providerId: userId },
+            { participants: { some: { id: userId } } },
+          ],
+        },
+        select: threadSelect(withKind),
+        orderBy: { createdAt: 'desc' },
+      }).catch(async (err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (
+          msg.includes('customerId') || msg.includes('providerId') ||
+          msg.includes('column') || msg.includes('P2022')
+        ) {
+          console.warn('[chat GET] scalar columns missing, falling back to participants lookup');
+          return prisma.chatThread.findMany({
+            where: { participants: { some: { id: userId } } },
+            select: threadSelect(withKind),
+            orderBy: { createdAt: 'desc' },
+          });
+        }
+        throw err;
+      });
+
+    const threads: any[] = await loadThreads(true).catch(async (err: unknown) => {
       const msg = err instanceof Error ? err.message : String(err);
-      if (
-        msg.includes('customerId') || msg.includes('providerId') ||
-        msg.includes('column') || msg.includes('P2022')
-      ) {
-        console.warn('[chat GET] scalar columns missing, falling back to participants lookup');
-        return prisma.chatThread.findMany({
-          where: { participants: { some: { id: userId } } },
-          select: SAFE_THREAD_SELECT,
-          orderBy: { createdAt: 'desc' },
-        });
+      if (msg.includes('kind') || msg.includes('column') || msg.includes('P2022')) {
+        console.warn('[chat GET] ChatMessage.kind missing, loading threads without it');
+        return loadThreads(false);
       }
       throw err;
     });
@@ -184,10 +287,12 @@ export async function GET(request: Request) {
       return new Date(bDate).getTime() - new Date(aDate).getTime();
     });
 
-    // Chat gate: the inbox only surfaces conversations with counterparts the
-    // caller has a CONFIRMED booking with (deposit paid / job in progress or
-    // completed). Everything else stays hidden until the booking is paid.
-    // Admin sees all.
+    // Which counterparts the caller has a CONFIRMED booking with (deposit
+    // paid / job in progress or completed). This used to FILTER the inbox —
+    // everything unpaid was hidden — but negotiation now lives in the
+    // conversation, so threads must show up from the first quote onward. The
+    // set is kept for the per-thread `textUnlocked` flag: free text still
+    // requires a paid deposit. Admin: everything unlocked.
     let confirmedPartnerIds: Set<string> | null = null;
     if (role !== 'ADMIN') {
       const confirmedBookings = await prisma.booking.findMany({
@@ -226,15 +331,36 @@ export async function GET(request: Request) {
     for (const t of ranked) {
       const otherP = t.participants.find((p: any) => p.id !== userId) ?? t.participants[0] ?? null;
       if (!otherP || seen.has(otherP.id)) continue;
-      if (confirmedPartnerIds && !confirmedPartnerIds.has(otherP.id)) continue;
       seen.add(otherP.id);
+      const last = t.messages[0] ?? null;
       result.push({
         id: t.id,
+        requestId: t.requestId,
         otherParticipant: otherP,
-        lastMessage: t.messages[0] ?? null,
+        lastMessage: last ? { ...last, kind: last.kind ?? 'text' } : null,
         category: t.request?.category?.name ?? 'Service',
         createdAt: t.createdAt,
+        textUnlocked: confirmedPartnerIds ? confirmedPartnerIds.has(otherP.id) : true,
+        // Filled in below by one batched query for all surfaced threads.
+        negotiation: null as any,
+        // Internal: which participant is the provider, for negotiation matching.
+        _providerUserId:
+          t.participants.find((p: any) => p.role === 'PROVIDER')?.id ??
+          (role === 'PROVIDER' ? userId : otherP.id),
       });
+    }
+
+    // Live negotiation per surfaced thread. One batched query for every
+    // request id (never N+1); degrades to null on a pre-20260710 DB via
+    // negotiationQuotes' own fallback.
+    if (result.length) {
+      const quotes = await negotiationQuotes(result.map(r => r.requestId));
+      for (const r of result) {
+        r.negotiation =
+          quotes.find(q => q.requestId === r.requestId && q.providerUserId === r._providerUserId) ??
+          null;
+        delete r._providerUserId;
+      }
     }
 
     // Unread counts — one grouped query for all surfaced threads. A DB that
@@ -279,6 +405,10 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+    // `kind` is deliberately NOT read from the body: offer/system cards are
+    // written server-side by /api/quotes and the Stripe webhook only, so a
+    // client can never forge an offer through the chat endpoint. Everything
+    // posted here is kind='text' (the column default).
     const { threadId, content, imageUrl } = body;
 
     if (!threadId || !content?.trim()) {
@@ -372,7 +502,9 @@ export async function POST(request: Request) {
       throw err;
     });
 
-    return NextResponse.json(message);
+    // kind/payload echoed for shape parity with GET (the row itself relies on
+    // the column default, so this also holds on a pre-20260710 DB).
+    return NextResponse.json({ ...message, kind: 'text', payload: null });
   } catch (err) {
     console.error('[chat] POST Error:', err);
     return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });

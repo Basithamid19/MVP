@@ -48,6 +48,51 @@ export async function POST(request: Request) {
         where: { requestId: booking.quote.requestId },
         data: { isLocked: false },
       });
+
+      // Persist the "deposit paid" milestone in the conversation itself
+      // (20260710): the thread is the single home of the deal's history, and
+      // this is the moment free text unlocks. Strictly best-effort — a failed
+      // chip must never make Stripe retry a webhook we already honoured.
+      const customerUserId = booking.customer?.user?.id;
+      const providerUserId = booking.provider?.user?.id;
+      if (customerUserId && providerUserId) {
+        const thread = await prisma.chatThread.findFirst({
+          where: {
+            requestId: booking.quote.requestId,
+            customerId: customerUserId,
+            providerId: providerUserId,
+          },
+          select: { id: true },
+        }).catch(async () =>
+          prisma.chatThread.findFirst({
+            where: {
+              requestId: booking.quote!.requestId,
+              AND: [
+                { participants: { some: { id: providerUserId } } },
+                { participants: { some: { id: customerUserId } } },
+              ],
+            },
+            select: { id: true },
+          }).catch(() => null)
+        );
+
+        if (thread?.id) {
+          await prisma.chatMessage.create({
+            data: {
+              threadId: thread.id,
+              senderId: customerUserId, // the payer
+              content: '[system] deposit_paid',
+              kind: 'system',
+              payload: { event: 'deposit_paid', bookingId },
+            },
+            select: { id: true },
+          }).catch((err: unknown) => {
+            // Pre-20260710 DB (no kind/payload) or any write failure: the
+            // notifications below still tell both sides.
+            console.error('[webhook] deposit_paid system message failed:', err);
+          });
+        }
+      }
     }
 
     // Notify provider

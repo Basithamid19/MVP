@@ -442,7 +442,12 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
       try {
         const res = await fetch(`/api/chat?threadId=${threadId}`);
         const data = await res.json();
-        if (Array.isArray(data)) setMessages(data);
+        // GET ?threadId returns { messages, textUnlocked, negotiation } as of
+        // the negotiation change; it used to return a bare array. Accept both.
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data?.messages) ? data.messages : null;
+        if (list) setMessages(list);
       } catch (error) {
         console.error('Failed to fetch messages', error);
       }

@@ -186,8 +186,10 @@ model Quote {
   notes             String?
   status            String          // "PENDING", "ACCEPTED", "DECLINED"
   expiresAt         DateTime?       // quote can't be accepted after this
+  currentPrice      Float?          // latest negotiated price; null => use `price` (the provider's original ask)
+  turn              String?         // 'customer' | 'provider' — whose accept/counter is pending; null => 'customer'
   createdAt         DateTime        @default(now())
-  
+
   booking           Booking?
 }
 
@@ -261,6 +263,8 @@ model ChatMessage {
   senderId      String
   content       String
   imageUrl      String?
+  kind          String     @default("text") // 'text' | 'offer' | 'system'
+  payload       Json?      // structured snapshot for kind='offer'/'system' (see app/api/chat/route.ts header)
   readAt        DateTime?  // null = recipient hasn't opened the thread since this arrived
   createdAt     DateTime   @default(now())
 }

@@ -242,10 +242,16 @@ function MessagesContent() {
   useEffect(() => {
     if (!activeThreadId) { setMessages([]); return; }
     setMsgLoading(true);
+    // GET ?threadId returns { messages, textUnlocked, negotiation } as of the
+    // negotiation change; it used to return a bare array. Accept both so this
+    // keeps working either way (negotiation UI lands separately).
     const fetchMsgs = () =>
       fetch(`/api/chat?threadId=${activeThreadId}`)
         .then(r => r.json())
-        .then(d => { if (Array.isArray(d)) setMessages(d); })
+        .then(d => {
+          const list = Array.isArray(d) ? d : Array.isArray(d?.messages) ? d.messages : null;
+          if (list) setMessages(list);
+        })
         .catch(() => {});
 
     fetchMsgs().finally(() => setMsgLoading(false));
