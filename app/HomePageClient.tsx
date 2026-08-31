@@ -377,11 +377,12 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="pt-0 w-full min-w-0">
 
               {/* Mobile-only hero image — full-bleed banner above the headline.
-                  Its own photo, distinct from the desktop hero visual. */}
+                  Deliberately the SAME photo as the desktop hero (the two nodes
+                  render at exclusive breakpoints, never together). */}
               <div className="lg:hidden -mx-4 sm:-mx-6 mb-8">
                 <div className="relative aspect-[3/2] overflow-hidden bg-surface-alt">
                   <img
-                    src={u('photo-1600607687920-4e2a09cf159d', 1000)}
+                    src={u('photo-1504307651254-35680f356dfd', 1000)}
                     alt="A cared-for home in Vilnius"
                     width={1000}
                     height={667}
