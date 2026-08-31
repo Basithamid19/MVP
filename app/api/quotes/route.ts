@@ -191,7 +191,36 @@ export async function GET() {
   );
 }
 
+// Top-level guards: the negotiation handlers make many DB round-trips, and a
+// transient connection failure (cold lambda, pooler hiccup) in any unguarded
+// await used to escape as a bare 500 with a non-JSON body — the client could
+// only show its generic 'Could not send that'. Catch here so the caller always
+// gets structured JSON with a human reason.
 export async function POST(request: Request) {
+  try {
+    return await handlePost(request);
+  } catch (err) {
+    console.error('[quotes POST] unhandled:', err);
+    return NextResponse.json(
+      { error: 'Something went wrong on our side. Please try again.' },
+      { status: 500 },
+    );
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    return await handlePatch(request);
+  } catch (err) {
+    console.error('[quotes PATCH] unhandled:', err);
+    return NextResponse.json(
+      { error: 'Something went wrong on our side. Please try again.' },
+      { status: 500 },
+    );
+  }
+}
+
+async function handlePost(request: Request) {
   const session = await auth();
   if (!session || !session.user || (session.user as any).role !== 'PROVIDER') {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -386,7 +415,7 @@ export async function POST(request: Request) {
 // Backward compatible: the live UI still sends { quoteId, status: 'ACCEPTED' |
 // 'DECLINED' }, which maps onto accept/decline. Response is unchanged for
 // those callers (quote fields + bookingId on accept), plus threadId.
-export async function PATCH(request: Request) {
+async function handlePatch(request: Request) {
   const session = await auth();
   if (!session || !session.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
