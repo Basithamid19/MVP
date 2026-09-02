@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { withPublicImages } from '@/lib/safe-image';
 import AccountClient from './AccountClient';
 
 export const dynamic = 'force-dynamic';
@@ -14,7 +15,9 @@ async function getInitialBookings(userId: string) {
       include: { provider: { include: { user: { select: { id: true, name: true, image: true } } } }, review: true },
       orderBy: { scheduledAt: 'desc' },
     });
-    return JSON.parse(JSON.stringify(bookings));
+    // Legacy base64 data-URL avatars are dropped before the payload is
+    // inlined into the streamed HTML (lib/safe-image.ts).
+    return JSON.parse(JSON.stringify(withPublicImages(bookings)));
   } catch (err) {
     console.warn('[account] initial bookings fetch failed — client will retry:', err);
     return [];

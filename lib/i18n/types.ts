@@ -154,6 +154,7 @@ export interface Dictionary {
     profile: string;
     backToDashboard: string;
     networkError: string;
+    photoStorageUnavailable: string;
     date: string;
     time: string;
     address: string;

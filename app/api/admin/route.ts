@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
+import { withPublicImages } from '@/lib/safe-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,6 +14,9 @@ async function requireAdmin() {
 
 // Admin may see emails, but the password hash must never leave the DB layer —
 // use this instead of `user: true` anywhere a User relation is serialized.
+// Every section response is passed through withPublicImages before it ships:
+// admin lists are unpaginated, so legacy base64 data-URL avatars added tens of
+// KB per row (lib/safe-image.ts). The UI falls back to avatarUrl(name).
 const ADMIN_USER_SELECT = {
   select: { id: true, name: true, email: true, image: true, role: true, createdAt: true },
 } as const;
@@ -91,7 +95,7 @@ export async function GET(request: Request) {
     const weeklyActivity = buckets.map(({ name, requests, bookings }) => ({ name, requests, bookings }));
 
     return NextResponse.json({
-      pendingVerifications,
+      pendingVerifications: withPublicImages(pendingVerifications),
       weeklyActivity,
       stats: {
         totalRequests,
@@ -124,7 +128,7 @@ export async function GET(request: Request) {
       },
       orderBy: { ratingAvg: 'desc' },
     });
-    return NextResponse.json(providers);
+    return NextResponse.json(withPublicImages(providers));
   }
 
   if (section === 'bookings') {
@@ -137,7 +141,7 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(bookings);
+    return NextResponse.json(withPublicImages(bookings));
   }
 
   if (section === 'reviews') {
@@ -149,7 +153,7 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(reviews);
+    return NextResponse.json(withPublicImages(reviews));
   }
 
   if (section === 'users') {
@@ -161,7 +165,7 @@ export async function GET(request: Request) {
       },
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(users);
+    return NextResponse.json(withPublicImages(users));
   }
 
   if (section === 'categories') {
@@ -218,7 +222,7 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json(Array.from(grouped.values()));
+    return NextResponse.json(withPublicImages(Array.from(grouped.values())));
   }
 
   if (section === 'tickets') {

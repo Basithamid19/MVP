@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { withPublicImages } from '@/lib/safe-image';
 import BookingsClient from './BookingsClient';
 
 // Logged-in, per-user page — can't edge-cache. Server-render the initial
@@ -19,7 +20,9 @@ async function getInitialData(userId: string) {
       },
       orderBy: { scheduledAt: 'desc' },
     });
-    return { initialBookings: JSON.parse(JSON.stringify(bookings)) };
+    // Legacy base64 data-URL avatars are dropped before the payload is
+    // inlined into the streamed HTML (lib/safe-image.ts).
+    return { initialBookings: JSON.parse(JSON.stringify(withPublicImages(bookings))) };
   } catch (err) {
     console.warn('[bookings] initial data fetch failed — client will retry:', err);
     return { initialBookings: [] };

@@ -81,7 +81,15 @@ export default function ProviderSettingsPage() {
             // doesn't see a photo that isn't actually saved.
             const err = await res.json().catch(() => ({}));
             setLocalAvatar(null);
-            toast.error(err.error || `${t.providerSettingsHub.uploadFailedPrefix} (${res.status}). ${t.providerSettingsHub.uploadFailedSuffix}`);
+            // 503 = photo storage isn't reachable. The route deliberately
+            // refuses to fall back to storing a base64 data URL, so this is a
+            // "try again later" not a "try again now" — say so in the user's
+            // language instead of echoing the server's English string.
+            toast.error(
+              res.status === 503
+                ? t.common.photoStorageUnavailable
+                : err.error || `${t.providerSettingsHub.uploadFailedPrefix} (${res.status}). ${t.providerSettingsHub.uploadFailedSuffix}`,
+            );
             return;
           }
           const data = await res.json().catch(() => ({}));

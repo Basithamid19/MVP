@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { createNotification } from '@/lib/notifications';
 import { ensureThreadForRequest, requestThreadsByProvider } from '@/lib/chat-access';
+import { withPublicImages } from '@/lib/safe-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -237,7 +238,11 @@ export async function GET(request: Request) {
       };
     });
 
-    return NextResponse.json({ ...req, quotes });
+    // withPublicImages walks the nested customer.user / quotes[].provider.user
+    // relations and nulls any legacy base64 data-URL avatar before it ships —
+    // a request with several quotes used to carry one blob per quoting pro
+    // (lib/safe-image.ts).
+    return NextResponse.json(withPublicImages({ ...req, quotes }));
   }
 
   const role = (session.user as any).role;
@@ -296,7 +301,9 @@ export async function GET(request: Request) {
       }
       throw err;
     });
-    return NextResponse.json(requests);
+    // Lead list: one customer avatar per row, so a single legacy data-URL row
+    // bloated the whole list (lib/safe-image.ts).
+    return NextResponse.json(withPublicImages(requests));
   }
 
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

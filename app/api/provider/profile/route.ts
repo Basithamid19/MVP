@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { isColumnError } from '@/lib/prisma-errors';
+import { withPublicImages } from '@/lib/safe-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -39,7 +40,10 @@ export async function GET() {
         _count: { select: { bookings: true, reviews: true } },
       },
     });
-    return NextResponse.json(profile ?? {});
+    // Own avatar included — still nulled if it's a legacy base64 data URL, so
+    // the settings hub reads the same value every other surface sees and the
+    // UI falls back to avatarUrl(name) (lib/safe-image.ts).
+    return NextResponse.json(withPublicImages(profile ?? {}));
   } catch (err) {
     // Newer columns missing — fall back to scalar-only select + separate relation fetches
     console.warn('[provider/profile GET] primary query failed, using fallback:',

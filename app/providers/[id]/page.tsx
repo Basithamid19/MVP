@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { publicImage } from '@/lib/safe-image';
 import ProviderProfileClient from './ProviderProfileClient';
 
 // Provider profile is public, but we render dynamically so params.id changes
@@ -63,7 +64,13 @@ async function getInitialProvider(id: string) {
       }
       throw err;
     });
-    return provider ? JSON.parse(JSON.stringify(provider)) : null;
+    if (!provider) return null;
+    // Legacy base64 data-URL avatar never enters the RSC payload — it would be
+    // inlined into the HTML AND the flight data (lib/safe-image.ts).
+    const safe = provider.user
+      ? { ...provider, user: { ...provider.user, image: publicImage(provider.user.image) } }
+      : provider;
+    return JSON.parse(JSON.stringify(safe));
   } catch (err) {
     console.warn('[providers/[id]] initial data fetch failed — client will retry:', err);
     return null;

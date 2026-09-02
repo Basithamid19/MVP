@@ -1,5 +1,6 @@
 import HomePageClient from './HomePageClient';
 import prisma from '@/lib/prisma';
+import { publicImage } from '@/lib/safe-image';
 
 // Server-rendered wrapper. Fetches the top providers on the server so the
 // HTML streams with the Top-Rated section already populated — no client-side
@@ -39,7 +40,11 @@ async function getTopPros() {
       const scoreB = (b.ratingAvg ?? 0) * (b.completedJobs ?? 0);
       return scoreB - scoreA;
     });
-    return withUser.slice(0, 4);
+    // Legacy base64 data-URL avatars are dropped before they reach the client —
+    // this payload is inlined into the cached homepage HTML (lib/safe-image.ts).
+    return withUser
+      .slice(0, 4)
+      .map((p) => ({ ...p, user: { ...p.user, image: publicImage(p.user.image) } }));
   } catch (err) {
     console.warn('[homepage] top pros fetch failed — client will retry:', err);
     return [];

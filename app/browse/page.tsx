@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma';
+import { publicImage } from '@/lib/safe-image';
 import BrowseClient from './BrowseClient';
 
 // This route reads the URL's `?category=…` and per-request is user-agnostic —
@@ -33,9 +34,16 @@ async function getInitialProviders(category: string | undefined) {
       where,
       select: BROWSE_SELECT,
       orderBy: { ratingAvg: 'desc' },
+      // Same bound as /api/providers — this RSC payload is inlined into the
+      // HTML, so an unbounded list is paid twice (flight data + client refetch).
+      take: 60,
     });
     // Drop rows without a user relation — same defensive filter the API uses.
-    const withUser = providers.filter(p => p.user != null);
+    // Legacy base64 data-URL avatars are nulled out before they reach the
+    // client (lib/safe-image.ts); the UI falls back to avatarUrl(name).
+    const withUser = providers
+      .filter(p => p.user != null)
+      .map(p => ({ ...p, user: { ...p.user, image: publicImage(p.user.image) } }));
     return JSON.parse(JSON.stringify(withUser));
   } catch (err) {
     console.warn('[browse] initial data fetch failed — client will refetch:', err);

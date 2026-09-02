@@ -142,6 +142,7 @@ export const lt: Dictionary = {
     profile: 'Profilis',
     backToDashboard: 'Grįžti į skydelį',
     networkError: 'Tinklo klaida. Patikrinkite interneto ryšį ir bandykite dar kartą.',
+    photoStorageUnavailable: 'Nuotraukų saugykla šiuo metu neprieinama. Bandykite vėliau.',
     date: 'Data',
     time: 'Laikas',
     address: 'Adresas',

@@ -117,9 +117,16 @@ export default function AccountPage({
             if (!res.ok) throw new Error(String(res.status));
             return updateSession();
           })
-          .catch(() => {
+          .catch((err: unknown) => {
             setLocalAvatar(null);
-            toast.error(t.accountPage.uploadFailed);
+            // 503 = photo storage isn't reachable (the route refuses to fall
+            // back to storing the base64 data URL), which is worth telling the
+            // user apart from a generic failure so they retry later, not now.
+            toast.error(
+              (err as Error)?.message === '503'
+                ? t.common.photoStorageUnavailable
+                : t.accountPage.uploadFailed,
+            );
           })
           .finally(() => setAvatarUploading(false));
       };

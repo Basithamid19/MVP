@@ -142,6 +142,7 @@ export const en: Dictionary = {
     profile: 'Profile',
     backToDashboard: 'Back to dashboard',
     networkError: 'Network error. Please check your connection and try again.',
+    photoStorageUnavailable: 'Photo storage is unavailable right now. Please try again later.',
     date: 'Date',
     time: 'Time',
     address: 'Address',

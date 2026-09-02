@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 import { redactPII } from '@/lib/pii-filter';
+import { publicImage } from '@/lib/safe-image';
 import {
   hasConfirmedBookingBetween,
   negotiationQuotes,
@@ -24,7 +25,8 @@ export const dynamic = 'force-dynamic';
 //       imageUrl?: string | null,          // absent on pre-20260701 DBs
 //       kind: 'text' | 'offer' | 'system', // always present; 'text' on pre-20260710 DBs
 //       payload: object | null             // structured card data, see below
-//     }>,
+//     }>,                                  // ascending; the LAST 200 only
+//                                          // (polled endpoint — bounded payload)
 //     textUnlocked: boolean,   // free-text composer allowed? (admin, or the pair
 //                              // has a confirmed/paid booking). Reads are ALWAYS
 //                              // allowed for participants now — no more 403.
@@ -179,24 +181,34 @@ export async function GET(request: Request) {
         id: true, threadId: true, senderId: true, content: true, createdAt: true,
       } as const;
 
+      // History is bounded: this endpoint is polled every 15s and a long-lived
+      // thread would re-send its entire transcript each time. Take the NEWEST
+      // 200 rows (orderBy desc) and reverse in JS, so the response stays in
+      // ascending order and clients are unaffected. Applies to every rung of
+      // the select ladder below.
+      const MSG_HISTORY_LIMIT = 200;
+
       const rawMessages: any[] = await prisma.chatMessage.findMany({
         where: { threadId },
         select: MSG_SELECT_FULL,
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: 'desc' },
+        take: MSG_HISTORY_LIMIT,
       }).catch(async (err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err);
         if (msg.includes('payload') || msg.includes('kind') || msg.includes('column') || msg.includes('P2022')) {
           return prisma.chatMessage.findMany({
             where: { threadId },
             select: MSG_SELECT_NO_KIND,
-            orderBy: { createdAt: 'asc' },
+            orderBy: { createdAt: 'desc' },
+            take: MSG_HISTORY_LIMIT,
           }).catch(async (err2: unknown) => {
             const msg2 = err2 instanceof Error ? err2.message : String(err2);
             if (msg2.includes('imageUrl') || msg2.includes('column') || msg2.includes('P2022')) {
               return prisma.chatMessage.findMany({
                 where: { threadId },
                 select: MSG_SELECT_MINIMAL,
-                orderBy: { createdAt: 'asc' },
+                orderBy: { createdAt: 'desc' },
+                take: MSG_HISTORY_LIMIT,
               });
             }
             throw err2;
@@ -204,6 +216,9 @@ export async function GET(request: Request) {
         }
         throw err;
       });
+
+      // Back to ascending (oldest first) — the response contract is unchanged.
+      rawMessages.reverse();
 
       // Normalise so clients never have to branch on migration state.
       const messages = rawMessages.map(m => ({
@@ -368,7 +383,10 @@ export async function GET(request: Request) {
       result.push({
         id: t.id,
         requestId: t.requestId,
-        otherParticipant: otherP,
+        // Legacy base64 data-URL avatars are dropped here: the inbox is polled
+        // every 15s, so one such counterpart used to re-send tens of KB per
+        // poll (lib/safe-image.ts). UI falls back to avatarUrl(name).
+        otherParticipant: { ...otherP, image: publicImage(otherP.image) },
         lastMessage: last ? { ...last, kind: last.kind ?? 'text' } : null,
         category: t.request?.category?.name ?? 'Service',
         createdAt: t.createdAt,

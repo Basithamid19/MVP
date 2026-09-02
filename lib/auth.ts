@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { isColumnError } from "@/lib/prisma-errors";
+import { publicImage } from "@/lib/safe-image";
 
 // NextAuth v5 surfaces `code` from a CredentialsSignin subclass on the
 // signIn() result, which is how the login page tells "you haven't verified
@@ -48,11 +49,10 @@ const TOKEN_SYNC_TTL_MS = 5 * 60 * 1000;
 // rest in User.image but never enter the JWT. The UI falls back to
 // avatarUrl(name) for users whose avatar is oversized, until a proper
 // URL-based upload path replaces the data-URL storage.
+// The rule itself now lives in lib/safe-image.ts, shared with the read layer so
+// the JWT and every API payload agree on what an avatar may be.
 function safeImageForToken(img: unknown): string | null {
-  if (typeof img !== 'string' || img.length === 0) return null;
-  if (img.length > 500) return null;
-  if (img.startsWith('data:')) return null;
-  return img;
+  return publicImage(img);
 }
 
 async function findAuthUser(email: string) {

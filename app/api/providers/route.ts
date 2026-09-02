@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { publicImage } from '@/lib/safe-image';
 
 // Deliberately NOT `force-dynamic` — this endpoint has no session/cookie
 // reads, so we want Vercel's edge cache to honor the Cache-Control headers
@@ -97,8 +98,13 @@ export async function GET(request: Request) {
           (provider.user as any).image = fallback;
         }
       }
-      // Strip the internal-only email before returning (public endpoint).
-      if (provider?.user) delete (provider.user as any).email;
+      // Strip the internal-only email before returning (public endpoint), and
+      // drop any legacy base64 data-URL avatar — a 20-60KB blob per row is
+      // what made this edge-cached payload huge (see lib/safe-image.ts).
+      if (provider?.user) {
+        delete (provider.user as any).email;
+        (provider.user as any).image = publicImage(provider.user.image);
+      }
       return NextResponse.json(provider, {
         headers: {
           // 30s fresh at edge, 2min stale-while-revalidate. Profile edits
@@ -123,6 +129,10 @@ export async function GET(request: Request) {
       where,
       select: BROWSE_SELECT,
       orderBy: { ratingAvg: 'desc' },
+      // Bounded payload: browse has no pagination UI, so an unbounded findMany
+      // would grow the response linearly with the provider table forever. 60
+      // rows is far more than the grid shows before the user filters.
+      take: 60,
     });
 
     console.log('[providers GET]', {
@@ -154,7 +164,12 @@ export async function GET(request: Request) {
           .catch((err) => console.warn('[providers GET] image backfill failed:', err));
         p.user.image = fallback;
       }
-      if (p.user) delete p.user.email;
+      if (p.user) {
+        delete p.user.email;
+        // Legacy base64 data-URL avatars never leave the server: one such row
+        // added tens of KB to this list payload (see lib/safe-image.ts).
+        p.user.image = publicImage(p.user.image);
+      }
     }
 
     return NextResponse.json(withUser, {

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { auth } from '@/lib/auth';
+import { withPublicImages } from '@/lib/safe-image';
 import DashboardClient from './DashboardClient';
 
 // Logged-in, per-user page — can't edge-cache. But we can still server-render
@@ -28,7 +29,9 @@ async function getInitialData(userId: string) {
 
     return {
       initialRequests: JSON.parse(JSON.stringify(requests)),
-      initialBookings: JSON.parse(JSON.stringify(bookings)),
+      // Legacy base64 data-URL avatars are dropped before the payload is
+      // inlined into the streamed HTML (lib/safe-image.ts).
+      initialBookings: JSON.parse(JSON.stringify(withPublicImages(bookings))),
     };
   } catch (err) {
     console.warn('[dashboard] initial data fetch failed — client will retry:', err);

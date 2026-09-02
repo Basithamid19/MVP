@@ -5,6 +5,7 @@ import { createNotification } from '@/lib/notifications';
 import { stripe } from '@/lib/stripe';
 import { CONFIRMED_PAYMENT_STATUSES } from '@/lib/chat-access';
 import { PLATFORM_FEE_RATE } from '@/lib/fees';
+import { withPublicImages } from '@/lib/safe-image';
 
 export const dynamic = 'force-dynamic';
 
@@ -105,7 +106,9 @@ export async function GET(request: Request) {
       }
     }
 
-    return NextResponse.json({ ...booking, chatThread });
+    // Nulls any legacy base64 data-URL avatar on the nested customer.user /
+    // provider.user rows before the payload ships (lib/safe-image.ts).
+    return NextResponse.json(withPublicImages({ ...booking, chatThread }));
   }
 
   const role = (session.user as any).role;
@@ -119,7 +122,8 @@ export async function GET(request: Request) {
       include: { provider: { include: { user: { select: { id: true, name: true, image: true } } } }, review: true },
       orderBy: { scheduledAt: 'desc' },
     });
-    return NextResponse.json(bookings);
+    // One provider avatar per booking row — see lib/safe-image.ts.
+    return NextResponse.json(withPublicImages(bookings));
   } else if (role === 'PROVIDER') {
     const provider = await prisma.providerProfile.findUnique({
       where: { userId },
@@ -162,7 +166,8 @@ export async function GET(request: Request) {
       return [];
     });
 
-    return NextResponse.json(bookings);
+    // One customer avatar per booking row — see lib/safe-image.ts.
+    return NextResponse.json(withPublicImages(bookings));
   }
 
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
