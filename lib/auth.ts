@@ -41,6 +41,20 @@ const TOKEN_SYNC_SELECT = { id: true, image: true, role: true } as const;
 // the common authenticated request cost ZERO auth queries.
 const TOKEN_SYNC_TTL_MS = 5 * 60 * 1000;
 
+// The JWT session travels as an httpOnly cookie on every request. Vercel caps
+// request headers at ~16KB, so we never let an image large enough to blow the
+// cookie past that limit into the token. Avatars uploaded as base64 data URLs
+// (see app/account/AccountClient.tsx) can easily be 20-80KB — those stay at
+// rest in User.image but never enter the JWT. The UI falls back to
+// avatarUrl(name) for users whose avatar is oversized, until a proper
+// URL-based upload path replaces the data-URL storage.
+function safeImageForToken(img: unknown): string | null {
+  if (typeof img !== 'string' || img.length === 0) return null;
+  if (img.length > 500) return null;
+  if (img.startsWith('data:')) return null;
+  return img;
+}
+
 async function findAuthUser(email: string) {
   return prisma.user
     .findUnique({ where: { email }, select: AUTH_USER_SELECT })
@@ -91,7 +105,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           role: user.role,
-          image: user.image ?? null,
+          image: safeImageForToken(user.image),
         };
       },
     }),
@@ -104,7 +118,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
-        token.image = (user as any).image ?? null;
+        token.image = safeImageForToken((user as any).image);
         token.dbSyncedAt = Date.now();
         return token;
       }
@@ -138,7 +152,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (dbUser) {
         token.role = dbUser.role;
-        token.image = dbUser.image ?? null;
+        token.image = safeImageForToken(dbUser.image);
       }
 
       // Only skip the timestamp bump when a query actually errored (DB
