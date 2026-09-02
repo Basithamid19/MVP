@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import {
   DollarSign, Clock, CheckCircle2, Download,
   TrendingUp, ChevronRight, Landmark,
@@ -23,7 +22,6 @@ const PLATFORM_FEE = PLATFORM_FEE_RATE;
 
 export default function EarningsPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [bookings, setBookings] = useState<any[]>([]);
@@ -33,7 +31,7 @@ export default function EarningsPage() {
   const [connectingStripe, setConnectingStripe] = useState(false);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       fetch('/api/bookings')
         .then(r => r.json())
@@ -44,7 +42,7 @@ export default function EarningsPage() {
         .then(p => setStripeOnboarded(Boolean(p?.stripeOnboarded)))
         .catch(() => {});
     }
-  }, [status, router]);
+  }, [status]);
 
   const setUpPayouts = async () => {
     setConnectingStripe(true);

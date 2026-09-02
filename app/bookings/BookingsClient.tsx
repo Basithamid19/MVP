@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import {
@@ -22,14 +21,13 @@ export default function BookingsClient({
   initialBookings?: any[];
 } = {}) {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const hasInitial = initialBookings.length > 0;
   const [bookings, setBookings] = useState<any[]>(initialBookings);
   const [loading, setLoading] = useState(!hasInitial);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status !== 'authenticated') return;
     // Server already rendered us with bookings — skip the refetch on first mount.
     if (hasInitial) { setLoading(false); return; }
@@ -37,7 +35,7 @@ export default function BookingsClient({
     // to a customer who has bookings.
     fetchJsonOr<any[]>('/api/bookings', [])
       .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); });
-  }, [status, router, hasInitial]);
+  }, [status, hasInitial]);
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (

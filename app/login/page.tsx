@@ -1,11 +1,11 @@
 'use client';
 
 import { AladdinIcon } from '@/components/icons';
-import React, { useState, useEffect } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import React, { useState, useEffect, useRef } from 'react';
+import { signIn, getSession, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, MailCheck, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, MailCheck, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import AuthShowcase from '@/components/AuthShowcase';
 import { Alert, Button, Input } from '@/components/ui';
@@ -48,17 +48,36 @@ export default function LoginPage() {
   const [unverified, setUnverified] = useState(false);
   const [resending, setResending] = useState(false);
   const [notice, setNotice] = useState('');
-  const [banner, setBanner] = useState<'verified' | 'expired' | null>(null);
+  const [banner, setBanner] = useState<'verified' | 'expired' | 'registered' | null>(null);
   const router = useRouter();
   const t = useTranslation();
+  const { data: session, status: sessionStatus } = useSession();
+  // Set once handleSubmit has taken over navigation, so the forward effect
+  // below doesn't race its router.push with a second redirect.
+  const submittedRef = useRef(false);
 
   // Read from window.location (not useSearchParams) to avoid the Suspense
   // requirement, matching how callbackUrl is handled below.
   useEffect(() => {
-    const verified = new URLSearchParams(window.location.search).get('verified');
+    const params = new URLSearchParams(window.location.search);
+    const verified = params.get('verified');
     if (verified === '1') setBanner('verified');
     else if (verified === '0') setBanner('expired');
+    // register/page.tsx sends here with ?registered=true when the deployment
+    // has no verification provider wired up — without this the user landed on
+    // a bare login form with no confirmation the account was created.
+    else if (params.get('registered') === 'true') setBanner('registered');
   }, []);
+
+  // An already-signed-in visitor can reach /login from a bookmark, the browser
+  // back button or the marketing footer. Forward them to where they belong
+  // instead of showing a form that would only re-authenticate the same user.
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated' || submittedRef.current) return;
+    const role = (session?.user as any)?.role;
+    const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
+    router.replace(postLoginDestination(role, callbackUrl));
+  }, [sessionStatus, session, router]);
 
   const handleResend = async () => {
     if (resending) return;
@@ -112,6 +131,7 @@ export default function LoginPage() {
         // Read at submit time to avoid the useSearchParams Suspense
         // requirement.
         const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
+        submittedRef.current = true;
         router.push(postLoginDestination(role, callbackUrl));
       }
     } catch (err) {
@@ -120,6 +140,16 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
+  // Authenticated and forwarding — never flash the credential form at a user
+  // who is already signed in.
+  if (sessionStatus === 'authenticated' && !submittedRef.current) {
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col lg:flex-row overflow-hidden">
@@ -144,6 +174,9 @@ export default function LoginPage() {
             )}
             {banner === 'expired' && (
               <Alert variant="caution">{t.authFlow.verifiedFailed}</Alert>
+            )}
+            {banner === 'registered' && (
+              <Alert variant="trust" icon={MailCheck}>{t.authFlow.registeredSuccess}</Alert>
             )}
 
             {error && (

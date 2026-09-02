@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Loader2, Gift, LogOut,
@@ -24,7 +23,6 @@ export default function AccountPage({
   initialBookings = [],
 }: { initialBookings?: any[] } = {}) {
   const { data: session, status, update: updateSession } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const hasInitial = initialBookings.length > 0;
@@ -37,7 +35,7 @@ export default function AccountPage({
   const [activeSection, setActiveSection] = useState<string>(SECTION_IDS[0]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (hasInitial) { setLoading(false); return; }
     if (status === 'authenticated') {
       // Retried on cold-start / 5xx — this list feeds the invoices/credits
@@ -45,7 +43,7 @@ export default function AccountPage({
       fetchJsonOr<any[]>('/api/bookings', [])
         .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); });
     }
-  }, [status, router, hasInitial]);
+  }, [status, hasInitial]);
 
   /* Scroll-spy for the desktop anchor rail. The top inset clears the 64px
    * sticky header (+ the sections' scroll-mt-24); the bottom inset keeps the
@@ -381,10 +379,12 @@ export default function AccountPage({
 
             {/* Support */}
             <Section title={t.accountPage.navSupport} id="support">
-              <SettingsRow icon={MessageCircle} label={t.accountPage.chatWithUs}     sub={t.accountPage.chatWithUsSub}     href="mailto:aladdin@gmail.com" />
+              <SettingsRow icon={MessageCircle} label={t.accountPage.chatWithUs}     sub={t.accountPage.chatWithUsSub}     href="mailto:support@aladdin.lt" />
               <SettingsRow icon={HelpCircle}    label={t.accountPage.helpCentre}     sub={t.accountPage.helpCentreSub}     href="/support" />
-              <SettingsRow icon={LifeBuoy}      label={t.accountPage.disputeBooking} sub={t.accountPage.disputeBookingSub} href="/bookings" />
-              <SettingsRow icon={Mail}          label={t.accountPage.emailUs}        sub="aladdin@gmail.com"               href="mailto:aladdin@gmail.com" muted />
+              {/* /bookings is a plain list with no reporting affordance — the
+                  report-an-issue flow lives on the Help Centre. */}
+              <SettingsRow icon={LifeBuoy}      label={t.accountPage.disputeBooking} sub={t.accountPage.disputeBookingSub} href="/support" />
+              <SettingsRow icon={Mail}          label={t.accountPage.emailUs}        sub="support@aladdin.lt"              href="mailto:support@aladdin.lt" muted />
             </Section>
 
             {/* Account */}

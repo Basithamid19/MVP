@@ -197,6 +197,7 @@ export const en: Dictionary = {
     backToLogin: 'Back to sign in',
 
     verifiedSuccess: 'Account verified — you can sign in now.',
+    registeredSuccess: 'Account created — log in to get started.',
     verifiedFailed: 'That verification link is invalid or has expired. Request a new one.',
     unverifiedError: 'Verify your account before signing in.',
     resendVerification: 'Resend verification',

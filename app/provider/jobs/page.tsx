@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Calendar, ChevronRight, MapPin, Briefcase } from 'lucide-react';
 import { formatVilnius } from '@/lib/time';
@@ -14,21 +13,20 @@ import { SegmentedFilter } from '@/components/SegmentedFilter';
 
 export default function ProviderJobsPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'active' | 'completed' | 'all'>('active');
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       fetch('/api/bookings')
         .then(r => r.json())
         .then(d => { setBookings(Array.isArray(d) ? d : []); setLoading(false); })
         .catch(() => setLoading(false));
     }
-  }, [status, router]);
+  }, [status]);
 
   const activeCt = bookings.filter(b => b.status === 'SCHEDULED' || b.status === 'IN_PROGRESS').length;
   const completedCt = bookings.filter(b => b.status === 'COMPLETED').length;

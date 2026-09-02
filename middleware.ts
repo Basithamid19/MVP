@@ -31,7 +31,9 @@ function isUnder(pathname: string, prefix: string) {
 // getToken() defaults `salt` to `cookieName`. The `.catch()` swallows the
 // MissingSecret throw when AUTH_SECRET is absent (fails closed).
 async function readToken(req: NextRequest) {
-  const secret = process.env.AUTH_SECRET;
+  // README documents NEXTAUTH_SECRET, CLAUDE.md documents AUTH_SECRET — accept
+  // either so an env rename can't silently disable every gate below.
+  const secret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
   const secure = await getToken({ req, secret, secureCookie: true }).catch(() => null);
   if (secure) return secure;
   return await getToken({ req, secret, secureCookie: false }).catch(() => null);

@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import {
   Loader2, User, Camera, Shield, ShieldCheck,
   Receipt,
@@ -15,7 +14,6 @@ import { Button, PageHeader, useToast } from '@/components/ui';
 
 export default function ProviderSettingsPage() {
   const { data: session, status, update: updateSession } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -30,7 +28,7 @@ export default function ProviderSettingsPage() {
   const [avatarUploading, setAvatarUploading] = useState(false);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       setLoadError(false);
       Promise.all([
@@ -50,7 +48,7 @@ export default function ProviderSettingsPage() {
         setLoading(false);
       }).catch(() => { setLoading(false); setLoadError(true); });
     }
-  }, [status, router, retryCount]);
+  }, [status, retryCount]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

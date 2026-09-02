@@ -2,9 +2,10 @@
 
 import { AladdinIcon } from '@/components/icons';
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowRight, User, Briefcase, Mail, MessageSquare, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, User, Briefcase, Mail, MessageSquare, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import AuthShowcase from '@/components/AuthShowcase';
 import { Button, Input } from '@/components/ui';
@@ -28,6 +29,19 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const router = useRouter();
   const t = useTranslation();
+  const { data: session, status: sessionStatus } = useSession();
+
+  // Signing up while already signed in is never what the user meant — the
+  // marketing footer and nav both link here. Send them to their own home.
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') return;
+    const sessionRole = (session?.user as any)?.role;
+    router.replace(
+      sessionRole === 'PROVIDER' ? '/provider/dashboard'
+        : sessionRole === 'ADMIN' ? '/admin/dashboard'
+        : '/dashboard',
+    );
+  }, [sessionStatus, session, router]);
 
   useEffect(() => {
     fetch('/api/auth/verification-channels')
@@ -91,6 +105,15 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  // Authenticated and forwarding — don't flash the signup form.
+  if (sessionStatus === 'authenticated') {
+    return (
+      <div className="min-h-screen bg-canvas flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-canvas flex flex-col lg:flex-row overflow-hidden">

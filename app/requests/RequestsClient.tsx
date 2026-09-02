@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CustomerLayout from '@/components/CustomerLayout';
 import {
@@ -20,21 +19,20 @@ export default function RequestsClient({
   initialRequests?: any[];
 } = {}) {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const hasInitial = initialRequests.length > 0;
   const [requests, setRequests] = useState<any[]>(initialRequests);
   const [loading, setLoading] = useState(!hasInitial);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status !== 'authenticated') return;
     if (hasInitial) { setLoading(false); return; }
     // Retried on cold-start / 5xx so a single blip doesn't show "no requests"
     // to a customer who has requests.
     fetchJsonOr<any[]>('/api/requests', [])
       .then(d => { setRequests(Array.isArray(d) ? d : []); setLoading(false); });
-  }, [status, router, hasInitial]);
+  }, [status, hasInitial]);
 
   const header = (
     <PageHeader

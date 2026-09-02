@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Card, PageHeader, Skeleton, StatusBadge, type BadgeVariant,
@@ -22,14 +21,13 @@ function Gauge({ value, max, color }: { value: number; max: number; color: strin
 
 export default function PerformancePage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const [profile, setProfile] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       Promise.all([
         fetch('/api/provider/profile').then(r => r.json()),
@@ -48,7 +46,7 @@ export default function PerformancePage() {
         setLoading(false);
       }).catch(() => setLoading(false));
     }
-  }, [status, router]);
+  }, [status]);
 
   if (loading) return (
     <div className="max-w-3xl mx-auto">

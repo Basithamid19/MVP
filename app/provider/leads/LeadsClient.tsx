@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Loader2, AlertCircle, MapPin, Clock, RefreshCcw,
@@ -44,7 +43,6 @@ export default function LeadsClient({
   initialHasCategories?: boolean;
 } = {}) {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const hasInitial = initialLeads.length > 0 || initialHasCategories === false;
   const [leads, setLeads] = useState<any[]>(initialLeads);
@@ -91,11 +89,11 @@ export default function LeadsClient({
   }, []);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status !== 'authenticated') return;
     if (hasInitial) { setLoading(false); return; }
     load();
-  }, [status, router, load, hasInitial]);
+  }, [status, load, hasInitial]);
 
   const visibleLeads = leads.filter(l => !passed.includes(l.id));
   const urgentCt = visibleLeads.filter(l => l.isUrgent).length;

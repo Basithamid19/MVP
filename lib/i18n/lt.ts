@@ -197,6 +197,7 @@ export const lt: Dictionary = {
     backToLogin: 'Grįžti į prisijungimą',
 
     verifiedSuccess: 'Paskyra patvirtinta — galite prisijungti.',
+    registeredSuccess: 'Paskyra sukurta — prisijunkite ir pradėkite.',
     verifiedFailed: 'Ši patvirtinimo nuoroda neteisinga arba nebegalioja. Užsisakykite naują.',
     unverifiedError: 'Prieš prisijungdami patvirtinkite paskyrą.',
     resendVerification: 'Siųsti patvirtinimą dar kartą',

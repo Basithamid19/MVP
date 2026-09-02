@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import {
   Calendar, ChevronRight, ChevronDown, Star,
   Search, MapPin, Inbox, Users, Zap,
@@ -222,7 +221,6 @@ export default function DashboardPage({
   initialBookings?: any[];
 } = {}) {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   const hasInitial = initialRequests.length > 0 || initialBookings.length > 0;
   const [requests, setRequests]       = useState<any[]>(initialRequests);
@@ -233,7 +231,7 @@ export default function DashboardPage({
   const [reqFilter, setReqFilter]     = useState<'active' | 'booked' | 'all'>('all');
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status !== 'authenticated') return;
 
     // Top pros comes from the edge-cached /api/providers — cheap, fire it
@@ -255,7 +253,7 @@ export default function DashboardPage({
       setRequests(Array.isArray(reqData)  ? reqData  : []);
       setBookings(Array.isArray(bookData) ? bookData : []);
     }).finally(() => setLoading(false));
-  }, [status, session, router, hasInitial]);
+  }, [status, session, hasInitial]);
 
   if (status === 'loading' || (status === 'authenticated' && loading)) {
     return (

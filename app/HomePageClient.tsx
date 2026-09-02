@@ -274,10 +274,22 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
   CANCELED:    'bg-danger-surface text-danger',
 };
 
+// Mirrors middleware.ts HOME_BY_ROLE — where each role belongs.
+const HOME_BY_ROLE: Record<string, string> = {
+  CUSTOMER: '/dashboard',
+  PROVIDER: '/provider/dashboard',
+  ADMIN:    '/admin/dashboard',
+};
+
 export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: any[] }) {
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
   const router = useRouter();
   const t = useTranslation();
+  // Footer CTAs are session-aware: 'loading' and unauthenticated both keep the
+  // public log in / sign up pair; a signed-in user gets one link to their own
+  // console instead of being invited to log in again.
+  const signedIn = sessionStatus === 'authenticated' && !!session?.user;
+  const roleHome = HOME_BY_ROLE[(session?.user as any)?.role] ?? '/dashboard';
   const [searchQuery, setSearchQuery]   = useState('');
   const [savedAddress, setSavedAddress] = useState('');
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
@@ -1017,8 +1029,14 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
                 <li><Link href="/browse"                className="text-ink-sub hover:text-ink transition-colors duration-150">{t.heroCard.findAProTitle}</Link></li>
                 <li><Link href="/requests/new"          className="text-ink-sub hover:text-ink transition-colors duration-150">{t.heroCard.postRequestTitle}</Link></li>
                 <li><Link href="/requests/new?urgent=1" className="text-ink-sub hover:text-ink transition-colors duration-150">{t.heroCard.urgentTitle}</Link></li>
-                <li><Link href="/login"                 className="text-ink-sub hover:text-ink transition-colors duration-150">{t.nav.logIn}</Link></li>
-                <li><Link href="/register"              className="text-ink-sub hover:text-ink transition-colors duration-150">{t.nav.signUp}</Link></li>
+                {signedIn ? (
+                  <li><Link href={roleHome}             className="text-ink-sub hover:text-ink transition-colors duration-150">{t.nav.dashboard}</Link></li>
+                ) : (
+                  <>
+                    <li><Link href="/login"             className="text-ink-sub hover:text-ink transition-colors duration-150">{t.nav.logIn}</Link></li>
+                    <li><Link href="/register"          className="text-ink-sub hover:text-ink transition-colors duration-150">{t.nav.signUp}</Link></li>
+                  </>
+                )}
               </ul>
             </div>
           </div>
@@ -1032,7 +1050,10 @@ export default function LandingPage({ initialTopPros = [] }: { initialTopPros?: 
         </div>
       </footer>
 
-      {session && <MobileNav />}
+      {/* MobileNav resolves its own session and renders GUEST_TABS for a
+          visitor, so it is unconditional — gating it on `session` hid the
+          bottom nav (and its Find Pros / Log in tabs) from every guest. */}
+      <MobileNav />
     </div>
   );
 }

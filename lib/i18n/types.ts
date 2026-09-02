@@ -214,6 +214,7 @@ export interface Dictionary {
 
     // Login banners
     verifiedSuccess: string;
+    registeredSuccess: string;
     verifiedFailed: string;
     unverifiedError: string;
     resendVerification: string;

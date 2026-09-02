@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Loader2, Tags, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { Section } from '@/components/settings';
@@ -24,7 +23,6 @@ const BIO_MIN = 50;
 
 export default function ProviderProfileSettingsPage() {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -69,7 +67,7 @@ export default function ProviderProfileSettingsPage() {
   };
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       Promise.all([
         fetch('/api/provider/profile', { cache: 'no-store' }).then(async r => {
@@ -112,7 +110,7 @@ export default function ProviderProfileSettingsPage() {
         setLoading(false);
       });
     }
-  }, [status, router]);
+  }, [status]);
 
   useEffect(() => {
     if (!loading && initialRef.current) {

@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Loader2, X } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { Section } from '@/components/settings';
@@ -23,7 +22,6 @@ const BUFFER_OPTIONS = [0, 15, 30, 45, 60];
 
 export default function ProviderAvailabilitySettingsPage() {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -51,7 +49,7 @@ export default function ProviderAvailabilitySettingsPage() {
   const getSnapshot = () => JSON.stringify({ slots, blackoutDates, bufferMins });
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       fetch('/api/provider/profile').then(r => r.json()).then(profile => {
         const p = profile ?? {};
@@ -72,7 +70,7 @@ export default function ProviderAvailabilitySettingsPage() {
         initialRef.current = JSON.stringify({ slots: loadedSlots, blackoutDates: loadedBlackoutDates, bufferMins: loadedBufferMins });
       }).catch(() => setLoading(false));
     }
-  }, [status, router]);
+  }, [status]);
 
   useEffect(() => {
     if (!loading && initialRef.current) {

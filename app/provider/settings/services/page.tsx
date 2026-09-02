@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { ArrowLeft, Briefcase, Loader2, Plus, Trash2, Zap } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { Section } from '@/components/settings';
@@ -19,7 +18,6 @@ const EMPTY_OFFERING: Offering = { name: '', price: '', priceType: 'HOURLY', des
 
 export default function ProviderServicesSettingsPage() {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -58,7 +56,7 @@ export default function ProviderServicesSettingsPage() {
   };
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status === 'authenticated') {
       fetch('/api/provider/profile').then(r => r.json()).then(profile => {
         const p = profile ?? {};
@@ -74,7 +72,7 @@ export default function ProviderServicesSettingsPage() {
         initialRef.current = JSON.stringify({ offerings: loadedOfferings, instantBook: loadedInstantBook });
       }).catch(() => setLoading(false));
     }
-  }, [status, router]);
+  }, [status]);
 
   useEffect(() => {
     if (!loading && initialRef.current) {

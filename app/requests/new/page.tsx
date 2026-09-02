@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   ArrowLeft, ArrowRight, Calendar, Check,
   AlertCircle, Loader2, CheckCircle2, Send,
@@ -48,7 +47,6 @@ function NewRequestContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const { status: authStatus } = useSession();
   const t = useTranslation();
   const { toast } = useToast();
 
@@ -67,14 +65,9 @@ function NewRequestContent() {
     { id: 'flexible',  label: t.wizard.timeFlexible,  sub: t.wizard.timeFlexibleSub },
   ];
 
-  // Posting requires an account — redirect to login up front instead of
-  // letting a guest fill all five steps and hit a silent 401 on submit.
-  useEffect(() => {
-    if (authStatus === 'unauthenticated') {
-      const callback = `${pathname}?${searchParams.toString()}`;
-      router.push(`/login?callbackUrl=${encodeURIComponent(callback)}`);
-    }
-  }, [authStatus, router, pathname, searchParams]);
+  // middleware owns the auth gate here; client 'unauthenticated' may be transient.
+  // (A real guest never reaches this component — middleware redirects /requests/*
+  // to /login?callbackUrl=… first. The submit handler still honours a server 401.)
 
   const initialSlug        = searchParams.get('category')    || '';
   const initialSubcategory = searchParams.get('subcategory') || '';

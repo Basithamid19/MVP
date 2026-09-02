@@ -79,7 +79,10 @@ export default async function Page() {
   const session = await auth();
   if (!session?.user) redirect('/login');
   const role = (session.user as any).role;
-  if (role !== 'PROVIDER' && role !== 'ADMIN') redirect('/dashboard');
+  // PROVIDER-only. middleware.ts is the policy source: /provider/* admits
+  // PROVIDER alone and bounces ADMIN to /admin/dashboard, so the old ADMIN
+  // allowance here was unreachable and contradicted the gate.
+  if (role !== 'PROVIDER') redirect('/dashboard');
 
   const initialQuotes = await getInitialQuotes((session.user as any).id);
   return <QuotesClient initialQuotes={initialQuotes} />;

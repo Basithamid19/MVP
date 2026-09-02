@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, FileText, Clock, ChevronRight, Inbox, MessageSquare } from 'lucide-react';
 import { useTranslation, type Dictionary } from '@/lib/i18n';
@@ -50,21 +49,20 @@ export default function QuotesClient({
   initialQuotes?: any[];
 } = {}) {
   const { status } = useSession();
-  const router = useRouter();
   const t = useTranslation();
   const hasInitial = initialQuotes.length > 0;
   const [quotes, setQuotes] = useState<any[]>(initialQuotes);
   const [loading, setLoading] = useState(!hasInitial);
 
   useEffect(() => {
-    if (status === 'unauthenticated') { router.push('/login'); return; }
+    // middleware owns the auth gate here; client 'unauthenticated' may be transient.
     if (status !== 'authenticated') return;
     if (hasInitial) { setLoading(false); return; }
     // Retried on cold-start / 5xx so a single blip doesn't render an empty
     // quote inbox to a provider who has pending quotes.
     fetchJsonOr<any[]>('/api/quotes', [])
       .then(d => { setQuotes(Array.isArray(d) ? d : []); setLoading(false); });
-  }, [status, router, hasInitial]);
+  }, [status, hasInitial]);
 
   if (status === 'loading' || loading) {
     return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-8 h-8 animate-spin text-brand" /></div>;

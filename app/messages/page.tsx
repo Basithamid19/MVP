@@ -349,10 +349,7 @@ function MessagesContent() {
   // 15s poll pauses on backgrounded tabs and refreshes once on tab-return.
   const fetchThreadsRef = useRef<() => void>(() => {});
 
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (status === 'unauthenticated') router.push('/login');
-  }, [status, router]);
+  // middleware owns the auth gate here; client 'unauthenticated' may be transient.
 
   // Fetch thread list. The initial call happens here (with cancelled-scoped
   // state guards); the periodic refresh runs via useVisibleInterval so a
