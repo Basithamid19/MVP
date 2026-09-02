@@ -38,7 +38,22 @@ export default function MobileNav() {
     { href: '/provider/settings',    label: t.mobileNav.account, icon: UserCircle2,   active: (p: string) => p.startsWith('/provider/settings') },
   ];
 
-  const tabs = !session ? GUEST_TABS : role === 'PROVIDER' ? PROVIDER_TABS : CUSTOMER_TABS;
+  // The admin console is a single route (/admin/dashboard) whose modules are
+  // switched in-page, so there are only two admin destinations worth a tab.
+  // Without this branch ADMIN fell through to CUSTOMER_TABS and was handed
+  // links into /dashboard, /account and /browse.
+  const ADMIN_TABS = [
+    { href: '/admin/dashboard', label: t.nav.dashboard, icon: Inbox,         active: (p: string) => p.startsWith('/admin') },
+    { href: '/messages',        label: t.nav.messages,  icon: MessageCircle, active: (p: string) => p.startsWith('/messages') },
+  ];
+
+  const tabs = !session
+    ? GUEST_TABS
+    : role === 'PROVIDER'
+      ? PROVIDER_TABS
+      : role === 'ADMIN'
+        ? ADMIN_TABS
+        : CUSTOMER_TABS;
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50">

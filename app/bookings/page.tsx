@@ -32,7 +32,10 @@ async function getInitialData(userId: string) {
 export default async function Page() {
   const session = await auth();
   if (!session?.user) redirect('/login');
-  if ((session.user as any).role === 'PROVIDER') redirect('/provider/dashboard');
+  // Customer-only surface: providers and admins each bounce to their own home.
+  const role = (session.user as any).role;
+  if (role === 'PROVIDER') redirect('/provider/dashboard');
+  if (role === 'ADMIN') redirect('/admin/dashboard');
 
   const data = await getInitialData((session.user as any).id);
   return <BookingsClient {...data} />;

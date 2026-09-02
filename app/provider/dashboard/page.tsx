@@ -21,6 +21,12 @@ export default async function ProviderDashboardPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
 
+  // Provider-only surface. middleware.ts redirects first; this is the
+  // defense-in-depth gate for any request that bypasses it.
+  const role = (session.user as any).role;
+  if (role === 'ADMIN') redirect('/admin/dashboard');
+  if (role !== 'PROVIDER') redirect('/dashboard');
+
   const userId = (session.user as any).id;
   if (!userId) redirect('/login');
 

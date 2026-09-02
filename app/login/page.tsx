@@ -10,6 +10,33 @@ import { useTranslation } from '@/lib/i18n';
 import AuthShowcase from '@/components/AuthShowcase';
 import { Alert, Button, Input } from '@/components/ui';
 
+/**
+ * Where to land after a successful sign-in.
+ *
+ * middleware.ts now appends `?callbackUrl=<pathname>` whenever it bounces an
+ * unauthenticated request off a gated page, so a provider or admin can easily
+ * arrive here carrying a callback for someone else's area (e.g. a stale
+ * /dashboard link). Only honour a callback that belongs to the role's own
+ * surface — otherwise fall back to the role home, or the middleware would just
+ * bounce them again on arrival.
+ */
+function postLoginDestination(role: string | undefined, rawCallback: string | null): string {
+  const home = role === 'PROVIDER' ? '/provider/dashboard' : role === 'ADMIN' ? '/admin/dashboard' : '/';
+
+  // Same-origin relative paths only. `//host` is protocol-relative, i.e. an
+  // open redirect, so it is rejected alongside absolute URLs.
+  if (!rawCallback || !rawCallback.startsWith('/') || rawCallback.startsWith('//')) return home;
+
+  const path = rawCallback.split(/[?#]/)[0];
+  const isUnder = (prefix: string) => path === prefix || path.startsWith(prefix + '/');
+
+  // /messages is shared surface — every authenticated role may resume there.
+  if (isUnder('/messages')) return rawCallback;
+  if (role === 'PROVIDER') return isUnder('/provider') ? rawCallback : home;
+  if (role === 'ADMIN') return isUnder('/admin') ? rawCallback : home;
+  return isUnder('/provider') || isUnder('/admin') ? home : rawCallback;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -80,14 +107,12 @@ export default function LoginPage() {
       } else {
         const session = await getSession();
         const role = (session?.user as any)?.role;
-        // Honor a same-origin callbackUrl (e.g. the request wizard sends
-        // guests here and expects to resume). Read at submit time to avoid
-        // the useSearchParams Suspense requirement.
+        // Honor a same-origin callbackUrl that belongs to this role's area
+        // (e.g. the request wizard sends guests here and expects to resume).
+        // Read at submit time to avoid the useSearchParams Suspense
+        // requirement.
         const callbackUrl = new URLSearchParams(window.location.search).get('callbackUrl');
-        const safeCallback = callbackUrl && callbackUrl.startsWith('/') ? callbackUrl : null;
-        if (role === 'PROVIDER') router.push('/provider/dashboard');
-        else if (role === 'ADMIN') router.push('/admin/dashboard');
-        else router.push(safeCallback ?? '/');
+        router.push(postLoginDestination(role, callbackUrl));
       }
     } catch (err) {
       setError('An error occurred. Please try again.');

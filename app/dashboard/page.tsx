@@ -42,6 +42,11 @@ async function getInitialData(userId: string) {
 export default async function Page() {
   const session = await auth();
   if (!session?.user) redirect('/login');
+  // Customer-only surface. middleware.ts redirects first, but this is the
+  // defense-in-depth gate for any request that bypasses it.
+  const role = (session.user as any).role;
+  if (role === 'PROVIDER') redirect('/provider/dashboard');
+  if (role === 'ADMIN') redirect('/admin/dashboard');
 
   const data = await getInitialData((session.user as any).id);
   return <DashboardClient {...data} />;
