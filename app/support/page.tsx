@@ -1,5 +1,3 @@
-'use client';
-
 import {
   CalendarCheck, CreditCard, UserCircle, Wrench, MessageCircle, ShieldCheck,
   ChevronRight, ChevronDown,

@@ -1,5 +1,3 @@
-'use client';
-
 import { ShieldCheck, Star, Users, Zap, Heart, BadgeCheck } from 'lucide-react';
 import SiteNav from '@/components/SiteNav';
 import SiteFooter from '@/components/SiteFooter';

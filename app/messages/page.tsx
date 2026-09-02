@@ -14,6 +14,7 @@ import { RequestCard, asThreadRequest, type ThreadRequest } from '@/components/R
 import { useTranslation } from '@/lib/i18n';
 import type { Dictionary } from '@/lib/i18n/types';
 import { fetchJsonWithRetry, isDefinitiveError } from '@/lib/fetch-retry';
+import { useVisibleInterval } from '@/lib/use-visible-interval';
 
 function timeAgo(date: string, s: Dictionary['messagesPage']) {
   const mins = Math.floor((Date.now() - new Date(date).getTime()) / 60000);
@@ -343,14 +344,19 @@ function MessagesContent() {
 
   const refreshNow = useCallback(() => setRefreshKey(k => k + 1), []);
 
+  // Stable ref to the latest thread-list fetch. Owned by the effect below so
+  // its `cancelled` scope stays valid; called from useVisibleInterval so the
+  // 15s poll pauses on backgrounded tabs and refreshes once on tab-return.
+  const fetchThreadsRef = useRef<() => void>(() => {});
+
   // Redirect if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
   }, [status, router]);
 
-  // Fetch thread list. Polled, not one-shot: a single failed fetch right
-  // after login (cold serverless start, transient DB error) used to leave the
-  // inbox permanently on "No conversations yet" until a manual refresh.
+  // Fetch thread list. The initial call happens here (with cancelled-scoped
+  // state guards); the periodic refresh runs via useVisibleInterval so a
+  // backgrounded tab doesn't hammer /api/chat.
   useEffect(() => {
     if (status !== 'authenticated') return;
     let cancelled = false;
@@ -371,10 +377,15 @@ function MessagesContent() {
         if (!cancelled) setLoading(false);
       }
     };
+    fetchThreadsRef.current = fetchThreads;
     fetchThreads();
-    const interval = setInterval(fetchThreads, 15000);
-    return () => { cancelled = true; clearInterval(interval); };
+    return () => { cancelled = true; fetchThreadsRef.current = () => {}; };
   }, [status, refreshKey]);
+
+  useVisibleInterval(
+    () => fetchThreadsRef.current(),
+    status === 'authenticated' ? 15000 : null,
+  );
 
   // Spinner only on thread switch — a refresh after an offer action must not
   // blank the stream the user is looking at.
@@ -387,9 +398,13 @@ function MessagesContent() {
     detailLoadedRef.current = false;
   }, [activeThreadId]);
 
+  // Stable ref to the latest active-thread poll — same visibility-gated
+  // pattern as the thread-list poll above.
+  const fetchMsgsRef = useRef<() => void>(() => {});
+
   // Fetch messages + negotiation state for the active thread.
   useEffect(() => {
-    if (!activeThreadId) { setMessages([]); return; }
+    if (!activeThreadId) { setMessages([]); fetchMsgsRef.current = () => {}; return; }
     let cancelled = false;
     // Scoped to this effect run (i.e. to this thread) so switching threads
     // never inherits a stuck flag from the previous conversation's poll.
@@ -437,10 +452,17 @@ function MessagesContent() {
       }
     };
 
+    fetchMsgsRef.current = fetchMsgs;
     fetchMsgs().finally(() => { if (!cancelled) setMsgLoading(false); });
-    const interval = setInterval(fetchMsgs, 3000);
-    return () => { cancelled = true; clearInterval(interval); };
+    return () => { cancelled = true; fetchMsgsRef.current = () => {}; };
   }, [activeThreadId, refreshKey]);
+
+  // Visibility-gated 3s poll — pauses on backgrounded tabs, and fires ONE
+  // immediate refresh when the user comes back to the tab.
+  useVisibleInterval(
+    () => fetchMsgsRef.current(),
+    activeThreadId ? 3000 : null,
+  );
 
   const activeThread = threads.find(th => th.id === activeThreadId);
   // Threads now appear from the first quote onward, so a deep link that isn't

@@ -16,6 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useLocale, useTranslation } from '@/lib/i18n';
 import type { Dictionary, Locale } from '@/lib/i18n/types';
+import { useVisibleInterval } from '@/lib/use-visible-interval';
 
 /* ─── Chat ──────────────────────────────────────────────────────────────────
  * ONE chat visual language for the whole product. This module owns the parts
@@ -651,26 +652,33 @@ export default function ChatPage({ threadId, booking }: { threadId: string; book
   const providerPhone = booking?.provider?.phone ?? null;
   const timeline = buildTimeline(booking);
 
+  // Initial fetch happens on thread change; the 3s poll is visibility-gated so
+  // a backgrounded tab doesn't keep hitting /api/chat.
+  const fetchMessagesRef = useRef<() => void>(() => {});
   useEffect(() => {
+    let cancelled = false;
     const fetchMessages = async () => {
       try {
         const res = await fetch(`/api/chat?threadId=${threadId}`);
+        if (cancelled) return;
         const data = await res.json();
         // GET ?threadId returns { messages, textUnlocked, negotiation } as of
         // the negotiation change; it used to return a bare array. Accept both.
         const list = Array.isArray(data)
           ? data
           : Array.isArray(data?.messages) ? data.messages : null;
-        if (list) setMessages(list);
+        if (!cancelled && list) setMessages(list);
       } catch (error) {
         console.error('Failed to fetch messages', error);
       }
     };
 
+    fetchMessagesRef.current = fetchMessages;
     fetchMessages();
-    const interval = setInterval(fetchMessages, 3000);
-    return () => clearInterval(interval);
+    return () => { cancelled = true; fetchMessagesRef.current = () => {}; };
   }, [threadId]);
+
+  useVisibleInterval(() => fetchMessagesRef.current(), threadId ? 3000 : null);
 
   useEffect(() => {
     if (scrollRef.current) {

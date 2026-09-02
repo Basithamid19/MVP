@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation, type Dictionary } from '@/lib/i18n';
+import { useVisibleInterval } from '@/lib/use-visible-interval';
 
 interface Notification {
   id: string;
@@ -83,21 +84,31 @@ export default function NotificationBell({ align = 'right' }: NotificationBellPr
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Poll the persistent notifications API (15s — same cadence as before).
+  // The initial fetch runs on session-change; the interval is visibility-gated
+  // via useVisibleInterval, so a backgrounded tab doesn't keep hitting the API.
+  const fetchNotifsRef = useRef<() => void>(() => {});
   useEffect(() => {
-    if (!session) return;
+    if (!session) { fetchNotifsRef.current = () => {}; return; }
+    let cancelled = false;
     const fetchNotifs = async () => {
       try {
         const res = await fetch('/api/notifications');
+        if (cancelled) return;
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data)) setNotifications(data);
+          if (!cancelled && Array.isArray(data)) setNotifications(data);
         }
       } catch {}
     };
+    fetchNotifsRef.current = fetchNotifs;
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 15000);
-    return () => clearInterval(interval);
+    return () => { cancelled = true; fetchNotifsRef.current = () => {}; };
   }, [session]);
+
+  useVisibleInterval(
+    () => fetchNotifsRef.current(),
+    session ? 15000 : null,
+  );
 
   // Close on outside click
   useEffect(() => {
